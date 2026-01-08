@@ -1,0 +1,58 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.9'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+// 라이브러리 다운로드 받을 곳 (web브라우저 MAVEN CDN 접속해서 다운로드 해줌.)
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//소셜로그인
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	// thymeleaf 레이아웃 상속
+	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0'
+	// querydsl
+	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+	implementation 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+	implementation 'com.querydsl:querydsl-core:5.1.0'
+
+	// 썸네일 이미지크기 줄여주는용도
+	implementation 'net.coobird:thumbnailator:0.4.21'
+}
+
+// test JUnit
+tasks.named('test') {
+	useJUnitPlatform()
+}
