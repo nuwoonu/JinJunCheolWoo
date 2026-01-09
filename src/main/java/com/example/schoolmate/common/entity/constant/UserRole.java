@@ -1,5 +1,5 @@
 package com.example.schoolmate.common.entity.constant;
 
 public enum UserRole {
-    STUDENT, TEACHER, STAFF, PARENT
+    STUDENT, TEACHER, STAFF, PARENT, ADMIN, OTHER
 }
