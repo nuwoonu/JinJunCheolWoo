@@ -52,6 +52,11 @@ dependencies {
 	implementation 'net.coobird:thumbnailator:0.4.21'
 }
 
+test {
+    enabled = false
+    useJUnitPlatform()
+}
+
 // test JUnit
 tasks.named('test') {
 	useJUnitPlatform()

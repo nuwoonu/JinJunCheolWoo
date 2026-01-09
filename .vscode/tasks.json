@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "gradle",
+			"id": "h:\\JavaProject\\SchoolMate\\JinJunCheolWoobuildschoolmate",
+			"script": "build",
+			"description": "Assembles and tests this project.",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"project": "schoolmate",
+			"buildFile": "H:\\JavaProject\\SchoolMate\\JinJunCheolWoo\\build.gradle",
+			"rootProject": "schoolmate",
+			"projectFolder": "h:\\JavaProject\\SchoolMate\\JinJunCheolWoo",
+			"workspaceFolder": "h:\\JavaProject\\SchoolMate\\JinJunCheolWoo",
+			"args": "",
+			"javaDebug": false,
+			"problemMatcher": [
+				"$gradle"
+			],
+			"label": "gradle: build"
+		}
+	]
+}
