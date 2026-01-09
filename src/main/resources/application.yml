@@ -9,14 +9,16 @@ spring:
     username: javadb
     password: 12345
   jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
         highlight_sql: true
-  profiles:
-    include: oauth
+  # profiles:
+  #   include: oauth
   servlet:
     multipart:
       enabled: true
@@ -35,4 +37,4 @@ com:
   example:
     schoolmate:
       upload:
-        path: // 업로드 경로 설정할것!
+        path: upload
