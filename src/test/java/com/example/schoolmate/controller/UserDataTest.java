@@ -40,7 +40,7 @@ public class UserDataTest {
         student.setStudentNumber("20240001");
         student.setGrade(1);
         student.setClassNum(3);
-        student.setRole(UserRole.STUDENT);
+        student.addRole(UserRole.STUDENT);
         studentRepository.save(student);
 
         // 2. 교사 생성
@@ -50,7 +50,7 @@ public class UserDataTest {
         teacher.setPassword("1234");
         teacher.setSubject("수학");
         teacher.setEmployeeNumber("T1004");
-        teacher.setRole(UserRole.TEACHER);
+        teacher.addRole(UserRole.TEACHER);
         teacherRepository.save(teacher);
 
         // 3. 학부모 생성
@@ -60,7 +60,7 @@ public class UserDataTest {
         parent.setPassword("1234");
         parent.setPhoneNumber("010-1234-5678");
         parent.setEmergencyContact("010-9999-8888");
-        parent.setRole(UserRole.PARENT);
+        parent.addRole(UserRole.PARENT);
         parentRepository.save(parent);
 
         // 4. 교직원 생성
@@ -70,7 +70,7 @@ public class UserDataTest {
         staff.setPassword("1234");
         staff.setDepartment("행정실");
         staff.setPosition("실장");
-        staff.setRole(UserRole.STAFF);
+        staff.addRole(UserRole.STAFF);
         staffRepository.save(staff);
     }
 }

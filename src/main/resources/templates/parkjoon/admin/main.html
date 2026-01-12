@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>조직 관리 - 학급 및 담임 배정</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container mt-5">
+      <h2 class="mb-4">🏫 조직 및 기초 정보 관리</h2>
+
+      <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">신규 학급 생성</div>
+        <div class="card-body">
+          <form
+            th:action="@{/parkjoon/admin/classes/create}"
+            method="post"
+            class="row g-3"
+          >
+            <div class="col-md-3">
+              <input
+                type="number"
+                name="year"
+                class="form-control"
+                placeholder="학년도 (예: 2026)"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <input
+                type="number"
+                name="grade"
+                class="form-control"
+                placeholder="학년 (1~3)"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <input
+                type="number"
+                name="classNum"
+                class="form-control"
+                placeholder="반 (1~N)"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-outline-primary w-100">
+                학급 추가
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          학급 편성 및 담임 교사 배정 현황
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>학년도</th>
+                <th>학년/반</th>
+                <th>현재 담임 교사</th>
+                <th>담임 변경 배정</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="cls : ${classes}">
+                <td th:text="${cls.year}">2026</td>
+                <td th:text="${cls.grade + '학년 ' + cls.classNum + '반'}">
+                  1학년 1반
+                </td>
+                <td>
+                  <span
+                    th:if="${cls.teacher != null}"
+                    class="badge bg-success"
+                    th:text="${cls.teacher.name}"
+                    >홍길동</span
+                  >
+                  <span
+                    th:if="${cls.teacher == null}"
+                    class="badge bg-secondary"
+                    >미배정</span
+                  >
+                </td>
+                <td>
+                  <form
+                    th:action="@{/parkjoon/admin/classes/assign}"
+                    method="post"
+                    class="d-flex align-items-center"
+                  >
+                    <input
+                      type="hidden"
+                      name="classroomId"
+                      th:value="${cls.cid}"
+                    />
+                    <select
+                      name="teacherUid"
+                      class="form-select form-select-sm me-2"
+                      style="width: 150px"
+                    >
+                      <option value="">교사 선택</option>
+                      <option
+                        th:each="t : ${teachers}"
+                        th:value="${t.uid}"
+                        th:text="${t.name + ' (' + t.subject + ')'}"
+                      ></option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                      배정
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(classes)}">
+                <td colspan="4" class="text-center py-4 text-muted">
+                  등록된 학급 정보가 없습니다.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
