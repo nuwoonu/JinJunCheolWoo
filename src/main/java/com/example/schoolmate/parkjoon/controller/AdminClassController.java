@@ -1,5 +1,7 @@
 package com.example.schoolmate.parkjoon.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,7 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.schoolmate.common.repository.TeacherRepository;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.parkjoon.dto.AdminClassDTO;
+import com.example.schoolmate.parkjoon.mapper.AdminClassMapper;
 import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 import com.example.schoolmate.parkjoon.service.AdminClassService;
 
@@ -20,14 +25,24 @@ public class AdminClassController {
 
     private final AdminClassService adminClassService;
     private final ClassroomRepository classroomRepository;
-    private final TeacherRepository teacherRepository;
+    private final UserRepository userRepository;
+    private final AdminClassMapper adminClassMapper; // Mapper 주입
 
     @GetMapping
     public String mainPage(Model model) {
-        // 1. 전체 학급 목록 조회
-        model.addAttribute("classes", classroomRepository.findAll());
-        // 2. 배정 가능한 교사 목록 조회 (dtype='TEACHER'인 유저들)
-        model.addAttribute("teachers", teacherRepository.findAll());
+        // 1. 학급 목록 변환
+        List<AdminClassDTO.ClassInfoResponse> classList = classroomRepository.findAll().stream()
+                .map(adminClassMapper::toClassInfoResponse)
+                .toList();
+
+        // 2. 교사 목록 변환
+        List<AdminClassDTO.TeacherSelectResponse> teacherList = userRepository.findAll().stream()
+                .filter(u -> u.hasRole(UserRole.TEACHER))
+                .map(adminClassMapper::toTeacherSelectResponse)
+                .toList();
+
+        model.addAttribute("classes", classList);
+        model.addAttribute("teachers", teacherList);
         return "parkjoon/admin/main";
     }
 

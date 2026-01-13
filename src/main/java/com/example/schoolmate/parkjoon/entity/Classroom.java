@@ -1,7 +1,7 @@
 package com.example.schoolmate.parkjoon.entity;
 
 import com.example.schoolmate.common.entity.BaseEntity;
-import com.example.schoolmate.common.entity.Teacher;
+import com.example.schoolmate.common.entity.user.User;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,6 +32,6 @@ public class Classroom extends BaseEntity {
     private int classNum;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uid")
-    private Teacher teacher;
+    @JoinColumn(name = "uid") // 담임 교사(User)의 uid를 FK로 사용
+    private User teacher; // Teacher 대신 User 사용
 }

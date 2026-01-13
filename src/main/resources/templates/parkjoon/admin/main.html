@@ -64,31 +64,25 @@
           <table class="table table-hover mb-0">
             <thead class="table-light">
               <tr>
-                <th>학년도</th>
+                <th>번호(CID)</th>
                 <th>학년/반</th>
                 <th>현재 담임 교사</th>
+                <th>담당 과목</th>
                 <th>담임 변경 배정</th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="cls : ${classes}">
-                <td th:text="${cls.year}">2026</td>
-                <td th:text="${cls.grade + '학년 ' + cls.classNum + '반'}">
-                  1학년 1반
-                </td>
+                <td th:text="${cls.cid}">1</td>
+                <td th:text="${cls.gradeAndClass}">1학년 1반</td>
                 <td>
                   <span
-                    th:if="${cls.teacher != null}"
-                    class="badge bg-success"
-                    th:text="${cls.teacher.name}"
+                    th:classappend="${cls.teacherName == '미배정' ? 'badge bg-secondary' : 'badge bg-success'}"
+                    th:text="${cls.teacherName}"
                     >홍길동</span
                   >
-                  <span
-                    th:if="${cls.teacher == null}"
-                    class="badge bg-secondary"
-                    >미배정</span
-                  >
                 </td>
+                <td th:text="${cls.subject}">수학</td>
                 <td>
                   <form
                     th:action="@{/parkjoon/admin/classes/assign}"
@@ -103,14 +97,16 @@
                     <select
                       name="teacherUid"
                       class="form-select form-select-sm me-2"
-                      style="width: 150px"
+                      style="width: 180px"
                     >
                       <option value="">교사 선택</option>
                       <option
                         th:each="t : ${teachers}"
                         th:value="${t.uid}"
-                        th:text="${t.name + ' (' + t.subject + ')'}"
-                      ></option>
+                        th:text="${t.displayName}"
+                      >
+                        이교사 (국어)
+                      </option>
                     </select>
                     <button type="submit" class="btn btn-sm btn-primary">
                       배정
@@ -119,7 +115,7 @@
                 </td>
               </tr>
               <tr th:if="${#lists.isEmpty(classes)}">
-                <td colspan="4" class="text-center py-4 text-muted">
+                <td colspan="5" class="text-center py-4 text-muted">
                   등록된 학급 정보가 없습니다.
                 </td>
               </tr>

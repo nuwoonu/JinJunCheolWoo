@@ -1,17 +1,15 @@
-package com.example.schoolmate.common.entity;
+package com.example.schoolmate.common.entity.info;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "user_teacher")
 @DiscriminatorValue("TEACHER")
 @Getter
 @Setter
-public class Teacher extends User {
+public class TeacherInfo extends BaseInfo {
     private String subject; // 담당 과목
-    private String employeeNumber; // 사번
+    private String department; // 소속 부서 (예: 교무부)
 }
