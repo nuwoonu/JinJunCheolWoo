@@ -24,9 +24,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "user_grade")
+@Table(name = "grades")
 @ToString(exclude = { "student", "subject" })
-public class Grade {
+public class Grade extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,24 +40,32 @@ public class Grade {
     @Column(nullable = false)
     private Integer score; // 점수
 
-    @ManyToOne
-    @JoinColumn(name = "student_number")
+    @Column(nullable = false)
+    private Integer year; // 학년
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_uid")
     private Student student;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id")
     private Subject subject;
 
+    // 양방향 연관관계 편의 메서드 추가
+    // 학생 설정 편의 메서드
     public void setStudent(Student student) {
+        // 기존 관계 제거
         if (this.student != null) {
             this.student.getGrades().remove(this);
         }
         this.student = student;
+        // 새 관계 추가
         if (student != null && !student.getGrades().contains(this)) {
             student.getGrades().add(this);
         }
     }
 
+    // 과목 설정 편의 메서드
     public void setSubject(Subject subject) {
         if (this.subject != null) {
             this.subject.getGrades().remove(this);
