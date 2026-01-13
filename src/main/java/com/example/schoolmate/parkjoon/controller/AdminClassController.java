@@ -29,7 +29,7 @@ public class AdminClassController {
     private final AdminClassMapper adminClassMapper; // Mapper 주입
 
     @GetMapping
-    public String mainPage(Model model) {
+    public String classMainPage(Model model) {
         // 1. 학급 목록 변환
         List<AdminClassDTO.ClassInfoResponse> classList = classroomRepository.findAll().stream()
                 .map(adminClassMapper::toClassInfoResponse)
@@ -43,7 +43,7 @@ public class AdminClassController {
 
         model.addAttribute("classes", classList);
         model.addAttribute("teachers", teacherList);
-        return "parkjoon/admin/main";
+        return "parkjoon/admin/classes/main";
     }
 
     @PostMapping("/assign")

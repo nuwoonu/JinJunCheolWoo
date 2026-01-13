@@ -15,6 +15,10 @@ import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StaffInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
+import com.example.schoolmate.common.entity.info.constant.StaffStatus;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
@@ -28,7 +32,7 @@ public class UserDataTest {
     @Transactional
     @Rollback(false)
     void createUsersTest() {
-        // 1. 학부모 10명 먼저 생성 (학생이 참조해야 하므로)
+        // 1. 학부모 10명 생성
         List<ParentInfo> parentInfoList = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
             User parentUser = User.builder()
@@ -41,12 +45,13 @@ public class UserDataTest {
             ParentInfo parentInfo = new ParentInfo();
             parentInfo.setCode("P" + String.format("%04d", i));
             parentInfo.setEmergencyContact("010-0000-" + String.format("%04d", i));
-            parentInfo.setStatus("ACTIVE");
+            // ParentStatus Enum이 있다면 적용 (없다면 String 유지 가능)
+            parentInfo.setStatus(ParentStatus.ACTIVE);
             parentInfo.setUser(parentUser);
 
             parentUser.getInfos().add(parentInfo);
             userRepository.save(parentUser);
-            parentInfoList.add(parentInfo); // 학생 매칭을 위해 리스트에 보관
+            parentInfoList.add(parentInfo);
         }
 
         // 2. 학생 10명 생성 및 학부모 매칭
@@ -62,17 +67,16 @@ public class UserDataTest {
             studentInfo.setCode("2026" + String.format("%04d", i));
             studentInfo.setGrade(1);
             studentInfo.setClassNum(i % 5 + 1);
-            studentInfo.setStatus("ENROLLED");
+            // StudentStatus Enum 적용
+            studentInfo.setStatus(StudentStatus.ENROLLED);
             studentInfo.setUser(studentUser);
-
-            // 중요: 위에서 생성한 학부모 Info와 연결 (1:1 매칭 예시)
             studentInfo.setParent(parentInfoList.get(i - 1));
 
             studentUser.getInfos().add(studentInfo);
             userRepository.save(studentUser);
         }
 
-        // 3. 교사 10명 생성 (기존과 동일)
+        // 3. 교사 10명 생성
         for (int i = 1; i <= 10; i++) {
             User teacherUser = User.builder()
                     .email("teacher" + i + "@school.com")
@@ -85,14 +89,15 @@ public class UserDataTest {
             teacherInfo.setCode("T" + String.format("%04d", i));
             teacherInfo.setSubject(i % 2 == 0 ? "수학" : "영어");
             teacherInfo.setDepartment("교무부");
-            teacherInfo.setStatus("EMPLOYED");
+            // TeacherStatus Enum 적용
+            teacherInfo.setStatus(TeacherStatus.EMPLOYED);
             teacherInfo.setUser(teacherUser);
 
             teacherUser.getInfos().add(teacherInfo);
             userRepository.save(teacherUser);
         }
 
-        // 4. 행정직원 10명 생성 (기존과 동일)
+        // 4. 행정직원 10명 생성
         for (int i = 1; i <= 10; i++) {
             User staffUser = User.builder()
                     .email("staff" + i + "@school.com")
@@ -104,7 +109,8 @@ public class UserDataTest {
             StaffInfo staffInfo = new StaffInfo();
             staffInfo.setCode("S" + String.format("%04d", i));
             staffInfo.setJobTitle("주무관");
-            staffInfo.setStatus("EMPLOYED");
+            // StaffStatus Enum 적용
+            staffInfo.setStatus(StaffStatus.EMPLOYED);
             staffInfo.setUser(staffUser);
 
             staffUser.getInfos().add(staffInfo);

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <div
+    th:fragment="sidebarFragment"
+    class="col-md-2 bg-dark text-white p-3"
+    style="min-height: 100vh"
+  >
+    <h5 class="mb-4 text-info">Admin Center</h5>
+    <ul class="nav flex-column gap-2">
+      <li class="nav-item">
+        <a class="nav-link text-white" th:href="@{/parkjoon/admin/dashboard}"
+          >📊 대시보드</a
+        >
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" th:href="@{/parkjoon/admin/classes}"
+          >🏗️ 학급 설정</a
+        >
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" th:href="@{/parkjoon/admin/teachers}"
+          >👨‍🏫 교사 관리</a
+        >
+      </li>
+    </ul>
+  </div>
+</html>

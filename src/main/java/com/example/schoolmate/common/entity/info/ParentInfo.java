@@ -3,9 +3,14 @@ package com.example.schoolmate.common.entity.info;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
+
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +20,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ParentInfo extends BaseInfo {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ParentStatus status = ParentStatus.ACTIVE;
+
     private String emergencyContact; // 비상 연락처
     private String relation; // 학생과의 관계 (부, 모, 조부모 등)
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)

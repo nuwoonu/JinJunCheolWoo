@@ -32,7 +32,5 @@ public abstract class BaseInfo extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uid") // User의 uid를 참조
     private User user;
-
     private String code; // 학번, 사번 등 (학부모는 전화번호나 임의번호)
-    private String status; // 재학, 졸업, 재직, 휴직 등
 }
