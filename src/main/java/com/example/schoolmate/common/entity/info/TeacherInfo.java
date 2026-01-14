@@ -21,4 +21,11 @@ public class TeacherInfo extends BaseInfo {
     private TeacherStatus status = TeacherStatus.EMPLOYED; // 재직 상태 (재직/휴직/퇴직)
     private String department; // 소속 부서 (예: 교무부)
     private String position; // 직책 (부장, 평교사 등)
+
+    public void update(String subject, String department, String position, TeacherStatus status) {
+        this.subject = subject;
+        this.department = department;
+        this.position = position;
+        this.status = status;
+    }
 }

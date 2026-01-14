@@ -8,6 +8,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,8 @@ import com.example.schoolmate.common.repository.UserRepository;
 public class UserDataTest {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Test
     @Transactional
@@ -116,5 +119,34 @@ public class UserDataTest {
             staffUser.getInfos().add(staffInfo);
             userRepository.save(staffUser);
         }
+    }
+
+    @Test
+    @Transactional
+    @Rollback(false) // DB에 실제로 반영하기 위해 false 설정
+    void createAdminAccount() {
+        // 1. 이미 해당 이메일의 어드민이 있는지 확인 (중복 방지)
+        String adminEmail = "admin@school.com";
+        if (userRepository.findByEmail(adminEmail).isPresent()) {
+            System.out.println("이미 관리자 계정이 존재합니다.");
+            return;
+        }
+
+        // 2. 관리자 유저 엔티티 생성
+        User adminUser = User.builder()
+                .email(adminEmail)
+                .name("최고관리자")
+                // 비밀번호를 암호화하여 저장 (로그인 시 '1234' 입력)
+                .password(passwordEncoder.encode("1234"))
+                .roles(new HashSet<>(Set.of(UserRole.ADMIN)))
+                .build();
+
+        // 3. (선택사항) 관리자에게도 상세 정보가 필요하다면 StaffInfo 등을 추가
+        // 여기서는 순수 Admin 권한 확인을 위해 User만 생성합니다.
+
+        // 4. DB 저장
+        userRepository.save(adminUser);
+
+        System.out.println("관리자 계정 생성 완료: " + adminEmail);
     }
 }

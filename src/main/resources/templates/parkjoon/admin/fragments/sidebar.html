@@ -1,27 +1,59 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
   <div
     th:fragment="sidebarFragment"
-    class="col-md-2 bg-dark text-white p-3"
-    style="min-height: 100vh"
+    id="sidebar"
+    class="col-md-2 bg-dark text-white p-3 d-flex flex-column"
+    style="height: 100vh; position: sticky; top: 0; overflow-y: auto"
   >
-    <h5 class="mb-4 text-info">Admin Center</h5>
-    <ul class="nav flex-column gap-2">
+    <div class="mb-4">
+      <h5 class="text-info">Admin Center</h5>
+    </div>
+
+    <ul class="nav flex-column gap-2 mb-4">
       <li class="nav-item">
-        <a class="nav-link text-white" th:href="@{/parkjoon/admin/dashboard}"
-          >📊 대시보드</a
+        <a
+          class="nav-link text-white d-flex align-items-center"
+          th:href="@{/parkjoon/admin/dashboard}"
         >
+          <span class="me-2">📊</span><span>대시보드</span>
+        </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" th:href="@{/parkjoon/admin/classes}"
-          >🏗️ 학급 설정</a
+        <a
+          class="nav-link text-white d-flex align-items-center"
+          th:href="@{/parkjoon/admin/classes}"
         >
+          <span class="me-2">🏗️</span><span>학급 설정</span>
+        </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" th:href="@{/parkjoon/admin/teachers}"
-          >👨‍🏫 교사 관리</a
+        <a
+          class="nav-link text-white d-flex align-items-center"
+          th:href="@{/parkjoon/admin/teachers}"
         >
+          <span class="me-2">👨‍🏫</span><span>교사 관리</span>
+        </a>
       </li>
     </ul>
+
+    <div class="mt-auto border-top pt-3 bg-dark">
+      <div class="mb-3 px-3">
+        <small class="text-muted d-block">접속 관리자</small>
+        <span class="fw-bold" sec:authentication="name">Admin</span> 님
+      </div>
+
+      <form th:action="@{/parkjoon/admin/logout}" method="post">
+        <button
+          type="submit"
+          class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center"
+        >
+          <i class="bi bi-box-arrow-right me-2"></i> <span>로그아웃</span>
+        </button>
+      </form>
+    </div>
   </div>
 </html>

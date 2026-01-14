@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="~{parkjoon/admin/layout :: layout(~{::section})}"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
 >
-  <head> </head>
   <body>
-    <section>
+    <section layout:fragment="content">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>🏫 학년/반 설정 및 담임 배정</h2>
         <nav aria-label="breadcrumb">
@@ -134,7 +134,7 @@
                 <tr th:if="${#lists.isEmpty(classes)}">
                   <td colspan="5" class="text-center py-5 text-muted">
                     <i class="bi bi-exclamation-circle d-block mb-2 fs-2"></i>
-                    등록된 학급 정보가 없습니다. 먼저 학급을 생성해주세요.
+                    등록된 학급 정보가 없습니다.
                   </td>
                 </tr>
               </tbody>

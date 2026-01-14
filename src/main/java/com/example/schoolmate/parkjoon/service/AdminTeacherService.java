@@ -3,6 +3,8 @@ package com.example.schoolmate.parkjoon.service;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,12 @@ public class AdminTeacherService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // Security 설정 필요
+
+    public Page<TeacherDTO.DetailResponse> getTeacherList(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
+        Page<User> userPage = userRepository.searchTeachers(cond, pageable);
+        // Page 객체 내의 User 엔티티들을 DTO 생성자를 통해 DetailResponse로 변환
+        return userPage.map(TeacherDTO.DetailResponse::new);
+    }
 
     public void createTeacher(TeacherDTO.CreateRequest request) {
         // 1. 유저 기본 정보 생성
@@ -46,5 +54,21 @@ public class AdminTeacherService {
 
         // 4. 저장 (Cascade 옵션 덕분에 User만 저장해도 Info가 함께 저장됨)
         userRepository.save(user);
+    }
+
+    public void updateTeacher(TeacherDTO.UpdateRequest request) {
+        // 1. UID로 유저 찾기
+        User user = userRepository.findById(request.getUid())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + request.getUid()));
+
+        // 2. 유저 엔티티 수정 (Dirty Checking)
+        user.setName(request.getName());
+
+        // 3. 교사 상세 정보 수정
+        TeacherInfo info = user.getInfo(TeacherInfo.class);
+        if (info != null && request.getStatusName() != null) {
+            TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
+            info.update(request.getSubject(), request.getDepartment(), request.getPosition(), newStatus);
+        }
     }
 }
