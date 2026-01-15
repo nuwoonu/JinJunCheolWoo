@@ -9,14 +9,14 @@ import org.springframework.data.repository.query.Param;
 import com.example.schoolmate.common.entity.Grade;
 
 public interface GradeRepository extends JpaRepository<Grade, Long> {
-    List<Grade> findByStudentId(Long studentId);
+    List<Grade> findByStudent_Uid(Long studentUid);
 
-    List<Grade> findBySubjectId(Long subjectId);
+    List<Grade> findBySubject_Code(String subjectCode);
 
-    List<Grade> findByStudentIdAndSemesterAndYear(Long studentId, int semester, int year);
+    List<Grade> findByStudent_UidAndSemesterAndYear(Long studentUid, int semester, int year);
 
-    @Query("SELECT g FROM Grade g WHERE g.student.id = :studentId AND g.subject.id = :subjectId")
+    @Query("SELECT g FROM Grade g WHERE g.student.uid = :studentUid AND g.subject.code = :subjectCode")
     List<Grade> findByStudentAndSubject(
-            @Param("studentId") Long studentId,
-            @Param("subjectId") Long subjectId);
+            @Param("studentUid") Long studentUid,
+            @Param("subjectCode") String subjectCode);
 }

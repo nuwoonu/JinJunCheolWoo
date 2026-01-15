@@ -84,4 +84,46 @@ $RECYCLE.BIN/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
+### OAuth Config ###
 src/main/resources/application-oauth.yml
+
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+### Gradle ###
+.gradle/
+build/
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+### Eclipse ###
+.classpath
+.project
+.settings/
+bin/
+
+### Spring Boot ###
+application-local.yml
+application-local.properties
+
+### Claude AI ###
+.claude/settings.local.json
+
+### Logs ###
+logs/
+*.log

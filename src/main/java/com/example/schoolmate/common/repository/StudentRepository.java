@@ -12,10 +12,12 @@ import com.example.schoolmate.common.entity.Student;
 public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByStudentNumber(Long studentNumber);
 
+    Optional<Student> findByEmail(String email);
+
     List<Student> findByGrade(int grade);
 
-    List<Student> findByClassId(Long classId);
+    List<Student> findByClassNum(int classNum);
 
-    @Query("SELECT s FROM Student s JOIN FETCH s.grades WHERE s.id = :id")
-    Optional<Student> findByIdWithGrades(@Param("id") Long id);
+    @Query("SELECT s FROM Student s JOIN FETCH s.grades WHERE s.uid = :uid")
+    Optional<Student> findByUidWithGrades(@Param("uid") Long uid);
 }
