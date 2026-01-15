@@ -52,6 +52,11 @@ dependencies {
 	implementation 'net.coobird:thumbnailator:0.4.21'
 }
 
+// Spring Boot DevTools 설정
+bootRun {
+	sourceResources sourceSets.main
+}
+
 // test JUnit
 tasks.named('test') {
 	useJUnitPlatform()

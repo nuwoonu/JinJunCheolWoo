@@ -1,6 +1,6 @@
 <!-- meta tags and other links -->
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="light" xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="UTF-8">
@@ -184,7 +184,7 @@
       </button>
       <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
         <li>
-          <a href="student-details.html" 
+          <a th:href="@{/student/details}" 
             class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6">
             <i class="ri-user-3-line"></i>
             My Profile
@@ -255,13 +255,13 @@
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a href="add-new-student.html">
+            <a th:href="@{/student/add}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               Add New Student
             </a>
           </li>
           <li>
-            <a href="student-list.html">
+            <a th:href="@{/student/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               Student List
             </a>
@@ -279,13 +279,13 @@
             </a>
           </li>
           <li>
-            <a href="edit-student.html">
+            <a th:href="@{/student/edit}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               Edit Student
             </a>
           </li>
           <li>
-            <a href="student-details.html">
+            <a th:href="@{/student/details}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               Student Details
             </a>

@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.extern.log4j.Log4j2;
@@ -23,5 +25,14 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf.disable());
         return http.build();
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        // 운영, 실무, 여러 암호화 알고리즘 사용
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+        // 연습, 단일 알고리즘 사용
+        // return new BCryptPasswordEncoder();
     }
 }
