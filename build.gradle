@@ -53,6 +53,9 @@ dependencies {
 
 	// 썸네일 이미지크기 줄여주는용도
 	implementation 'net.coobird:thumbnailator:0.4.21'
+
+	//csv 파일 파싱용
+	implementation 'com.opencsv:opencsv:5.9'
 }
 
 test {

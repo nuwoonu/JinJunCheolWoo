@@ -1,7 +1,6 @@
 package com.example.schoolmate.common.repository;
 
 import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -27,37 +26,53 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         QUser user = QUser.user;
         QTeacherInfo info = QTeacherInfo.teacherInfo;
 
-        // 1. 컨텐츠 조회 (중복 제거 및 검색용 조인 추가)
+        // 공통 필터 조건 정의
+        BooleanExpression isTeacher = user.roles.contains(UserRole.TEACHER);
+        BooleanExpression searchFilter = searchPredicate(cond.getType(), cond.getKeyword());
+        BooleanExpression retiredFilter = retiredFilter(cond.isIncludeRetired());
+
+        // 1. 컨텐츠 조회
         List<User> content = query
                 .selectFrom(user).distinct()
-                .leftJoin(user.infos, info._super)
+                .leftJoin(user.infos, info._super) // BaseInfo와 조인
                 .where(
-                        user.roles.contains(UserRole.TEACHER),
-                        searchPredicate(cond.getType(), cond.getKeyword()),
-                        retiredFilter(cond.isIncludeRetired()))
+                        isTeacher,
+                        searchFilter,
+                        retiredFilter // 퇴직자 필터 적용
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(user.uid.desc())
                 .fetch();
 
-        // 2. 카운트 조회
+        // 2. 카운트 조회 (페이징을 위해 컨텐츠 쿼리와 동일한 필터 적용)
         JPAQuery<Long> countQuery = query
-                .select(user.countDistinct()) // 💡 카운트 시에도 중복을 제외한 유저 수만 계산
+                .select(user.countDistinct())
                 .from(user)
                 .leftJoin(user.infos, info._super)
                 .where(
-                        user.roles.contains(UserRole.TEACHER),
-                        searchPredicate(cond.getType(), cond.getKeyword()));
+                        isTeacher,
+                        searchFilter,
+                        retiredFilter);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    /**
+     * 퇴직자 필터 로직
+     * includeRetired가 false일 때, RETIRED가 아닌 모든 상태(EMPLOYED, LEAVE)와
+     * 아직 상태가 지정되지 않은(NULL) 데이터까지 모두 포함하도록 수정
+     */
     private BooleanExpression retiredFilter(boolean includeRetired) {
         if (includeRetired) {
-            return null; // 스위치가 ON이면 아무런 제약을 두지 않음 (퇴직자 포함)
+            return null;
         }
-        // 스위치가 OFF이면 상태가 RETIRED가 아닌 것만 조회
-        return QTeacherInfo.teacherInfo.status.ne(TeacherStatus.RETIRED);
+
+        QTeacherInfo info = QTeacherInfo.teacherInfo;
+
+        // "상태가 RETIRED가 아니거나" OR "상태가 아예 없는(NULL) 경우" 둘 다 포함
+        return info.status.ne(TeacherStatus.RETIRED)
+                .or(info.status.isNull());
     }
 
     private BooleanExpression searchPredicate(String type, String keyword) {

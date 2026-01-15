@@ -3,12 +3,18 @@ package com.example.schoolmate.parkjoon.controller;
 import java.util.List;
 
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
@@ -19,7 +25,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Controller
 @RequestMapping("parkjoon/admin/teachers")
 @RequiredArgsConstructor
@@ -48,14 +56,44 @@ public class AdminTeacherController {
     }
 
     @PostMapping("/create")
-    public String createTeacher(@ModelAttribute TeacherDTO.CreateRequest request) {
+    public String createTeacher(@ModelAttribute TeacherDTO.CreateRequest request,
+            TeacherDTO.TeacherSearchCondition condition,
+            RedirectAttributes redirectAttributes) {
+
         adminTeacherService.createTeacher(request);
+
+        redirectAttributes.addAttribute("includeRetired", condition.isIncludeRetired());
         return "redirect:/parkjoon/admin/teachers";
     }
 
     @PostMapping("/update")
-    public String updateTeacher(@ModelAttribute TeacherDTO.UpdateRequest request) {
+    public String updateTeacher(
+            @ModelAttribute TeacherDTO.UpdateRequest request,
+            TeacherDTO.TeacherSearchCondition condition,
+            @RequestParam(name = "page", defaultValue = "1") int page, // 1부터 들어옴
+            RedirectAttributes redirectAttributes) {
+
         adminTeacherService.updateTeacher(request);
+
+        redirectAttributes.addAttribute("includeRetired", condition.isIncludeRetired());
+        redirectAttributes.addAttribute("type", condition.getType());
+        redirectAttributes.addAttribute("keyword", condition.getKeyword());
+        redirectAttributes.addAttribute("page", page); // 받은 1을 그대로 리다이렉트
+
         return "redirect:/parkjoon/admin/teachers";
+    }
+
+    @PostMapping("/import-csv")
+    @ResponseBody // AJAX 요청에 대해 성공/실패 메시지만 반환
+    public ResponseEntity<String> importCsv(@RequestParam("file") MultipartFile file) {
+        try {
+            log.info("CSV 컨트롤러 시작");
+            adminTeacherService.importTeachersFromCsv(file);
+            return ResponseEntity.ok("성공");
+        } catch (Exception e) {
+            log.error("CSV 전달 중 치명적 에러: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("CSV 처리 중 오류 발생: " + e.getMessage());
+        }
     }
 }

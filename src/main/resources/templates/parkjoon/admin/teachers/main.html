@@ -9,44 +9,69 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-3">
           <h2 class="mb-0">👨‍🏫 교사 정보 관리</h2>
-          <div
-            class="form-check form-switch bg-light px-3 py-2 rounded-pill border d-flex align-items-center"
-            style="cursor: pointer"
-          >
-            <input
-              class="form-check-input me-2"
-              type="checkbox"
-              role="switch"
-              id="topRetiredSwitch"
-              th:checked="${condition.includeRetired}"
-              onchange="syncAndSubmit(this.checked)"
-            />
-            <label
-              class="form-check-label small fw-bold text-secondary"
-              for="topRetiredSwitch"
-              style="cursor: pointer"
-              >퇴직 교사 포함</label
-            >
-          </div>
         </div>
 
-        <button
-          class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#createTeacherModal"
-        >
-          <i class="bi bi-person-plus-fill"></i> 신규 교사 등록
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            style="display: none"
+            onchange="uploadCsvFile()"
+          />
+
+          <button
+            type="button"
+            class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            onclick="document.getElementById('csvFileInput').click()"
+          >
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            CSV 교사 등록
+          </button>
+
+          <button
+            class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            data-bs-toggle="modal"
+            data-bs-target="#createTeacherModal"
+          >
+            <i class="bi bi-person-plus-fill"></i> 신규 교사 등록
+          </button>
+        </div>
       </div>
 
       <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
           <div class="row align-items-center">
             <div class="col">
-              <h5 class="mb-0 text-dark">전체 교사 목록</h5>
+              <h5 class="mb-0 text-dark me-3">전체 교사 목록</h5>
             </div>
-            <div class="col-auto">
+
+            <div class="col-auto d-flex align-items-center gap-3">
+              <div
+                class="form-check form-switch d-flex align-items-center gap-2 mb-0"
+              >
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="includeRetiredSwitch"
+                  th:checked="${condition.includeRetired}"
+                  style="
+                    cursor: pointer;
+                    width: 34px;
+                    height: 17px;
+                    margin-top: 0;
+                  "
+                />
+                <label
+                  class="form-check-label fw-medium text-secondary-light small"
+                  for="includeRetiredSwitch"
+                  style="cursor: pointer; white-space: nowrap"
+                  >퇴직자 포함</label
+                >
+              </div>
               <form
+                id="searchForm"
                 th:action="@{/parkjoon/admin/teachers}"
                 method="get"
                 class="input-group input-group-sm"
@@ -205,30 +230,31 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/teachers(page=${page.number - 1}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{/parkjoon/admin/teachers(page=${page.number}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
                   >&laquo;</a
                 >
               </li>
+
               <li
                 class="page-item"
                 th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
-                th:if="${i >= page.number - 2 and i <= page.number + 2}"
                 th:classappend="${i == page.number} ? 'active'"
               >
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/teachers(page=${i}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{/parkjoon/admin/teachers(page=${i + 1}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
                   >1</a
                 >
               </li>
+
               <li
                 class="page-item"
                 th:classappend="${!page.hasNext} ? 'disabled'"
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/teachers(page=${page.number + 1}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{/parkjoon/admin/teachers(page=${page.number + 2}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
                   >&raquo;</a
                 >
               </li>
@@ -335,6 +361,7 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <form th:action="@{/parkjoon/admin/teachers/update}" method="post">
+              <input type="hidden" name="page" th:value="${page.number + 1}" />
               <input type="hidden" name="uid" id="edit-uid" />
               <div class="modal-header bg-light">
                 <h5 class="modal-title font-weight-bold">📝 교사 정보 수정</h5>
@@ -367,7 +394,11 @@
                 </div>
                 <div class="mb-3">
                   <label class="form-label">재직 상태</label>
-                  <select name="status" id="edit-status" class="form-select">
+                  <select
+                    name="statusName"
+                    id="edit-status"
+                    class="form-select"
+                  >
                     <option
                       th:each="st : ${statusList}"
                       th:value="${st.name()}"
@@ -428,6 +459,22 @@
               </div>
             </form>
           </div>
+        </div>
+      </div>
+      <div
+        id="loadingOverlay"
+        class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="background-color: rgba(0, 0, 0, 0.5); z-index: 9999"
+      >
+        <div class="text-center">
+          <div
+            class="spinner-border text-light"
+            role="status"
+            style="width: 3rem; height: 3rem"
+          >
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <h5 class="text-white mt-3">교사 데이터를 등록 중입니다...</h5>
         </div>
       </div>
     </div>

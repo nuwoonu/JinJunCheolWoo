@@ -3,6 +3,7 @@ package com.example.schoolmate.common.dto;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.user.User;
+import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -65,9 +66,6 @@ public class TeacherDTO {
         private String subject;
         private String department;
         private String position;
-
-        // HTML의 <select name="statusName">과 매칭되도록 필드명 변경
-        // 또는 컨트롤러 서비스에서 valueOf로 변환한다면 String으로 유지
         private String statusName;
     }
 
@@ -81,6 +79,15 @@ public class TeacherDTO {
         private String subject;
         private String department;
         private String position;
+
+        public CreateRequest(CsvImportRequest csv) {
+            this.name = csv.getName();
+            this.email = csv.getEmail();
+            this.password = csv.getPassword();
+            this.subject = csv.getSubject();
+            this.department = csv.getDepartment();
+            this.position = csv.getPosition();
+        }
     }
 
     @Getter
@@ -89,5 +96,27 @@ public class TeacherDTO {
         private String type; // 검색 필드 (name, dept 등)
         private String keyword; // 검색어
         private boolean includeRetired;
+    }
+
+    @Getter
+    @Setter
+    public static class CsvImportRequest {
+        @CsvBindByName(column = "이름")
+        private String name;
+
+        @CsvBindByName(column = "이메일")
+        private String email;
+
+        @CsvBindByName(column = "비밀번호")
+        private String password;
+
+        @CsvBindByName(column = "부서")
+        private String department;
+
+        @CsvBindByName(column = "직책")
+        private String position;
+
+        @CsvBindByName(column = "담당과목")
+        private String subject;
     }
 }
