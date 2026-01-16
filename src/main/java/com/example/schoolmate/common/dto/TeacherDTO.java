@@ -72,6 +72,8 @@ public class TeacherDTO {
     // 정보 추가용
     @Getter
     @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CreateRequest {
         private String name;
         private String email;

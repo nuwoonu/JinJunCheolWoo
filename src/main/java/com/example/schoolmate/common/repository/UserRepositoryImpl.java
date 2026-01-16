@@ -1,94 +1,41 @@
 package com.example.schoolmate.common.repository;
 
-import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 
+import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
-import com.example.schoolmate.common.entity.info.QTeacherInfo;
-import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
-import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.example.schoolmate.common.repository.handler.StudentQueryHandler;
+import com.example.schoolmate.common.repository.handler.TeacherQueryHandler;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepositoryCustom {
-    private final JPAQueryFactory query;
+    private final TeacherQueryHandler teacherQueryHandler;
+    private final StudentQueryHandler studentQueryHandler;
 
     @Override
-    public Page<User> searchTeachers(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
-        QUser user = QUser.user;
-        QTeacherInfo info = QTeacherInfo.teacherInfo;
-
-        // 공통 필터 조건 정의
-        BooleanExpression isTeacher = user.roles.contains(UserRole.TEACHER);
-        BooleanExpression searchFilter = searchPredicate(cond.getType(), cond.getKeyword());
-        BooleanExpression retiredFilter = retiredFilter(cond.isIncludeRetired());
-
-        // 1. 컨텐츠 조회
-        List<User> content = query
-                .selectFrom(user).distinct()
-                .leftJoin(user.infos, info._super) // BaseInfo와 조인
-                .where(
-                        isTeacher,
-                        searchFilter,
-                        retiredFilter // 퇴직자 필터 적용
-                )
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(user.uid.desc())
-                .fetch();
-
-        // 2. 카운트 조회 (페이징을 위해 컨텐츠 쿼리와 동일한 필터 적용)
-        JPAQuery<Long> countQuery = query
-                .select(user.countDistinct())
-                .from(user)
-                .leftJoin(user.infos, info._super)
-                .where(
-                        isTeacher,
-                        searchFilter,
-                        retiredFilter);
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    public Page<User> searchTeachers(TeacherDTO.TeacherSearchCondition condition, Pageable pageable) {
+        return teacherQueryHandler.search(condition, pageable);
     }
 
-    /**
-     * 퇴직자 필터 로직
-     * includeRetired가 false일 때, RETIRED가 아닌 모든 상태(EMPLOYED, LEAVE)와
-     * 아직 상태가 지정되지 않은(NULL) 데이터까지 모두 포함하도록 수정
-     */
-    private BooleanExpression retiredFilter(boolean includeRetired) {
-        if (includeRetired) {
-            return null;
-        }
-
-        QTeacherInfo info = QTeacherInfo.teacherInfo;
-
-        // "상태가 RETIRED가 아니거나" OR "상태가 아예 없는(NULL) 경우" 둘 다 포함
-        return info.status.ne(TeacherStatus.RETIRED)
-                .or(info.status.isNull());
+    @Override
+    public Page<User> searchStudents(StudentDTO.StudentSearchCondition condition, Pageable pageable) {
+        return studentQueryHandler.search(condition, pageable);
     }
 
-    private BooleanExpression searchPredicate(String type, String keyword) {
-        if (keyword == null || keyword.isEmpty())
-            return null;
-
-        QUser user = QUser.user;
-        QTeacherInfo info = QTeacherInfo.teacherInfo;
-
-        return switch (type) {
-            case "name" -> user.name.contains(keyword);
-            case "email" -> user.email.contains(keyword);
-            case "dept" -> info.department.contains(keyword);
-            case "subject" -> info.subject.contains(keyword);
-            case "position" -> info.position.contains(keyword);
-            default -> null;
-        };
+    @Override
+    public Optional<User> findDetailByIdentityNum(String identityNum) {
+        return studentQueryHandler.findDetailByIdentityNum(identityNum);
     }
+
+    @Override
+    public boolean existsStudentByIdentityNum(String identityNum) {
+        return studentQueryHandler.existsByIdentityNum(identityNum);
+    }
+
 }

@@ -31,95 +31,95 @@ public class UserDataTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Test
-    @Transactional
-    @Rollback(false)
-    void createUsersTest() {
-        // 1. 학부모 10명 생성
-        List<ParentInfo> parentInfoList = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            User parentUser = User.builder()
-                    .email("parent" + i + "@school.com")
-                    .name("학부모" + i)
-                    .password("1234")
-                    .roles(new HashSet<>(Set.of(UserRole.PARENT)))
-                    .build();
+    // @Test
+    // @Transactional
+    // @Rollback(false)
+    // void createUsersTest() {
+    // // 1. 학부모 10명 생성
+    // List<ParentInfo> parentInfoList = new ArrayList<>();
+    // for (int i = 1; i <= 10; i++) {
+    // User parentUser = User.builder()
+    // .email("parent" + i + "@school.com")
+    // .name("학부모" + i)
+    // .password("1234")
+    // .roles(new HashSet<>(Set.of(UserRole.PARENT)))
+    // .build();
 
-            ParentInfo parentInfo = new ParentInfo();
-            parentInfo.setCode("P" + String.format("%04d", i));
-            parentInfo.setEmergencyContact("010-0000-" + String.format("%04d", i));
-            // ParentStatus Enum이 있다면 적용 (없다면 String 유지 가능)
-            parentInfo.setStatus(ParentStatus.ACTIVE);
-            parentInfo.setUser(parentUser);
+    // ParentInfo parentInfo = new ParentInfo();
+    // parentInfo.setCode("P" + String.format("%04d", i));
+    // parentInfo.setEmergencyContact("010-0000-" + String.format("%04d", i));
+    // // ParentStatus Enum이 있다면 적용 (없다면 String 유지 가능)
+    // parentInfo.setStatus(ParentStatus.ACTIVE);
+    // parentInfo.setUser(parentUser);
 
-            parentUser.getInfos().add(parentInfo);
-            userRepository.save(parentUser);
-            parentInfoList.add(parentInfo);
-        }
+    // parentUser.getInfos().add(parentInfo);
+    // userRepository.save(parentUser);
+    // parentInfoList.add(parentInfo);
+    // }
 
-        // 2. 학생 10명 생성 및 학부모 매칭
-        for (int i = 1; i <= 10; i++) {
-            User studentUser = User.builder()
-                    .email("student" + i + "@school.com")
-                    .name("학생" + i)
-                    .password("1234")
-                    .roles(new HashSet<>(Set.of(UserRole.STUDENT)))
-                    .build();
+    // // // 2. 학생 10명 생성 및 학부모 매칭
+    // // for (int i = 1; i <= 10; i++) {
+    // // User studentUser = User.builder()
+    // // .email("student" + i + "@school.com")
+    // // .name("학생" + i)
+    // // .password("1234")
+    // // .roles(new HashSet<>(Set.of(UserRole.STUDENT)))
+    // // .build();
 
-            StudentInfo studentInfo = new StudentInfo();
-            studentInfo.setCode("2026" + String.format("%04d", i));
-            studentInfo.setGrade(1);
-            studentInfo.setClassNum(i % 5 + 1);
-            // StudentStatus Enum 적용
-            studentInfo.setStatus(StudentStatus.ENROLLED);
-            studentInfo.setUser(studentUser);
-            studentInfo.setParent(parentInfoList.get(i - 1));
+    // // StudentInfo studentInfo = new StudentInfo();
+    // // studentInfo.setCode("2026" + String.format("%04d", i));
+    // // studentInfo.setGrade(1);
+    // // studentInfo.setClassNum(i % 5 + 1);
+    // // // StudentStatus Enum 적용
+    // // studentInfo.setStatus(StudentStatus.ENROLLED);
+    // // studentInfo.setUser(studentUser);
+    // // studentInfo.setParent(parentInfoList.get(i - 1));
 
-            studentUser.getInfos().add(studentInfo);
-            userRepository.save(studentUser);
-        }
+    // // studentUser.getInfos().add(studentInfo);
+    // // userRepository.save(studentUser);
+    // // }
 
-        // 3. 교사 10명 생성
-        for (int i = 1; i <= 10; i++) {
-            User teacherUser = User.builder()
-                    .email("teacher" + i + "@school.com")
-                    .name("교사" + i)
-                    .password("1234")
-                    .roles(new HashSet<>(Set.of(UserRole.TEACHER)))
-                    .build();
+    // // 3. 교사 10명 생성
+    // for (int i = 1; i <= 10; i++) {
+    // User teacherUser = User.builder()
+    // .email("teacher" + i + "@school.com")
+    // .name("교사" + i)
+    // .password("1234")
+    // .roles(new HashSet<>(Set.of(UserRole.TEACHER)))
+    // .build();
 
-            TeacherInfo teacherInfo = new TeacherInfo();
-            teacherInfo.setCode("T" + String.format("%04d", i));
-            teacherInfo.setSubject(i % 2 == 0 ? "수학" : "영어");
-            teacherInfo.setDepartment("교무부");
-            // TeacherStatus Enum 적용
-            teacherInfo.setStatus(TeacherStatus.EMPLOYED);
-            teacherInfo.setUser(teacherUser);
+    // TeacherInfo teacherInfo = new TeacherInfo();
+    // teacherInfo.setCode("T" + String.format("%04d", i));
+    // teacherInfo.setSubject(i % 2 == 0 ? "수학" : "영어");
+    // teacherInfo.setDepartment("교무부");
+    // // TeacherStatus Enum 적용
+    // teacherInfo.setStatus(TeacherStatus.EMPLOYED);
+    // teacherInfo.setUser(teacherUser);
 
-            teacherUser.getInfos().add(teacherInfo);
-            userRepository.save(teacherUser);
-        }
+    // teacherUser.getInfos().add(teacherInfo);
+    // userRepository.save(teacherUser);
+    // }
 
-        // 4. 행정직원 10명 생성
-        for (int i = 1; i <= 10; i++) {
-            User staffUser = User.builder()
-                    .email("staff" + i + "@school.com")
-                    .name("직원" + i)
-                    .password("1234")
-                    .roles(new HashSet<>(Set.of(UserRole.STAFF)))
-                    .build();
+    // // 4. 행정직원 10명 생성
+    // for (int i = 1; i <= 10; i++) {
+    // User staffUser = User.builder()
+    // .email("staff" + i + "@school.com")
+    // .name("직원" + i)
+    // .password("1234")
+    // .roles(new HashSet<>(Set.of(UserRole.STAFF)))
+    // .build();
 
-            StaffInfo staffInfo = new StaffInfo();
-            staffInfo.setCode("S" + String.format("%04d", i));
-            staffInfo.setJobTitle("주무관");
-            // StaffStatus Enum 적용
-            staffInfo.setStatus(StaffStatus.EMPLOYED);
-            staffInfo.setUser(staffUser);
+    // StaffInfo staffInfo = new StaffInfo();
+    // staffInfo.setCode("S" + String.format("%04d", i));
+    // staffInfo.setJobTitle("주무관");
+    // // StaffStatus Enum 적용
+    // staffInfo.setStatus(StaffStatus.EMPLOYED);
+    // staffInfo.setUser(staffUser);
 
-            staffUser.getInfos().add(staffInfo);
-            userRepository.save(staffUser);
-        }
-    }
+    // staffUser.getInfos().add(staffInfo);
+    // userRepository.save(staffUser);
+    // }
+    // }
 
     @Test
     @Transactional
@@ -140,10 +140,6 @@ public class UserDataTest {
                 .password(passwordEncoder.encode("1234"))
                 .roles(new HashSet<>(Set.of(UserRole.ADMIN)))
                 .build();
-
-        // 3. (선택사항) 관리자에게도 상세 정보가 필요하다면 StaffInfo 등을 추가
-        // 여기서는 순수 Admin 권한 확인을 위해 User만 생성합니다.
-
         // 4. DB 저장
         userRepository.save(adminUser);
 

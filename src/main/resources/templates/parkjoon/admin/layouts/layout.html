@@ -25,7 +25,11 @@
       }
     </style>
   </head>
-  <body class="bg-light">
+  <body
+    class="bg-light"
+    th:data-error-message="${errorMessage}"
+    th:data-success-message="${successMessage}"
+  >
     <div class="container-fluid p-0">
       <div class="row g-0">
         <div

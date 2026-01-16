@@ -35,7 +35,7 @@ public class AdminTeacherController {
     private final AdminTeacherService adminTeacherService;
 
     @GetMapping
-    public String teacherMainPage(
+    public String list(
             @ModelAttribute TeacherDTO.TeacherSearchCondition condition, // type, keyword 자동 바인딩
             @PageableDefault(size = 10, sort = "uid", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
@@ -56,10 +56,11 @@ public class AdminTeacherController {
     }
 
     @PostMapping("/create")
-    public String createTeacher(@ModelAttribute TeacherDTO.CreateRequest request,
+    public String create(@ModelAttribute TeacherDTO.CreateRequest request,
             TeacherDTO.TeacherSearchCondition condition,
             RedirectAttributes redirectAttributes) {
 
+        log.info("Create 교사");
         adminTeacherService.createTeacher(request);
 
         redirectAttributes.addAttribute("includeRetired", condition.isIncludeRetired());
@@ -67,7 +68,7 @@ public class AdminTeacherController {
     }
 
     @PostMapping("/update")
-    public String updateTeacher(
+    public String update(
             @ModelAttribute TeacherDTO.UpdateRequest request,
             TeacherDTO.TeacherSearchCondition condition,
             @RequestParam(name = "page", defaultValue = "1") int page, // 1부터 들어옴

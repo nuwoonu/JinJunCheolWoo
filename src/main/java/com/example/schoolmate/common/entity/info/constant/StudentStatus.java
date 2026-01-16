@@ -14,4 +14,9 @@ public enum StudentStatus {
     TRANSFERRED("전학");
 
     private final String description;
+
+    // 현재 학교 소속인지 확인 (재학생, 휴학생)
+    public boolean isCurrentStudent() {
+        return this == ENROLLED || this == LEAVE_OF_ABSENCE;
+    }
 }

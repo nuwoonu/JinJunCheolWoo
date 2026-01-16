@@ -9,6 +9,7 @@ function openEditModal(teacher) {
 
   // 데이터 바인딩 (ID 기반)
   // 안전하게 요소가 있는지 확인 후 값 할당 (선택적)
+  // 코드 더러워서 수정 예정
   if (document.getElementById("edit-uid"))
     document.getElementById("edit-uid").value = teacher.uid;
   if (document.getElementById("edit-name"))
