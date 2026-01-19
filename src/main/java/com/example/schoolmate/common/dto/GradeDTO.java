@@ -22,4 +22,5 @@ public class GradeDTO {
     private Double maxScore;
     private Integer semester;
     private Integer year;
+
 }

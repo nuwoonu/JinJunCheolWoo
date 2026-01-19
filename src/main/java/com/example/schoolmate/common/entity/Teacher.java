@@ -14,4 +14,5 @@ import lombok.Setter;
 public class Teacher extends User {
     private String subject; // 담당 과목
     private String employeeNumber; // 사번
+    private String number;
 }
