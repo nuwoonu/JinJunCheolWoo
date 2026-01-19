@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+          <h2 class="mb-0">👨‍🏫 교사 정보 관리</h2>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            style="display: none"
+            onchange="uploadCsvFile()"
+          />
+
+          <button
+            type="button"
+            class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            onclick="document.getElementById('csvFileInput').click()"
+          >
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            CSV 교사 등록
+          </button>
+
+          <button
+            class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            data-bs-toggle="modal"
+            data-bs-target="#createTeacherModal"
+          >
+            <i class="bi bi-person-plus-fill"></i> 신규 교사 등록
+          </button>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <div class="row align-items-center">
+            <div class="col">
+              <h5 class="mb-0 text-dark me-3">전체 교사 목록</h5>
+            </div>
+
+            <div class="col-auto d-flex align-items-center gap-3">
+              <div
+                class="form-check form-switch d-flex align-items-center gap-2 mb-0"
+              >
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="includeRetiredSwitch"
+                  th:checked="${condition.includeRetired}"
+                  style="
+                    cursor: pointer;
+                    width: 34px;
+                    height: 17px;
+                    margin-top: 0;
+                  "
+                />
+                <label
+                  class="form-check-label fw-medium text-secondary-light small"
+                  for="includeRetiredSwitch"
+                  style="cursor: pointer; white-space: nowrap"
+                  >퇴직자 포함</label
+                >
+              </div>
+              <form
+                id="searchForm"
+                th:action="@{/parkjoon/admin/teachers}"
+                method="get"
+                class="input-group input-group-sm"
+                style="width: 450px"
+              >
+                <input
+                  type="hidden"
+                  name="includeRetired"
+                  id="includeRetiredHidden"
+                  th:value="${condition.includeRetired}"
+                />
+                <select
+                  name="type"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option
+                    value="name"
+                    th:selected="${condition.type == 'name'}"
+                  >
+                    이름
+                  </option>
+                  <option
+                    value="email"
+                    th:selected="${condition.type == 'email'}"
+                  >
+                    이메일
+                  </option>
+                  <option
+                    value="dept"
+                    th:selected="${condition.type == 'dept'}"
+                  >
+                    부서
+                  </option>
+                  <option
+                    value="position"
+                    th:selected="${condition.type == 'position'}"
+                  >
+                    직책
+                  </option>
+                  <option
+                    value="subject"
+                    th:selected="${condition.type == 'subject'}"
+                  >
+                    담당 과목
+                  </option>
+                </select>
+                <input
+                  type="text"
+                  name="keyword"
+                  class="form-control"
+                  th:value="${condition.keyword}"
+                  placeholder="검색어 입력..."
+                />
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-search"></i> 검색
+                </button>
+                <a
+                  th:href="@{/parkjoon/admin/teachers}"
+                  class="btn btn-outline-secondary"
+                  >초기화</a
+                >
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-4">UID</th>
+                  <th>이름</th>
+                  <th>이메일</th>
+                  <th>부서 / 직책</th>
+                  <th>담당 과목</th>
+                  <th>상태</th>
+                  <th class="text-end pe-4">관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="t : ${teachers}">
+                  <td class="ps-4" th:text="${t.uid}">101</td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
+                        style="width: 32px; height: 32px"
+                      >
+                        <span
+                          class="small fw-bold text-primary"
+                          th:text="${t.name != null ? #strings.substring(t.name,0,1) : ''}"
+                          >이</span
+                        >
+                      </div>
+                      <span class="fw-bold" th:text="${t.name}">이교사</span>
+                    </div>
+                  </td>
+                  <td th:text="${t.email}">teacher@school.ac.kr</td>
+                  <td>
+                    <span th:text="${t.department}">교무부</span> /
+                    <span class="small text-muted" th:text="${t.position}"
+                      >평교사</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="badge rounded-pill bg-light text-dark border"
+                      th:text="${t.subject}"
+                      >수학</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      th:if="${t.statusName == 'EMPLOYED'}"
+                      class="badge bg-success-subtle text-success border border-success-subtle"
+                      >재직중</span
+                    >
+                    <span
+                      th:if="${t.statusName == 'LEAVE'}"
+                      class="badge bg-warning-subtle text-warning border border-warning-subtle"
+                      >휴직</span
+                    >
+                    <span
+                      th:if="${t.statusName == 'RETIRED'}"
+                      class="badge bg-danger-subtle text-danger border border-danger-subtle"
+                      >퇴직</span
+                    >
+                  </td>
+                  <td class="text-end pe-4">
+                    <button
+                      class="btn btn-sm btn-outline-secondary"
+                      th:onclick="openEditModal([[${t}]])"
+                    >
+                      정보 수정
+                    </button>
+                  </td>
+                </tr>
+                <tr th:if="${page.totalElements == 0}">
+                  <td colspan="7" class="text-center py-5 text-muted">
+                    검색 결과가 없습니다.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-footer bg-white py-3" th:if="${page.totalPages > 0}">
+          <nav>
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+              <li
+                class="page-item"
+                th:classappend="${!page.hasPrevious} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/teachers(page=${page.number}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
+                  >&laquo;</a
+                >
+              </li>
+
+              <li
+                class="page-item"
+                th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                th:classappend="${i == page.number} ? 'active'"
+              >
+                <a
+                  class="page-link"
+                  th:text="${i + 1}"
+                  th:href="@{/parkjoon/admin/teachers(page=${i + 1}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
+                  >1</a
+                >
+              </li>
+
+              <li
+                class="page-item"
+                th:classappend="${!page.hasNext} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/teachers(page=${page.number + 2}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
+                  >&raquo;</a
+                >
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+      <div class="modal fade" id="createTeacherModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form th:action="@{/parkjoon/admin/teachers/create}" method="post">
+              <div class="modal-header">
+                <h5 class="modal-title font-weight-bold">
+                  ✨ 신규 교사 계정 생성
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">이름</label>
+                  <input
+                    type="text"
+                    name="name"
+                    class="form-control"
+                    placeholder="성함 입력"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">이메일 (ID)</label>
+                  <input
+                    type="email"
+                    name="email"
+                    class="form-control"
+                    placeholder="example@school.com"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">초기 비밀번호</label>
+                  <input
+                    type="password"
+                    name="password"
+                    class="form-control"
+                    placeholder="초기 비밀번호"
+                    required
+                  />
+                </div>
+                <hr />
+                <div class="mb-3">
+                  <label class="form-label">담당 과목</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    class="form-control"
+                    placeholder="예: 수학, 영어"
+                  />
+                </div>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">부서</label>
+                    <select name="department" class="form-select">
+                      <option
+                        th:each="dept : ${departments}"
+                        th:value="${dept}"
+                        th:text="${dept}"
+                      ></option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">직책</label>
+                    <select name="position" class="form-select">
+                      <option
+                        th:each="pos : ${positions}"
+                        th:value="${pos}"
+                        th:text="${pos}"
+                      ></option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer bg-light">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  취소
+                </button>
+                <button type="submit" class="btn btn-primary">계정 생성</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="editTeacherModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form th:action="@{/parkjoon/admin/teachers/update}" method="post">
+              <input type="hidden" name="page" th:value="${page.number + 1}" />
+              <input type="hidden" name="uid" id="edit-uid" />
+              <div class="modal-header bg-light">
+                <h5 class="modal-title font-weight-bold">📝 교사 정보 수정</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">이름</label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="edit-name"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">이메일</label>
+                  <input
+                    type="email"
+                    id="edit-email"
+                    class="form-control"
+                    readonly
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">재직 상태</label>
+                  <select
+                    name="statusName"
+                    id="edit-status"
+                    class="form-select"
+                  >
+                    <option
+                      th:each="st : ${statusList}"
+                      th:value="${st.name()}"
+                      th:text="${st.description}"
+                    ></option>
+                  </select>
+                </div>
+                <hr />
+                <div class="mb-3">
+                  <label class="form-label">담당 과목</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    id="edit-subject"
+                    class="form-control"
+                  />
+                </div>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">부서</label>
+                    <select
+                      name="department"
+                      id="edit-department"
+                      class="form-select"
+                    >
+                      <option
+                        th:each="dept : ${departments}"
+                        th:value="${dept}"
+                        th:text="${dept}"
+                      ></option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">직책</label>
+                    <select
+                      name="position"
+                      id="edit-position"
+                      class="form-select"
+                    >
+                      <option
+                        th:each="pos : ${positions}"
+                        th:value="${pos}"
+                        th:text="${pos}"
+                      ></option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  취소
+                </button>
+                <button type="submit" class="btn btn-success">저장하기</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div
+        id="loadingOverlay"
+        class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="background-color: rgba(0, 0, 0, 0.5); z-index: 9999"
+      >
+        <div class="text-center">
+          <div
+            class="spinner-border text-light"
+            role="status"
+            style="width: 3rem; height: 3rem"
+          >
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <h5 class="text-white mt-3">교사 데이터를 등록 중입니다...</h5>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/teacher-manage.js}"></script>
+    </th:block>
+  </body>
+</html>

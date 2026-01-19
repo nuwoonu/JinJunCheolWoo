@@ -45,11 +45,17 @@ dependencies {
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0'
 	// querydsl
 	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
-	implementation 'com.querydsl:querydsl-apt:5.1.0:jakarta'
-	implementation 'com.querydsl:querydsl-core:5.1.0'
+    // 💡 핵심: annotationProcessor에 querydsl-apt를 반드시 추가해야 합니다.
+    annotationProcessor "com.querydsl:querydsl-apt:5.1.0:jakarta"    
+    // 💡 Spring Boot 3(Jakarta) 환경에서 QClass 생성을 위해 필수
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
 	// 썸네일 이미지크기 줄여주는용도
 	implementation 'net.coobird:thumbnailator:0.4.21'
+
+	//csv 파일 파싱용
+	implementation 'com.opencsv:opencsv:5.9'
 }
 
 test {

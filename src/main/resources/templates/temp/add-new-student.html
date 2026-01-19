@@ -1,0 +1,1582 @@
+<!-- meta tags and other links -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description"
+    content="Modern Education Admin Dashboard for schools, colleges, universities, and eLearning platforms. Includes student and course management, attendance, exams, payments, analytics, and a fully responsive clean UI—ideal for LMS, coaching centers, and academic admin systems.">
+  <meta name="keywords"
+    content="Education Admin Dashboard, School Admin Panel, College Dashboard, University Dashboard, LMS Dashboard, eLearning Admin Template, Student Management System, Course Management, Education Template, Study Dashboard, Online Learning Dashboard, Academic Admin Panel, Bootstrap Dashboard, React Education Dashboard, Next.js Education Template">
+  <meta name="robots" content="INDEX,FOLLOW">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Title -->
+  <title>Edudash - School, College & LMS Admin Dashboard Template | Bootstrap 5</title>
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" sizes="16x16">
+  <!-- remix icon font css  -->
+  <link rel="stylesheet" href="assets/css/remixicon.css">
+  <!-- BootStrap css -->
+  <link rel="stylesheet" href="assets/css/lib/bootstrap.min.css">
+  <!-- Apex Chart css -->
+  <link rel="stylesheet" href="assets/css/lib/apexcharts.css">
+  <!-- Data Table css -->
+  <link rel="stylesheet" href="assets/css/lib/dataTables.min.css">
+  <!-- Date picker css -->
+  <link rel="stylesheet" href="assets/css/lib/flatpickr.min.css">
+  <!-- Calendar css -->
+  <link rel="stylesheet" href="assets/css/lib/full-calendar.css">
+  <!-- calendar -->
+  <link rel="stylesheet" href="assets/css/lib/calendar.css">
+  <!-- main css -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+  <!-- Theme Customization Structure Start -->
+<div class="body-overlay"></div>
+
+<button type="button"
+    class="theme-customization__button w-48-px h-48-px bg-primary-600 text-white rounded-circle d-flex justify-content-center align-items-center position-fixed end-0 bottom-0 mb-40 me-40 text-2xxl bg-hover-primary-700" aria-label="Theme Customization Button">
+    <i class="ri-settings-3-line animate-spin"></i>
+</button>
+<div class="theme-customization-sidebar w-100 bg-base h-100vh overflow-y-auto position-fixed end-0 top-0">
+    <div class="d-flex align-items-center gap-3 py-16 px-24 justify-content-between border-bottom">
+        <div>
+            <h6 class="text-sm dark:text-white">Theme Settings</h6>
+            <p class="text-xs mb-0 text-neutral-500 dark:text-neutral-200">Customize and preview instantly</p>
+        </div>
+        <button data-slot="button"
+            class="theme-customization-sidebar__close text-neutral-900 bg-transparent text-hover-primary-600 d-flex text-xl">
+            <i class="ri-close-fill"></i>
+        </button>
+    </div>
+
+    <div class="d-flex flex-column gap-48 p-24 overflow-y-auto flex-grow-1">
+
+        <div class="theme-setting-item">
+            <h6 class="fw-medium text-primary-light text-md mb-3">Theme Mode</h6>
+            <div class="d-grid grid-cols-3 gap-3 dark-light-mode">
+                <button type="button"
+                    class="theme-btn theme-setting-item__btn d-flex align-items-center justify-content-center h-64-px rounded-3 text-xl active"
+                    data-theme="light" aria-label="light">
+                    <i class="ri-sun-line"></i>
+                </button>
+                <button type="button"
+                    class="theme-btn theme-setting-item__btn d-flex align-items-center justify-content-center h-64-px rounded-3 text-xl"
+                    data-theme="dark" aria-label="dark">
+                    <i class="ri-moon-line"></i>
+                </button>
+                <button type="button"
+                    class="theme-btn theme-setting-item__btn d-flex align-items-center justify-content-center h-64-px rounded-3 text-xl"
+                    data-theme="system" aria-label="system">
+                    <i class="ri-computer-line"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="theme-setting-item">
+            <h6 class="fw-medium text-primary-light text-md mb-3">Page Direction</h6>
+            <div class="d-grid grid-cols-2 gap-3">
+                <button type="button"
+                    class="theme-setting-item__btn ltr-mode-btn d-flex align-items-center justify-content-center gap-2 h-56-px rounded-3 text-xl" aria-label="LTR">
+                    <span><i class="ri-align-item-left-line"></i></span>
+                    <span class="h6 text-sm font-medium mb-0">LTR</span>
+                </button>
+
+                <button type="button"
+                    class="theme-setting-item__btn rtl-mode-btn d-flex align-items-center justify-content-center gap-2 h-56-px rounded-3 text-xl" aria-label="RTL">
+                    <span class="h6 text-sm font-medium mb-0">RTL</span>
+                    <span><i class="ri-align-item-right-line"></i></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="theme-setting-item">
+            <h6 class="fw-medium text-primary-light text-md mb-3">Color Schema</h6>
+            <div class="d-grid grid-cols-3 gap-3">
+                <button type="button"
+                    class="color-picker-btn d-flex flex-column justify-content-center align-items-center"
+                    data-color="base" aria-label="Base">
+                    <span class="color-picker-btn__box h-40-px w-100 rounded-3"
+                        style="background-color: #25A194;"></span>
+                    <span class="fw-medium mt-1" style="color: #25A194;">Base</span>
+                </button>
+                <button type="button"
+                    class="color-picker-btn d-flex flex-column justify-content-center align-items-center"
+                    data-color="red" aria-label="Red">
+                    <span class="color-picker-btn__box h-40-px w-100 rounded-3"
+                        style="background-color: #dc2626;"></span>
+                    <span class="fw-medium mt-1" style="color: #dc2626;">Red</span>
+                </button>
+                <button type="button"
+                    class="color-picker-btn d-flex flex-column justify-content-center align-items-center"
+                    data-color="blue" aria-label="Blue">
+                    <span class="color-picker-btn__box h-40-px w-100 rounded-3"
+                        style="background-color: #2563eb;"></span>
+                    <span class="fw-medium mt-1" style="color: #2563eb;">Blue</span>
+                </button>
+                <button type="button"
+                    class="color-picker-btn d-flex flex-column justify-content-center align-items-center"
+                    data-color="yellow" aria-label="Yellow">
+                    <span class="color-picker-btn__box h-40-px w-100 rounded-3"
+                        style="background-color: #ff9f29;"></span>
+                    <span class="fw-medium mt-1" style="color: #ff9f29;">Yellow</span>
+                </button>
+                <button type="button"
+                    class="color-picker-btn d-flex flex-column justify-content-center align-items-center"
+                    data-color="cyan" aria-label="Cyan">
+                    <span class="color-picker-btn__box h-40-px w-100 rounded-3"
+                        style="background-color: #00b8f2;"></span>
+                    <span class="fw-medium mt-1" style="color: #00b8f2;">Cyan</span>
+                </button>
+                <button type="button"
+                    class="color-picker-btn d-flex flex-column justify-content-center align-items-center"
+                    data-color="violet" aria-label="Violet">
+                    <span class="color-picker-btn__box h-40-px w-100 rounded-3"
+                        style="background-color: #7c3aed;"></span>
+                    <span class="fw-medium mt-1" style="color: #7c3aed;">Violet</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- Theme Customization Structure End -->
+
+  <div class="overlay bg-black bg-opacity-50 w-100 h-100 position-fixed z-9 visibility-hidden opacity-0 duration-300">
+  </div>
+<aside class="sidebar">
+  <button type="button" class="sidebar-close-btn">
+    <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
+  </button>
+  <div class="">
+    <div class="sidebar-logo d-flex align-items-center justify-content-between">
+      <a href="index.html" class="">
+        <img src="assets/images/logo.png" alt="site logo" class="light-logo">
+        <img src="assets/images/logo-light.png" alt="site logo" class="dark-logo">
+        <img src="assets/images/logo-icon.png" alt="site logo" class="logo-icon">
+      </a>
+      <button type="button" class="text-xxl d-xl-flex d-none line-height-1 sidebar-toggle text-neutral-500"
+        aria-label="Collapse Sidebar">
+        <i class="ri-contract-left-line"></i>
+      </button>
+    </div>
+  </div>
+  <!-- User Info start -->
+  <div class="mx-16 py-12">
+    <div class="dropdown profile-dropdown">
+      <button type="button"
+        class="profile-dropdown__button d-flex align-items-center justify-content-between p-10 w-100 overflow-hidden bg-neutral-50 radius-12 "
+        data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+        <span class="d-flex align-items-start gap-10">
+          <img src="assets/images/thumbs/leave-request-img2.png" alt="Thumbnail"
+            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
+          <span class="profile-dropdown__contents">
+            <span class="h6 mb-0 text-md d-block text-primary-light">Jone Copper</span>
+            <span class="text-secondary-light text-sm mb-0 d-block">Admin</span>
+          </span>
+        </span>
+        <span class="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
+          <i class="ri-arrow-right-s-line"></i>
+        </span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
+        <li>
+          <a href="student-details.html" 
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6">
+            <i class="ri-user-3-line"></i>
+            My Profile
+          </a>
+        </li>
+        <li>
+          <a href="general.html"
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6">
+            <i class="ri-settings-3-line"></i>
+            Setting
+          </a>
+        </li>
+        <li>
+          <a href="login.html"
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6">
+            <i class="ri-shut-down-line"></i>
+            Log Out
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- User Info end -->
+  <div class="sidebar-menu-area">
+    <ul class="sidebar-menu" id="sidebar-menu">
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-home-4-line"></i>
+          <span>Dashboard </span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="index.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              School
+            </a>
+          </li>
+          <li>
+            <a href="index-2.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Student
+            </a>
+          </li>
+          <li>
+            <a href="index-3.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Teacher
+            </a>
+          </li>
+          <li>
+            <a href="index-4.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Parent
+            </a>
+          </li>
+          <li>
+            <a href="index-5.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              LMS 
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-graduation-cap-line"></i>
+          <span>Students</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="add-new-student.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Add New Student
+            </a>
+          </li>
+          <li>
+            <a href="student-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Student List
+            </a>
+          </li>
+          <li>
+            <a href="suspended-student.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Suspend Student
+            </a>
+          </li>
+          <li>
+            <a href="student-category.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Student Categories
+            </a>
+          </li>
+          <li>
+            <a href="edit-student.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Edit Student
+            </a>
+          </li>
+          <li>
+            <a href="student-details.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Student Details
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-user-follow-line"></i>
+          <span>Teachers</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="add-new-teacher.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Add New Teacher
+            </a>
+          </li>
+          <li>
+            <a href="teacher-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Teacher List
+            </a>
+          </li>
+          <li>
+            <a href="edit-teacher.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Edit Teacher
+            </a>
+          </li>
+          <li>
+            <a href="teacher-details.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Teacher Details
+            </a>
+          </li>
+          <li>
+            <a href="teacher-timetable.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Teacher Timetable
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-account-circle-line"></i>
+          <span>Guardian</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="add-new-guardian.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Add New Guardians
+            </a>
+          </li>
+          <li>
+            <a href="guardian-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Guardians List
+            </a>
+          </li>
+          <li>
+            <a href="edit-guardian.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Edit Guardian
+            </a>
+          </li>
+          <li>
+            <a href="guardian-details.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Guardian Details
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-list-view"></i>
+          <span>Classes</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="section-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Section
+            </a>
+          </li>
+          <li>
+            <a href="subject-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Subjects
+            </a>
+          </li>
+          <li>
+            <a href="class-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Class List
+            </a>
+          </li>
+          <li>
+            <a href="class-room-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Class Room
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-file-edit-line"></i>
+          <span>Examinations</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="exam.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Exam
+            </a>
+          </li>
+          <li>
+            <a href="exam-schedule.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Exam Schedule
+            </a>
+          </li>
+          <li>
+            <a href="exam-result.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Exam Result
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-money-dollar-circle-line"></i>
+          <span>Fees Collection</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="fees-collect.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Fees Collect
+            </a>
+          </li>
+          <li>
+            <a href="fees-type.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Fees Type
+            </a>
+          </li>
+          <li>
+            <a href="fees-group.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Fees Group
+            </a>
+          </li>
+          <li>
+            <a href="fees-discount.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Fees Discount
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-calendar-check-line"></i>
+          <span>Attendance</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="student-attendance.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Student Attendance
+            </a>
+          </li>
+          <li>
+            <a href="teacher-attendance.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Teacher Attendance
+            </a>
+          </li>
+          <li>
+            <a href="employee-attendance.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Employee Attendance
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-time-line"></i>
+          <span>Leaves</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="leave-types.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Leave Types
+            </a>
+          </li>
+          <li>
+            <a href="leave-request.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Leave Request
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="certificate.html">
+          <i class="ri-home-4-line"></i>
+          <span>Certificate </span>
+        </a>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-book-2-line"></i>
+          <span>Library</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="books-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Books List
+            </a>
+          </li>
+          <li>
+            <a href="members-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Members List
+            </a>
+          </li>
+          <li>
+            <a href="member-details.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Members Details
+            </a>
+          </li>
+          <li>
+            <a href="issue-return.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Issue Return
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-money-dollar-circle-line"></i>
+          <span>Accounts</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="income-head.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Income Head
+            </a>
+          </li>
+          <li>
+            <a href="income-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Income List
+            </a>
+          </li>
+          <li>
+            <a href="expense-head.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Expense Head
+            </a>
+          </li>
+          <li>
+            <a href="expense-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Expense List
+            </a>
+          </li>
+          <li>
+            <a href="transaction.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Transaction
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-user-settings-line"></i>
+          <span>HRM</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="employee-list.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Employee List
+            </a>
+          </li>
+          <li>
+            <a href="employee-details.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Employee Details
+            </a>
+          </li>
+          <li>
+            <a href="add-new-employee.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Add New Employee
+            </a>
+          </li>
+          <li>
+            <a href="payroll.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Payroll
+            </a>
+          </li>
+          <li>
+            <a href="designation.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Designation
+            </a>
+          <li>
+            <a href="department.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Department
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="notice-board.html">
+          <i class="ri-booklet-line"></i>
+          <span>Notice Board </span>
+        </a>
+      </li>
+      <li>
+        <a href="event.html">
+          <i class="ri-calendar-event-line"></i>
+          <span>Event </span>
+        </a>
+      </li>
+      <li>
+        <a href="message.html">
+          <i class="ri-message-2-line"></i>
+          <span>Message </span>
+        </a>
+      </li>
+      <li>
+        <a href="subscription-plan.html">
+          <i class="ri-price-tag-3-line"></i>
+          <span>Subscription Plan </span>
+        </a>
+      </li>
+      <li>
+        <a href="role-access.html">
+          <i class="ri-macbook-line"></i>
+          <span>Role & Access</span>
+        </a>
+      </li>
+         <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-shield-check-line"></i>
+          <span>Authentication</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="login.html"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Login</a>
+          </li>
+          <li>
+            <a href="register.html"><i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Register</a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="assign-role-plan.html">
+          <i class="ri-user-follow-line"></i>
+          <span>Assign Role</span>
+        </a>
+      </li>
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <i class="ri-user-settings-line"></i>
+          <span>Settings</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="general.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              General
+            </a>
+          </li>
+          <li>
+            <a href="notification.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Notification
+            </a>
+          </li>
+          <li>
+            <a href="currencies.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Currencies
+            </a>
+          </li>
+          <li>
+            <a href="languages.html">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Languages
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</aside>
+
+<main class="dashboard-main">
+    <div class="navbar-header shadow-1">
+  <div class="row align-items-center justify-content-between">
+    <div class="col-auto">
+      <div class="d-flex flex-wrap align-items-center gap-4">
+        <button type="button" class="sidebar-mobile-toggle" aria-label="Sidebar Mobile Toggler Button">
+          <iconify-icon icon="heroicons:bars-3-solid" class="icon"></iconify-icon>
+        </button>
+        <form class="navbar-search">
+          <input type="text" class="bg-transparent" name="search" placeholder="Search">
+          <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
+        </form>
+      </div>
+    </div>
+    <div class="col-auto">
+      <div class="d-flex flex-wrap align-items-center gap-3">
+        <button type="button" data-theme-toggle
+          class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" aria-label="Dark & Light Mode Button"></button>
+        <div class="dropdown d-inline-block">
+          <button
+            class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+            type="button" data-bs-toggle="dropdown" aria-label="Language Change Button">
+            <img src="assets/images/flags/flag1.png" alt="image" class="w-24 h-24 object-fit-cover rounded-circle">
+          </button>
+          <div class="dropdown-menu to-top dropdown-menu-sm">
+            <div
+              class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+              <div>
+                <h6 class="text-lg text-primary-light fw-semibold mb-0">Choose Your Language</h6>
+              </div>
+            </div>
+
+            <div class="max-h-400-px overflow-y-auto scroll-sm pe-8">
+              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="english">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag1.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">English</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="english">
+              </div>
+
+              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="japan">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag2.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">Japan</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="japan">
+              </div>
+
+              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="france">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag3.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">France</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="france">
+              </div>
+
+              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="germany">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag4.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">Germany</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="germany">
+              </div>
+
+              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="korea">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag5.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">South Korea</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="korea">
+              </div>
+
+              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="bangladesh">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag6.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">Bangladesh</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="bangladesh">
+              </div>
+
+              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="india">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag7.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">India</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="india">
+              </div>
+              <div class="form-check style-check d-flex align-items-center justify-content-between">
+                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="canada">
+                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                    <img src="assets/images/flags/flag8.png" alt="Image"
+                      class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
+                    <span class="text-md fw-semibold mb-0">Canada</span>
+                  </span>
+                </label>
+                <input class="form-check-input" type="radio" name="crypto" id="canada">
+              </div>
+            </div>
+          </div>
+        </div><!-- Language dropdown end -->
+
+        <div class="dropdown">
+          <button
+            class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative"
+            type="button" data-bs-toggle="dropdown" aria-label="Notification Button">
+            <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
+            <span class="w-8-px h-8-px bg-danger-600 position-absolute end-0 top-0 rounded-circle mt-2 me-2"></span>
+          </button>
+          <div class="dropdown-menu to-top dropdown-menu-lg p-0">
+            <div
+              class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+              <div>
+                <h6 class="text-lg text-primary-light fw-semibold mb-0">Notifications</h6>
+              </div>
+              <span
+                class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">05</span>
+            </div>
+
+            <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
+              <a href="javascript:void(0)"
+                class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
+                <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                  <span
+                    class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
+                    <iconify-icon icon="bitcoin-icons:verify-outline" class="icon text-xxl"></iconify-icon>
+                  </span>
+                  <div>
+                    <h6 class="text-md fw-semibold mb-4">Congratulations</h6>
+                    <p class="mb-0 text-sm text-secondary-light text-w-200-px">Your profile has been Verified. Your
+                      profile has been Verified</p>
+                  </div>
+                </div>
+                <span class="text-sm text-secondary-light flex-shrink-0">23 Mins ago</span>
+              </a>
+
+              <a href="javascript:void(0)"
+                class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between bg-neutral-50">
+                <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                  <span
+                    class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
+                    <img src="assets/images/notification/profile-1.png" alt="Image">
+                  </span>
+                  <div>
+                    <h6 class="text-md fw-semibold mb-4">Ronald Richards</h6>
+                    <p class="mb-0 text-sm text-secondary-light text-w-200-px">You can stitch between artboards</p>
+                  </div>
+                </div>
+                <span class="text-sm text-secondary-light flex-shrink-0">23 Mins ago</span>
+              </a>
+
+              <a href="javascript:void(0)"
+                class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
+                <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                  <span
+                    class="w-44-px h-44-px bg-info-subtle text-info-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
+                    AM
+                  </span>
+                  <div>
+                    <h6 class="text-md fw-semibold mb-4">Arlene McCoy</h6>
+                    <p class="mb-0 text-sm text-secondary-light text-w-200-px">Invite you to prototyping</p>
+                  </div>
+                </div>
+                <span class="text-sm text-secondary-light flex-shrink-0">23 Mins ago</span>
+              </a>
+
+              <a href="javascript:void(0)"
+                class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between bg-neutral-50">
+                <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                  <span
+                    class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
+                    <img src="assets/images/notification/profile-2.png" alt="Image">
+                  </span>
+                  <div>
+                    <h6 class="text-md fw-semibold mb-4">Robiul Hasan</h6>
+                    <p class="mb-0 text-sm text-secondary-light text-w-200-px">Invite you to prototyping</p>
+                  </div>
+                </div>
+                <span class="text-sm text-secondary-light flex-shrink-0">23 Mins ago</span>
+              </a>
+
+              <a href="javascript:void(0)"
+                class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
+                <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                  <span
+                    class="w-44-px h-44-px bg-info-subtle text-info-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
+                    DR
+                  </span>
+                  <div>
+                    <h6 class="text-md fw-semibold mb-4">Darlene Robertson</h6>
+                    <p class="mb-0 text-sm text-secondary-light text-w-200-px">Invite you to prototyping</p>
+                  </div>
+                </div>
+                <span class="text-sm text-secondary-light flex-shrink-0">23 Mins ago</span>
+              </a>
+            </div>
+
+            <div class="text-center py-12 px-16">
+              <a href="javascript:void(0)" class="text-primary-600 fw-semibold text-md hover-underline">See All Notification</a>
+            </div>
+
+          </div>
+        </div><!-- Notification dropdown end -->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="dashboard-main-body">
+
+        <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+  <div class="">
+    <h1 class="fw-semibold mb-4 h6 text-primary-light">Add New Student</h1>
+    <div class="">
+      <a href="index.html" class="text-secondary-light hover-text-primary hover-underline">Dashboard </a>
+      <a href="student-list.html" class="text-secondary-light hover-text-primary hover-underline "> /
+        Student</a>
+      <span class="text-secondary-light">/ Add New Student</span>
+    </div>
+  </div>
+  <a href="add-new-student.html" class="btn btn-primary-600 d-flex align-items-center gap-6 d-none">
+    <span class="d-flex text-md">
+      <i class="ri-add-large-line"></i>
+    </span>
+    Add Student
+  </a>
+</div>
+
+        <form action="#" class="mt-24">
+            <div class="row gy-3">
+                <div class="col-lg-12">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Personal Info</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="academicYear"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Academic
+                                            Year <span class="text-danger-600">* </span> </label>
+                                        <select id="academicYear" class="form-control form-select">
+                                            <option value="Jun 2025/2026">Jun 2025/2026</option>
+                                            <option value="Jun 2026/2027">Jun 2026/2027</option>
+                                            <option value="Jun 2027/2028">Jun 2027/2028</option>
+                                            <option value="Jun 2028/2029">Jun 2028/2029</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="classSelection"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Class
+                                            <span class="text-danger-600">* </span> </label>
+                                        <select id="classSelection" class="form-control form-select">
+                                            <option value="Select a class" disabled>Select a class</option>
+                                            <option value="Primary">Primary</option>
+                                            <option value="High school">High school</option>
+                                            <option value="College">College</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="section"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Section
+                                            <span class="text-danger-600">* </span> </label>
+                                        <select id="section" class="form-control form-select">
+                                            <option value="Select section" disabled>Select section</option>
+                                            <option value="Science">Science</option>
+                                            <option value="Art">Art</option>
+                                            <option value="Commerce">Commerce</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="rollNumber"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Roll
+                                            Number </label>
+                                        <input type="text" class="form-control" id="rollNumber"
+                                            placeholder="Enter your rollNumber">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="admissionNo"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Admission
+                                            No <span class="text-danger-600">*</span> </label>
+                                        <input type="text" class="form-control" id="admissionNo"
+                                            placeholder="Enter admission number">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="fullName"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Full Name
+                                            <span class="text-danger-600">*</span> </label>
+                                        <input type="text" class="form-control" id="fullName"
+                                            placeholder="Enter your Full Name">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="category"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Category
+                                            <span class="text-danger-600">*</span> </label>
+                                        <input type="text" class="form-control" id="category"
+                                            placeholder="Select a Category">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="gender"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Gender</label>
+                                        <select id="gender" class="form-control form-select">
+                                            <option value="Select section" disabled>Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="dateOfBirth"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Date Of
+                                            Birth <span class="text-danger-600">*</span> </label>
+                                        <input type="date" class="form-control" id="dateOfBirth">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="phoneNumber"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Phone
+                                            Number <span class="text-danger-600">*</span> </label>
+                                        <input type="text" class="form-control" id="phoneNumber"
+                                            placeholder="Enter your Phone Number">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="studentEmail"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Email
+                                            <span class="text-danger-600">*</span> </label>
+                                        <input type="text" class="form-control" id="studentEmail"
+                                            placeholder="Enter your Email">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Student
+                                            Photo <span class="text-danger-600">*</span> </label>
+                                        <div
+                                            class="drop-zone height-44-px p-4 d-flex justify-content-center align-items-center text-center fw-medium text-md cursor-pointer border border-neutral-400 radius-8 border-dashed bg-hover-neutral-200">
+                                            <span class="drop-zone__prompt">Darg & drop a file here or click</span>
+                                            <input type="file" name="myFile" class="drop-zone__input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Parent & Guardian Info </h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="fathersName"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Fathers
+                                            Name </label>
+                                        <input type="text" class="form-control" id="fathersName"
+                                            placeholder="Enter Fathers Name">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="fathersPhoneNumber"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Phone
+                                            Number </label>
+                                        <input type="tel" class="form-control" id="fathersPhoneNumber"
+                                            placeholder="Enter Fathers Number">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="fathersFatherOccupation"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Father
+                                            Occupation </label>
+                                        <input type="text" class="form-control" id="fathersFatherOccupation"
+                                            placeholder="Enter Father Occupation">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Fathers
+                                            Photo <span class="text-danger-600">*</span> </label>
+                                        <div
+                                            class="drop-zone height-44-px p-4 d-flex justify-content-center align-items-center text-center fw-medium text-md cursor-pointer border border-neutral-400 radius-8 border-dashed bg-hover-neutral-200">
+                                            <span class="drop-zone__prompt">Darg & drop a file here or click</span>
+                                            <input type="file" name="myFile" class="drop-zone__input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="mothersName"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Mothers
+                                            Name </label>
+                                        <input type="text" class="form-control" id="mothersName"
+                                            placeholder="Enter mothers Name">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="mothersPhoneNumber"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Phone
+                                            Number </label>
+                                        <input type="tel" class="form-control" id="mothersPhoneNumber"
+                                            placeholder="Enter mothers Number">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="mothersFatherOccupation"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Father
+                                            Occupation </label>
+                                        <input type="text" class="form-control" id="mothersFatherOccupation"
+                                            placeholder="Enter Father Occupation">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Mothers
+                                            Photo <span class="text-danger-600">*</span> </label>
+                                        <div
+                                            class="drop-zone height-44-px p-4 d-flex justify-content-center align-items-center text-center fw-medium text-md cursor-pointer border border-neutral-400 radius-8 border-dashed bg-hover-neutral-200">
+                                            <span class="drop-zone__prompt">Darg & drop a file here or click</span>
+                                            <input type="file" name="myFile" class="drop-zone__input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mt-24">
+                                        <span class="text-lg fw-bold text-primary-light d-inline-block mb-8">Select a
+                                            Guardian </span>
+                                        <div class="d-flex align-items-center flex-wrap gap-28">
+                                            <div class="form-check checked-primary d-flex align-items-center gap-2">
+                                                <input class="form-check-input" type="radio" name="radio"
+                                                    id="selectFather">
+                                                <label
+                                                    class="form-check-label line-height-1 fw-medium text-secondary-light"
+                                                    for="selectFather"> Father </label>
+                                            </div>
+                                            <div class="form-check checked-secondary d-flex align-items-center gap-2">
+                                                <input class="form-check-input" type="radio" name="radio"
+                                                    id="selectMother">
+                                                <label
+                                                    class="form-check-label line-height-1 fw-medium text-secondary-light"
+                                                    for="selectMother"> Mother </label>
+                                            </div>
+                                            <div class="form-check checked-success d-flex align-items-center gap-2">
+                                                <input class="form-check-input" type="radio" name="radio"
+                                                    id="selectOthers">
+                                                <label
+                                                    class="form-check-label line-height-1 fw-medium text-secondary-light"
+                                                    for="selectOthers"> Others </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="guardianName"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Guardian
+                                            Name </label>
+                                        <input type="text" class="form-control" id="guardianName"
+                                            placeholder="Enter Guardian Name">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="guardianEmailTwo"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Guardian
+                                            Email </label>
+                                        <input type="email" class="form-control" id="guardianEmailTwo"
+                                            placeholder="Enter Guardian Email">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="guardianPhoneNumber"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Phone
+                                            Number </label>
+                                        <input type="tel" class="form-control" id="guardianPhoneNumber"
+                                            placeholder="Enter Guardian Number">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="guardianFatherOccupation"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Father
+                                            Occupation </label>
+                                        <input type="text" class="form-control" id="guardianFatherOccupation"
+                                            placeholder="Enter Father Occupation">
+                                    </div>
+                                </div>
+                                <div class="col-xl-9 col-sm-6">
+                                    <div class="">
+                                        <label for="guardianGuardianAddress"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Guardian
+                                            Address </label>
+                                        <input type="text" class="form-control" id="guardianGuardianAddress"
+                                            placeholder="Enter Guardian Address">
+                                    </div>
+                                </div>
+                                <div class="col-xl-3 col-sm-6">
+                                    <div class="">
+                                        <label
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Guardian
+                                            Photo <span class="text-danger-600">*</span> </label>
+                                        <div
+                                            class="drop-zone height-44-px p-4 d-flex justify-content-center align-items-center text-center fw-medium text-md cursor-pointer border border-neutral-400 radius-8 border-dashed bg-hover-neutral-200">
+                                            <span class="drop-zone__prompt">Darg & drop a file here or click</span>
+                                            <input type="file" name="myFile" class="drop-zone__input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Medical Details</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="bloodGroup"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Blood
+                                            Group</label>
+                                        <select id="bloodGroup" class="form-control form-select">
+                                            <option value="Select blood group" disabled>Select blood group</option>
+                                            <option value="A+">A+</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="AB-">AB-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="medicalHeight"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Height
+                                        </label>
+                                        <input type="text" class="form-control" id="medicalHeight"
+                                            placeholder="Enter height">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="medicalWeight"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Weight
+                                        </label>
+                                        <input type="text" class="form-control" id="medicalWeight"
+                                            placeholder="Enter Weight">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Bank Details </h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="bankAccountNumber"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Bank
+                                            Account Number </label>
+                                        <input type="text" class="form-control" id="bankAccountNumber"
+                                            placeholder="Enter bank account number">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="bankName"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Bank Name
+                                        </label>
+                                        <input type="text" class="form-control" id="bankName"
+                                            placeholder="Enter bank name">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="iFSCCode"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">IFSC Code
+                                        </label>
+                                        <input type="text" class="form-control" id="iFSCCode"
+                                            placeholder="Enter IFSC Code">
+                                    </div>
+                                </div>
+                                <div class="col-xxl-3 col-xl-4 col-sm-6">
+                                    <div class="">
+                                        <label for="nationalIdentificationNumber"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">National
+                                            Identification Number</label>
+                                        <input type="text" class="form-control" id="nationalIdentificationNumber"
+                                            placeholder="Enter national identification number">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Previous School Details</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="schoolNamee"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">School
+                                            Name </label>
+                                        <input type="text" class="form-control" id="schoolNamee"
+                                            placeholder="Enter School Name">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="Address"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Address
+                                        </label>
+                                        <input type="text" class="form-control" id="Address"
+                                            placeholder="Enter Address">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Address</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="currentAddress"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Current
+                                            Address </label>
+                                        <input type="text" class="form-control" id="currentAddress"
+                                            placeholder="Enter Current Address">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="permanentAddress"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Permanent
+                                            Address </label>
+                                        <input type="text" class="form-control" id="permanentAddress"
+                                            placeholder="Enter Permanent Address">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Hostel Details</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="hostel"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Hostel
+                                        </label>
+                                        <input type="text" class="form-control" id="hostel" placeholder="Enter Hostel">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="roomNo"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Room No
+                                        </label>
+                                        <input type="text" class="form-control" id="roomNo" placeholder="Enter Room No">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Upload Documents</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="docName"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Doc Name
+                                        </label>
+                                        <input type="text" class="form-control" id="docName"
+                                            placeholder="Enter Doc Name">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Guardian
+                                            Photo <span class="text-danger-600">*</span> </label>
+                                        <div
+                                            class="drop-zone height-44-px p-4 d-flex justify-content-center align-items-center text-center fw-medium text-md cursor-pointer border border-neutral-400 radius-8 border-dashed bg-hover-neutral-200">
+                                            <span class="drop-zone__prompt">Darg & drop a file here or click</span>
+                                            <input type="file" name="myFile" class="drop-zone__input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Student Details</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-sm-12">
+                                    <div class="">
+                                        <label for="moreDetails"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Details
+                                        </label>
+                                        <textarea id="moreDetails" class="form-control"
+                                            placeholder="Enter details"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12">
+                    <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                        <div
+                            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                            <h6 class="text-lg fw-semibold mb-0">Login Details</h6>
+                        </div>
+                        <div class="card-body p-20">
+                            <div class="row gy-3">
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="myEmail"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Email
+                                            <span class="text-danger-600">*</span>
+                                        </label>
+                                        <input type="email" class="form-control" id="myEmail" placeholder="Enter Email">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label for="your-password"
+                                            class="text-sm fw-semibold text-primary-light d-inline-block mb-8">Password
+                                            <span class="text-danger-600">*</span>
+                                        </label>
+                                        <div class="position-relative">
+                                            <input type="password" id="your-password" class="form-control"
+                                                placeholder="Enter your password">
+                                            <span
+                                                class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light"
+                                                data-toggle="#your-password"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex align-items-center justify-content-center gap-3 mt-8">
+                        <button type="reset"
+                            class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-50 py-11 radius-8">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="btn btn-primary-600 border border-primary-600 text-md px-28 py-12 radius-8">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <footer class="d-footer">
+  <div class="">
+    <p class="mb-0 text-center"> &copy; <span class="current-year"></span> Made With ❤️ by Wowtheme7.</p>
+  </div>
+</footer>
+</main>
+
+  <!-- jQuery library js -->
+  <script src="assets/js/lib/jquery-3.7.1.min.js"></script>
+  <!-- Bootstrap js -->
+  <script src="assets/js/lib/bootstrap.bundle.min.js"></script>
+  <!-- Apex Chart js -->
+  <script src="assets/js/lib/apexcharts.min.js"></script>
+  <!-- Iconify Font js -->
+  <script src="assets/js/lib/iconify-icon.min.js"></script>
+  <!-- Data Table js -->
+  <script src="assets/js/lib/dataTables.min.js"></script>
+  
+  <!-- jQuery UI js -->
+  <script src="assets/js/lib/jquery-ui.min.js"></script>
+  
+  <!-- main js -->
+  <script src="assets/js/app.js"></script>
+
+</body>
+
+</html>
