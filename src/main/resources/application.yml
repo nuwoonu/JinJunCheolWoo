@@ -17,20 +17,26 @@ spring:
     username: javadb
     password: 12345
   jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
         highlight_sql: true
-  profiles:
-    include: oauth
+        default_batch_fetch_size: 100
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true # 페이지 번호를 1부터 시작하도록 설정
+  # profiles:
+  #   include: oauth
   servlet:
     multipart:
       enabled: true
       max-file-size: 10MB
       max-request-size: 30MB
-
 logging:
   level:
     org:
@@ -43,4 +49,4 @@ com:
   example:
     schoolmate:
       upload:
-        path: // 업로드 경로 설정할것!
+        path: upload
