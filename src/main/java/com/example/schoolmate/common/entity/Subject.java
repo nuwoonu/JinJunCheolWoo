@@ -3,6 +3,8 @@ package com.example.schoolmate.common.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.schoolmate.common.entity.info.TeacherInfo;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,10 +44,10 @@ public class Subject {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_uid")
-    private Teacher teacher; // 담당 선생님
+    private TeacherInfo teacher; // 담당 선생님
 
     // 양방향 연관관계 편의 메서드
-    public void setTeacher(Teacher teacher) {
+    public void setTeacher(TeacherInfo teacher) {
         this.teacher = teacher;
     }
 
