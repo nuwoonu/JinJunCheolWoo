@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>Teacher Dashboard</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+
+        <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+  <div class="">
+    <h6 class="fw-semibold mb-0">Dashboard</h6>
+    <p class="text-neutral-600 mt-4 mb-0">Teacher -> Manage courses, students, and assignments efficiently from a centralized teacher.</p>
+  </div>
+</div>
+
+
+        <div class="mt-24">
+            <div class="row gy-4">
+
+                <!-- Dashboard widgets start -->
+                <div class="col-xxl-7">
+                    <div class="card radius-12 border-0 h-100">
+                        <div class="card-body p-24">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <div class="radius-8 overflow-hidden position-relative z-1 h-100 py-32 px-20 text-center d-flex justify-content-center align-items-center">
+                                        <img src="/images/bg/edit-profile-bg.png" alt="BG Image" class="position-absolute start-0 top-0 w-100 h-100 object-fit-cover z-n1">
+                                        <div class="">
+                                            <span class="mb-12">
+                                                <img src="/images/thumbs/edit-profile-img.png" alt="BG Image" class="rounded-circle object-fit-cover">
+                                            </span>
+                                            <h6 class="text-white">Courtney Henry</h6>
+                                            <span class="text-white text-lg d-block">Class: 1-A, V-B</span>
+                                            <span class="text-white text-lg d-block">Physics</span>
+                                            <div class="mt-12">
+                                                <a href="edit-teacher.html" class="px-20 py-8 text-white bg-white bg-opacity-10 radius-6 fw-medium text-lg">Edit Profile</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <div class="row g-3">
+                                        <div class="col-sm-6 col-xs-6">
+                                            <div class="radius-8 py-24 px-16 text-center bg-purple-100">
+                                                <span
+                                                    class="w-48-px h-48-px d-inline-flex justify-content-center align-items-center rounded-circle border border-purple-300 bg-purple-200">
+                                                    <img src="/images/icons/teacher-widget-icon1.png"
+                                                        alt="User Icon">
+                                                </span>
+                                                <span class="text-secondary-light fw-medium d-block mt-12">Total
+                                                    Students</span>
+                                                <h5 class="text-primary-light">3,500</h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-xs-6">
+                                            <div class="radius-8 py-24 px-16 text-center bg-success-100">
+                                                <span
+                                                    class="w-48-px h-48-px d-inline-flex justify-content-center align-items-center rounded-circle border border-success-300 bg-success-200">
+                                                    <img src="/images/icons/teacher-widget-icon2.png"
+                                                        alt="User Icon">
+                                                </span>
+                                                <span class="text-secondary-light fw-medium d-block mt-12">Total
+                                                    Students</span>
+                                                <h5 class="text-primary-light">3,500</h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-xs-6">
+                                            <div class="radius-8 py-24 px-16 text-center bg-primary-100">
+                                                <span
+                                                    class="w-48-px h-48-px d-inline-flex justify-content-center align-items-center rounded-circle border border-primary-300 bg-primary-200">
+                                                    <img src="/images/icons/teacher-widget-icon3.png"
+                                                        alt="User Icon">
+                                                </span>
+                                                <span class="text-secondary-light fw-medium d-block mt-12">Total
+                                                    Students</span>
+                                                <h5 class="text-primary-light">3,500</h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-xs-6">
+                                            <div class="radius-8 py-24 px-16 text-center bg-danger-100">
+                                                <span
+                                                    class="w-48-px h-48-px d-inline-flex justify-content-center align-items-center rounded-circle border border-danger-300 bg-danger-200">
+                                                    <img src="/images/icons/teacher-widget-icon4.png"
+                                                        alt="User Icon">
+                                                </span>
+                                                <span class="text-secondary-light fw-medium d-block mt-12">Total
+                                                    Students</span>
+                                                <h5 class="text-primary-light">3,500</h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Dashboard widgets end -->
+
+                <!-- User activity Start -->
+                <div class="col-xxl-5">
+                    <div class="card radius-12 border-0 h-100">
+                        <div
+                            class="d-flex align-items-center flex-wrap gap-2 justify-content-between py-12 px-20 border-bottom border-neutral-200">
+                            <h6 class="mb-2 fw-bold text-lg">Attendance</h6>
+                            <select class="form-select bg-base form-select-sm w-auto radius-8">
+                                <option>Yearly</option>
+                                <option>Monthly</option>
+                                <option>Weekly</option>
+                                <option>Today</option>
+                            </select>
+                        </div>
+                        <div class="card-body py-24 d-flex flex-column justify-content-center">
+                            <div
+                                class="d-flex align-items-center gap-20 flex-sm-nowrap flex-wrap justify-content-around">
+                                <div class="d-flex flex-column gap-12">
+                                    <div class="d-flex align-items-center gap-12">
+                                        <div class="">
+                                            <span
+                                                class="w-20-px h-20-px bg-primary-600 rounded-circle position-relative">
+                                                <span
+                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
+                                            </span>
+                                        </div>
+                                        <div class="">
+                                            <h6 class="mb-0">200</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Present</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-12">
+                                        <div class="">
+                                            <span
+                                                class="w-20-px h-20-px bg-warning-600 rounded-circle position-relative">
+                                                <span
+                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
+                                            </span>
+                                        </div>
+                                        <div class="">
+                                            <h6 class="mb-0">300</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Half Day </p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-12">
+                                        <div class="">
+                                            <span class="w-20-px h-20-px bg-success rounded-circle position-relative">
+                                                <span
+                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
+                                            </span>
+                                        </div>
+                                        <div class="">
+                                            <h6 class="mb-0">172</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Late</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-12">
+                                        <div class="">
+                                            <span class="w-20-px h-20-px bg-purple rounded-circle position-relative">
+                                                <span
+                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
+                                            </span>
+                                        </div>
+                                        <div class="">
+                                            <h6 class="mb-0">500</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Absent</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <div id="userOverviewDonutChart" class="apexcharts-tooltip-z-none"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- User activity End -->
+
+                <!-- Notice Board start -->
+                <div class="col-xxl-4 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body p-0">
+                            <div
+                                class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+                                <h6 class="text-lg mb-0">Notice Board</h6>
+                                <div class="dropdown">
+                                    <button type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <iconify-icon icon="entypo:dots-three-vertical"
+                                            class="icon text-secondary-light"></iconify-icon>
+                                    </button>
+                                    <ul class="dropdown-menu p-12 border bg-base shadow">
+                                        <li>
+                                            <button type="button"
+                                                class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
+                                                data-bs-toggle="modal" data-bs-target="#exampleModalView">
+                                                <iconify-icon icon="hugeicons:view"
+                                                    class="icon text-lg line-height-1"></iconify-icon>
+                                                View
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button type="button"
+                                                class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
+                                                data-bs-toggle="modal" data-bs-target="#exampleModalEdit">
+                                                <iconify-icon icon="lucide:edit"
+                                                    class="icon text-lg line-height-1"></iconify-icon>
+                                                Edit
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button type="button"
+                                                class="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10"
+                                                data-bs-toggle="modal" data-bs-target="#exampleModalDelete">
+                                                <iconify-icon icon="fluent:delete-24-regular"
+                                                    class="icon text-lg line-height-1"></iconify-icon>
+                                                Delete
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="ps-20 pt-20 pb-20">
+                                <div class="pe-20 d-flex flex-column gap-20 max-h-462-px overflow-y-auto scroll-sm">
+                                    <div class="d-flex align-items-start gap-16">
+                                        <img src="/images/thumbs/notice-board-img1.png" alt="Thumbnail"
+                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
+                                        <div class="">
+                                            <h6 class="mb-4 text-lg">Admin</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Lorem Ipsum is simply dummy
+                                                text of the
+                                                printing and typesetti</p>
+                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-start gap-16">
+                                        <img src="/images/thumbs/notice-board-img2.png" alt="Thumbnail"
+                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
+                                        <div class="">
+                                            <h6 class="mb-4 text-lg">Kathryn Murphy</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Lorem Ipsum is simply dummy
+                                                text of the
+                                                printing and typesett ing industry Lorem Ipsum is simply dummy text of
+                                                the printing and
+                                                typesetting industry.</p>
+                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-start gap-16">
+                                        <img src="/images/thumbs/notice-board-img3.png" alt="Thumbnail"
+                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
+                                        <div class="">
+                                            <h6 class="mb-4 text-lg">Admin</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Lorem Ipsum is simply dummy
+                                                text of the
+                                                printing and typesetti</p>
+                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-start gap-16">
+                                        <img src="/images/thumbs/notice-board-img2.png" alt="Thumbnail"
+                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
+                                        <div class="">
+                                            <h6 class="mb-4 text-lg">John Doe</h6>
+                                            <p class="text-secondary-light text-sm mb-0">Lorem ipsum dolor sit amet
+                                                consectetur
+                                                adipisicing elit. Laborum voluptas corporis qui dolore est odit officia
+                                                fuga?</p>
+                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Notice Board End -->
+
+                <!-- Upcoming Events start -->
+                <div class="col-xxl-4 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body p-0">
+                            <div
+                                class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+                                <h6 class="text-lg mb-0">Upcoming Events</h6>
+                            </div>
+                            <div class="ps-20 pt-20 pb-20">
+                                <div class="pe-20 d-flex flex-column gap-20 overflow-y-auto max-h-460-px scroll-sm">
+                                    <div class="d-flex align-items-center justify-content-between gap-16">
+                                        <div class="ps-10 border-start-width-3-px border-purple-600">
+                                            <div class="d-flex align-items-end gap-6">
+                                                <h6 class="text-lg fw-normal mb-0">09:00 - 09:45</h6>
+                                                <span class="text-xs text-secondary-light line-height-1 mb-2">AM</span>
+                                            </div>
+                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Marketing Strategy Kickoff
+                                            </p>
+                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
+                                                    href="javascript:void(0)"
+                                                    class="text-primary-600 hover-underline">Robert Fox</a></p>
+                                        </div>
+                                        <div>
+                                            <a href="javascript:void(0)"
+                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between gap-16">
+                                        <div class="ps-10 border-start-width-3-px border-warning-600">
+                                            <div class="d-flex align-items-end gap-6">
+                                                <h6 class="text-lg fw-normal mb-0">11:15 - 12:00</h6>
+                                                <span class="text-xs text-secondary-light line-height-1 mb-2">AM</span>
+                                            </div>
+                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Product Design Brainstorm
+                                            </p>
+                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
+                                                    href="javascript:void(0)"
+                                                    class="text-primary-600 hover-underline">Leslie Alexander</a></p>
+                                        </div>
+                                        <div>
+                                            <a href="javascript:void(0)"
+                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between gap-16">
+                                        <div class="ps-10 border-start-width-3-px border-blue-600">
+                                            <div class="d-flex align-items-end gap-6">
+                                                <h6 class="text-lg fw-normal mb-0">02:00 - 03:00</h6>
+                                                <span class="text-xs text-secondary-light line-height-1 mb-2">PM</span>
+                                            </div>
+                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Client Feedback Review</p>
+                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
+                                                    href="javascript:void(0)"
+                                                    class="text-primary-600 hover-underline">Courtney Henry</a></p>
+                                        </div>
+                                        <div>
+                                            <a href="javascript:void(0)"
+                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between gap-16">
+                                        <div class="ps-10 border-start-width-3-px border-success-600">
+                                            <div class="d-flex align-items-end gap-6">
+                                                <h6 class="text-lg fw-normal mb-0">04:15 - 05:00</h6>
+                                                <span class="text-xs text-secondary-light line-height-1 mb-2">PM</span>
+                                            </div>
+                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Sprint Planning &amp; Task
+                                                Allocation</p>
+                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
+                                                    href="javascript:void(0)"
+                                                    class="text-primary-600 hover-underline">Eleanor Pena</a></p>
+                                        </div>
+                                        <div>
+                                            <a href="javascript:void(0)"
+                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between gap-16">
+                                        <div class="ps-10 border-start-width-3-px border-primary-600">
+                                            <div class="d-flex align-items-end gap-6">
+                                                <h6 class="text-lg fw-normal mb-0">01:15 - 02:00</h6>
+                                                <span class="text-xs text-secondary-light line-height-1 mb-2">PM</span>
+                                            </div>
+                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Client Feedback Review</p>
+                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
+                                                    href="javascript:void(0)"
+                                                    class="text-primary-600 hover-underline">John</a></p>
+                                        </div>
+                                        <div>
+                                            <a href="javascript:void(0)"
+                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Upcoming Events End -->
+
+                <!-- Calendar start -->
+                <div class="col-xxl-4 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body p-0">
+                            <div
+                                class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+                                <h6 class="text-lg mb-0">Calendar</h6>
+                            </div>
+                            <div class="p-20">
+                                <div class="calendar style-big">
+                                    <div class="calendar__header">
+                                        <button type="button" class="calendar__arrow left">
+                                            <i class="ri-arrow-left-s-line"></i>
+                                        </button>
+                                        <p class="display text-md text-secondary-light fw-semibold mb-0">""</p>
+                                        <button type="button" class="calendar__arrow right">
+                                            <i class="ri-arrow-right-s-line"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="calendar__week week">
+                                        <div class="calendar__week-text">Su</div>
+                                        <div class="calendar__week-text">Mo</div>
+                                        <div class="calendar__week-text">Tu</div>
+                                        <div class="calendar__week-text">We</div>
+                                        <div class="calendar__week-text">Th</div>
+                                        <div class="calendar__week-text">Fr</div>
+                                        <div class="calendar__week-text">Sa</div>
+                                    </div>
+                                    <div class="days"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Calendar end -->
+
+                <!-- Recent Enrolled Courses Start -->
+                <div class="col-xxl-8">
+                    <div class="card radius-12 border-0">
+                        <div
+                            class="d-flex align-items-center flex-wrap gap-2 justify-content-between py-12 px-20 border-bottom border-neutral-200">
+                            <h6 class="mb-2 fw-bold text-lg">Student Marks</h6>
+                            <div class="dropdown">
+                                <button type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <iconify-icon icon="entypo:dots-three-vertical"
+                                        class="icon text-secondary-light"></iconify-icon>
+                                </button>
+                                <ul class="dropdown-menu p-12 border bg-base shadow">
+                                    <li>
+                                        <button type="button"
+                                            class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModalView">
+                                            <iconify-icon icon="hugeicons:view"
+                                                class="icon text-lg line-height-1"></iconify-icon>
+                                            View
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                            class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModalEdit">
+                                            <iconify-icon icon="lucide:edit"
+                                                class="icon text-lg line-height-1"></iconify-icon>
+                                            Edit
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                            class="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModalDelete">
+                                            <iconify-icon icon="fluent:delete-24-regular"
+                                                class="icon text-lg line-height-1"></iconify-icon>
+                                            Delete
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive scroll-sm">
+                                <table class="table bordered-table mb-0 data-table" id="dataTable"
+                                    data-page-length='10'>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Admission No</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Class</th>
+                                            <th scope="col">Marks%</th>
+                                            <th scope="col">CGPA</th>
+                                            <th scope="col">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="py-10-px"><span class="text-primary-600">AD45231</span></td>
+                                            <td class="py-10-px">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="/images/thumbs/avatar-img2.png" alt="Image"
+                                                        class="flex-shrink-0 me-12 radius-8">
+                                                    <div>
+                                                        <h6 class="text-md mb-0 fw-medium">Wade Warren</h6>
+                                                        <span>Roll No: <span class="fw-semibold">08</span></span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-10-px">Class 2 (B)</td>
+                                            <td class="py-10-px">88%</td>
+                                            <td class="py-10-px">3.9</td>
+                                            <td class="py-10-px">
+                                                <span
+                                                    class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Pass</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="py-10-px"><span class="text-primary-600">AD67452</span></td>
+                                            <td class="py-10-px">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="/images/thumbs/avatar-img3.png" alt="Image"
+                                                        class="flex-shrink-0 me-12 radius-8">
+                                                    <div>
+                                                        <h6 class="text-md mb-0 fw-medium">Brooklyn Simmons</h6>
+                                                        <span>Roll No: <span class="fw-semibold">15</span></span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-10-px">Class 3 (A)</td>
+                                            <td class="py-10-px">72%</td>
+                                            <td class="py-10-px">3.1</td>
+                                            <td class="py-10-px">
+                                                <span
+                                                    class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Pass</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="py-10-px"><span class="text-primary-600">AD98214</span></td>
+                                            <td class="py-10-px">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="/images/thumbs/avatar-img4.png" alt="Image"
+                                                        class="flex-shrink-0 me-12 radius-8">
+                                                    <div>
+                                                        <h6 class="text-md mb-0 fw-medium">Darlene Robertson</h6>
+                                                        <span>Roll No: <span class="fw-semibold">20</span></span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-10-px">Class 4 (C)</td>
+                                            <td class="py-10-px">54%</td>
+                                            <td class="py-10-px">2.4</td>
+                                            <td class="py-10-px">
+                                                <span
+                                                    class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm">Fail</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="py-10-px"><span class="text-primary-600">AD76133</span></td>
+                                            <td class="py-10-px">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="/images/thumbs/avatar-img5.png" alt="Image"
+                                                        class="flex-shrink-0 me-12 radius-8">
+                                                    <div>
+                                                        <h6 class="text-md mb-0 fw-medium">Theresa Webb</h6>
+                                                        <span>Roll No: <span class="fw-semibold">11</span></span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-10-px">Class 5 (A)</td>
+                                            <td class="py-10-px">41%</td>
+                                            <td class="py-10-px">1.9</td>
+                                            <td class="py-10-px">
+                                                <span
+                                                    class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm">Fail</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="py-10-px"><span class="text-primary-600">AD33578</span></td>
+                                            <td class="py-10-px">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="/images/thumbs/avatar-img6.png" alt="Image"
+                                                        class="flex-shrink-0 me-12 radius-8">
+                                                    <div>
+                                                        <h6 class="text-md mb-0 fw-medium">Arlene McCoy</h6>
+                                                        <span>Roll No: <span class="fw-semibold">06</span></span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-10-px">Class 1 (C)</td>
+                                            <td class="py-10-px">91%</td>
+                                            <td class="py-10-px">4.0</td>
+                                            <td class="py-10-px">
+                                                <span
+                                                    class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Pass</span>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Recent Enrolled Courses End -->
+
+                <!-- Leave Status start -->
+                <div class="col-xxl-4">
+                    <div class="card radius-12 border-0 h-100">
+                        <div
+                            class="d-flex align-items-center flex-wrap gap-2 justify-content-between py-12 px-20 border-bottom border-neutral-200">
+                            <h6 class="mb-2 fw-bold text-lg">Leave Status</h6>
+                            <select class="form-select bg-base form-select-sm w-auto radius-8">
+                                <option>Yearly</option>
+                                <option>Monthly</option>
+                                <option>Weekly</option>
+                                <option>Today</option>
+                            </select>
+                        </div>
+                        <div class="card-body pe-0">
+                            <div class="d-flex flex-column max-h-494-px overflow-y-auto scroll-sm pe-20">
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
+                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
+                                    </div>
+                                    <div class="">
+                                        <span
+                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Leave Status End -->
+
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <th:block layout:fragment="css">
+      <link rel="stylesheet" th:href="@{/css/lib/apexcharts.css}" />
+      <link rel="stylesheet" th:href="@{/css/lib/dataTables.min.css}" />
+    </th:block>
+
+    <th:block layout:fragment="script">
+      <!-- Apex Chart js -->
+      <script th:src="@{/js/lib/apexcharts.min.js}"></script>
+      <!-- Data Table js -->
+      <script th:src="@{/js/lib/dataTables.min.js}"></script>
+
+<script>
+
+    // ================================ Users Overview Donut chart Start ================================ 
+    var options = {
+        series: [300, 200, 500, 172],
+        colors: ['#487FFF', '#9935FE', '#FF9F29', "#45B369"],
+        labels: ['Total Visitors', 'Registrations', 'Total Page Views', 'Registrations'],
+        legend: {
+            show: false
+        },
+        chart: {
+            type: 'donut',
+            height: 270,
+            sparkline: {
+                enabled: true // Remove whitespace
+            },
+            margin: {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0
+            },
+            padding: {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0
+            }
+        },
+        stroke: {
+            width: 0,
+        },
+        dataLabels: {
+            enabled: false
+        },
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }],
+    };
+
+    var chart = new ApexCharts(document.querySelector("#userOverviewDonutChart"), options);
+    chart.render();
+    // ================================ Users Overview Donut chart End ================================ 
+
+    // ============================= Calendar Js Start =================================
+    let display = document.querySelector(".display");
+    let days = document.querySelector(".days");
+    let previous = document.querySelector(".left");
+    let next = document.querySelector(".right");
+
+    let date = new Date();
+
+    let year = date.getFullYear();
+    let month = date.getMonth();
+
+    function displayCalendar() {
+        const firstDay = new Date(year, month, 1);
+
+        const lastDay = new Date(year, month + 1, 0);
+
+        const firstDayIndex = firstDay.getDay(); //4
+
+        const numberOfDays = lastDay.getDate(); //31
+
+        let formattedDate = date.toLocaleString("en-US", {
+            month: "long",
+            year: "numeric"
+        });
+
+        display.innerHTML = `${formattedDate}`;
+
+        for (let x = 1; x <= firstDayIndex; x++) {
+            const div = document.createElement("div");
+            div.innerHTML += "";
+
+            days.appendChild(div);
+        }
+
+        for (let i = 1; i <= numberOfDays; i++) {
+            let div = document.createElement("div");
+            let currentDate = new Date(year, month, i);
+
+            div.dataset.date = currentDate.toDateString();
+
+            div.innerHTML += i;
+            days.appendChild(div);
+            if (
+                currentDate.getFullYear() === new Date().getFullYear() &&
+                currentDate.getMonth() === new Date().getMonth() &&
+                currentDate.getDate() === new Date().getDate()
+            ) {
+                div.classList.add("current-date");
+            }
+        }
+    }
+
+    // Call the function to display the calendar
+    displayCalendar();
+
+    previous.addEventListener("click", () => {
+        days.innerHTML = "";
+
+        if (month < 0) {
+            month = 11;
+            year = year - 1;
+        }
+        month = month - 1;
+        date.setMonth(month);
+        displayCalendar();
+    });
+
+    next.addEventListener("click", () => {
+        days.innerHTML = "";
+
+        if (month > 11) {
+            month = 0;
+            year = year + 1;
+        }
+
+        month = month + 1;
+        date.setMonth(month);
+
+        displayCalendar();
+    });
+    // ============================= Calendar Js End =================================
+
+
+    let table = new DataTable('#dataTable');
+
+    //============================= ✅ Data Table start =============================
+    $('.data-table').each(function () {
+        const $table = $(this);
+        const tableInstance = new DataTable(this);
+
+        // Handle search input (inside same wrapper)
+        $table.closest('.dataTable-wrapper').find('.dt-search .dt-input').on('keyup', function () {
+            tableInstance.search(this.value).draw();
+        });
+
+        // Handle page length change (inside same wrapper)
+        $table.closest('.dataTable-wrapper').find('.dt-length .dt-input').on('change', function () {
+            const value = $(this).val();
+            tableInstance.page.len(value).draw();
+        });
+    });
+    //============================= ✅ Data Table end =============================
+
+</script>
+
+
+    </th:block>
+  </body>
+</html>

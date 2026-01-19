@@ -1,0 +1,96 @@
+<div class="navbar-header shadow-1" th:fragment="header"
+     xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+  <div class="row align-items-center justify-content-between">
+    <div class="col-auto">
+      <div class="d-flex flex-wrap align-items-center gap-4">
+        <button type="button" class="sidebar-mobile-toggle" aria-label="Sidebar Mobile Toggler Button">
+          <iconify-icon icon="heroicons:bars-3-solid" class="icon"></iconify-icon>
+        </button>
+        <form class="navbar-search">
+          <input type="text" class="bg-transparent" name="search" placeholder="Search" />
+          <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
+        </form>
+      </div>
+    </div>
+    <div class="col-auto">
+      <div class="d-flex flex-wrap align-items-center gap-3">
+        <button
+          type="button"
+          data-theme-toggle
+          class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+          aria-label="Dark & Light Mode Button"
+        ></button>
+
+        <!-- Notification dropdown -->
+        <div class="dropdown">
+          <button
+            class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-label="Notification Button"
+          >
+            <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
+            <span class="w-8-px h-8-px bg-danger-600 position-absolute end-0 top-0 rounded-circle mt-2 me-2"></span>
+          </button>
+          <div class="dropdown-menu to-top dropdown-menu-lg p-0">
+            <div class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+              <div>
+                <h6 class="text-lg text-primary-light fw-semibold mb-0">Notifications</h6>
+              </div>
+              <span class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">0</span>
+            </div>
+            <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
+              <p class="px-24 py-12 text-secondary-light">No new notifications</p>
+            </div>
+          </div>
+        </div>
+        <!-- Notification dropdown end -->
+
+        <!-- User Profile dropdown - 로그인한 사용자만 -->
+        <div class="dropdown" sec:authorize="isAuthenticated()">
+          <button
+            class="d-flex justify-content-center align-items-center rounded-circle"
+            type="button"
+            data-bs-toggle="dropdown"
+          >
+            <img
+              src="/images/thumbs/leave-request-img2.png"
+              alt="Profile"
+              class="w-40-px h-40-px object-fit-cover rounded-circle"
+            />
+          </button>
+          <div class="dropdown-menu to-top dropdown-menu-sm">
+            <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+              <div>
+                <h6 class="text-lg text-primary-light fw-semibold mb-1" th:text="${#authentication.principal.username}">User</h6>
+                <span class="text-secondary-light fw-medium text-sm" th:text="${#authentication.principal.authorities[0].authority}">Role</span>
+              </div>
+            </div>
+            <ul class="to-top-list">
+              <li>
+                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" th:href="@{/profile}">
+                  <iconify-icon icon="solar:user-linear" class="icon text-xl"></iconify-icon>
+                  My Profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" th:href="@{/settings}">
+                  <iconify-icon icon="icon-park-outline:setting-two" class="icon text-xl"></iconify-icon>
+                  Setting
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3" th:href="@{/logout}">
+                  <iconify-icon icon="lucide:power" class="icon text-xl"></iconify-icon>
+                  Log Out
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- User Profile dropdown end -->
+      </div>
+    </div>
+  </div>
+</div>
