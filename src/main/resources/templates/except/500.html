@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>500 - 서버 오류</title>
+  </head>
+  <div class="d-flex flex-column align-items-center justify-content-center py-80" layout:fragment="content">
+    <div class="text-center">
+      <i class="ri-server-line text-danger-600" style="font-size: 80px;"></i>
+      <h1 class="display-1 fw-bold text-danger-600 mt-3">500</h1>
+      <h4 class="text-secondary-light mb-3">서버 오류가 발생했습니다</h4>
+      <p class="text-secondary-light mb-2">
+        요청을 처리하는 중 문제가 발생했습니다.<br />
+        잠시 후 다시 시도해 주세요.
+      </p>
+      <p class="text-secondary-light small mb-4" th:if="${e}" th:text="${e.message}"></p>
+      <a th:href="@{/}" class="btn btn-primary-600 px-4 py-2">
+        <i class="ri-home-line me-2"></i>홈으로 돌아가기
+      </a>
+    </div>
+  </div>
+</html>

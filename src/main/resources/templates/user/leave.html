@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>회원 탈퇴</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">회원 탈퇴</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / 회원 탈퇴</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div th:if="${error}" class="alert alert-danger mb-3" role="alert" th:text="${error}"></div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="text-center mb-4">
+          <span class="text-danger-600 d-block mb-3" style="font-size: 4rem;">
+            <i class="ri-error-warning-line"></i>
+          </span>
+          <h4 class="fw-semibold text-danger-600">정말 탈퇴하시겠습니까?</h4>
+          <p class="text-secondary-light">
+            회원 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+          </p>
+        </div>
+
+        <div class="alert alert-warning mb-4">
+          <h6 class="fw-semibold mb-2"><i class="ri-alert-line me-1"></i> 탈퇴 시 삭제되는 정보</h6>
+          <ul class="mb-0 ps-3">
+            <li>프로필 정보 및 프로필 이미지</li>
+            <li>작성한 게시글 및 댓글</li>
+            <li sec:authorize="hasRole('PARENT')">자녀와의 연결 정보 (자녀 계정은 유지됩니다)</li>
+            <li sec:authorize="hasRole('STUDENT')">학부모와의 연결 정보</li>
+          </ul>
+        </div>
+
+        <form th:action="@{/user/leave}" method="post">
+          <div class="row justify-content-center">
+            <div class="col-md-6">
+              <div class="mb-4">
+                <label for="password" class="form-label">비밀번호 확인 <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="password" name="password"
+                       placeholder="현재 비밀번호를 입력하세요" required />
+                <div class="form-text text-secondary-light">본인 확인을 위해 비밀번호를 입력해주세요.</div>
+              </div>
+
+              <div class="d-flex gap-2 justify-content-center">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')">
+                  <i class="ri-user-unfollow-line me-1"></i> 회원 탈퇴
+                </button>
+                <a th:href="@{/dashboard}" class="btn btn-secondary">취소</a>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</html>

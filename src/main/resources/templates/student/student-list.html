@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학생 목록</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">학생 목록</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / 학생 목록</span>
+        </div>
+      </div>
+      <div sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+        <a th:href="@{/student/add}" class="btn btn-primary">
+          <i class="ri-add-line me-1"></i> 학생 추가
+        </a>
+      </div>
+    </div>
+
+    <!-- 성공 메시지 -->
+    <div th:if="${msg}" class="alert alert-success mb-3" role="alert" th:text="${msg}"></div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table bordered-table mb-0" id="dataTable">
+            <thead>
+              <tr>
+                <th scope="col">번호</th>
+                <th scope="col">학번</th>
+                <th scope="col">이름</th>
+                <th scope="col">학년</th>
+                <th scope="col">반</th>
+                <th scope="col">이메일</th>
+                <th scope="col" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(students)}">
+                <td colspan="7" class="text-center text-secondary-light py-4">
+                  등록된 학생이 없습니다.
+                </td>
+              </tr>
+              <tr th:each="student, iterStat : ${students}">
+                <td th:text="${iterStat.count}">1</td>
+                <td>
+                  <span class="text-primary-600" th:text="${student.studentNumber}">-</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <img src="/images/thumbs/avatar-img1.png" alt="프로필" class="w-40-px h-40-px rounded-circle flex-shrink-0 me-12" />
+                    <h6 class="text-md mb-0 fw-medium" th:text="${student.name}">학생이름</h6>
+                  </div>
+                </td>
+                <td th:text="${student.grade} + '학년'">1학년</td>
+                <td th:text="${student.classNum} + '반'">1반</td>
+                <td th:text="${student.email}">email@example.com</td>
+                <td sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+                  <div class="btn-group">
+                    <button
+                      type="button"
+                      class="text-primary-light text-xl"
+                      data-bs-toggle="dropdown"
+                      data-bs-display="static"
+                      aria-expanded="false"
+                    >
+                      <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border p-12">
+                      <li>
+                        <a
+                          th:href="@{/student/details(id=${student.uid})}"
+                          class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+                        >
+                          <i class="ri-eye-line"></i>
+                          상세보기
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          th:href="@{/student/edit(id=${student.uid})}"
+                          class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+                        >
+                          <i class="ri-edit-2-line"></i>
+                          수정
+                        </a>
+                      </li>
+                      <li sec:authorize="hasRole('ADMIN')">
+                        <button
+                          type="button"
+                          class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+                          data-bs-toggle="modal"
+                          th:data-bs-target="'#deleteModal' + ${student.uid}"
+                        >
+                          <i class="ri-delete-bin-6-line"></i>
+                          삭제
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modals -->
+    <div th:each="student : ${students}" sec:authorize="hasRole('ADMIN')">
+      <div class="modal fade" th:id="'deleteModal' + ${student.uid}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">학생 삭제</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+              <span class="text-danger-600 d-block mb-3" style="font-size: 3rem;">
+                <i class="ri-error-warning-line"></i>
+              </span>
+              <p>
+                <strong th:text="${student.name}">학생이름</strong> 학생을 삭제하시겠습니까?
+              </p>
+              <p class="text-secondary-light small">이 작업은 되돌릴 수 없습니다.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+              <form th:action="@{/student/delete}" method="post" class="d-inline">
+                <input type="hidden" name="id" th:value="${student.uid}" />
+                <button type="submit" class="btn btn-danger">삭제</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

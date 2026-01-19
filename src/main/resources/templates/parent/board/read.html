@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>게시글 보기</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">게시글 보기</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / </span>
+          <a th:href="@{/parent/board/list}" class="text-secondary-light hover-text-primary hover-underline"
+            >학부모 게시판</a
+          >
+          <span class="text-secondary-light"> / 게시글 보기</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="mb-4">
+          <h4 class="fw-semibold" th:text="${dto.title}"></h4>
+          <div class="d-flex gap-3 text-secondary-light text-sm">
+            <span>작성자: <span th:text="${dto.writerName}"></span></span>
+            <span>작성일: <span th:text="${#temporals.format(dto.createDate, 'yyyy-MM-dd HH:mm')}"></span></span>
+            <span th:if="${dto.updateDate != null}">
+              수정일: <span th:text="${#temporals.format(dto.updateDate, 'yyyy-MM-dd HH:mm')}"></span>
+            </span>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="py-4" style="min-height: 300px; white-space: pre-wrap" th:text="${dto.content}"></div>
+
+        <hr />
+
+        <div class="d-flex justify-content-between">
+          <a
+            th:href="@{/parent/board/list(page=${pageRequestDTO.page}, size=${pageRequestDTO.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}"
+            class="btn btn-secondary"
+          >
+            목록
+          </a>
+          <div
+            class="d-flex gap-2"
+            th:if="${dto.writerId} == ${#authentication.principal.customUserDTO.uid}"
+          >
+            <a
+              th:href="@{/parent/board/modify(bno=${dto.bno}, page=${pageRequestDTO.page}, size=${pageRequestDTO.size})}"
+              class="btn btn-primary"
+            >
+              수정
+            </a>
+            <form th:action="@{/parent/board/remove}" method="post" class="d-inline" id="removeForm">
+              <input type="hidden" name="bno" th:value="${dto.bno}" />
+              <input type="hidden" name="page" th:value="${pageRequestDTO.page}" />
+              <input type="hidden" name="size" th:value="${pageRequestDTO.size}" />
+              <button type="button" class="btn btn-danger" onclick="confirmDelete()">삭제</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <th:block layout:fragment="script">
+    <script th:inline="javascript">
+      let msg = [[${msg}]];
+      if (msg) {
+        alert(msg);
+      }
+
+      function confirmDelete() {
+        if (confirm('정말 삭제하시겠습니까?')) {
+          document.getElementById('removeForm').submit();
+        }
+      }
+    </script>
+  </th:block>
+</html>

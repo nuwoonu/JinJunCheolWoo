@@ -1,0 +1,342 @@
+<aside
+  class="sidebar"
+  th:fragment="sidebar"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <button type="button" class="sidebar-close-btn">
+    <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
+  </button>
+  <div class="">
+    <div class="sidebar-logo d-flex align-items-center justify-content-between">
+      <a th:href="@{/dashboard}" class="">
+        <img src="/images/logo.png" alt="site logo" class="light-logo" />
+        <img src="/images/logo-light.png" alt="site logo" class="dark-logo" />
+        <img src="/images/logo-icon.png" alt="site logo" class="logo-icon" />
+      </a>
+      <button
+        type="button"
+        class="text-xxl d-xl-flex d-none line-height-1 sidebar-toggle text-neutral-500"
+        aria-label="Collapse Sidebar"
+      >
+        <i class="ri-contract-left-line"></i>
+      </button>
+    </div>
+  </div>
+  <!-- User Info start - 로그인한 사용자만 -->
+  <div class="mx-16 py-12" sec:authorize="isAuthenticated()">
+    <div class="dropdown profile-dropdown">
+      <button
+        type="button"
+        class="profile-dropdown__button d-flex align-items-center justify-content-between p-10 w-100 overflow-hidden bg-neutral-50 radius-12"
+        data-bs-toggle="dropdown"
+        data-bs-display="static"
+        aria-expanded="false"
+      >
+        <span class="d-flex align-items-start gap-10">
+          <img
+            src="/images/thumbs/leave-request-img2.png"
+            alt="Thumbnail"
+            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
+          />
+          <span class="profile-dropdown__contents">
+            <span class="h6 mb-0 text-md d-block text-primary-light" th:text="${#authentication.principal.username}"
+              >User</span
+            >
+            <!-- Admin은 표시 안함, 나머지는 학년-반 표시 -->
+            <span
+              sec:authorize="!hasRole('ADMIN')"
+              class="text-secondary-light text-sm mb-0 d-block"
+              th:text="${#authentication.principal.customUserDTO.grade} + '학년 ' + ${#authentication.principal.customUserDTO.classNum} + '반'"
+            ></span>
+          </span>
+        </span>
+        <span class="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
+          <i class="ri-arrow-right-s-line"></i>
+        </span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
+        <li>
+          <a
+            th:href="@{/profile}"
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+          >
+            <i class="ri-user-3-line"></i>
+            My Profile
+          </a>
+        </li>
+        <li>
+          <a
+            th:href="@{/settings}"
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+          >
+            <i class="ri-settings-3-line"></i>
+            Setting
+          </a>
+        </li>
+        <li>
+          <a
+            th:href="@{/user/leave}"
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+          >
+            <i class="ri-user-unfollow-line"></i>
+            회원 탈퇴
+          </a>
+        </li>
+        <li>
+          <a
+            th:href="@{/logout}"
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+          >
+            <i class="ri-shut-down-line"></i>
+            Log Out
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- User Info end -->
+  <div class="sidebar-menu-area">
+    <ul class="sidebar-menu" id="sidebar-menu">
+      <!-- Dashboard - 로그인한 사용자만 (역할에 따라 자동으로 해당 대시보드로 이동) -->
+      <li sec:authorize="isAuthenticated()">
+        <a th:href="@{/dashboard}">
+          <i class="ri-home-4-line"></i>
+          <span>홈</span>
+        </a>
+      </li>
+
+      <!-- Students - TEACHER, ADMIN, STUDENT만 (학부모 제외) -->
+      <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN', 'STUDENT')">
+        <a href="javascript:void(0)">
+          <i class="ri-graduation-cap-line"></i>
+          <span>학생</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+            <a th:href="@{/student/add}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생 추가
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/student/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생 리스트
+            </a>
+          </li>
+          <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+            <a th:href="@{/profile/manage}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              프로필 사진 관리
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- 나의 자녀 - PARENT만 -->
+      <li class="dropdown" sec:authorize="hasRole('PARENT')">
+        <a href="javascript:void(0)">
+          <i class="ri-parent-line"></i>
+          <span>나의 자녀</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/parent/children/status}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              자녀 현황
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Teachers - TEACHER, ADMIN만 -->
+      <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+        <a href="javascript:void(0)">
+          <i class="ri-user-follow-line"></i>
+          <span>선생님</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li sec:authorize="hasAnyRole('ADMIN')">
+            <a th:href="@{/teacher/add}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              선생님 추가
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/teacher/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              선생님 목록
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/teacher/edit}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              수정
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/teacher/details}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              자세히
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Parent - TEACHER, ADMIN만 조회 가능 -->
+      <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+        <a href="javascript:void(0)">
+          <i class="ri-user-heart-line"></i>
+          <span>학부모</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/parent/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학부모 목록
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- 게시판 - STUDENT 제외 (ADMIN, TEACHER, PARENT만) -->
+      <li class="dropdown" sec:authorize="hasAnyRole('ADMIN', 'TEACHER', 'PARENT')">
+        <a href="javascript:void(0)">
+          <i class="ri-article-line"></i>
+          <span>게시판</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/parent/notice/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학부모 공지
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/parent/board/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학부모 게시판
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Classes - TEACHER, ADMIN만 -->
+      <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+        <a href="javascript:void(0)">
+          <i class="ri-list-view"></i>
+          <span>Classes</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/class/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Class List
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/class/room}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Class Room
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Examinations - 모든 로그인 사용자 -->
+      <li class="dropdown" sec:authorize="isAuthenticated()">
+        <a href="javascript:void(0)">
+          <i class="ri-file-edit-line"></i>
+          <span>Examinations</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/exam}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Exam
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/exam/schedule}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Exam Schedule
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/exam/result}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Exam Result
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Attendance - TEACHER, ADMIN만 -->
+      <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+        <a href="javascript:void(0)">
+          <i class="ri-calendar-check-line"></i>
+          <span>Attendance</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/attendance/student}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Student Attendance
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/attendance/teacher}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Teacher Attendance
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Authentication - 비로그인 사용자만 -->
+      <li class="dropdown" sec:authorize="!isAuthenticated()">
+        <a href="javascript:void(0)">
+          <i class="ri-shield-check-line"></i>
+          <span>Authentication</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/login}">
+              <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
+              Login
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/register}">
+              <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i>
+              Register
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Settings - ADMIN만 -->
+      <li class="dropdown" sec:authorize="hasRole('ADMIN')">
+        <a href="javascript:void(0)">
+          <i class="ri-user-settings-line"></i>
+          <span>Settings</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/settings/general}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              General
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/settings/notification}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              Notification
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</aside>
