@@ -7,17 +7,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.schoolmate.common.entity.Student;
+import com.example.schoolmate.common.entity.info.StudentInfo;
 
-public interface StudentRepository extends JpaRepository<Student, Long> {
-    Optional<Student> findByStudentNumber(Long studentNumber);
+public interface StudentRepository extends JpaRepository<StudentInfo, Long> {
+    Optional<StudentInfo> findByStudentNumber(Long studentNumber);
 
-    Optional<Student> findByEmail(String email);
+    // email은 User 엔티티에 있으므로 연관관계를 통해 조회
+    @Query("SELECT s FROM StudentInfo s WHERE s.user.email = :email")
+    Optional<StudentInfo> findByUserEmail(@Param("email") String email);
 
-    List<Student> findByGrade(int grade);
+    List<StudentInfo> findByGrade(int grade);
 
-    List<Student> findByClassNum(int classNum);
+    List<StudentInfo> findByClassNum(int classNum);
 
-    @Query("SELECT s FROM Student s JOIN FETCH s.grades WHERE s.uid = :uid")
-    Optional<Student> findByUidWithGrades(@Param("uid") Long uid);
+    @Query("SELECT s FROM StudentInfo s JOIN FETCH s.grades WHERE s.id = :id")
+    Optional<StudentInfo> findByIdWithGrades(@Param("id") Long id);
 }

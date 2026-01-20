@@ -1,6 +1,6 @@
 package com.example.schoolmate.common.dto;
 
-import com.example.schoolmate.common.entity.constant.TestType;
+import com.example.schoolmate.common.entity.user.constant.TestType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

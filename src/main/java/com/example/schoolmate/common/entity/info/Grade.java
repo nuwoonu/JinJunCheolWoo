@@ -1,6 +1,9 @@
-package com.example.schoolmate.common.entity;
+package com.example.schoolmate.common.entity.info;
 
-import com.example.schoolmate.common.entity.constant.TestType;
+import com.example.schoolmate.common.entity.BaseEntity;
+
+import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
+import com.example.schoolmate.common.entity.user.constant.TestType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,16 +47,16 @@ public class Grade extends BaseEntity {
     private Integer year; // 학년
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_uid")
-    private Student student;
+    @JoinColumn(name = "student_id")
+    private StudentInfo student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id")
-    private Subject subject;
+    private StudentAssignment subject;
 
     // 양방향 연관관계 편의 메서드 추가
     // 학생 설정 편의 메서드
-    public void setStudent(Student student) {
+    public void setStudent(StudentInfo student) {
         // 기존 관계 제거
         if (this.student != null) {
             this.student.getGrades().remove(this);
@@ -66,7 +69,7 @@ public class Grade extends BaseEntity {
     }
 
     // 과목 설정 편의 메서드
-    public void setSubject(Subject subject) {
+    public void setSubject(StudentAssignment subject) {
         if (this.subject != null) {
             this.subject.getGrades().remove(this);
         }

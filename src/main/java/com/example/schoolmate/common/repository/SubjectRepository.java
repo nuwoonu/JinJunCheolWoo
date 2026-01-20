@@ -5,12 +5,12 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.schoolmate.common.entity.Subject;
+import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 
-public interface SubjectRepository extends JpaRepository<Subject, String> {
-    Optional<Subject> findByCode(String code);
+public interface SubjectRepository extends JpaRepository<StudentAssignment, Long> {
+    Optional<StudentAssignment> findByCode(String code);
 
-    List<Subject> findByGrade(int grade);
+    List<StudentAssignment> findByGrade(int grade);
 
-    List<Subject> findByTeacher_Uid(Long teacherUid);
+    List<StudentAssignment> findByTeacher_Id(Long teacherId);
 }

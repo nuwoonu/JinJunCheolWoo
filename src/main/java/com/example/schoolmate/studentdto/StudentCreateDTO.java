@@ -2,8 +2,8 @@ package com.example.schoolmate.studentdto;
 
 import java.time.LocalDate;
 
-import com.example.schoolmate.common.entity.constant.Gender;
-import com.example.schoolmate.common.entity.constant.Status;
+import com.example.schoolmate.common.entity.user.constant.Gender;
+import com.example.schoolmate.common.entity.user.constant.Status;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;

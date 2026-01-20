@@ -1,4 +1,4 @@
-package com.example.schoolmate.common.entity.constant;
+package com.example.schoolmate.common.entity.user.constant;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
