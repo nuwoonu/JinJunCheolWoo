@@ -1,5 +1,7 @@
 package com.example.schoolmate.parkjoon.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -143,6 +145,20 @@ public class AdminStudentController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("등록 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    // 일괄 상태 변경 (예: 졸업 처리)
+    @PostMapping("/bulk-status")
+    @ResponseBody
+    public ResponseEntity<String> bulkUpdateStatus(@RequestParam("uids") List<Long> uids,
+            @RequestParam("status") String status) {
+        try {
+            adminStudentService.bulkUpdateStudentStatus(uids, status);
+            return ResponseEntity.ok("선택한 학생들의 상태가 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("상태 변경 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 }

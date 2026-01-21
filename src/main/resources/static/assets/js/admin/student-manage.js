@@ -164,3 +164,59 @@ function uploadStudentCsv() {
       fileInput.value = "";
     });
 }
+
+/**
+ * [5] 체크박스 전체 선택/해제
+ * HTML: <input type="checkbox" onclick="toggleAllCheckboxes(this)">
+ */
+function toggleAllCheckboxes(source) {
+  const checkboxes = document.querySelectorAll(".student-checkbox");
+  checkboxes.forEach((cb) => (cb.checked = source.checked));
+}
+
+/**
+ * [6] 일괄 상태 변경 요청
+ * 예: updateStatusBulk('GRADUATED', '졸업')
+ */
+function updateStatusBulk(statusName, statusLabel) {
+  const checkboxes = document.querySelectorAll(".student-checkbox:checked");
+  if (checkboxes.length === 0) {
+    alert("선택된 학생이 없습니다.");
+    return;
+  }
+
+  if (
+    !confirm(
+      `선택한 ${checkboxes.length}명의 학생을 '${statusLabel}' 상태로 변경하시겠습니까?`,
+    )
+  ) {
+    return;
+  }
+
+  const uids = Array.from(checkboxes).map((cb) => cb.value);
+  const token = document.querySelector('meta[name="_csrf"]')?.content;
+  const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+  const params = new URLSearchParams();
+  uids.forEach((uid) => params.append("uids", uid));
+  params.append("status", statusName);
+
+  fetch("/parkjoon/admin/students/bulk-status", {
+    method: "POST",
+    headers: {
+      [header]: token,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params,
+  })
+    .then(async (res) => {
+      if (res.ok) {
+        alert("변경되었습니다.");
+        location.reload();
+      } else {
+        const text = await res.text();
+        alert("실패: " + text);
+      }
+    })
+    .catch(() => alert("서버 통신 오류"));
+}

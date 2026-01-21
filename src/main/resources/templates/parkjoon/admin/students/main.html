@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -34,6 +34,67 @@
             style="display: none"
             onchange="uploadStudentCsv()"
           />
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-dark radius-8 px-20 py-11 d-flex align-items-center gap-2 dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-pencil-square"></i> 선택 상태 변경
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('ENROLLED', '재학')"
+                  >재학</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('LEAVE_OF_ABSENCE', '휴학')"
+                  >휴학</a
+                >
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('GRADUATED', '졸업')"
+                  >졸업</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('DROPOUT', '자퇴')"
+                  >자퇴</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('EXPELLED', '제적')"
+                  >제적</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('TRANSFERRED', '전학')"
+                  >전학</a
+                >
+              </li>
+            </ul>
+          </div>
           <button
             type="button"
             class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
@@ -140,6 +201,13 @@
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
+                  <th class="text-center" style="width: 50px">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      onclick="toggleAllCheckboxes(this)"
+                    />
+                  </th>
                   <th class="ps-4" style="width: 150px">고유학번</th>
                   <th>이름</th>
                   <th>계정 (이메일)</th>
@@ -150,6 +218,13 @@
               </thead>
               <tbody>
                 <tr th:each="s : ${students}">
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      class="form-check-input student-checkbox"
+                      th:value="${s.uid}"
+                    />
+                  </td>
                   <td
                     class="ps-4 text-secondary"
                     th:text="${s.studentIdentityNum ?: '-'}"
@@ -188,7 +263,7 @@
                   </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(students.content)}">
-                  <td colspan="6" class="text-center py-5 text-muted">
+                  <td colspan="7" class="text-center py-5 text-muted">
                     검색 결과가 없습니다.
                   </td>
                 </tr>

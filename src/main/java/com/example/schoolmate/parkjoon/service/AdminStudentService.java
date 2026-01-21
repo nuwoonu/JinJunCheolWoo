@@ -3,6 +3,7 @@ package com.example.schoolmate.parkjoon.service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -240,5 +241,19 @@ public class AdminStudentService {
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
 
         return info.getStudentIdentityNum();
+    }
+
+    /**
+     * 학생 상태 일괄 변경 (예: 졸업 처리)
+     */
+    public void bulkUpdateStudentStatus(List<Long> uids, String statusName) {
+        StudentStatus status = StudentStatus.valueOf(statusName);
+        List<User> users = userRepository.findAllById(uids);
+        for (User user : users) {
+            StudentInfo info = user.getInfo(StudentInfo.class);
+            if (info != null) {
+                info.setStatus(status);
+            }
+        }
     }
 }
