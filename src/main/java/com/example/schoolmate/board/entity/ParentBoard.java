@@ -1,7 +1,7 @@
 package com.example.schoolmate.board.entity;
 
 import com.example.schoolmate.common.entity.BaseEntity;
-import com.example.schoolmate.common.entity.User;
+import com.example.schoolmate.common.entity.user.User;  // Joon님 경로로 변경
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,5 +1,6 @@
 package com.example.schoolmate.dto;
 
+import com.example.schoolmate.common.entity.user.constant.UserRole;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Spring Security의 UserDetails를 구현한 DTO
@@ -29,8 +31,22 @@ public class AuthUserDTO extends User {
         super(
                 customUserDTO.getEmail(),
                 customUserDTO.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + customUserDTO.getRole().name()))
+                // 다중 역할 지원: roles가 있으면 사용, 없으면 단일 role 사용
+                customUserDTO.getRoles() != null && !customUserDTO.getRoles().isEmpty()
+                        ? customUserDTO.getRoles().stream()
+                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                                .collect(Collectors.toList())
+                        : List.of(new SimpleGrantedAuthority("ROLE_" + customUserDTO.getRole().name()))
         );
         this.customUserDTO = customUserDTO;
+    }
+
+    // 헬퍼 메서드
+    public boolean hasRole(UserRole role) {
+        return customUserDTO.hasRole(role);
+    }
+
+    public UserRole getPrimaryRole() {
+        return customUserDTO.getPrimarRole();
     }
 }

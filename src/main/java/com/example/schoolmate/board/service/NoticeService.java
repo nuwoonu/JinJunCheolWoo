@@ -16,7 +16,7 @@ import com.example.schoolmate.board.dto.PageRequestDTO;
 import com.example.schoolmate.board.dto.PageResultDTO;
 import com.example.schoolmate.board.entity.Notice;
 import com.example.schoolmate.board.repository.NoticeRepository;
-import com.example.schoolmate.common.entity.User;
+import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;

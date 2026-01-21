@@ -19,7 +19,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         // 사용자의 권한을 확인하여 적절한 페이지로 리다이렉트
         if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            response.sendRedirect("/admin/dashboard");
+            response.sendRedirect("/parkjoon/admin/dashboard");
         } else if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_TEACHER"))) {
             response.sendRedirect("/teacher/dashboard");
         } else if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_STUDENT"))) {

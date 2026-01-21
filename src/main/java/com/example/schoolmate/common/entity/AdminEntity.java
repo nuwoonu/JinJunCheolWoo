@@ -9,7 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
+// TODO: [woo] Joon님 구조에서는 User가 abstract가 아님, StaffInfo 사용 필요
+// @Entity  // 임시 비활성화
 @Table(name = "user_admin")
 @DiscriminatorValue("ADMIN")
 @Getter
@@ -17,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AdminEntity extends User {
+public class AdminEntity {  // extends User 제거
     private String department;
     private String employeeNumber;
 

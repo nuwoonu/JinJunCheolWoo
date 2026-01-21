@@ -1,59 +1,42 @@
 package com.example.schoolmate.service;
 
-import com.example.schoolmate.common.entity.AdminEntity;
-import com.example.schoolmate.common.entity.Parent;
+import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.info.ParentInfo;
+import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
-import com.example.schoolmate.common.entity.Student;
-import com.example.schoolmate.common.entity.Teacher;
-import com.example.schoolmate.common.entity.User;
-import com.example.schoolmate.common.entity.constant.UserRole;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
+/**
+ * 회원 관련 비즈니스 로직 서비스
+ * 로그인은 CustomUserDetailsService가 담당
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
 @Log4j2
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * Spring Security UserDetailsService 구현 - 로그인 시 사용자 정보 로드
-     */
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        log.info("로그인 시도: {}", email);
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
-
-        log.info("사용자 정보 로드: {}, 역할: {}", user.getEmail(), user.getRole());
-
-        // User Entity를 CustomUserDTO로 변환
-        CustomUserDTO customUserDTO = entityToDTO(user);
-
-        // AuthUserDTO로 감싸서 반환 (Spring Security가 사용)
-        return new AuthUserDTO(customUserDTO);
-    }
-
-    /**
-     * 회원가입 - 역할별 사용자 생성
+     * 회원가입 - 새 엔티티 구조 (User + Info)
      */
     public Long join(CustomUserDTO dto) {
         log.info("회원가입 시도: {}, 역할: {}", dto.getEmail(), dto.getRole());
@@ -63,52 +46,73 @@ public class UserService implements UserDetailsService {
             throw new IllegalStateException("이미 사용중인 이메일입니다: " + dto.getEmail());
         }
 
-        User user;
+        // 1. User 생성
+        User user = User.builder()
+                .email(dto.getEmail())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .name(dto.getName())
+                .build();
 
-        // 역할에 따라 적절한 Entity 생성
+        // 2. 역할 추가
+        user.addRole(dto.getRole());
+
+        // 3. 역할별 Info 생성
         switch (dto.getRole()) {
-            case STUDENT:
-                Student student = new Student();
-                student.changeEmail(dto.getEmail());
-                student.changePassword(passwordEncoder.encode(dto.getPassword()));
-                student.changeName(dto.getName());
-                student.changeRole(UserRole.STUDENT);
-                student.changeStudentNumber(dto.getStudentNumber());
-                student.changeGrade(dto.getGrade());
-                student.changeClassNum(dto.getClassNum());
-                user = student;
-                break;
-
-            case TEACHER:
-                Teacher teacher = new Teacher();
-                teacher.changeEmail(dto.getEmail());
-                teacher.changePassword(passwordEncoder.encode(dto.getPassword()));
-                teacher.changeName(dto.getName());
-                teacher.changeRole(UserRole.TEACHER);
-                teacher.changeEmployeeNumber(dto.getEmployeeNumber());
-                teacher.changeSubject(dto.getSubject());
-                user = teacher;
-                break;
-
-            case ADMIN:
-                AdminEntity admin = new AdminEntity();
-                admin.changeEmail(dto.getEmail());
-                admin.changePassword(passwordEncoder.encode(dto.getPassword()));
-                admin.changeName(dto.getName());
-                admin.changeRole(UserRole.ADMIN);
-                admin.changeEmployeeNumber(dto.getEmployeeNumber());
-                admin.changeDepartment(dto.getDepartment());
-                user = admin;
-                break;
-
-            default:
-                throw new IllegalArgumentException("지원하지 않는 역할입니다: " + dto.getRole());
+            case STUDENT -> createStudentInfo(user, dto);
+            case TEACHER -> createTeacherInfo(user, dto);
+            case PARENT -> createParentInfo(user, dto);
+            case ADMIN -> {} // Admin은 Info 없이 역할만
+            default -> throw new IllegalArgumentException("지원하지 않는 역할입니다: " + dto.getRole());
         }
 
         User savedUser = userRepository.save(user);
         log.info("회원가입 완료: {}, ID: {}", savedUser.getEmail(), savedUser.getUid());
 
         return savedUser.getUid();
+    }
+
+    private void createStudentInfo(User user, CustomUserDTO dto) {
+        StudentInfo studentInfo = new StudentInfo();
+        studentInfo.setUser(user);
+        studentInfo.setStudentIdentityNum(dto.getStudentIdentityNum() != null
+                ? dto.getStudentIdentityNum()
+                : dto.getStudentNumber());
+        studentInfo.setCode(studentInfo.getStudentIdentityNum());
+
+        // 초기 학급 배정
+        if (dto.getGrade() != null && dto.getClassNum() != null) {
+            int currentYear = LocalDate.now().getYear();
+            StudentAssignment assignment = StudentAssignment.builder()
+                    .studentInfo(studentInfo)
+                    .schoolYear(currentYear)
+                    .grade(dto.getGrade())
+                    .classNum(dto.getClassNum())
+                    .studentNum(dto.getStudentNum())
+                    .build();
+            studentInfo.getAssignments().add(assignment);
+        }
+
+        user.getInfos().add(studentInfo);
+    }
+
+    private void createTeacherInfo(User user, CustomUserDTO dto) {
+        TeacherInfo teacherInfo = new TeacherInfo();
+        teacherInfo.setUser(user);
+        teacherInfo.setCode(dto.getEmployeeNumber());
+        teacherInfo.setSubject(dto.getSubject());
+        teacherInfo.setDepartment(dto.getDepartment());
+        teacherInfo.setPosition(dto.getPosition());
+
+        user.getInfos().add(teacherInfo);
+    }
+
+    private void createParentInfo(User user, CustomUserDTO dto) {
+        ParentInfo parentInfo = new ParentInfo();
+        parentInfo.setUser(user);
+        parentInfo.setParentName(dto.getName());
+        parentInfo.setPhoneNumber(dto.getPhoneNumber());
+
+        user.getInfos().add(parentInfo);
     }
 
     /**
@@ -120,7 +124,6 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("회원정보를 찾을 수 없습니다."));
 
-        // 현재 비밀번호 확인
         if (passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
             user.changePassword(passwordEncoder.encode(dto.getNewPassword()));
             log.info("비밀번호 변경 완료: {}", dto.getEmail());
@@ -151,33 +154,16 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("회원정보를 찾을 수 없습니다."));
 
-        // 비밀번호 확인
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 1. 프로필 이미지 삭제
+        // 프로필 삭제
         Optional<Profile> profile = profileRepository.findByUser(user);
         profile.ifPresent(profileRepository::delete);
         log.info("프로필 삭제 완료: {}", dto.getEmail());
 
-        // 2. 학부모인 경우 - 자녀와의 연결 해제 (자녀는 삭제하지 않음)
-        if (user instanceof Parent) {
-            Parent parent = (Parent) user;
-            for (Student child : parent.getChildren()) {
-                child.changeParent(null);
-            }
-            parent.getChildren().clear();
-            log.info("자녀 연결 해제 완료: {}", dto.getEmail());
-        }
-
-        // 3. 학생인 경우 - 부모와의 연결 해제
-        if (user instanceof Student) {
-            Student student = (Student) user;
-            student.changeParent(null);
-        }
-
-        // 4. 사용자 삭제
+        // User 삭제 (CascadeType.ALL로 Info도 자동 삭제)
         userRepository.delete(user);
         log.info("회원 탈퇴 완료: {}", dto.getEmail());
     }
@@ -200,42 +186,66 @@ public class UserService implements UserDetailsService {
     }
 
     /**
-     * User Entity를 CustomUserDTO로 변환
+     * 이메일로 사용자 DTO 조회
+     */
+    @Transactional(readOnly = true)
+    public CustomUserDTO getUserDTOByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + email));
+        return entityToDTO(user);
+    }
+
+    /**
+     * User 엔티티를 CustomUserDTO로 변환
      */
     private CustomUserDTO entityToDTO(User user) {
-        CustomUserDTO dto = CustomUserDTO.builder()
+        CustomUserDTO.CustomUserDTOBuilder builder = CustomUserDTO.builder()
                 .uid(user.getUid())
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .name(user.getName())
-                .role(user.getRole())
-                .build();
+                .roles(user.getRoles());
 
-        // 역할별 추가 정보 설정
-        if (user instanceof Student) {
-            Student student = (Student) user;
-            dto.setStudentNumber(student.getStudentNumber());
-            dto.setGrade(student.getGrade());
-            dto.setClassNum(student.getClassNum());
-        } else if (user instanceof Teacher) {
-            Teacher teacher = (Teacher) user;
-            dto.setEmployeeNumber(teacher.getEmployeeNumber());
-            dto.setSubject(teacher.getSubject());
-        } else if (user instanceof AdminEntity) {
-            AdminEntity admin = (AdminEntity) user;
-            dto.setEmployeeNumber(admin.getEmployeeNumber());
-            dto.setDepartment(admin.getDepartment());
+        // 역할별 Info 정보 추가
+        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        if (studentInfo != null) {
+            builder.role(UserRole.STUDENT)
+                    .studentIdentityNum(studentInfo.getStudentIdentityNum());
+
+            int currentYear = LocalDate.now().getYear();
+            StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+            if (assignment != null) {
+                builder.grade(assignment.getGrade())
+                        .classNum(assignment.getClassNum())
+                        .studentNum(assignment.getStudentNum())
+                        .schoolYear(assignment.getSchoolYear());
+            }
         }
 
-        return dto;
-    }
+        TeacherInfo teacherInfo = user.getInfo(TeacherInfo.class);
+        if (teacherInfo != null) {
+            builder.role(UserRole.TEACHER)
+                    .employeeNumber(teacherInfo.getCode())
+                    .subject(teacherInfo.getSubject())
+                    .department(teacherInfo.getDepartment())
+                    .position(teacherInfo.getPosition());
+        }
 
-    /**
-     * 이메일로 CustomUserDTO 조회
-     */
-    @Transactional(readOnly = true)
-    public CustomUserDTO getUserDTOByEmail(String email) {
-        User user = getUserByEmail(email);
-        return entityToDTO(user);
+        ParentInfo parentInfo = user.getInfo(ParentInfo.class);
+        if (parentInfo != null) {
+            builder.role(UserRole.PARENT)
+                    .phoneNumber(parentInfo.getPhoneNumber());
+        }
+
+        // 기본 역할 설정 (Info가 없는 경우)
+        if (studentInfo == null && teacherInfo == null && parentInfo == null) {
+            if (user.hasRole(UserRole.ADMIN)) {
+                builder.role(UserRole.ADMIN);
+            } else if (!user.getRoles().isEmpty()) {
+                builder.role(user.getRoles().iterator().next());
+            }
+        }
+
+        return builder.build();
     }
 }

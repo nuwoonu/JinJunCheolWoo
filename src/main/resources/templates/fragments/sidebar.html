@@ -222,26 +222,28 @@
         </ul>
       </li>
 
-      <!-- Classes - TEACHER, ADMIN만 -->
-      <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
-        <a href="javascript:void(0)">
+      <!-- [woo 수정] Classes/학급 관리 - ADMIN만 -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/classes}">
           <i class="ri-list-view"></i>
-          <span>Classes</span>
+          <span>학급 관리</span>
         </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a th:href="@{/class/list}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              Class List
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/class/room}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              Class Room
-            </a>
-          </li>
-        </ul>
+      </li>
+
+      <!-- [woo 수정] 교사 정보 관리 - ADMIN만 -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/teachers}">
+          <i class="ri-user-settings-line"></i>
+          <span>교사 관리</span>
+        </a>
+      </li>
+
+      <!-- [woo 추가] 학생 정보 관리 - ADMIN만 -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/students}">
+          <i class="ri-user-3-line"></i>
+          <span>학생 관리</span>
+        </a>
       </li>
 
       <!-- Examinations - 모든 로그인 사용자 -->

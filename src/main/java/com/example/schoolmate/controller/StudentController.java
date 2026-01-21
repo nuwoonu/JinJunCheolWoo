@@ -1,10 +1,7 @@
 package com.example.schoolmate.controller;
 
-import com.example.schoolmate.common.entity.constant.UserRole;
-import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.StudentDTO;
 import com.example.schoolmate.service.StudentService;
-import com.example.schoolmate.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -26,7 +23,6 @@ import java.time.Year;
 public class StudentController {
 
     private final StudentService studentService;
-    private final UserService userService;
 
     @GetMapping("/list")
     public String studentList(Model model) {
@@ -41,6 +37,7 @@ public class StudentController {
         return "student/add-new-student";
     }
 
+    // TODO: 학생 등록 기능은 새 구조에 맞는 서비스 구현 후 활성화
     @PostMapping("/add")
     public String addStudentPost(@Valid @ModelAttribute("studentDTO") StudentDTO studentDTO,
                                   BindingResult bindingResult,
@@ -54,28 +51,9 @@ public class StudentController {
             return "student/add-new-student";
         }
 
-        try {
-            // StudentDTO -> CustomUserDTO 변환 후 UserService.join() 사용
-            CustomUserDTO userDTO = CustomUserDTO.builder()
-                    .email(studentDTO.getEmail())
-                    .password(studentDTO.getPassword())
-                    .name(studentDTO.getName())
-                    .role(UserRole.STUDENT)
-                    .studentNumber(studentDTO.getStudentNumber())
-                    .grade(studentDTO.getGrade())
-                    .classNum(studentDTO.getClassNum())
-                    .build();
-
-            Long studentId = userService.join(userDTO);
-            log.info("학생 등록 성공: ID = {}", studentId);
-            redirectAttributes.addFlashAttribute("msg", "학생이 성공적으로 등록되었습니다.");
-            return "redirect:/student/list";
-        } catch (IllegalStateException e) {
-            log.error("학생 등록 실패: {}", e.getMessage());
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("currentYear", Year.now().getValue());
-            return "student/add-new-student";
-        }
+        // 임시: 학생 등록 기능 비활성화 (UserService 재구현 필요)
+        redirectAttributes.addFlashAttribute("error", "학생 등록 기능은 현재 준비 중입니다.");
+        return "redirect:/student/add";
     }
 
     @GetMapping("/edit")

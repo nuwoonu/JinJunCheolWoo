@@ -1,5 +1,7 @@
 package com.example.schoolmate.controller;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,20 +14,26 @@ import com.example.schoolmate.board.dto.NoticeDTO;
 import com.example.schoolmate.board.dto.ParentBoardDTO;
 import com.example.schoolmate.board.service.NoticeService;
 import com.example.schoolmate.board.service.ParentBoardService;
-import com.example.schoolmate.common.entity.Parent;
+import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.info.ParentInfo;
+import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
-import com.example.schoolmate.common.entity.Student;
-import com.example.schoolmate.common.repository.ParentRepository;
+import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Controller
 @RequiredArgsConstructor
+@Log4j2
 public class DashboardController {
 
-    private final ParentRepository parentRepository;
+    private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
     private final NoticeService noticeService;
     private final ParentBoardService parentBoardService;
 
@@ -70,13 +78,20 @@ public class DashboardController {
     public String getParentDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
         Long uid = authUserDTO.getCustomUserDTO().getUid();
 
-        // 자녀 목록
-        Parent parent = parentRepository.findById(uid).orElse(null);
-        if (parent != null) {
-            List<ChildDTO> children = parent.getChildren().stream()
-                .map(student -> convertToChildDTO(student))
-                .collect(Collectors.toList());
-            model.addAttribute("children", children);
+        // 자녀 목록 (새 구조: User → ParentInfo → FamilyRelation → StudentInfo)
+        User parentUser = userRepository.findById(uid).orElse(null);
+        if (parentUser != null) {
+            ParentInfo parentInfo = parentUser.getInfo(ParentInfo.class);
+            if (parentInfo != null && parentInfo.getChildrenRelations() != null) {
+                List<ChildDTO> children = parentInfo.getChildrenRelations().stream()
+                    .map(relation -> convertToChildDTO(relation.getStudentInfo()))
+                    .collect(Collectors.toList());
+                model.addAttribute("children", children);
+            } else {
+                model.addAttribute("children", new ArrayList<>());
+            }
+        } else {
+            model.addAttribute("children", new ArrayList<>());
         }
 
         // 공지사항 최근 5개
@@ -90,19 +105,29 @@ public class DashboardController {
         return "parent/dashboard";
     }
 
-    private ChildDTO convertToChildDTO(Student student) {
+    /**
+     * StudentInfo → ChildDTO 변환
+     */
+    private ChildDTO convertToChildDTO(StudentInfo studentInfo) {
+        User studentUser = studentInfo.getUser();
+
+        // 프로필 이미지 조회
         String imageUrl = null;
-        Profile profile = student.getProfile();
+        Profile profile = profileRepository.findByUser(studentUser).orElse(null);
         if (profile != null && profile.getUuid() != null) {
             imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
         }
 
+        // 현재 학년도 배정 정보
+        int currentYear = LocalDate.now().getYear();
+        StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+
         return ChildDTO.builder()
-            .id(student.getUid())
-            .name(student.getName())
-            .studentNumber(student.getStudentNumber())
-            .grade(student.getGrade())
-            .classNum(student.getClassNum())
+            .id(studentUser.getUid())
+            .name(studentUser.getName())
+            .studentNumber(studentInfo.getStudentIdentityNum())
+            .grade(assignment != null ? assignment.getGrade() : null)
+            .classNum(assignment != null ? assignment.getClassNum() : null)
             .profileImageUrl(imageUrl)
             .build();
     }

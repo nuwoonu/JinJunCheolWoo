@@ -487,23 +487,21 @@
       </div>
 
       <div class="dashboard-main-body">
+        <!-- [woo 수정] 브레드크럼 한국어화 -->
         <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
           <div class="">
-            <h1 class="fw-semibold mb-4 h6 text-primary-light">Teacher List</h1>
+            <h1 class="fw-semibold mb-4 h6 text-primary-light">교사 정보 관리</h1>
             <div class="">
-              <a href="index.html" class="text-secondary-light hover-text-primary hover-underline">Dashboard </a>
-              <a href="javascript:void(0)" class="text-secondary-light hover-text-primary hover-underline d-none">
-                / Teacher</a
-              >
-              <span class="text-secondary-light">/ Teacher List</span>
+              <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">홈 </a>
+              <span class="text-secondary-light">/ 교사 정보 관리</span>
             </div>
           </div>
-          <a th:href="@{/teacher/add}" class="btn btn-primary-600 d-flex align-items-center gap-6">
+          <button type="button" class="my-sidebar-btn btn btn-primary-600 d-flex align-items-center gap-6">
             <span class="d-flex text-md">
               <i class="ri-add-large-line"></i>
             </span>
-            Add Teacher
-          </a>
+            교사 추가
+          </button>
         </div>
 
         <div class="mt-24">
@@ -635,984 +633,50 @@
 
               <div class="p-0">
                 <table class="table bordered-table mb-0 data-table" id="dataTable" data-page-length="10">
+                  <!-- [woo 수정] 테이블 헤더 - 교사관리용 -->
                   <thead>
                     <tr>
-                      <th scope="col">
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label"> S.L </label>
-                        </div>
-                      </th>
-                      <th scope="col">ID</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Subject</th>
-                      <th scope="col">Class</th>
-                      <th scope="col">Email</th>
-                      <th scope="col">Phone Number</th>
-                      <th scope="col">Join Date</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Action</th>
+                      <th scope="col">UID</th>
+                      <th scope="col">이름</th>
+                      <th scope="col">이메일</th>
+                      <th scope="col">담당 과목</th>
+                      <th scope="col">부서</th>
+                      <th scope="col">직책</th>
+                      <th scope="col">상태</th>
+                      <th scope="col">관리</th>
                     </tr>
                   </thead>
+                  <!-- [woo 수정] 테이블 바디 - Thymeleaf 동적 바인딩 -->
                   <tbody>
-                    <tr>
+                    <tr th:each="t : ${teachers}">
+                      <td th:text="${t.uid}">1</td>
+                      <td class="fw-medium" th:text="${t.name}">홍길동</td>
+                      <td th:text="${t.email}">teacher@school.com</td>
+                      <td th:text="${t.subject ?: '-'}">수학</td>
+                      <td th:text="${t.department ?: '-'}">교무부</td>
+                      <td th:text="${t.position ?: '-'}">평교사</td>
                       <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label"> 01 </label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52365</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img1.png"
-                            alt="Marvin McKinney Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div class="">
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Marvin McKinney</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Mathematics</td>
-                      <td>1 (A), 2(A), 3(A)</td>
-                      <td>chinthaka@hotmail.com</td>
-                      <td>209.555.0104</td>
-                      <td>05 May 2012</td>
-                      <td>
-                        <span class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Active</span
-                        >
+                        <span th:classappend="${t.statusName == 'EMPLOYED' ? 'bg-success-100 text-success-600' : 'bg-danger-100 text-danger-600'}"
+                              class="px-24 py-4 radius-4 fw-medium text-sm"
+                              th:text="${t.statusDesc ?: '미정'}">재직</span>
                       </td>
                       <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i>
-                                View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i>
-                                Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                type="button"
-                              >
-                                <i class="ri-error-warning-line"></i>
-                                Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
+                        <button type="button" class="edit-sidebar-btn btn btn-sm btn-outline-primary-600"
+                                th:data-uid="${t.uid}"
+                                th:data-name="${t.name}"
+                                th:data-subject="${t.subject}"
+                                th:data-department="${t.department}"
+                                th:data-position="${t.position}"
+                                th:data-status="${t.statusName}">
+                          수정
+                        </button>
                       </td>
                     </tr>
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label"> 01 </label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52365</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img2.png"
-                            alt="Ralph Edwards Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div class="">
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Ralph Edwards</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Physics</td>
-                      <td>9 (A), 10 (B),</td>
-                      <td>mobileip@mac.com</td>
-                      <td>209.555.0104</td>
-                      <td>05 May 2012</td>
-                      <td>
-                        <span class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Inactive</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i>
-                                View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i>
-                                Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                type="button"
-                              >
-                                <i class="ri-error-warning-line"></i>
-                                Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">03</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52367</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img3.png"
-                            alt="Courtney Henry Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Courtney Henry</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Biology</td>
-                      <td>6 (A), 7 (B)</td>
-                      <td>courtney@edu.com</td>
-                      <td>209.555.0134</td>
-                      <td>18 Jan 2014</td>
-                      <td>
-                        <span class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Active</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                ><i class="ri-user-3-line"></i>View Student</a
-                              >
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                ><i class="ri-edit-2-line"></i>Edit</a
-                              >
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-error-warning-line"></i>Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">04</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52368</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img4.png"
-                            alt="Eleanor Pena Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Eleanor Pena</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Chemistry</td>
-                      <td>8 (B), 9 (A)</td>
-                      <td>eleanor.pena@school.org</td>
-                      <td>209.555.0189</td>
-                      <td>22 Aug 2016</td>
-                      <td>
-                        <span class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Inactive</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                ><i class="ri-user-3-line"></i>View Student</a
-                              >
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                ><i class="ri-edit-2-line"></i>Edit</a
-                              >
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-error-warning-line"></i>Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">05</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52369</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img5.png"
-                            alt="Cody Fisher Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Cody Fisher</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>English</td>
-                      <td>5 (A), 6 (A)</td>
-                      <td>cody.fisher@school.com</td>
-                      <td>209.555.0192</td>
-                      <td>14 Mar 2015</td>
-                      <td>
-                        <span class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Active</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                ><i class="ri-user-3-line"></i>View Student</a
-                              >
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                ><i class="ri-edit-2-line"></i>Edit</a
-                              >
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-error-warning-line"></i>Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">06</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52370</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img6.png"
-                            alt="Devon Lane Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Devon Lane</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Geography</td>
-                      <td>7 (C), 8 (A)</td>
-                      <td>devon@edu.org</td>
-                      <td>209.555.0119</td>
-                      <td>09 Jul 2018</td>
-                      <td>
-                        <span class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Active</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i>
-                                View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i>
-                                Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                type="button"
-                              >
-                                <i class="ri-error-warning-line"></i>
-                                Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">07</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52371</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img7.png"
-                            alt="Bessie Cooper Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Bessie Cooper</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>History</td>
-                      <td>9 (B), 10 (A)</td>
-                      <td>bessie.cooper@school.org</td>
-                      <td>209.555.0156</td>
-                      <td>23 Feb 2013</td>
-                      <td>
-                        <span class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Inactive</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i>
-                                View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i>
-                                Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                type="button"
-                              >
-                                <i class="ri-error-warning-line"></i>
-                                Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">08</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52372</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img8.png"
-                            alt="Arlene McCoy Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Arlene McCoy</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Economics</td>
-                      <td>11 (B), 12 (A)</td>
-                      <td>arlene.mccoy@edu.org</td>
-                      <td>209.555.0172</td>
-                      <td>16 Oct 2019</td>
-                      <td>
-                        <span class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Active</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i>
-                                View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i>
-                                Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                type="button"
-                              >
-                                <i class="ri-error-warning-line"></i>
-                                Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">09</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52373</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img9.png"
-                            alt="Annette Black Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Annette Black</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>ICT</td>
-                      <td>8 (A), 9 (B)</td>
-                      <td>annette@school.edu</td>
-                      <td>209.555.0195</td>
-                      <td>05 May 2020</td>
-                      <td>
-                        <span class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Active</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i>
-                                View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i>
-                                Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                type="button"
-                              >
-                                <i class="ri-error-warning-line"></i>
-                                Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">10</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52374</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img2.png"
-                            alt="Guy Hawkins Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Guy Hawkins</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Accounting</td>
-                      <td>10 (A), 11 (A)</td>
-                      <td>guy.hawkins@edu.com</td>
-                      <td>209.555.0184</td>
-                      <td>11 Dec 2017</td>
-                      <td>
-                        <span class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Inactive</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i>
-                                View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i>
-                                Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                type="button"
-                              >
-                                <i class="ri-error-warning-line"></i>
-                                Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">11</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52375</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img9.png"
-                            alt="Theresa Webb Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Theresa Webb</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Computer Science</td>
-                      <td>11 (B), 12 (A)</td>
-                      <td>theresa.webb@school.edu</td>
-                      <td>209.555.0217</td>
-                      <td>29 Mar 2019</td>
-                      <td>
-                        <span class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Active</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i> View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i> Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-error-warning-line"></i> Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div class="form-check style-check d-flex align-items-center">
-                          <input class="form-check-input" type="checkbox" />
-                          <label class="form-check-label">12</label>
-                        </div>
-                      </td>
-                      <td><span class="text-primary-600">AD52376</span></td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <img
-                            src="/images/thumbs/teacher-avatar-img6.png"
-                            alt="Kathryn Murphy Image"
-                            class="flex-shrink-0 me-12 radius-8"
-                          />
-                          <div>
-                            <h6 class="text-md mb-0 fw-medium flex-grow-1">Kathryn Murphy</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Environmental Science</td>
-                      <td>9 (A), 10 (B)</td>
-                      <td>kathryn.murphy@college.edu</td>
-                      <td>209.555.0259</td>
-                      <td>03 Feb 2020</td>
-                      <td>
-                        <span class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm"
-                          >Inactive</span
-                        >
-                      </td>
-                      <td>
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="text-primary-light text-xl"
-                            data-bs-toggle="dropdown"
-                            data-bs-display="static"
-                            aria-expanded="false"
-                          >
-                            <iconify-icon icon="tabler:dots-vertical"></iconify-icon>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
-                            <li>
-                              <a
-                                href="student-list.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-user-3-line"></i> View Student
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="edit-teacher.html"
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-edit-2-line"></i> Edit
-                              </a>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                              >
-                                <i class="ri-error-warning-line"></i> Inactive
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalDelete"
-                              >
-                                <i class="ri-delete-bin-6-line"></i>Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
+                    <!-- 데이터 없을 때 -->
+                    <tr th:if="${#lists.isEmpty(teachers)}">
+                      <td colspan="8" class="text-center py-40 text-secondary-light">
+                        <i class="ri-user-line d-block mb-2 text-xxl"></i>
+                        등록된 교사 정보가 없습니다.
                       </td>
                     </tr>
                   </tbody>
@@ -1630,78 +694,167 @@
       </footer>
     </main>
 
-    <!-- Modal Delete Event start -->
-    <div class="modal fade" id="exampleModalDelete" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-sm modal-dialog modal-dialog-centered max-w-340-px">
-        <div class="modal-content radius-16 bg-base">
-          <div class="modal-body pt-32 px-36 pb-24 text-center">
-            <span class="mb-16 fs-1 line-height-1 text-danger">
-              <iconify-icon icon="fluent:delete-24-regular" class="menu-icon"></iconify-icon>
-            </span>
-            <h6 class="text-lg fw-semibold text-primary-light mb-0">Are your sure you want to Suspend this teacher</h6>
-            <div class="d-flex align-items-center justify-content-center gap-3 mt-24">
-              <button
-                type="reset"
-                class="flex-grow-1 border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-24 py-11 radius-8"
-              >
-                Cancel
+    <!-- [woo 수정] Add sidebar - 교사 추가 폼 -->
+    <div
+      class="my-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-700-px w-100 translate-x-full duration-300 active-translate-0"
+    >
+      <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
+        <h5 class="text-lg mb-0">교사 추가</h5>
+        <button type="button" class="close-my-sidebar text-danger-600 text-lg d-flex">
+          <i class="ri-close-large-line"></i>
+        </button>
+      </div>
+      <form th:action="@{/admin/teachers/create}" method="post" class="d-flex flex-column p-20">
+        <div class="row g-3">
+          <div class="col-sm-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">이름</label>
+            <input type="text" name="name" class="form-control" placeholder="이름" required />
+          </div>
+          <div class="col-sm-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">이메일</label>
+            <input type="email" name="email" class="form-control" placeholder="이메일" required />
+          </div>
+          <div class="col-sm-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">비밀번호</label>
+            <input type="password" name="password" class="form-control" placeholder="비밀번호" required />
+          </div>
+          <div class="col-sm-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">담당 과목</label>
+            <input type="text" name="subject" class="form-control" placeholder="담당 과목" />
+          </div>
+          <div class="col-sm-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">부서</label>
+            <select name="department" class="form-control form-select">
+              <option value="">부서 선택</option>
+              <option th:each="d : ${departments}" th:value="${d}" th:text="${d}"></option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">직책</label>
+            <select name="position" class="form-control form-select">
+              <option value="">직책 선택</option>
+              <option th:each="p : ${positions}" th:value="${p}" th:text="${p}"></option>
+            </select>
+          </div>
+          <div class="col-12">
+            <div class="d-flex align-items-center justify-content-center gap-3 mt-8">
+              <button type="reset" class="close-my-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-50 py-11 radius-8">
+                취소
               </button>
-              <button
-                type="button"
-                class="flex-grow-1 btn btn-primary-600 border border-primary-600 text-md px-16 py-12 radius-8"
-              >
-                Yes, Suspend
+              <button type="submit" class="btn btn-primary-600 border border-primary-600 text-md px-28 py-12 radius-8 max-w-156-px w-100">
+                추가
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </div>
-    <!-- Modal Delete Event end -->
+    <!-- Add sidebar end -->
+
+    <!-- [woo 수정] Edit sidebar - 교사 수정 폼 -->
+    <div
+      class="edit-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-700-px w-100 translate-x-full duration-300 active-translate-0"
+    >
+      <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
+        <h5 class="text-lg mb-0">교사 정보 수정</h5>
+        <button type="button" class="close-edit-sidebar text-danger-600 text-lg d-flex">
+          <i class="ri-close-large-line"></i>
+        </button>
+      </div>
+      <form th:action="@{/admin/teachers/update}" method="post" class="d-flex flex-column p-20">
+        <input type="hidden" name="uid" id="editUid" />
+        <div class="row g-3">
+          <div class="col-sm-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">이름</label>
+            <input type="text" name="name" id="editName" class="form-control" placeholder="이름" required />
+          </div>
+          <div class="col-sm-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">담당 과목</label>
+            <input type="text" name="subject" id="editSubject" class="form-control" placeholder="담당 과목" />
+          </div>
+          <div class="col-sm-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">부서</label>
+            <select name="department" id="editDepartment" class="form-control form-select">
+              <option value="">부서 선택</option>
+              <option th:each="d : ${departments}" th:value="${d}" th:text="${d}"></option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">직책</label>
+            <select name="position" id="editPosition" class="form-control form-select">
+              <option value="">직책 선택</option>
+              <option th:each="p : ${positions}" th:value="${p}" th:text="${p}"></option>
+            </select>
+          </div>
+          <div class="col-sm-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">상태</label>
+            <select name="statusName" id="editStatus" class="form-control form-select">
+              <option th:each="s : ${statusList}" th:value="${s.name()}" th:text="${s.description}"></option>
+            </select>
+          </div>
+          <div class="col-12">
+            <div class="d-flex align-items-center justify-content-center gap-3 mt-8">
+              <button type="reset" class="close-edit-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-50 py-11 radius-8">
+                취소
+              </button>
+              <button type="submit" class="btn btn-primary-600 border border-primary-600 text-md px-28 py-12 radius-8 max-w-156-px w-100">
+                수정
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- Edit sidebar end -->
 
     <!-- jQuery library js -->
     <script src="/js/lib/jquery-3.7.1.min.js"></script>
     <!-- Bootstrap js -->
     <script src="/js/lib/bootstrap.bundle.min.js"></script>
-    <!-- Apex Chart js -->
-    <script src="/js/lib/apexcharts.min.js"></script>
     <!-- Iconify Font js -->
     <script src="/js/lib/iconify-icon.min.js"></script>
-    <!-- Data Table js -->
-    <script src="/js/lib/dataTables.min.js"></script>
-
-    <!-- jQuery UI js -->
-    <script src="/js/lib/jquery-ui.min.js"></script>
-
     <!-- main js -->
     <script src="/js/app.js"></script>
 
+    <!-- [woo 추가] 교사 수정 사이드바 JS -->
     <script>
-      let table = new DataTable("#dataTable");
+      $(document).ready(function() {
+        // 수정 버튼 클릭 시 사이드바 열기 + 데이터 바인딩
+        $(".edit-sidebar-btn").on("click", function() {
+          var uid = $(this).data("uid");
+          var name = $(this).data("name");
+          var subject = $(this).data("subject");
+          var department = $(this).data("department");
+          var position = $(this).data("position");
+          var status = $(this).data("status");
 
-      // ✅ Data Table start
-      $(".data-table").each(function () {
-        const $table = $(this);
-        const tableInstance = new DataTable(this);
+          $("#editUid").val(uid);
+          $("#editName").val(name);
+          $("#editSubject").val(subject);
+          $("#editDepartment").val(department);
+          $("#editPosition").val(position);
+          $("#editStatus").val(status);
 
-        // Handle search input (inside same wrapper)
-        $table
-          .closest(".dataTable-wrapper")
-          .find(".dt-search .dt-input")
-          .on("keyup", function () {
-            tableInstance.search(this.value).draw();
-          });
+          $(".edit-sidebar").addClass("active");
+          $(".overlay").addClass("active");
+        });
 
-        // Handle page length change (inside same wrapper)
-        $table
-          .closest(".dataTable-wrapper")
-          .find(".dt-length .dt-input")
-          .on("change", function () {
-            const value = $(this).val();
-            tableInstance.page.len(value).draw();
-          });
+        // 닫기 버튼
+        $(".close-edit-sidebar, .overlay").on("click", function() {
+          $(".edit-sidebar").removeClass("active");
+          $(".overlay").removeClass("active");
+        });
+
+        // Add 사이드바
+        $(".my-sidebar-btn").on("click", function() {
+          $(".my-sidebar").addClass("active");
+          $(".overlay").addClass("active");
+        });
+        $(".close-my-sidebar, .overlay").on("click", function() {
+          $(".my-sidebar").removeClass("active");
+          $(".overlay").removeClass("active");
+        });
       });
-      // ✅ Data Table end
     </script>
   </body>
 </html>

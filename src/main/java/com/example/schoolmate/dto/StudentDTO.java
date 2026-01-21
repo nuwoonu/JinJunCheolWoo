@@ -1,6 +1,6 @@
 package com.example.schoolmate.dto;
 
-import com.example.schoolmate.common.entity.constant.UserRole;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

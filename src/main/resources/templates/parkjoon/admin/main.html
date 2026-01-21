@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📊 관리자 대시보드</h2>
+        <span
+          class="text-muted"
+          th:text="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}"
+          >2026-01-13</span
+        >
+      </div>
+
+      <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div
+            class="card border-left-primary shadow h-100 py-2 border-0 border-start border-primary border-4"
+          >
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div
+                    class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+                  >
+                    총 학생 수
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    520명
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div
+            class="card border-left-success shadow h-100 py-2 border-0 border-start border-success border-4"
+          >
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div
+                    class="text-xs font-weight-bold text-success text-uppercase mb-1"
+                  >
+                    재직 교직원
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">45명</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div
+            class="card border-left-warning shadow h-100 py-2 border-0 border-start border-warning border-4"
+          >
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div
+                    class="text-xs font-weight-bold text-warning text-uppercase mb-1"
+                  >
+                    시설 예약 대기
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">3건</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div
+            class="card border-left-info shadow h-100 py-2 border-0 border-start border-info border-4"
+          >
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div
+                    class="text-xs font-weight-bold text-info text-uppercase mb-1"
+                  >
+                    주요 일정
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    기말고사 (D-12)
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-2">
+        <div class="col-lg-8">
+          <div class="card shadow mb-4 border-0">
+            <div
+              class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-white"
+            >
+              <h6 class="m-0 font-weight-bold text-primary">시스템 안내</h6>
+            </div>
+            <div class="card-body">
+              <p>학교 관리 시스템 관리자 페이지에 오신 것을 환영합니다.</p>
+              <p class="mb-0 text-muted small">
+                * 왼쪽 메뉴를 통해 학급 편성, 교직원 관리 및 학생 DB 관리를
+                진행하실 수 있습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

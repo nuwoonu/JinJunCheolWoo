@@ -31,9 +31,10 @@ public class Profile extends BaseEntity {
     private String path;        // 저장 경로
     private String imgName;     // 원본 파일명
 
+    // TODO: [woo] Joon님 구조에 맞게 수정 필요
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private com.example.schoolmate.common.entity.user.User user;
 
     public void changeUuid(String uuid) {
         this.uuid = uuid;
