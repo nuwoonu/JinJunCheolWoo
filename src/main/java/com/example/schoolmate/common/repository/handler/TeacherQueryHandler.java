@@ -36,7 +36,7 @@ public class TeacherQueryHandler {
         // 1. 컨텐츠 조회
         List<User> content = query
                 .selectFrom(user).distinct()
-                .leftJoin(user.infos, info._super) // BaseInfo와 조인
+                .leftJoin(info).on(info.user.eq(user)) // TeacherInfo와 직접 조인
                 .where(
                         isTeacher,
                         searchFilter,
@@ -51,7 +51,7 @@ public class TeacherQueryHandler {
         JPAQuery<Long> countQuery = query
                 .select(user.countDistinct())
                 .from(user)
-                .leftJoin(user.infos, info._super)
+                .leftJoin(info).on(info.user.eq(user))
                 .where(
                         isTeacher,
                         searchFilter,

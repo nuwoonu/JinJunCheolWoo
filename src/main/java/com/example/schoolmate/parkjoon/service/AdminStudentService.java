@@ -3,6 +3,7 @@ package com.example.schoolmate.parkjoon.service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -115,28 +116,48 @@ public class AdminStudentService {
             if (request.getStatusName() != null) {
                 info.setStatus(StudentStatus.valueOf(request.getStatusName()));
             }
+            info.setBasicHabits(request.getBasicHabits());
+            info.setSpecialNotes(request.getSpecialNotes());
         }
     }
 
     /**
-     * 학적 이력 추가/수정 후 학번 반환
+     * 학적 이력 추가
      */
-    public String upsertAssignmentAndReturnId(StudentDTO.AssignmentRequest request) {
+    public String createAssignment(StudentDTO.AssignmentRequest request) {
         User user = userRepository.findById(request.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+        StudentInfo info = user.getInfo(StudentInfo.class);
 
+        boolean exists = info.getAssignments().stream()
+                .anyMatch(a -> a.getSchoolYear() == request.getSchoolYear());
+        if (exists) {
+            throw new IllegalArgumentException("이미 해당 학년도의 배정 정보가 존재합니다.");
+        }
+
+        StudentAssignment assignment = new StudentAssignment();
+        assignment.setStudentInfo(info);
+        assignment.setSchoolYear(request.getSchoolYear());
+        assignment.setGrade(request.getGrade());
+        assignment.setClassNum(request.getClassNum());
+        assignment.setStudentNum(request.getStudentNum());
+        info.getAssignments().add(assignment);
+
+        return info.getStudentIdentityNum();
+    }
+
+    /**
+     * 학적 이력 수정
+     */
+    public String updateAssignment(StudentDTO.AssignmentRequest request) {
+        User user = userRepository.findById(request.getUid())
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo info = user.getInfo(StudentInfo.class);
 
         StudentAssignment assignment = info.getAssignments().stream()
                 .filter(a -> a.getSchoolYear() == request.getSchoolYear())
                 .findFirst()
-                .orElseGet(() -> {
-                    StudentAssignment newAssign = new StudentAssignment();
-                    newAssign.setStudentInfo(info);
-                    newAssign.setSchoolYear(request.getSchoolYear());
-                    info.getAssignments().add(newAssign);
-                    return newAssign;
-                });
+                .orElseThrow(() -> new IllegalArgumentException("수정할 배정 정보를 찾을 수 없습니다."));
 
         assignment.setGrade(request.getGrade());
         assignment.setClassNum(request.getClassNum());

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -145,6 +145,14 @@
                           </option>
                         </select>
                       </div>
+                      <div class="col-md-12">
+                        <label class="form-label fw-semibold">기초 생활 기록</label>
+                        <textarea name="basicHabits" class="form-control" rows="3" th:text="${student.basicHabits}"></textarea>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label fw-semibold">특이사항</label>
+                        <textarea name="specialNotes" class="form-control" rows="3" th:text="${student.specialNotes}"></textarea>
+                      </div>
                       <div class="col-12 text-end mt-4">
                         <button
                           type="submit"
@@ -165,7 +173,7 @@
                     <button
                       type="button"
                       class="btn btn-sm btn-primary"
-                      onclick="openEditAssignmentModal()"
+                      onclick="openCreateAssignmentModal()"
                     >
                       <i class="bi bi-plus-lg"></i> 새 이력 추가
                     </button>
@@ -197,7 +205,7 @@
                               <button
                                 type="button"
                                 class="btn btn-sm btn-outline-secondary"
-                                th:onclick="openEditAssignmentModal([[${assign.schoolYear}]], [[${assign.grade}]], [[${assign.classNum}]], [[${assign.studentNum}]])"
+                                th:onclick="openUpdateAssignmentModal([[${assign.schoolYear}]], [[${assign.grade}]], [[${assign.classNum}]], [[${assign.studentNum}]])"
                               >
                                 편집
                               </button>
@@ -233,23 +241,21 @@
         </div>
       </div>
 
+      <!-- 1. 추가용 모달 (Create Modal) -->
       <div
         class="modal fade"
-        id="addAssignmentModal"
+        id="createAssignmentModal"
         tabindex="-1"
         aria-hidden="true"
       >
         <div class="modal-dialog">
           <form
-            th:action="@{/parkjoon/admin/students/upsert-assignment}"
+            th:action="@{/parkjoon/admin/students/assignment/create}"
             method="post"
-            id="assignmentForm"
             class="modal-content"
           >
             <div class="modal-header">
-              <h5 class="modal-title" id="assignmentModalTitle">
-                🎓 학급 배정 추가/수정
-              </h5>
+              <h5 class="modal-title">🎓 새 학급 배정 추가</h5>
               <button
                 type="button"
                 class="btn-close"
@@ -263,8 +269,8 @@
                 <input
                   type="number"
                   name="schoolYear"
-                  id="modalSchoolYear"
                   class="form-control"
+                  th:value="${#temporals.createNow().year}"
                   required
                 />
               </div>
@@ -298,10 +304,91 @@
                 </div>
               </div>
             </div>
-            <div class="modal-footer d-flex justify-content-between">
+            <div class="modal-footer">
               <button
                 type="button"
-                id="btnDeleteAssignment"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                취소
+              </button>
+              <button type="submit" class="btn btn-primary">추가하기</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 2. 수정용 모달 (Update Modal) -->
+      <div
+        class="modal fade"
+        id="updateAssignmentModal"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <form
+            th:action="@{/parkjoon/admin/students/assignment/update}"
+            method="post"
+            class="modal-content"
+          >
+            <div class="modal-header">
+              <h5 class="modal-title">📝 학급 배정 수정</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" name="uid" th:value="${student.uid}" />
+              <div class="mb-3">
+                <label class="form-label fw-bold">학년도 (수정 불가)</label>
+                <!-- 수정 시 학년도는 식별자 역할이므로 readonly -->
+                <input
+                  type="number"
+                  name="schoolYear"
+                  id="updateSchoolYear"
+                  class="form-control bg-light"
+                  readonly
+                />
+              </div>
+              <div class="row g-2">
+                <div class="col-4">
+                  <label class="form-label fw-bold">학년</label>
+                  <input
+                    type="number"
+                    name="grade"
+                    id="updateGrade"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="col-4">
+                  <label class="form-label fw-bold">반</label>
+                  <input
+                    type="number"
+                    name="classNum"
+                    id="updateClassNum"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="col-4">
+                  <label class="form-label fw-bold">번호</label>
+                  <input
+                    type="number"
+                    name="studentNum"
+                    id="updateStudentNum"
+                    class="form-control"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+              <!-- 삭제 버튼은 수정 모달에만 존재 -->
+              <button
+                type="button"
                 class="btn btn-danger"
                 onclick="deleteAssignmentFromModal()"
               >
@@ -315,7 +402,7 @@
                 >
                   취소
                 </button>
-                <button type="submit" class="btn btn-primary">저장하기</button>
+                <button type="submit" class="btn btn-primary">수정 저장</button>
               </div>
             </div>
           </form>

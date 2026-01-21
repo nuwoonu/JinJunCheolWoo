@@ -36,6 +36,14 @@ public class StudentInfo extends BaseInfo {
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyRelation> familyRelations = new ArrayList<>();
 
+    // 기초 생활 기록
+    @Column(columnDefinition = "TEXT")
+    private String basicHabits;
+
+    // 특이사항
+    @Column(columnDefinition = "TEXT")
+    private String specialNotes;
+
     /**
      * 현재 학년도 소속 정보 가져오기 헬퍼 메서드
      */

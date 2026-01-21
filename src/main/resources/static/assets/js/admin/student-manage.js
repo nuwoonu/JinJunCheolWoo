@@ -38,33 +38,48 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = event.target.querySelector("form");
     if (form) form.reset();
   });
+
+  // --- [4] 탭 상태 유지 (Hash 기반) ---
+  // 1. 페이지 로드 시 URL 해시가 있으면 해당 탭 활성화
+  const hash = window.location.hash;
+  if (hash) {
+    const triggerEl = document.querySelector(`.nav-link[href="${hash}"]`);
+    if (triggerEl) {
+      bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+    }
+  }
+
+  // 2. 탭 클릭 시 URL 해시 업데이트 (새로고침 대비)
+  const tabLinks = document.querySelectorAll('a[data-bs-toggle="tab"]');
+  tabLinks.forEach((tab) => {
+    tab.addEventListener("shown.bs.tab", function (event) {
+      const href = event.target.getAttribute("href");
+      if (href) {
+        history.replaceState(null, null, href);
+      }
+    });
+  });
 });
 
 /**
- * 학적 이력 모달 제어 (추가/수정 모드 통합)
+ * [1] 학적 이력 추가 모달 열기
  */
-function openEditAssignmentModal(year, grade, classNum, studentNum) {
-  const modalElement = document.getElementById("addAssignmentModal");
-  const title = document.getElementById("assignmentModalTitle");
-  const btnDelete = document.getElementById("btnDeleteAssignment");
-  const yearInput = document.getElementById("modalSchoolYear");
+function openCreateAssignmentModal() {
+  const modalElement = document.getElementById("createAssignmentModal");
+  bootstrap.Modal.getOrCreateInstance(modalElement).show();
+}
 
-  if (year) {
-    // [수정 모드]
-    title.innerText = "📝 학급 배정 수정";
-    yearInput.value = year;
-    yearInput.readOnly = true; // 학년도는 기준점이므로 수정 방지
-    modalElement.querySelector('input[name="grade"]').value = grade;
-    modalElement.querySelector('input[name="classNum"]').value = classNum;
-    modalElement.querySelector('input[name="studentNum"]').value = studentNum;
-    if (btnDelete) btnDelete.style.display = "block"; // 삭제 버튼 노출
-  } else {
-    // [신규 추가 모드]
-    title.innerText = "🎓 새 학급 배정 추가";
-    yearInput.value = new Date().getFullYear();
-    yearInput.readOnly = false;
-    if (btnDelete) btnDelete.style.display = "none"; // 삭제 버튼 숨김
-  }
+/**
+ * [2] 학적 이력 수정 모달 열기 (데이터 바인딩)
+ */
+function openUpdateAssignmentModal(year, grade, classNum, studentNum) {
+  const modalElement = document.getElementById("updateAssignmentModal");
+
+  // 수정 모달의 각 필드에 값 주입
+  document.getElementById("updateSchoolYear").value = year;
+  document.getElementById("updateGrade").value = grade;
+  document.getElementById("updateClassNum").value = classNum;
+  document.getElementById("updateStudentNum").value = studentNum;
 
   bootstrap.Modal.getOrCreateInstance(modalElement).show();
 }
@@ -82,7 +97,7 @@ function deleteAssignmentInline(year) {
  * 모달 내부 '삭제' 버튼 클릭 시 호출
  */
 function deleteAssignmentFromModal() {
-  const year = document.getElementById("modalSchoolYear").value;
+  const year = document.getElementById("updateSchoolYear").value;
   if (confirm(`${year}학년도 배정 기록을 삭제하시겠습니까?`)) {
     submitDeleteAssignment(year);
   }

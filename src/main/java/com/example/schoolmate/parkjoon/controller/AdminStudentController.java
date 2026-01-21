@@ -94,21 +94,40 @@ public class AdminStudentController {
         return "redirect:/parkjoon/admin/students/" + request.getStudentIdentityNum();
     }
 
-    // 학적 이력(학년/반) 추가 또는 수정
-    @PostMapping("/upsert-assignment")
-    public String upsertAssignment(StudentDTO.AssignmentRequest request, RedirectAttributes redirectAttributes) {
-        // 서비스에서 해당 학번을 찾아오기 위해 DTO에 학번 정보가 포함되어야 함
-        String identityNum = adminStudentService.upsertAssignmentAndReturnId(request);
+    // 학적 이력 추가
+    @PostMapping("/assignment/create")
+    public String createAssignment(StudentDTO.AssignmentRequest request, RedirectAttributes redirectAttributes) {
+        try {
+            String identityNum = adminStudentService.createAssignment(request);
+            redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 추가되었습니다.");
+            return "redirect:/parkjoon/admin/students/" + identityNum + "#history";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "추가 실패: " + e.getMessage());
+            // 에러 발생 시 되돌아갈 학번 조회
+            StudentDTO.DetailResponse student = adminStudentService.getStudentDetail(request.getUid());
+            return "redirect:/parkjoon/admin/students/" + student.getStudentIdentityNum() + "#history";
+        }
+    }
 
-        redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 저장되었습니다.");
-        return "redirect:/parkjoon/admin/students/" + identityNum;
+    // 학적 이력 수정
+    @PostMapping("/assignment/update")
+    public String updateAssignment(StudentDTO.AssignmentRequest request, RedirectAttributes redirectAttributes) {
+        try {
+            String identityNum = adminStudentService.updateAssignment(request);
+            redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 수정되었습니다.");
+            return "redirect:/parkjoon/admin/students/" + identityNum + "#history";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "수정 실패: " + e.getMessage());
+            StudentDTO.DetailResponse student = adminStudentService.getStudentDetail(request.getUid());
+            return "redirect:/parkjoon/admin/students/" + student.getStudentIdentityNum() + "#history";
+        }
     }
 
     @PostMapping("/delete-assignment")
     public String deleteAssignment(@RequestParam Long uid, @RequestParam int schoolYear, RedirectAttributes ra) {
         String identityNum = adminStudentService.deleteAssignment(uid, schoolYear);
         ra.addFlashAttribute("successMessage", schoolYear + "학년도 이력이 삭제되었습니다.");
-        return "redirect:/parkjoon/admin/students/" + identityNum;
+        return "redirect:/parkjoon/admin/students/" + identityNum + "#history";
     }
 
     @PostMapping("/import-csv")

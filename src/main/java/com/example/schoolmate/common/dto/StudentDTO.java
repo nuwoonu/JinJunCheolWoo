@@ -48,6 +48,8 @@ public class StudentDTO {
         private String name;
         private String studentIdentityNum;
         private String statusName; // StudentStatus Enum Name (ENROLLED, GRADUATED 등)
+        private String basicHabits;
+        private String specialNotes;
     }
 
     // 4. 학년도별 학급 배정 수정/추가 요청
@@ -114,6 +116,10 @@ public class StudentDTO {
         private String statusName;
         private String statusDescription;
 
+        // 기초생활기록, 특이사항 추가
+        private String basicHabits;
+        private String specialNotes;
+
         private List<AssignmentInfo> assignments;
         private List<ParentInfoSummary> parents;
 
@@ -127,6 +133,9 @@ public class StudentDTO {
                 this.studentIdentityNum = info.getStudentIdentityNum();
                 this.statusName = info.getStatus().name();
                 this.statusDescription = info.getStatus().getDescription();
+
+                this.basicHabits = info.getBasicHabits();
+                this.specialNotes = info.getSpecialNotes();
 
                 // 이력 데이터 변환 (최신 연도순)
                 this.assignments = info.getAssignments().stream()

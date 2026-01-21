@@ -8,9 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 import com.example.schoolmate.common.dto.StudentDTO;
-import com.example.schoolmate.common.entity.info.QFamilyRelation;
-import com.example.schoolmate.common.entity.info.QParentInfo;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
+import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.QStudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
@@ -32,7 +31,7 @@ public class StudentQueryHandler {
 
         List<User> content = query
                 .selectFrom(user)
-                .leftJoin(user.infos, info._super)
+                .leftJoin(info).on(info.user.eq(user)) // StudentInfo와 직접 조인
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
@@ -45,7 +44,7 @@ public class StudentQueryHandler {
         JPAQuery<Long> countQuery = query
                 .select(user.count())
                 .from(user)
-                .leftJoin(user.infos, info._super)
+                .leftJoin(info).on(info.user.eq(user))
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
@@ -76,24 +75,19 @@ public class StudentQueryHandler {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
-        QFamilyRelation relation = QFamilyRelation.familyRelation;
-        QParentInfo parent = QParentInfo.parentInfo;
 
-        User result = query
-                .selectFrom(user)
-                // StudentInfo 조인
-                .innerJoin(user.infos, info._super).fetchJoin()
+        // StudentInfo를 기준으로 조회하여 User와 하위 정보를 한 번에 Fetch Join
+        StudentInfo result = query
+                .selectFrom(info)
+                .innerJoin(info.user, user).fetchJoin() // User Fetch Join
                 // 학적 이력 조인 (최신순 정렬을 위해 fetchJoin 유지)
                 .leftJoin(info.assignments, assign).fetchJoin()
-                // 보호자 관계 및 보호자 정보 조인
-                .leftJoin(info.familyRelations, relation).fetchJoin()
-                .leftJoin(relation.parentInfo, parent).fetchJoin()
                 .where(
                         info.studentIdentityNum.eq(identityNum),
                         user.roles.contains(UserRole.STUDENT))
                 .fetchOne();
 
-        return Optional.ofNullable(result);
+        return Optional.ofNullable(result).map(StudentInfo::getUser);
     }
 
     /**
