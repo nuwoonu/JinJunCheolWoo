@@ -43,6 +43,9 @@
         <div th:if="${param.error}" class="text-danger small mb-3">
           이메일 또는 비밀번호가 올바르지 않습니다.
         </div>
+        <div th:if="${param.logout}" class="alert alert-success small mb-3 py-2">
+          로그아웃 되었습니다.
+        </div>
         <button type="submit" class="btn btn-primary w-100">
           관리자 로그인
         </button>

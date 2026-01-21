@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>게시글 작성</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">게시글 작성</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / </span>
+          <a th:href="@{/parent/board/list}" class="text-secondary-light hover-text-primary hover-underline"
+            >학부모 게시판</a
+          >
+          <span class="text-secondary-light"> / 글쓰기</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-4">새 게시글</h5>
+        <form th:action="@{/parent/board/create}" method="post" th:object="${parentBoardDTO}">
+          <div class="mb-3">
+            <label for="writerName" class="form-label">작성자</label>
+            <input
+              type="text"
+              class="form-control"
+              id="writerName"
+              th:value="${#authentication.principal.customUserDTO.name}"
+              readonly
+            />
+          </div>
+          <div class="mb-3">
+            <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="title"
+              name="title"
+              th:value="${parentBoardDTO.title}"
+              placeholder="제목을 입력하세요"
+            />
+            <div class="text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+          </div>
+          <div class="mb-3">
+            <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
+            <textarea
+              class="form-control"
+              id="content"
+              name="content"
+              rows="10"
+              placeholder="내용을 입력하세요"
+            >[[${parentBoardDTO.content}]]</textarea>
+            <div class="text-danger" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">등록</button>
+            <a th:href="@{/parent/board/list}" class="btn btn-secondary">취소</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</html>

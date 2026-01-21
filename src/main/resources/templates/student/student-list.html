@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학생 정보 관리</title>
+  </head>
+
+  <div layout:fragment="content">
+    <!-- [woo 수정] 브레드크럼 -->
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">학생 정보 관리</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">홈</a>
+          <span class="text-secondary-light"> / 학생 정보 관리</span>
+        </div>
+      </div>
+      <div sec:authorize="hasRole('ADMIN')">
+        <!-- [woo 수정] 사이드바 트리거 버튼 -->
+        <button type="button" class="my-sidebar-btn btn btn-primary-600 d-flex align-items-center gap-6">
+          <i class="ri-add-line"></i> 학생 추가
+        </button>
+      </div>
+    </div>
+
+    <!-- 성공/에러 메시지 -->
+    <div th:if="${successMessage}" class="alert alert-success mb-3" role="alert" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger mb-3" role="alert" th:text="${errorMessage}"></div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table bordered-table mb-0" id="dataTable">
+            <!-- [woo 수정] 테이블 헤더 - SummaryResponse DTO 기준 -->
+            <thead>
+              <tr>
+                <th scope="col">UID</th>
+                <th scope="col">학번</th>
+                <th scope="col">이름</th>
+                <th scope="col">이메일</th>
+                <th scope="col">최근 소속</th>
+                <th scope="col">상태</th>
+                <th scope="col" sec:authorize="hasRole('ADMIN')">관리</th>
+              </tr>
+            </thead>
+            <!-- [woo 수정] 테이블 바디 - Thymeleaf 동적 바인딩 -->
+            <tbody>
+              <tr th:if="${#lists.isEmpty(students)}">
+                <td colspan="7" class="text-center text-secondary-light py-4">
+                  <i class="ri-folder-open-line d-block mb-2 text-xxl"></i>
+                  등록된 학생이 없습니다.
+                </td>
+              </tr>
+              <tr th:each="s : ${students}">
+                <td th:text="${s.uid}">1</td>
+                <td>
+                  <span class="text-primary-600 fw-medium" th:text="${s.studentIdentityNum}">20241001</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <img src="/images/thumbs/avatar-img1.png" alt="프로필" class="w-40-px h-40-px rounded-circle flex-shrink-0 me-12" />
+                    <h6 class="text-md mb-0 fw-medium" th:text="${s.name}">학생이름</h6>
+                  </div>
+                </td>
+                <td th:text="${s.email}">student@school.com</td>
+                <td th:text="${s.latestClass ?: '미배정'}">2024년 1-2-15</td>
+                <td>
+                  <span th:classappend="${s.status == '재학' ? 'bg-success-100 text-success-600' : 'bg-neutral-200 text-neutral-600'}"
+                        class="px-12 py-4 radius-4 fw-medium text-sm"
+                        th:text="${s.status}">재학</span>
+                </td>
+                <td sec:authorize="hasRole('ADMIN')">
+                  <button type="button"
+                          class="edit-sidebar-btn btn btn-sm btn-outline-primary"
+                          th:data-uid="${s.uid}"
+                          th:data-name="${s.name}"
+                          th:data-identity="${s.studentIdentityNum}"
+                          th:data-status="${s.status}">
+                    <i class="ri-edit-2-line"></i> 수정
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- [woo 추가] Add Sidebar - 학생 추가 폼 -->
+    <div class="my-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-400-px w-100 translate-x-full duration-300">
+      <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
+        <h5 class="text-lg mb-0">새 학생 추가</h5>
+        <button type="button" class="close-my-sidebar text-danger-600 text-lg d-flex">
+          <i class="ri-close-large-line"></i>
+        </button>
+      </div>
+      <form th:action="@{/admin/students/create}" method="post" class="d-flex flex-column p-20">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">이름 *</label>
+            <input type="text" name="name" class="form-control" placeholder="홍길동" required />
+          </div>
+          <div class="col-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">이메일 *</label>
+            <input type="email" name="email" class="form-control" placeholder="student@school.com" required />
+          </div>
+          <div class="col-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">비밀번호 *</label>
+            <input type="password" name="password" class="form-control" placeholder="••••••••" required />
+          </div>
+          <div class="col-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학번 *</label>
+            <input type="text" name="studentIdentityNum" class="form-control" placeholder="20241001" required />
+          </div>
+
+          <div class="col-12">
+            <hr class="my-3" />
+            <p class="text-sm text-secondary-light mb-12">초기 학급 배정 (선택)</p>
+          </div>
+          <div class="col-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학년도</label>
+            <input type="number" name="year" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy')}" />
+          </div>
+          <div class="col-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학년</label>
+            <input type="number" name="grade" class="form-control" placeholder="1~6" min="1" max="6" />
+          </div>
+          <div class="col-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">반</label>
+            <input type="number" name="classNum" class="form-control" placeholder="1~N" min="1" />
+          </div>
+          <div class="col-6">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">번호</label>
+            <input type="number" name="studentNum" class="form-control" placeholder="1~N" min="1" />
+          </div>
+
+          <div class="col-12 mt-16">
+            <div class="d-flex align-items-center justify-content-center gap-3">
+              <button type="reset" class="close-my-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
+                취소
+              </button>
+              <button type="submit" class="btn btn-primary-600 border border-primary-600 text-md px-40 py-11 radius-8">
+                추가
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- [woo 추가] Edit Sidebar - 학생 수정 폼 -->
+    <div class="edit-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-400-px w-100 translate-x-full duration-300">
+      <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
+        <h5 class="text-lg mb-0">학생 정보 수정</h5>
+        <button type="button" class="close-edit-sidebar text-danger-600 text-lg d-flex">
+          <i class="ri-close-large-line"></i>
+        </button>
+      </div>
+      <form th:action="@{/admin/students/update-basic}" method="post" class="d-flex flex-column p-20">
+        <div class="row g-3">
+          <input type="hidden" name="uid" id="edit-uid" />
+          <div class="col-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">이름</label>
+            <input type="text" name="name" id="edit-name" class="form-control" required />
+          </div>
+          <div class="col-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학번</label>
+            <input type="text" name="studentIdentityNum" id="edit-identity" class="form-control" required />
+          </div>
+          <div class="col-12">
+            <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">상태</label>
+            <select name="statusName" id="edit-status" class="form-select">
+              <option th:each="st : ${statusList}" th:value="${st.name()}" th:text="${st.description}"></option>
+            </select>
+          </div>
+
+          <div class="col-12 mt-16">
+            <div class="d-flex align-items-center justify-content-center gap-3">
+              <button type="reset" class="close-edit-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
+                취소
+              </button>
+              <button type="submit" class="btn btn-primary-600 border border-primary-600 text-md px-40 py-11 radius-8">
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay position-fixed start-0 top-0 w-100 h-100 z-98 d-none" style="background:rgba(0,0,0,.5)"></div>
+  </div>
+
+  <!-- [woo 추가] 사이드바 JavaScript -->
+  <th:block layout:fragment="script">
+    <script>
+      $(document).ready(function() {
+        // Add Sidebar
+        $(".my-sidebar-btn").on("click", function() {
+          $(".my-sidebar").addClass("active-translate-0");
+          $(".overlay").removeClass("d-none");
+        });
+        $(".close-my-sidebar, .overlay").on("click", function() {
+          $(".my-sidebar").removeClass("active-translate-0");
+          $(".overlay").addClass("d-none");
+        });
+
+        // Edit Sidebar
+        $(".edit-sidebar-btn").on("click", function() {
+          var uid = $(this).data("uid");
+          var name = $(this).data("name");
+          var identity = $(this).data("identity");
+          var status = $(this).data("status");
+
+          $("#edit-uid").val(uid);
+          $("#edit-name").val(name);
+          $("#edit-identity").val(identity);
+
+          // status는 description이므로 statusList에서 매칭 필요
+          $("#edit-status option").each(function() {
+            if ($(this).text() === status) {
+              $(this).prop("selected", true);
+            }
+          });
+
+          $(".edit-sidebar").addClass("active-translate-0");
+          $(".overlay").removeClass("d-none");
+        });
+        $(".close-edit-sidebar, .overlay").on("click", function() {
+          $(".edit-sidebar").removeClass("active-translate-0");
+          $(".overlay").addClass("d-none");
+        });
+      });
+    </script>
+  </th:block>
+</html>

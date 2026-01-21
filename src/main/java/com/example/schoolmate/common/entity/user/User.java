@@ -47,7 +47,7 @@ public class User extends BaseEntity {
 
     private String password;
     private String name;
-
+    private String phoneNumber;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "uid"))
     @Enumerated(EnumType.STRING)
@@ -106,5 +106,14 @@ public class User extends BaseEntity {
     public boolean hasInfo(String infoType) {
         return infos.stream()
                 .anyMatch(info -> info.getClass().getSimpleName().toUpperCase().contains(infoType.toUpperCase()));
+    }
+
+    // --- 정보 변경 메서드 ---
+    public void changePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void changeName(String newName) {
+        this.name = newName;
     }
 }
