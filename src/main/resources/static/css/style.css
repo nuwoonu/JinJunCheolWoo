@@ -14435,6 +14435,20 @@ table.dataTable td.dt-type-date {
   content: "\f301";
 }
 
+/* =========================== 사이드바 축소 모드에서 토글 버튼 항상 표시 Start =========================== */
+/* 축소 모드일 때 토글 버튼이 항상 보이도록 설정 */
+/* 사용자가 언제든 클릭하여 사이드바를 확장/축소할 수 있음 */
+.sidebar.active .sidebar-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  right: 50%;
+  transform: translateX(50%);
+  top: 1rem;
+}
+/* =========================== 사이드바 축소 모드에서 토글 버튼 항상 표시 End =========================== */
+
 .sidebar-mobile-toggle {
   display: inline-block;
 }
@@ -14940,3 +14954,65 @@ table.dataTable td.dt-type-date {
 [dir=rtl] .ri-arrow-left-s-line:before {
   content: "\ea6e";
 }
+
+/* === Custom: Disable sidebar hover auto-expand (button toggle only) === */
+.sidebar.active:hover {
+  width: 86px !important;
+}
+
+@media (min-width: 1200px) {
+  .sidebar.active:hover {
+    width: 86px !important;
+  }
+}
+
+@media (min-width: 1400px) {
+  .sidebar.active:hover {
+    width: 86px !important;
+  }
+}
+
+@media (min-width: 1650px) {
+  .sidebar.active:hover {
+    width: 86px !important;
+  }
+}
+
+.sidebar.active:hover .sidebar-logo img.light-logo,
+.sidebar.active:hover .sidebar-logo img.dark-logo {
+  display: none !important;
+}
+
+.sidebar.active:hover .sidebar-logo img.logo-icon {
+  display: inline-block !important;
+}
+
+.sidebar.active:hover .sidebar-menu li a span {
+  display: none !important;
+}
+
+.sidebar.active:hover .sidebar-menu li a .menu-icon {
+  margin-inline-end: 0 !important;
+}
+
+.sidebar.active:hover .sidebar-menu li.dropdown.dropdown-open .sidebar-submenu,
+.sidebar.active:hover .sidebar-menu li.dropdown.open .sidebar-submenu {
+  display: none !important;
+}
+
+.sidebar.active:hover .sidebar-menu li.sidebar-menu-group-title {
+  display: none !important;
+}
+
+.sidebar.active:hover .sidebar-menu li.dropdown a::after {
+  display: none !important;
+}
+
+[data-theme=dark] .sidebar.active:hover .sidebar-logo img.light-logo {
+  display: none !important;
+}
+
+[data-theme=dark] .sidebar.active:hover .sidebar-logo img.dark-logo {
+  display: none !important;
+}
+/* === End Custom sidebar hover disable === */

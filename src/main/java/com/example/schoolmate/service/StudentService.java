@@ -1,40 +1,100 @@
 package com.example.schoolmate.service;
 
+import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
+import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.StudentInfoRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
-import com.example.schoolmate.studentdto.StudentCreateDTO;
-import com.example.schoolmate.studentdto.StudentResponseDTO;
-import com.example.schoolmate.studentdto.StudentUpdateDTO;
+/**
+ * 학생 관련 조회 서비스
+ * 학생 등록은 UserService.join()을 사용
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+@Log4j2
+public class StudentService {
 
-public interface StudentService {
+    private final UserRepository userRepository;
+    private final StudentInfoRepository studentInfoRepository;
 
-    // 학생 등록
-    StudentResponseDTO createStudent(StudentCreateDTO createDTO);
+    /**
+     * 전체 학생 목록 조회 (SummaryResponse)
+     */
+    public List<StudentDTO.SummaryResponse> getAllStudents() {
+        log.info("전체 학생 목록 조회");
+        StudentDTO.StudentSearchCondition condition = new StudentDTO.StudentSearchCondition();
+        return userRepository.searchStudents(condition, Pageable.unpaged())
+                .stream()
+                .map(StudentDTO.SummaryResponse::new)
+                .collect(Collectors.toList());
+    }
 
-    // 학생 정보 조회 (UID로)
-    StudentResponseDTO getStudentByUid(Long uid);
+    /**
+     * 학생 목록 페이징 조회
+     */
+    public Page<StudentDTO.SummaryResponse> getStudentList(
+            StudentDTO.StudentSearchCondition condition,
+            Pageable pageable) {
+        log.info("학생 목록 페이징 조회: {}", condition);
+        return userRepository.searchStudents(condition, pageable)
+                .map(StudentDTO.SummaryResponse::new);
+    }
 
-    // 학생 정보 조회 (학번으로)
-    StudentResponseDTO getStudentByStudentNumber(Long studentNumber);
+    /**
+     * 학생 상세 조회 by uid
+     */
+    public StudentDTO.DetailResponse getStudentById(Long uid) {
+        log.info("학생 상세 조회: uid={}", uid);
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다: " + uid));
 
-    // 전체 학생 목록 조회
-    List<StudentResponseDTO> getAllStudents();
+        if (!user.hasRole(UserRole.STUDENT)) {
+            throw new IllegalArgumentException("해당 사용자는 학생이 아닙니다: " + uid);
+        }
 
-    // 학년별 학생 목록 조회
-    List<StudentResponseDTO> getStudentsByGrade(int grade);
+        return new StudentDTO.DetailResponse(user);
+    }
 
-    // 반별 학생 목록 조회
-    List<StudentResponseDTO> getStudentsByClassNum(int classNum);
+    /**
+     * 학생 상세 조회 by 고유학번
+     */
+    public StudentDTO.DetailResponse getStudentByIdentityNum(String identityNum) {
+        log.info("학생 상세 조회: identityNum={}", identityNum);
+        User user = userRepository.findDetailByIdentityNum(identityNum)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다: " + identityNum));
 
-    // 학년 + 반별 학생 목록 조회
-    List<StudentResponseDTO> getStudentsByGradeAndClass(int grade, int classNum);
+        return new StudentDTO.DetailResponse(user);
+    }
 
-    // 학생 정보 수정
-    StudentResponseDTO updateStudent(Long uid, StudentUpdateDTO updateDTO);
+    /**
+     * 학생 User 엔티티 조회 by uid (내부 사용)
+     */
+    public User getStudentUserById(Long uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다: " + uid));
 
-    // 학생 삭제 (소프트 삭제 - status를 INACTIVE로 변경)
-    void deleteStudent(Long uid);
+        if (!user.hasRole(UserRole.STUDENT)) {
+            throw new IllegalArgumentException("해당 사용자는 학생이 아닙니다: " + uid);
+        }
 
-    // 학생 완전 삭제 (물리적 삭제)
-    void permanentDeleteStudent(Long uid);
+        return user;
+    }
+
+    public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createStudent'");
+    }
 }

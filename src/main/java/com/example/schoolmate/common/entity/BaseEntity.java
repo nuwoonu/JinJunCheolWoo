@@ -4,9 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @MappedSuperclass
 @EntityListeners(value = AuditingEntityListener.class)
 @NoArgsConstructor
@@ -21,9 +20,9 @@ import java.time.LocalDateTime;
 public abstract class BaseEntity {
 
     @CreatedDate
-    @Column(updatable = false) // 생성일은 수정 불가
-    private LocalDateTime createDateTime;
+    @Column(updatable = false)
+    private LocalDateTime createDate;
 
     @LastModifiedDate
-    private LocalDateTime updateDateTime;
+    private LocalDateTime updateDate;
 }

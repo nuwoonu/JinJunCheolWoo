@@ -1,4 +1,9 @@
-<aside class="sidebar" th:fragment="sidebar" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<aside
+  class="sidebar"
+  th:fragment="sidebar"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
   <button type="button" class="sidebar-close-btn">
     <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
   </button>
@@ -35,8 +40,15 @@
             class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
           />
           <span class="profile-dropdown__contents">
-            <span class="h6 mb-0 text-md d-block text-primary-light" th:text="${#authentication.principal.username}">User</span>
-            <span class="text-secondary-light text-sm mb-0 d-block" th:text="${#authentication.principal.authorities[0].authority}">Role</span>
+            <span class="h6 mb-0 text-md d-block text-primary-light" th:text="${#authentication.principal.username}"
+              >User</span
+            >
+            <!-- Admin은 표시 안함, 나머지는 학년-반 표시 -->
+            <span
+              sec:authorize="!hasRole('ADMIN')"
+              class="text-secondary-light text-sm mb-0 d-block"
+              th:text="${#authentication.principal.customUserDTO.grade} + '학년 ' + ${#authentication.principal.customUserDTO.classNum} + '반'"
+            ></span>
           </span>
         </span>
         <span class="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
@@ -64,6 +76,15 @@
         </li>
         <li>
           <a
+            th:href="@{/user/leave}"
+            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+          >
+            <i class="ri-user-unfollow-line"></i>
+            회원 탈퇴
+          </a>
+        </li>
+        <li>
+          <a
             th:href="@{/logout}"
             class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
           >
@@ -77,39 +98,53 @@
   <!-- User Info end -->
   <div class="sidebar-menu-area">
     <ul class="sidebar-menu" id="sidebar-menu">
-      <!-- Dashboard - 로그인한 사용자만 -->
-      <li class="dropdown" sec:authorize="isAuthenticated()">
-        <a href="javascript:void(0)">
+      <!-- Dashboard - 로그인한 사용자만 (역할에 따라 자동으로 해당 대시보드로 이동) -->
+      <li sec:authorize="isAuthenticated()">
+        <a th:href="@{/dashboard}">
           <i class="ri-home-4-line"></i>
-          <span>Dashboard</span>
+          <span>홈</span>
         </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a th:href="@{/dashboard}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              School
-            </a>
-          </li>
-        </ul>
       </li>
 
-      <!-- Students - 모든 로그인 사용자 -->
-      <li class="dropdown" sec:authorize="isAuthenticated()">
+      <!-- Students - TEACHER, ADMIN, STUDENT만 (학부모 제외) -->
+      <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN', 'STUDENT')">
         <a href="javascript:void(0)">
           <i class="ri-graduation-cap-line"></i>
-          <span>Students</span>
+          <span>학생</span>
         </a>
         <ul class="sidebar-submenu">
-          <li>
+          <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
             <a th:href="@{/student/add}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Add New Student
+              학생 추가
             </a>
           </li>
           <li>
             <a th:href="@{/student/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Student List
+              학생 리스트
+            </a>
+          </li>
+          <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+            <a th:href="@{/profile/manage}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              프로필 사진 관리
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- 나의 자녀 - PARENT만 -->
+      <li class="dropdown" sec:authorize="hasRole('PARENT')">
+        <a href="javascript:void(0)">
+          <i class="ri-parent-line"></i>
+          <span>나의 자녀</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/parent/children/status}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              자녀 현황
             </a>
           </li>
         </ul>
@@ -119,78 +154,96 @@
       <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-user-follow-line"></i>
-          <span>Teachers</span>
+          <span>선생님</span>
         </a>
         <ul class="sidebar-submenu">
-          <li>
+          <li sec:authorize="hasAnyRole('ADMIN')">
             <a th:href="@{/teacher/add}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Add New Teacher
+              선생님 추가
             </a>
           </li>
           <li>
-            <a th:href="@{/teacher/teacher-list}">
+            <a th:href="@{/teacher/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Teacher List
+              선생님 목록
             </a>
           </li>
           <li>
             <a th:href="@{/teacher/edit}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Edit Teacher
+              수정
             </a>
           </li>
           <li>
             <a th:href="@{/teacher/details}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Teacher Details
+              자세히
             </a>
           </li>
         </ul>
       </li>
 
-      <!-- Guardian - 모든 로그인 사용자 -->
-      <li class="dropdown" sec:authorize="isAuthenticated()">
-        <a href="javascript:void(0)">
-          <i class="ri-account-circle-line"></i>
-          <span>Guardian</span>
-        </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a th:href="@{/guardian/add}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              Add New Guardian
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/guardian/list}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              Guardian List
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- Classes - TEACHER, ADMIN만 -->
+      <!-- Parent - TEACHER, ADMIN만 조회 가능 -->
       <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
-          <i class="ri-list-view"></i>
-          <span>Classes</span>
+          <i class="ri-user-heart-line"></i>
+          <span>학부모</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/class/list}">
+            <a th:href="@{/parent/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Class List
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/class/room}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              Class Room
+              학부모 목록
             </a>
           </li>
         </ul>
+      </li>
+
+      <!-- 게시판 - STUDENT 제외 (ADMIN, TEACHER, PARENT만) -->
+      <li class="dropdown" sec:authorize="hasAnyRole('ADMIN', 'TEACHER', 'PARENT')">
+        <a href="javascript:void(0)">
+          <i class="ri-article-line"></i>
+          <span>게시판</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/parent/notice/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학부모 공지
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/parent/board/list}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학부모 게시판
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- [woo 수정] Classes/학급 관리 - ADMIN만 -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/classes}">
+          <i class="ri-list-view"></i>
+          <span>학급 관리</span>
+        </a>
+      </li>
+
+      <!-- [woo 수정] 교사 정보 관리 - ADMIN만 -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/teachers}">
+          <i class="ri-user-settings-line"></i>
+          <span>교사 관리</span>
+        </a>
+      </li>
+
+      <!-- [woo 추가] 학생 정보 관리 - ADMIN만 -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/students}">
+          <i class="ri-user-3-line"></i>
+          <span>학생 관리</span>
+        </a>
       </li>
 
       <!-- Examinations - 모든 로그인 사용자 -->

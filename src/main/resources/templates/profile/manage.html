@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학생 프로필 사진 관리</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">학생 프로필 사진 관리</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / 학생 프로필 사진 관리</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 학생이 없을 때 -->
+    <div th:if="${students == null or students.empty}" class="card">
+      <div class="card-body text-center py-5">
+        <i class="ri-user-search-line text-5xl text-secondary-light mb-3"></i>
+        <h5 class="text-secondary-light">등록된 학생이 없습니다.</h5>
+      </div>
+    </div>
+
+    <!-- 학생 목록 -->
+    <div th:if="${students != null and !students.empty}" class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table bordered-table mb-0">
+            <thead>
+              <tr>
+                <th scope="col" style="width: 120px">프로필 사진</th>
+                <th scope="col">이름</th>
+                <th scope="col">학번</th>
+                <th scope="col">학년/반</th>
+                <th scope="col" style="width: 200px">사진 업로드</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="student : ${students}">
+                <td>
+                  <figure class="w-80-px h-80-px rounded-circle overflow-hidden mb-0 border border-width-2-px border-primary-100">
+                    <img th:src="${student.profileImageUrl}" alt="Student Image" class="w-100 h-100 object-fit-cover" th:id="'preview-' + ${student.id}">
+                  </figure>
+                </td>
+                <td class="fw-medium" th:text="${student.name}"></td>
+                <td th:text="${student.studentNumber}"></td>
+                <td>
+                  <span th:text="${student.grade}"></span>학년 <span th:text="${student.classNum}"></span>반
+                </td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="file" class="d-none" th:id="'file-' + ${student.id}" accept="image/*"
+                           th:onchange="'previewAndUpload(' + ${student.id} + ', this)'">
+                    <button type="button" class="btn btn-sm btn-primary"
+                            th:onclick="'document.getElementById(\'file-' + ${student.id} + '\').click()'">
+                      <i class="ri-upload-2-line me-1"></i>사진 선택
+                    </button>
+                    <span th:id="'status-' + ${student.id}" class="text-sm"></span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <th:block layout:fragment="script">
+    <script th:inline="javascript">
+      function previewAndUpload(studentId, input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // 이미지 미리보기
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('preview-' + studentId).src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // 업로드
+        const statusEl = document.getElementById('status-' + studentId);
+        statusEl.innerHTML = '<span class="text-warning">업로드 중...</span>';
+
+        const formData = new FormData();
+        formData.append('studentId', studentId);
+        formData.append('file', file);
+
+        fetch('/profile/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          }
+          throw new Error('업로드 실패');
+        })
+        .then(imageUrl => {
+          statusEl.innerHTML = '<span class="text-success"><i class="ri-check-line"></i> 완료</span>';
+          document.getElementById('preview-' + studentId).src = imageUrl;
+          setTimeout(() => {
+            statusEl.innerHTML = '';
+          }, 3000);
+        })
+        .catch(error => {
+          statusEl.innerHTML = '<span class="text-danger"><i class="ri-close-line"></i> 실패</span>';
+          console.error('Upload error:', error);
+        });
+      }
+    </script>
+  </th:block>
+</html>

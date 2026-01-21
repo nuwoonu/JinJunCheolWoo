@@ -148,7 +148,7 @@ public class StudentDTO {
         private Integer grade;
         private Integer classNum;
         private Integer studentNum;
-
+        
         public AssignmentInfo(StudentAssignment entity) {
             this.schoolYear = entity.getSchoolYear();
             this.grade = entity.getGrade();

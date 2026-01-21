@@ -1,77 +1,69 @@
 package com.example.schoolmate.controller;
 
-import java.util.List;
-
+import com.example.schoolmate.service.StudentService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.schoolmate.service.StudentService;
-import com.example.schoolmate.studentdto.StudentCreateDTO;
-import com.example.schoolmate.studentdto.StudentResponseDTO;
+import com.example.schoolmate.common.dto.StudentDTO;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.time.Year;
 
 @Controller
 @RequestMapping("/student")
 @RequiredArgsConstructor
+@Log4j2
 public class StudentController {
 
     private final StudentService studentService;
 
     @GetMapping("/list")
     public String studentList(Model model) {
-        List<StudentResponseDTO> students = studentService.getAllStudents();
-        model.addAttribute("students", students);
+        model.addAttribute("students", studentService.getAllStudents());
         return "student/student-list";
     }
 
     @GetMapping("/add")
     public String addStudent(Model model) {
-        model.addAttribute("student", new StudentCreateDTO());
+        model.addAttribute("studentDTO", new StudentDTO());
+        model.addAttribute("currentYear", Year.now().getValue());
         return "student/add-new-student";
     }
 
+    // TODO: 학생 등록 기능은 새 구조에 맞는 서비스 구현 후 활성화
     @PostMapping("/add")
-    public String createStudent(@Valid @ModelAttribute("student") StudentCreateDTO createDTO,
-                                RedirectAttributes redirectAttributes) {
-        try {
-            studentService.createStudent(createDTO);
-            redirectAttributes.addFlashAttribute("successMessage", "학생이 성공적으로 등록되었습니다.");
-            return "redirect:/student/list";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "학생 등록 중 오류가 발생했습니다: " + e.getMessage());
-            return "redirect:/student/add";
-        }
-    }
+    public String addStudentPost(@Valid @ModelAttribute("studentDTO") StudentDTO studentDTO,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
+            Model model) {
+        log.info("학생 등록 요청: {}", studentDTO);
 
-    @GetMapping("/edit/{uid}")
-    public String editStudent(@PathVariable Long uid, Model model) {
-        StudentResponseDTO student = studentService.getStudentByUid(uid);
-        model.addAttribute("student", student);
-        return "student/edit-student";
+        if (bindingResult.hasErrors()) {
+            log.info("유효성 검사 오류: {}", bindingResult.getAllErrors());
+            model.addAttribute("currentYear", Year.now().getValue());
+            return "student/add-new-student";
+        }
+
+        // 임시: 학생 등록 기능 비활성화 (UserService 재구현 필요)
+        redirectAttributes.addFlashAttribute("error", "학생 등록 기능은 현재 준비 중입니다.");
+        return "redirect:/student/add";
     }
 
     @GetMapping("/edit")
-    public String editStudentForm() {
+    public String editStudent() {
         return "student/edit-student";
     }
 
-    @GetMapping("/details/{uid}")
-    public String studentDetails(@PathVariable Long uid, Model model) {
-        StudentResponseDTO student = studentService.getStudentByUid(uid);
-        model.addAttribute("student", student);
-        return "student/student-details";
-    }
-
     @GetMapping("/details")
-    public String studentDetailsForm() {
+    public String studentDetails() {
         return "student/student-details";
     }
 }

@@ -15,7 +15,7 @@ public class TeacherController {
 
     @GetMapping("/add")
     public String addTeacher() {
-        return "teacher/add-new-teacher";
+        return "teacher/add";
     }
 
     @GetMapping("/edit")

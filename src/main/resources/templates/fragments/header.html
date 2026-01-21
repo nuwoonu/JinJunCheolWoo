@@ -1,6 +1,9 @@
-<div class="navbar-header shadow-1" th:fragment="header"
-     xmlns:th="http://www.thymeleaf.org"
-     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div
+  class="navbar-header shadow-1"
+  th:fragment="header"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
   <div class="row align-items-center justify-content-between">
     <div class="col-auto">
       <div class="d-flex flex-wrap align-items-center gap-4">
@@ -34,14 +37,19 @@
             <span class="w-8-px h-8-px bg-danger-600 position-absolute end-0 top-0 rounded-circle mt-2 me-2"></span>
           </button>
           <div class="dropdown-menu to-top dropdown-menu-lg p-0">
-            <div class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+            <div
+              class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2"
+            >
               <div>
-                <h6 class="text-lg text-primary-light fw-semibold mb-0">Notifications</h6>
+                <h6 class="text-lg text-primary-light fw-semibold mb-0">알림</h6>
               </div>
-              <span class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">0</span>
+              <span
+                class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center"
+                >0</span
+              >
             </div>
             <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
-              <p class="px-24 py-12 text-secondary-light">No new notifications</p>
+              <p class="px-24 py-12 text-secondary-light">새로운 알림이 없습니다.</p>
             </div>
           </div>
         </div>
@@ -61,29 +69,46 @@
             />
           </button>
           <div class="dropdown-menu to-top dropdown-menu-sm">
-            <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+            <div
+              class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2"
+            >
               <div>
-                <h6 class="text-lg text-primary-light fw-semibold mb-1" th:text="${#authentication.principal.username}">User</h6>
-                <span class="text-secondary-light fw-medium text-sm" th:text="${#authentication.principal.authorities[0].authority}">Role</span>
+                <h6 class="text-lg text-primary-light fw-semibold mb-1" th:text="${#authentication.principal.username}">
+                  User
+                </h6>
+                <span
+                  class="text-secondary-light fw-medium text-sm"
+                  th:text="${#authentication.principal.authorities[0].authority}"
+                  >Role</span
+                >
               </div>
             </div>
             <ul class="to-top-list">
               <li>
-                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" th:href="@{/profile}">
+                <a
+                  class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"
+                  th:href="@{/profile}"
+                >
                   <iconify-icon icon="solar:user-linear" class="icon text-xl"></iconify-icon>
-                  My Profile
+                  나의 프로필
                 </a>
               </li>
               <li>
-                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" th:href="@{/settings}">
+                <a
+                  class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"
+                  th:href="@{/settings}"
+                >
                   <iconify-icon icon="icon-park-outline:setting-two" class="icon text-xl"></iconify-icon>
-                  Setting
+                  설정
                 </a>
               </li>
               <li>
-                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3" th:href="@{/logout}">
+                <a
+                  class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3"
+                  th:href="@{/logout}"
+                >
                   <iconify-icon icon="lucide:power" class="icon text-xl"></iconify-icon>
-                  Log Out
+                  로그아웃
                 </a>
               </li>
             </ul>
