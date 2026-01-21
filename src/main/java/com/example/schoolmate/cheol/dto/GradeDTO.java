@@ -1,4 +1,4 @@
-package com.example.schoolmate.common.dto;
+package com.example.schoolmate.cheol.dto;
 
 import com.example.schoolmate.common.entity.user.constant.TestType;
 
@@ -13,12 +13,14 @@ import lombok.ToString;
 @Getter
 @ToString
 @Builder
-public class SubjectDTO {
-
-    private String subjectCode;
+public class GradeDTO {
+    private Long id;
     private String subjectName;
+    private String subjectCode;
     private TestType examType;
     private Double score;
+    private Double maxScore;
     private Integer semester;
     private Integer year;
+
 }

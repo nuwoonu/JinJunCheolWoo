@@ -6,23 +6,23 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
-import com.example.schoolmate.common.repository.StudentRepository;
-import com.example.schoolmate.studentdto.StudentCreateDTO;
-import com.example.schoolmate.studentdto.StudentResponseDTO;
-import com.example.schoolmate.studentdto.StudentUpdateDTO;
+import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.common.repository.StudentInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class StudentServiceImpl implements StudentService {
+public class StudentServiceImpl {
 
-    private final StudentRepository studentRepository;
+    private final StudentInfoRepository studentRepository;
 
-    @Override
     @Transactional
     public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
         // 학번 중복 체크
@@ -33,7 +33,7 @@ public class StudentServiceImpl implements StudentService {
         // Student 엔티티 생성 (Setter 방식)
         StudentInfo student = new StudentInfo();
         student.setStudentNumber(createDTO.getStudentNumber());
-        student.setGrade(createDTO.getGrade());
+        student.setYear(createDTO.getYear());
         student.setClassNum(createDTO.getClassNum());
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
@@ -44,58 +44,44 @@ public class StudentServiceImpl implements StudentService {
         return convertToResponseDTO(savedStudent);
     }
 
-    @Override
     public StudentResponseDTO getStudentByUid(Long uid) {
         StudentInfo student = studentRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
         return convertToResponseDTO(student);
     }
 
-    @Override
     public StudentResponseDTO getStudentByStudentNumber(Long studentNumber) {
         StudentInfo student = studentRepository.findByStudentNumber(studentNumber)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. 학번: " + studentNumber));
         return convertToResponseDTO(student);
     }
 
-    @Override
     public List<StudentResponseDTO> getAllStudents() {
         return studentRepository.findAll().stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<StudentResponseDTO> getStudentsByGrade(int grade) {
-        return studentRepository.findByGrade(grade).stream()
+    public List<StudentResponseDTO> getStudentsByYear(Year year) {
+        return studentRepository.findByYear(year).stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
     public List<StudentResponseDTO> getStudentsByClassNum(int classNum) {
         return studentRepository.findByClassNum(classNum).stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<StudentResponseDTO> getStudentsByGradeAndClass(int grade, int classNum) {
-        return studentRepository.findAll().stream()
-                .filter(student -> student.getGrade() == grade && student.getClassNum() == classNum)
-                .map(this::convertToResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     @Transactional
     public StudentResponseDTO updateStudent(Long uid, StudentUpdateDTO updateDTO) {
         StudentInfo student = studentRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
 
         // 업데이트 가능한 필드만 변경 (Dirty Checking 활용)
-        if (updateDTO.getGrade() != null) {
-            student.setGrade(updateDTO.getGrade());
+        if (updateDTO.getYear() != null) {
+            student.setYear(updateDTO.getYear());
         }
         if (updateDTO.getClassNum() != null) {
             student.setClassNum(updateDTO.getClassNum());
@@ -117,7 +103,6 @@ public class StudentServiceImpl implements StudentService {
         return convertToResponseDTO(student);
     }
 
-    @Override
     @Transactional
     public void deleteStudent(Long uid) {
         StudentInfo student = studentRepository.findById(uid)
@@ -127,7 +112,6 @@ public class StudentServiceImpl implements StudentService {
         student.setStatus(StudentStatus.DROPOUT);
     }
 
-    @Override
     @Transactional
     public void permanentDeleteStudent(Long uid) {
         if (!studentRepository.existsById(uid)) {
@@ -139,5 +123,7 @@ public class StudentServiceImpl implements StudentService {
     // entity to dto
     private StudentResponseDTO convertToResponseDTO(StudentInfo student) {
         return new StudentResponseDTO(student);
+
     }
+
 }

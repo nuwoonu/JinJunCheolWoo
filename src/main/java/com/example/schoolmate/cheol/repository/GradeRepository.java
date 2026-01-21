@@ -1,4 +1,4 @@
-package com.example.schoolmate.common.repository;
+package com.example.schoolmate.cheol.repository;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.schoolmate.common.entity.info.Grade;
+import com.example.schoolmate.cheol.entity.Grade;
 
 public interface GradeRepository extends JpaRepository<Grade, Long> {
     List<Grade> findByStudent_id(Long studentId);

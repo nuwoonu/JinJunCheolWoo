@@ -1,5 +1,6 @@
 package com.example.schoolmate.controller;
 
+import java.time.Year;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.schoolmate.service.StudentService;
-import com.example.schoolmate.studentdto.StudentCreateDTO;
-import com.example.schoolmate.studentdto.StudentResponseDTO;
-import com.example.schoolmate.studentdto.StudentUpdateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
+import com.example.schoolmate.service.StudentServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StudentRestController {
 
-    private final StudentService studentService;
+    private final StudentServiceImpl studentService;
 
     // 학생 등록
     // POST /api/students
@@ -64,10 +65,10 @@ public class StudentRestController {
     }
 
     // 학년별 학생 목록 조회
-    // GET /api/students/grade/{grade}
-    @GetMapping("/grade/{grade}")
-    public ResponseEntity<List<StudentResponseDTO>> getStudentsByGrade(@PathVariable int grade) {
-        List<StudentResponseDTO> students = studentService.getStudentsByGrade(grade);
+    // GET /api/students/year/{year}
+    @GetMapping("/year/{year}")
+    public ResponseEntity<List<StudentResponseDTO>> getStudentsByYear(@PathVariable Year year) {
+        List<StudentResponseDTO> students = studentService.getStudentsByYear(year);
         return ResponseEntity.ok(students);
     }
 
@@ -82,10 +83,10 @@ public class StudentRestController {
     // 학년 + 반별 학생 목록 조회
     // GET /api/students/search?grade={grade}&classNum={classNum}
     @GetMapping("/search")
-    public ResponseEntity<List<StudentResponseDTO>> getStudentsByGradeAndClass(
-            @RequestParam int grade,
+    public ResponseEntity<List<StudentResponseDTO>> getStudentsByYearAndClass(
+            @RequestParam Year year,
             @RequestParam int classNum) {
-        List<StudentResponseDTO> students = studentService.getStudentsByGradeAndClass(grade, classNum);
+        List<StudentResponseDTO> students = studentService.getStudentsByYearAndClass(year, classNum);
         return ResponseEntity.ok(students);
     }
 

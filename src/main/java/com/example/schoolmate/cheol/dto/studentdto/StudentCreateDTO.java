@@ -1,9 +1,10 @@
-package com.example.schoolmate.studentdto;
+package com.example.schoolmate.cheol.dto.studentdto;
 
 import java.time.LocalDate;
 
 import com.example.schoolmate.common.entity.user.constant.Gender;
 import com.example.schoolmate.common.entity.user.constant.Status;
+import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
@@ -27,12 +28,11 @@ public class StudentCreateDTO {
 
     @NotNull(message = "학년은 필수입니다.")
     @Min(value = 1, message = "학년은 1 이상이어야 합니다.")
-    private Integer grade;
+    private Year year;
 
     @NotNull(message = "반은 필수입니다.")
     @Min(value = 1, message = "반은 1 이상이어야 합니다.")
-    private Integer classNum;
-
+    private int classNum;
     @NotBlank(message = "이름은 필수입니다.")
     private String name;
 

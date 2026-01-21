@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang="ko"
   xmlns:th="http://www.thymeleaf.org"
@@ -63,24 +63,33 @@
                 </td>
                 <td>
                   <div class="d-flex align-items-center">
-                    <img src="/images/thumbs/avatar-img1.png" alt="프로필" class="w-40-px h-40-px rounded-circle flex-shrink-0 me-12" />
+                    <img
+                      src="/images/thumbs/avatar-img1.png"
+                      alt="프로필"
+                      class="w-40-px h-40-px rounded-circle flex-shrink-0 me-12"
+                    />
                     <h6 class="text-md mb-0 fw-medium" th:text="${s.name}">학생이름</h6>
                   </div>
                 </td>
                 <td th:text="${s.email}">student@school.com</td>
                 <td th:text="${s.latestClass ?: '미배정'}">2024년 1-2-15</td>
                 <td>
-                  <span th:classappend="${s.status == '재학' ? 'bg-success-100 text-success-600' : 'bg-neutral-200 text-neutral-600'}"
-                        class="px-12 py-4 radius-4 fw-medium text-sm"
-                        th:text="${s.status}">재학</span>
+                  <span
+                    th:classappend="${s.status == '재학' ? 'bg-success-100 text-success-600' : 'bg-neutral-200 text-neutral-600'}"
+                    class="px-12 py-4 radius-4 fw-medium text-sm"
+                    th:text="${s.status}"
+                    >재학</span
+                  >
                 </td>
                 <td sec:authorize="hasRole('ADMIN')">
-                  <button type="button"
-                          class="edit-sidebar-btn btn btn-sm btn-outline-primary"
-                          th:data-uid="${s.uid}"
-                          th:data-name="${s.name}"
-                          th:data-identity="${s.studentIdentityNum}"
-                          th:data-status="${s.status}">
+                  <button
+                    type="button"
+                    class="edit-sidebar-btn btn btn-sm btn-outline-primary"
+                    th:data-uid="${s.uid}"
+                    th:data-name="${s.name}"
+                    th:data-identity="${s.studentIdentityNum}"
+                    th:data-status="${s.status}"
+                  >
                     <i class="ri-edit-2-line"></i> 수정
                   </button>
                 </td>
@@ -92,7 +101,9 @@
     </div>
 
     <!-- [woo 추가] Add Sidebar - 학생 추가 폼 -->
-    <div class="my-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-400-px w-100 translate-x-full duration-300">
+    <div
+      class="my-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-400-px w-100 translate-x-full duration-300"
+    >
       <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
         <h5 class="text-lg mb-0">새 학생 추가</h5>
         <button type="button" class="close-my-sidebar text-danger-600 text-lg d-flex">
@@ -124,7 +135,12 @@
           </div>
           <div class="col-6">
             <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학년도</label>
-            <input type="number" name="year" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy')}" />
+            <input
+              type="number"
+              name="year"
+              class="form-control"
+              th:value="${#dates.format(#dates.createNow(), 'yyyy')}"
+            />
           </div>
           <div class="col-6">
             <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학년</label>
@@ -141,7 +157,10 @@
 
           <div class="col-12 mt-16">
             <div class="d-flex align-items-center justify-content-center gap-3">
-              <button type="reset" class="close-my-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
+              <button
+                type="reset"
+                class="close-my-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8"
+              >
                 취소
               </button>
               <button type="submit" class="btn btn-primary-600 border border-primary-600 text-md px-40 py-11 radius-8">
@@ -154,7 +173,9 @@
     </div>
 
     <!-- [woo 추가] Edit Sidebar - 학생 수정 폼 -->
-    <div class="edit-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-400-px w-100 translate-x-full duration-300">
+    <div
+      class="edit-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-400-px w-100 translate-x-full duration-300"
+    >
       <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
         <h5 class="text-lg mb-0">학생 정보 수정</h5>
         <button type="button" class="close-edit-sidebar text-danger-600 text-lg d-flex">
@@ -181,7 +202,10 @@
 
           <div class="col-12 mt-16">
             <div class="d-flex align-items-center justify-content-center gap-3">
-              <button type="reset" class="close-edit-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
+              <button
+                type="reset"
+                class="close-edit-sidebar border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8"
+              >
                 취소
               </button>
               <button type="submit" class="btn btn-primary-600 border border-primary-600 text-md px-40 py-11 radius-8">
@@ -194,25 +218,28 @@
     </div>
 
     <!-- Overlay -->
-    <div class="overlay position-fixed start-0 top-0 w-100 h-100 z-98 d-none" style="background:rgba(0,0,0,.5)"></div>
+    <div
+      class="overlay position-fixed start-0 top-0 w-100 h-100 z-98 d-none"
+      style="background: rgba(0, 0, 0, 0.5)"
+    ></div>
   </div>
 
   <!-- [woo 추가] 사이드바 JavaScript -->
   <th:block layout:fragment="script">
     <script>
-      $(document).ready(function() {
+      $(document).ready(function () {
         // Add Sidebar
-        $(".my-sidebar-btn").on("click", function() {
+        $(".my-sidebar-btn").on("click", function () {
           $(".my-sidebar").addClass("active-translate-0");
           $(".overlay").removeClass("d-none");
         });
-        $(".close-my-sidebar, .overlay").on("click", function() {
+        $(".close-my-sidebar, .overlay").on("click", function () {
           $(".my-sidebar").removeClass("active-translate-0");
           $(".overlay").addClass("d-none");
         });
 
         // Edit Sidebar
-        $(".edit-sidebar-btn").on("click", function() {
+        $(".edit-sidebar-btn").on("click", function () {
           var uid = $(this).data("uid");
           var name = $(this).data("name");
           var identity = $(this).data("identity");
@@ -223,7 +250,7 @@
           $("#edit-identity").val(identity);
 
           // status는 description이므로 statusList에서 매칭 필요
-          $("#edit-status option").each(function() {
+          $("#edit-status option").each(function () {
             if ($(this).text() === status) {
               $(this).prop("selected", true);
             }
@@ -232,7 +259,7 @@
           $(".edit-sidebar").addClass("active-translate-0");
           $(".overlay").removeClass("d-none");
         });
-        $(".close-edit-sidebar, .overlay").on("click", function() {
+        $(".close-edit-sidebar, .overlay").on("click", function () {
           $(".edit-sidebar").removeClass("active-translate-0");
           $(".overlay").addClass("d-none");
         });

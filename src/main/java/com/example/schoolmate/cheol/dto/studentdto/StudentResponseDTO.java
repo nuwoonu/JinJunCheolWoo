@@ -1,4 +1,4 @@
-package com.example.schoolmate.studentdto;
+package com.example.schoolmate.cheol.dto.studentdto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Gender;
+import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,11 +21,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class StudentResponseDTO {
 
-    private Long id;  // StudentInfo의 id
+    private Long id; // StudentInfo의 id
 
     private Long studentNumber;
 
-    private Integer grade;
+    private Year year;
 
     private Integer classNum;
 
@@ -55,7 +56,7 @@ public class StudentResponseDTO {
     public StudentResponseDTO(StudentInfo student) {
         this.id = student.getId();
         this.studentNumber = student.getStudentNumber();
-        this.grade = student.getGrade();
+        this.year = student.getYear();
         this.classNum = student.getClassNum();
         this.fullStudentNumber = student.getFullStudentNumber();
         this.studentIdentityNum = student.getStudentIdentityNum();

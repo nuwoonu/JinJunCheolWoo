@@ -1,14 +1,6 @@
 package com.example.schoolmate.common.entity.info.assignment;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.example.schoolmate.common.entity.info.Grade;
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.info.TeacherInfo;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,26 +31,7 @@ public class StudentAssignment {
     private Integer classNum; // 반
     private Integer studentNum; // 번호 (출석번호)
 
-    @Column(nullable = false, unique = true)
-    private String code; // 과목 코드
-
-    @Column(nullable = false)
-    private String name; // 과목명
-
-    private Integer credits; // 학점
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_uid")
-    private TeacherInfo teacher; // 담당 선생님
-
-    // 양방향 연관관계 편의 메서드
-    public void setTeacher(TeacherInfo teacher) {
-        this.teacher = teacher;
-    }
-
-    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Grade> grades = new ArrayList<>();
-
+    @Builder
     public StudentAssignment(StudentInfo studentInfo, int schoolYear, Integer grade, Integer classNum,
             Integer studentNum) {
         this.studentInfo = studentInfo;

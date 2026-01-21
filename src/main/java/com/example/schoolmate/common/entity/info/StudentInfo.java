@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Gender;
+import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -30,8 +32,8 @@ public class StudentInfo extends BaseInfo {
     @Column(nullable = false)
     private Long studentNumber; // 학번
 
-    @Column(nullable = false)
-    private int grade; // 학년
+    @Enumerated(EnumType.STRING)
+    private Year year; // 학년
 
     @Column(nullable = false)
     private int classNum; // 반
@@ -47,7 +49,7 @@ public class StudentInfo extends BaseInfo {
 
     // 전체 학번 생성 메서드 (표시용)
     public String getFullStudentNumber() {
-        return String.format("%d-%d-%02d", grade, classNum, studentNumber);
+        return String.format("%d-%d-%02d", year, classNum, studentNumber);
         // 예: "1-3-05" (1학년 3반 5번)
     }
 
