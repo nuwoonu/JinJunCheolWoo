@@ -28,4 +28,5 @@ public abstract class BaseInfo extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uid") // User의 uid를 참조
     private User user;
+    private String code;
 }
