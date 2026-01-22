@@ -42,7 +42,7 @@ public class Grade extends BaseEntity {
     private int semester; // 학기
 
     @Column(nullable = false)
-    private Integer score; // 점수
+    private Double score; // 점수
 
     @Enumerated(EnumType.STRING)
     private Year year; // 학년
@@ -80,7 +80,7 @@ public class Grade extends BaseEntity {
         }
     }
 
-    public void changeScore(Integer score) {
+    public void changeScore(Double score) {
         this.score = score;
     }
 }

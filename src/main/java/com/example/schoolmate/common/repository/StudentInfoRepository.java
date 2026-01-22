@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.Year;
 
 public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long> {
     // 특정 유저(User)의 학생 정보 찾기
@@ -20,13 +21,13 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long> 
     @Query("SELECT s FROM StudentInfo s WHERE s.user.email = :email")
     Optional<StudentInfo> findByUserEmail(@Param("email") String email);
 
-    List<StudentInfo> findByGrade(int grade);
-
     List<StudentInfo> findByClassNum(int classNum);
 
     @Query("SELECT s FROM StudentInfo s JOIN FETCH s.grades WHERE s.id = :id")
     Optional<StudentInfo> findByIdWithGrades(@Param("id") Long id);
 
-    Optional<StudentInfo> findByYear(com.example.schoolmate.common.entity.user.constant.Year year);
+    List<StudentInfo> findByYear(Year year);
+
+    List<StudentInfo> findByYearAndClassNum(Year year, int classNum);
 
 }

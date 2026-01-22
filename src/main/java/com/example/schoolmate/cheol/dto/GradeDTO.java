@@ -1,6 +1,7 @@
 package com.example.schoolmate.cheol.dto;
 
 import com.example.schoolmate.common.entity.user.constant.TestType;
+import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,8 +20,7 @@ public class GradeDTO {
     private String subjectCode;
     private TestType examType;
     private Double score;
-    private Double maxScore;
     private Integer semester;
-    private Integer year;
+    private Year year;
 
 }

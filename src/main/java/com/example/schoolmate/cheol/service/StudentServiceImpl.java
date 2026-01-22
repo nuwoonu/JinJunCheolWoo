@@ -1,4 +1,4 @@
-package com.example.schoolmate.service;
+package com.example.schoolmate.cheol.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
-import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
-import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
+import com.example.schoolmate.cheol.dto.studentDTO.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentDTO.StudentResponseDTO;
+import com.example.schoolmate.cheol.dto.studentDTO.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Year;
@@ -70,6 +70,12 @@ public class StudentServiceImpl {
 
     public List<StudentResponseDTO> getStudentsByClassNum(int classNum) {
         return studentRepository.findByClassNum(classNum).stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<StudentResponseDTO> getStudentsByYearAndClass(Year year, int classNum) {
+        return studentRepository.findByYearAndClassNum(year, classNum).stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }

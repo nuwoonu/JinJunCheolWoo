@@ -8,6 +8,7 @@ import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -15,7 +16,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@Getter
+@Builder
+@ToString(exclude = { "grades" })
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 public class Subject {
     @Id
     @Column(nullable = false, unique = true)
@@ -41,5 +53,9 @@ public class Subject {
 
     public List<Grade> getGrades() {
         return grades;
+    }
+
+    public void changeYear(Year year) {
+        this.year = year;
     }
 }

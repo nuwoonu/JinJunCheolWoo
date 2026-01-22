@@ -1,4 +1,4 @@
-package com.example.schoolmate.cheol.dto.studentdto;
+package com.example.schoolmate.cheol.dto.studentDTO;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class StudentResponseDTO {
 
-    private Long id; // StudentInfo의 id
+    private Long uid; // StudentInfo의 id
 
     private Long studentNumber;
 
@@ -54,7 +54,7 @@ public class StudentResponseDTO {
 
     // Entity -> DTO 변환 생성자
     public StudentResponseDTO(StudentInfo student) {
-        this.id = student.getId();
+        this.uid = student.getId();
         this.studentNumber = student.getStudentNumber();
         this.year = student.getYear();
         this.classNum = student.getClassNum();

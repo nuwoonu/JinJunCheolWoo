@@ -1,4 +1,4 @@
-package com.example.schoolmate.cheol.dto.studentdto;
+package com.example.schoolmate.cheol.dto.studentDTO;
 
 import java.time.LocalDate;
 
