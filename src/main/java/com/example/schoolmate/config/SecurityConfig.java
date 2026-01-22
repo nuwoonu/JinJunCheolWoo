@@ -103,6 +103,7 @@ public class SecurityConfig {
                                                                 "/css/**",
                                                                 "/js/**")
                                                 .permitAll() // 어드민 로그인창 및 정적 리소스 허용
+                                                // .requestMatchers("/parkjoon/admin/notifications/send").permitAll()
                                                 .anyRequest().hasRole("ADMIN") // 나머지는 무조건 ADMIN 권한 필요
                                 )
                                 .formLogin(form -> form
@@ -117,7 +118,9 @@ public class SecurityConfig {
                                                 .logoutUrl("/parkjoon/admin/logout")
                                                 .logoutSuccessUrl("/parkjoon/admin/login?logout=true")
                                                 .invalidateHttpSession(true)
-                                                .deleteCookies("JSESSIONID")); // CSRF 활성화 (기본값)
+                                                .deleteCookies("JSESSIONID"));
+                // .csrf(csrf -> csrf.disable()); // CSRF 활성화 (기본값)
+
                 return http.build();
         }
 }

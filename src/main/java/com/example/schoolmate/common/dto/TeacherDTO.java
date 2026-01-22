@@ -12,6 +12,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TeacherDTO {
 
     // 목록 및 상세 조회용
@@ -31,6 +34,8 @@ public class TeacherDTO {
 
         private String department;
         private String position;
+        @Builder.Default
+        private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
 
         public DetailResponse(User user) {
             this.uid = user.getUid();
@@ -53,6 +58,10 @@ public class TeacherDTO {
                     this.statusDesc = this.status.getDescription(); // Enum에 있는 한글명 메서드
                 }
             }
+        }
+
+        public void setNotifications(List<NotificationDTO.NotificationHistory> notifications) {
+            this.notifications = notifications;
         }
     }
 

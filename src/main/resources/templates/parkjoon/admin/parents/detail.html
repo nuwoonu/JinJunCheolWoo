@@ -215,9 +215,6 @@
                     class="d-flex justify-content-between align-items-center mb-3"
                   >
                     <h6 class="fw-bold mb-0">최근 발송 알림</h6>
-                    <button class="btn btn-sm btn-outline-primary">
-                      <i class="bi bi-send"></i> 알림 발송
-                    </button>
                   </div>
                   <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -226,6 +223,9 @@
                           <th style="width: 150px">발송일시</th>
                           <th>제목</th>
                           <th style="width: 100px">발신자</th>
+                          <th style="width: 100px" class="text-center">
+                            수신확인
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -244,9 +244,21 @@
                               >관리자</span
                             >
                           </td>
+                          <td class="text-center">
+                            <span
+                              th:if="${noti.isRead}"
+                              class="badge bg-success-subtle text-success border border-success-subtle"
+                              >읽음</span
+                            >
+                            <span
+                              th:unless="${noti.isRead}"
+                              class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"
+                              >안읽음</span
+                            >
+                          </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(parent.notifications)}">
-                          <td colspan="3" class="text-center py-4 text-muted">
+                          <td colspan="4" class="text-center py-4 text-muted">
                             발송된 알림 내역이 없습니다.
                           </td>
                         </tr>

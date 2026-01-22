@@ -2,31 +2,6 @@
  * 교사 관리 페이지 전용 스크립트
  */
 
-// 1. 정보 수정 모달 오픈 및 데이터 바인딩
-function openEditModal(teacher) {
-  const fields = {
-    "edit-uid": teacher.uid,
-    "edit-name": teacher.name,
-    "edit-email": teacher.email,
-    "edit-subject": teacher.subject,
-    "edit-department": teacher.department,
-    "edit-position": teacher.position,
-    "edit-status": teacher.statusName,
-  };
-
-  Object.entries(fields).forEach(([id, value]) => {
-    const el = document.getElementById(id);
-    if (el) el.value = value ?? "";
-  });
-
-  // 부트스트랩 모달 띄우기
-  const modalEl = document.getElementById("editTeacherModal");
-  if (modalEl) {
-    const editModal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    editModal.show();
-  }
-}
-
 // 2. 삭제 확인 창
 function confirmDelete(uid) {
   if (confirm("정말로 이 계정을 삭제하시겠습니까?")) {

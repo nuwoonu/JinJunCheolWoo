@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.schoolmate.common.dto.NotificationDTO;
 import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
@@ -152,7 +153,7 @@ public class AdminParentService {
         if (parent.getUser() != null) {
             List<Notification> notifications = notificationRepository
                     .findByReceiverOrderByCreateDateDesc(parent.getUser());
-            response.setNotifications(notifications.stream().map(ParentDTO.NotificationHistory::new).toList());
+            response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
         }
         return response;
     }

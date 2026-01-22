@@ -3,7 +3,6 @@ package com.example.schoolmate.common.dto;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
-import com.example.schoolmate.common.entity.notification.Notification;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +12,6 @@ import lombok.Setter;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
-import java.time.format.DateTimeFormatter;
 
 public class ParentDTO {
 
@@ -104,7 +102,7 @@ public class ParentDTO {
         private String status;
         private String statusName;
         private List<LinkedStudent> children;
-        private List<NotificationHistory> notifications = new ArrayList<>();
+        private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
 
         public DetailResponse(ParentInfo entity) {
             this.id = entity.getId();
@@ -136,23 +134,6 @@ public class ParentDTO {
             this.identityNum = info.getStudentIdentityNum();
             this.relationship = relation.getDescription();
             this.relationshipCode = relation.name();
-        }
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class NotificationHistory {
-        private String title;
-        private String content;
-        private String senderName;
-        private String sentDate;
-
-        public NotificationHistory(Notification n) {
-            this.title = n.getTitle();
-            this.content = n.getContent();
-            this.senderName = n.getSender() != null ? n.getSender().getName() : "시스템";
-            this.sentDate = n.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         }
     }
 }

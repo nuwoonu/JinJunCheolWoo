@@ -14,11 +14,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.schoolmate.common.dto.NotificationDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.NotificationRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.example.schoolmate.parkjoon.mapper.AdminTeacherMapper;
@@ -35,11 +38,28 @@ public class AdminTeacherService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // Security 설정 필요
     private final AdminTeacherMapper adminTeacherMapper;
+    private final NotificationRepository notificationRepository;
 
     public Page<TeacherDTO.DetailResponse> getTeacherList(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
         Page<User> userPage = userRepository.searchTeachers(cond, pageable);
         // Page 객체 내의 User 엔티티들을 DTO 생성자를 통해 DetailResponse로 변환
         return userPage.map(adminTeacherMapper::toDetailResponse);
+    }
+
+    /**
+     * 교사 상세 정보 조회
+     */
+    public TeacherDTO.DetailResponse getTeacherDetail(Long uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 교사입니다."));
+
+        TeacherDTO.DetailResponse response = new TeacherDTO.DetailResponse(user);
+
+        // 알림 이력 조회
+        List<Notification> notifications = notificationRepository.findByReceiverOrderByCreateDateDesc(user);
+        response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
+
+        return response;
     }
 
     public void createTeacher(TeacherDTO.CreateRequest request) {

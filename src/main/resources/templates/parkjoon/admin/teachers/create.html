@@ -1,0 +1,107 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content" class="container" style="max-width: 800px">
+      <div class="d-flex align-items-center mb-4">
+        <a
+          th:href="@{/parkjoon/admin/teachers}"
+          class="btn btn-link text-dark p-0 me-3"
+          ><i class="bi bi-arrow-left fs-3"></i
+        ></a>
+        <h2 class="mb-0">✨ 신규 교사 등록</h2>
+      </div>
+
+      <form
+        th:action="@{/parkjoon/admin/teachers/create}"
+        method="post"
+        class="card shadow-sm"
+      >
+        <div class="card-body p-4">
+          <h5 class="mb-4 text-primary fw-bold">
+            <i class="bi bi-person-circle me-2"></i>기본 정보
+          </h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">이름</label>
+              <input
+                type="text"
+                name="name"
+                class="form-control"
+                placeholder="성함 입력"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">이메일 (ID)</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                placeholder="example@school.com"
+                required
+              />
+            </div>
+            <div class="col-md-12">
+              <label class="form-label fw-bold">초기 비밀번호</label>
+              <input
+                type="password"
+                name="password"
+                class="form-control"
+                required
+              />
+            </div>
+          </div>
+
+          <h5 class="mb-4 text-primary fw-bold">
+            <i class="bi bi-briefcase me-2"></i>직무 정보
+          </h5>
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label fw-bold">담당 과목</label>
+              <input
+                type="text"
+                name="subject"
+                class="form-control"
+                placeholder="예: 수학, 영어"
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">부서</label>
+              <select name="department" class="form-select">
+                <option
+                  th:each="dept : ${departments}"
+                  th:value="${dept}"
+                  th:text="${dept}"
+                ></option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">직책</label>
+              <select name="position" class="form-select">
+                <option
+                  th:each="pos : ${positions}"
+                  th:value="${pos}"
+                  th:text="${pos}"
+                ></option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-light p-4 text-end">
+          <button
+            type="button"
+            class="btn btn-secondary px-4 me-2"
+            onclick="history.back()"
+          >
+            취소
+          </button>
+          <button type="submit" class="btn btn-primary px-5">등록 완료</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

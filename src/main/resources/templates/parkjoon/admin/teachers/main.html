@@ -67,13 +67,12 @@
             CSV 교사 등록
           </button>
 
-          <button
+          <a
+            th:href="@{/parkjoon/admin/teachers/create}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
-            data-bs-toggle="modal"
-            data-bs-target="#createTeacherModal"
           >
             <i class="bi bi-person-plus-fill"></i> 신규 교사 등록
-          </button>
+          </a>
         </div>
       </div>
 
@@ -218,7 +217,12 @@
                           >이</span
                         >
                       </div>
-                      <span class="fw-bold" th:text="${t.name}">이교사</span>
+                      <a
+                        th:href="@{/parkjoon/admin/teachers/{id}(id=${t.uid})}"
+                        class="fw-bold text-decoration-none text-dark"
+                        th:text="${t.name}"
+                        >이교사</a
+                      >
                     </div>
                   </td>
                   <td th:text="${t.email}">teacher@school.ac.kr</td>
@@ -253,12 +257,12 @@
                     >
                   </td>
                   <td class="text-end pe-4">
-                    <button
-                      class="btn btn-sm btn-outline-secondary"
-                      th:onclick="openEditModal([[${t}]])"
+                    <a
+                      th:href="@{/parkjoon/admin/teachers/{id}(id=${t.uid})}"
+                      class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
-                      정보 수정
-                    </button>
+                      상세보기
+                    </a>
                   </td>
                 </tr>
                 <tr th:if="${page.totalElements == 0}">
@@ -313,204 +317,6 @@
         </div>
       </div>
 
-      <div class="modal fade" id="createTeacherModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <form th:action="@{/parkjoon/admin/teachers/create}" method="post">
-              <div class="modal-header">
-                <h5 class="modal-title font-weight-bold">
-                  ✨ 신규 교사 계정 생성
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label class="form-label">이름</label>
-                  <input
-                    type="text"
-                    name="name"
-                    class="form-control"
-                    placeholder="성함 입력"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">이메일 (ID)</label>
-                  <input
-                    type="email"
-                    name="email"
-                    class="form-control"
-                    placeholder="example@school.com"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">초기 비밀번호</label>
-                  <input
-                    type="password"
-                    name="password"
-                    class="form-control"
-                    placeholder="초기 비밀번호"
-                    required
-                  />
-                </div>
-                <hr />
-                <div class="mb-3">
-                  <label class="form-label">담당 과목</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    class="form-control"
-                    placeholder="예: 수학, 영어"
-                  />
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">부서</label>
-                    <select name="department" class="form-select">
-                      <option
-                        th:each="dept : ${departments}"
-                        th:value="${dept}"
-                        th:text="${dept}"
-                      ></option>
-                    </select>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">직책</label>
-                    <select name="position" class="form-select">
-                      <option
-                        th:each="pos : ${positions}"
-                        th:value="${pos}"
-                        th:text="${pos}"
-                      ></option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer bg-light">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  취소
-                </button>
-                <button type="submit" class="btn btn-primary">계정 생성</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal fade" id="editTeacherModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <form th:action="@{/parkjoon/admin/teachers/update}" method="post">
-              <input type="hidden" name="page" th:value="${page.number + 1}" />
-              <input type="hidden" name="uid" id="edit-uid" />
-              <div class="modal-header bg-light">
-                <h5 class="modal-title font-weight-bold">📝 교사 정보 수정</h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label class="form-label">이름</label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="edit-name"
-                    class="form-control"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">이메일</label>
-                  <input
-                    type="email"
-                    id="edit-email"
-                    class="form-control"
-                    readonly
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">재직 상태</label>
-                  <select
-                    name="statusName"
-                    id="edit-status"
-                    class="form-select"
-                  >
-                    <option
-                      th:each="st : ${statusList}"
-                      th:value="${st.name()}"
-                      th:text="${st.description}"
-                    ></option>
-                  </select>
-                </div>
-                <hr />
-                <div class="mb-3">
-                  <label class="form-label">담당 과목</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    id="edit-subject"
-                    class="form-control"
-                  />
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">부서</label>
-                    <select
-                      name="department"
-                      id="edit-department"
-                      class="form-select"
-                    >
-                      <option
-                        th:each="dept : ${departments}"
-                        th:value="${dept}"
-                        th:text="${dept}"
-                      ></option>
-                    </select>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">직책</label>
-                    <select
-                      name="position"
-                      id="edit-position"
-                      class="form-select"
-                    >
-                      <option
-                        th:each="pos : ${positions}"
-                        th:value="${pos}"
-                        th:text="${pos}"
-                      ></option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  취소
-                </button>
-                <button type="submit" class="btn btn-success">저장하기</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
       <div
         id="loadingOverlay"
         class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
