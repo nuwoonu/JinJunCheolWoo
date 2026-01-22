@@ -1,0 +1,353 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content">
+      <div
+        id="parent-detail-container"
+        class="container-fluid py-4"
+        th:data-parent-id="${parent.id}"
+      >
+        <div class="mb-4">
+          <a
+            th:href="@{/parkjoon/admin/parents}"
+            class="btn btn-outline-secondary btn-sm"
+          >
+            <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+          </a>
+        </div>
+
+        <div class="row">
+          <!-- 좌측: 프로필 카드 -->
+          <div class="col-md-4">
+            <div class="card mb-4 text-center py-4 shadow-sm border-0">
+              <div
+                class="avatar-lg bg-success-subtle rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                style="width: 100px; height: 100px"
+              >
+                <span
+                  class="fs-1 text-success fw-bold"
+                  th:text="${#strings.substring(parent.name, 0, 1)}"
+                  >홍</span
+                >
+              </div>
+              <h4 class="fw-bold mb-1" th:text="${parent.name}">홍길동</h4>
+              <p class="text-muted small mb-3" th:text="${parent.phone}">
+                010-1234-5678
+              </p>
+              <div class="px-4">
+                <span
+                  class="badge w-100 py-2 fs-6"
+                  th:classappend="${parent.statusName == 'ACTIVE' ? 'bg-success' : (parent.statusName == 'PENDING' ? 'bg-warning text-dark' : 'bg-secondary')}"
+                  th:text="${parent.status}"
+                  >연결됨</span
+                >
+              </div>
+              <hr class="mx-4 my-4" />
+              <div class="text-start px-4">
+                <p class="mb-1 small text-muted">계정 이메일</p>
+                <p class="fw-medium" th:text="${parent.email}">
+                  parent@test.com
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측: 상세 정보 탭 -->
+          <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-white border-bottom">
+                <ul
+                  class="nav nav-tabs card-header-tabs"
+                  id="parentTab"
+                  role="tablist"
+                >
+                  <li class="nav-item">
+                    <a
+                      class="nav-link active fw-bold"
+                      data-bs-toggle="tab"
+                      href="#basic"
+                      >기본 정보</a
+                    >
+                  </li>
+                  <li class="nav-item">
+                    <a
+                      class="nav-link fw-bold"
+                      data-bs-toggle="tab"
+                      href="#children"
+                      >자녀 관리</a
+                    >
+                  </li>
+                  <li class="nav-item">
+                    <a
+                      class="nav-link fw-bold"
+                      data-bs-toggle="tab"
+                      href="#notifications"
+                      >알림 이력</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body tab-content p-4">
+                <!-- 탭 1: 기본 정보 수정 -->
+                <div class="tab-pane fade show active" id="basic">
+                  <form
+                    th:action="@{/parkjoon/admin/parents/update}"
+                    method="post"
+                  >
+                    <input type="hidden" name="id" th:value="${parent.id}" />
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">이름</label>
+                        <input
+                          type="text"
+                          name="name"
+                          class="form-control"
+                          th:value="${parent.name}"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">연락처</label>
+                        <input
+                          type="text"
+                          name="phone"
+                          class="form-control"
+                          th:value="${parent.phone}"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label fw-semibold">이메일</label>
+                        <input
+                          type="text"
+                          name="email"
+                          class="form-control"
+                          th:value="${parent.email}"
+                          required
+                        />
+                      </div>
+                      <div class="col-12 text-end mt-4">
+                        <button
+                          type="submit"
+                          class="btn btn-primary px-4 fw-bold"
+                        >
+                          정보 수정 저장
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- 탭 2: 자녀 목록 -->
+                <div class="tab-pane fade" id="children">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <h6 class="fw-bold mb-0">연동된 자녀 목록</h6>
+                    <button
+                      class="btn btn-sm btn-primary"
+                      onclick="openStudentSearchModal()"
+                    >
+                      <i class="bi bi-plus-lg"></i> 자녀 추가
+                    </button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th>학생명</th>
+                          <th>학번</th>
+                          <th>관계</th>
+                          <th class="text-end">관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="child : ${parent.children}">
+                          <td class="fw-bold">
+                            <a
+                              th:href="@{/parkjoon/admin/students/{id}(id=${child.identityNum})}"
+                              class="text-decoration-none text-dark"
+                              th:text="${child.name}"
+                              >김학생</a
+                            >
+                          </td>
+                          <td th:text="${child.identityNum}">2024001</td>
+                          <td>
+                            <span
+                              class="badge bg-light text-dark border me-1"
+                              th:text="${child.relationship}"
+                              >부</span
+                            >
+                            <button
+                              class="btn btn-xs btn-link text-secondary p-0"
+                              th:onclick="openEditRelationModal([[${child.uid}]], [[${child.name}]], [[${child.relationshipCode}]])"
+                              title="관계 수정"
+                            >
+                              <i class="bi bi-pencil-square"></i>
+                            </button>
+                          </td>
+                          <td class="text-end">
+                            <button
+                              class="btn btn-sm btn-outline-danger"
+                              th:onclick="removeChild([[${parent.id}]], [[${child.uid}]])"
+                            >
+                              연동 해제
+                            </button>
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(parent.children)}">
+                          <td colspan="4" class="text-center py-4 text-muted">
+                            연동된 자녀가 없습니다.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- 탭 3: 알림 이력 -->
+                <div class="tab-pane fade" id="notifications">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <h6 class="fw-bold mb-0">최근 발송 알림</h6>
+                    <button class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-send"></i> 알림 발송
+                    </button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 150px">발송일시</th>
+                          <th>제목</th>
+                          <th style="width: 100px">발신자</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="noti : ${parent.notifications}">
+                          <td
+                            class="text-secondary small"
+                            th:text="${noti.sentDate}"
+                          >
+                            2024-01-01 10:00
+                          </td>
+                          <td class="fw-bold" th:text="${noti.title}">제목</td>
+                          <td>
+                            <span
+                              class="badge bg-light text-dark border"
+                              th:text="${noti.senderName}"
+                              >관리자</span
+                            >
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(parent.notifications)}">
+                          <td colspan="3" class="text-center py-4 text-muted">
+                            발송된 알림 내역이 없습니다.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 학생 검색 모달 -->
+        <div class="modal fade" id="studentSearchModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">학생 검색</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="input-group mb-3">
+                  <input
+                    type="text"
+                    id="studentSearchKeyword"
+                    class="form-control"
+                    placeholder="학생 이름 입력"
+                    onkeyup="if (event.key === 'Enter') searchStudents();"
+                  />
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    onclick="searchStudents()"
+                  >
+                    검색
+                  </button>
+                </div>
+                <div
+                  class="list-group"
+                  id="studentSearchResult"
+                  style="max-height: 300px; overflow-y: auto"
+                >
+                  <!-- 검색 결과 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 관계 선택 모달 (추가/수정 공용) -->
+        <div class="modal fade" id="relationSelectModal" tabindex="-1">
+          <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">관계 설정</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <p class="mb-2 text-center fw-bold" id="relationTargetName">
+                  학생이름
+                </p>
+                <input type="hidden" id="relationTargetUid" />
+                <input type="hidden" id="relationActionType" />
+                <!-- ADD or EDIT -->
+
+                <label class="form-label small text-muted">관계 선택</label>
+                <select class="form-select" id="relationSelect">
+                  <option
+                    th:each="rel : ${relationships}"
+                    th:value="${rel.name()}"
+                    th:text="${rel.description}"
+                  >
+                    부
+                  </option>
+                </select>
+              </div>
+              <div class="modal-footer justify-content-center">
+                <button
+                  type="button"
+                  class="btn btn-primary w-100"
+                  onclick="confirmRelation()"
+                >
+                  확인
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/parent-manage.js}"></script>
+    </th:block>
+  </body>
+</html>

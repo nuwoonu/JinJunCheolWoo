@@ -97,4 +97,18 @@ public class AdminTeacherController {
                     .body("CSV 처리 중 오류 발생: " + e.getMessage());
         }
     }
+
+    @PostMapping("/bulk-status")
+    @ResponseBody
+    public ResponseEntity<String> bulkUpdateStatus(@RequestParam("uids") List<Long> uids,
+            @RequestParam("status") String status) {
+        try {
+            adminTeacherService.bulkUpdateTeacherStatus(uids, status);
+            return ResponseEntity.ok("선택한 교사들의 상태가 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("상태 변경 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
 }

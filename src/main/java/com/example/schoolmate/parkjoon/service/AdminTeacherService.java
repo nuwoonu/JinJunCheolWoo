@@ -113,4 +113,17 @@ public class AdminTeacherService {
             throw e;
         }
     }
+
+    /**
+     * 교사 상태 일괄 변경
+     */
+    public void bulkUpdateTeacherStatus(List<Long> uids, String statusName) {
+        TeacherStatus status = TeacherStatus.valueOf(statusName);
+        List<User> users = userRepository.findAllById(uids);
+        for (User user : users) {
+            TeacherInfo info = user.getInfo(TeacherInfo.class);
+            if (info != null)
+                info.setStatus(status);
+        }
+    }
 }

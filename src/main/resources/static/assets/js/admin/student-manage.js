@@ -3,15 +3,7 @@
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  // --- [1] 서버 메시지 알림 처리 ---
-  // HTML body의 data-error-message, data-success-message 속성을 읽음
-  const msgContainer = document.body;
-  const errorMsg = msgContainer.dataset.errorMessage;
-  const successMsg = msgContainer.dataset.successMessage;
-
-  if (errorMsg && errorMsg !== "null") alert(errorMsg);
-  if (successMsg && successMsg !== "null") alert(successMsg);
-
+  // 서버 메시지 및 모달 처리는 admin-common.js에서 자동 수행됨
   // --- [2] 미재학생 포함 스위치 제어 (목록 페이지) ---
   const inactiveSwitch = document.getElementById("includeInactiveSwitch");
   if (inactiveSwitch) {
@@ -23,21 +15,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-
-  // --- [3] 모든 모달 공통 포커스 및 초기화 관리 (이벤트 위임) ---
-  // 모달이 닫힐 때 포커스 해제
-  document.addEventListener("hide.bs.modal", function (event) {
-    if (event.target.contains(document.activeElement)) {
-      document.activeElement.blur();
-    }
-  });
-
-  // 모달이 완전히 닫힌 후 바디에 포커스 반환 및 폼 리셋
-  document.addEventListener("hidden.bs.modal", function (event) {
-    document.body.focus();
-    const form = event.target.querySelector("form");
-    if (form) form.reset();
-  });
 
   // --- [4] 탭 상태 유지 (Hash 기반) ---
   // 1. 페이지 로드 시 URL 해시가 있으면 해당 탭 활성화
@@ -122,56 +99,11 @@ function submitDeleteAssignment(year) {
  * CSV 일괄 업로드 처리
  */
 function uploadStudentCsv() {
-  const fileInput = document.getElementById("csvFileInput");
-  if (!fileInput || !fileInput.files.length) return;
-
-  const token = document.querySelector('meta[name="_csrf"]')?.content;
-  const header = document.querySelector('meta[name="_csrf_header"]')?.content;
-
-  if (!token || !header) {
-    alert("보안 토큰이 누락되었습니다. 페이지를 새로고침하세요.");
-    return;
-  }
-
-  if (!confirm("CSV 파일을 통해 학생을 일괄 등록하시겠습니까?")) {
-    fileInput.value = "";
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("file", fileInput.files[0]);
-
-  const overlay = document.getElementById("loadingOverlay");
-  overlay?.classList.replace("d-none", "d-flex");
-
-  fetch("/parkjoon/admin/students/import-csv", {
-    method: "POST",
-    headers: { [header]: token },
-    body: formData,
-  })
-    .then(async (res) => {
-      if (res.ok) {
-        alert("일괄 등록이 완료되었습니다.");
-        location.reload();
-      } else {
-        const errorText = await res.text();
-        alert("등록 실패: " + errorText);
-      }
-    })
-    .catch(() => alert("서버 통신 중 에러가 발생했습니다."))
-    .finally(() => {
-      overlay?.classList.replace("d-flex", "d-none");
-      fileInput.value = "";
-    });
-}
-
-/**
- * [5] 체크박스 전체 선택/해제
- * HTML: <input type="checkbox" onclick="toggleAllCheckboxes(this)">
- */
-function toggleAllCheckboxes(source) {
-  const checkboxes = document.querySelectorAll(".student-checkbox");
-  checkboxes.forEach((cb) => (cb.checked = source.checked));
+  uploadCsv(
+    "/parkjoon/admin/students/import-csv",
+    "CSV 파일을 통해 학생을 일괄 등록하시겠습니까?",
+    "일괄 등록이 완료되었습니다.",
+  );
 }
 
 /**
@@ -179,44 +111,230 @@ function toggleAllCheckboxes(source) {
  * 예: updateStatusBulk('GRADUATED', '졸업')
  */
 function updateStatusBulk(statusName, statusLabel) {
-  const checkboxes = document.querySelectorAll(".student-checkbox:checked");
-  if (checkboxes.length === 0) {
-    alert("선택된 학생이 없습니다.");
+  performBulkStatusUpdate(
+    "/parkjoon/admin/students/bulk-status",
+    statusName,
+    statusLabel,
+    ".student-checkbox",
+    "uids",
+  );
+}
+
+// --- [7] 보호자 검색 및 연동 로직 (상세/등록 공용) ---
+let parentSearchModal = null;
+let relationSelectModal = null;
+let tempSelectedParent = null;
+
+// 상세 페이지용 변수
+let detailStudentIdNum = null;
+
+// 등록 페이지용 변수
+let createGuardianIndex = 0;
+
+document.addEventListener("DOMContentLoaded", function () {
+  // 상세 페이지 초기화
+  const detailContainer = document.getElementById("student-detail-container");
+  if (detailContainer) {
+    detailStudentIdNum = detailContainer.dataset.studentIdNum;
+  }
+
+  // 모달 초기화
+  const searchModalEl = document.getElementById("parentSearchModal");
+  if (searchModalEl) parentSearchModal = new bootstrap.Modal(searchModalEl);
+
+  const relationModalEl = document.getElementById("relationSelectModal");
+  if (relationModalEl)
+    relationSelectModal = new bootstrap.Modal(relationModalEl);
+});
+
+function openParentSearchModal() {
+  document.getElementById("parentSearchKeyword").value = "";
+  document.getElementById("parentSearchResult").innerHTML =
+    '<div class="text-center text-muted py-3">검색어를 입력하세요.</div>';
+  if (parentSearchModal) parentSearchModal.show();
+}
+
+function searchParents() {
+  const keyword = document.getElementById("parentSearchKeyword").value;
+  if (!keyword.trim()) {
+    alert("검색어를 입력해주세요.");
     return;
   }
 
-  if (
-    !confirm(
-      `선택한 ${checkboxes.length}명의 학생을 '${statusLabel}' 상태로 변경하시겠습니까?`,
-    )
-  ) {
+  fetch(
+    `/parkjoon/admin/students/search-parent?keyword=${encodeURIComponent(keyword)}`,
+  )
+    .then((res) => res.json())
+    .then((page) => {
+      const list = document.getElementById("parentSearchResult");
+      list.innerHTML = "";
+
+      if (page.content.length === 0) {
+        list.innerHTML =
+          '<div class="text-center text-muted py-3">검색 결과가 없습니다.</div>';
+        return;
+      }
+
+      page.content.forEach((p) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className =
+          "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+        item.innerHTML = `
+          <div>
+            <span class="fw-bold">${p.name}</span>
+            <small class="text-muted ms-2">${p.phone}</small>
+          </div>
+          <span class="badge bg-primary rounded-pill">선택</span>
+        `;
+        item.onclick = () => onParentSelected(p);
+        list.appendChild(item);
+      });
+    })
+    .catch((err) => console.error(err));
+}
+
+function onParentSelected(parent) {
+  // 중복 체크 (등록 페이지)
+  if (document.getElementById(`guardian-input-${parent.id}`)) {
+    alert("이미 추가된 보호자입니다.");
     return;
   }
 
-  const uids = Array.from(checkboxes).map((cb) => cb.value);
+  tempSelectedParent = parent;
+  document.getElementById("relationTargetName").innerText =
+    parent.name + "님과의 관계";
+  document.getElementById("relationTargetId").value = parent.id;
+  document.getElementById("relationActionType").value = "ADD";
+  document.getElementById("relationSelect").value = "FATHER"; // 기본값
+
+  if (parentSearchModal) parentSearchModal.hide();
+  if (relationSelectModal) relationSelectModal.show();
+}
+
+function openEditRelationModal(parentId, name, currentCode) {
+  document.getElementById("relationTargetName").innerText =
+    name + "님과의 관계 수정";
+  document.getElementById("relationTargetId").value = parentId;
+  document.getElementById("relationActionType").value = "EDIT";
+  document.getElementById("relationSelect").value = currentCode;
+
+  if (relationSelectModal) relationSelectModal.show();
+}
+
+function confirmGuardianRelation() {
+  const type = document.getElementById("relationActionType").value || "ADD";
+  const relationCode = document.getElementById("relationSelect").value;
+
+  if (detailStudentIdNum) {
+    // [상세 페이지] 즉시 서버 전송
+    if (type === "ADD") {
+      if (tempSelectedParent) {
+        addGuardianToDetail(tempSelectedParent.id, relationCode);
+      }
+    } else {
+      const parentId = document.getElementById("relationTargetId").value;
+      updateGuardianRelation(parentId, relationCode);
+    }
+  } else {
+    // [등록 페이지] UI에 추가
+    if (tempSelectedParent) {
+      const relationText =
+        document.getElementById("relationSelect").options[
+          document.getElementById("relationSelect").selectedIndex
+        ].text;
+      addGuardianToCreateUI(tempSelectedParent, relationCode, relationText);
+    }
+  }
+
+  if (relationSelectModal) relationSelectModal.hide();
+}
+
+// [상세 페이지] 서버 전송
+function addGuardianToDetail(parentId, relation) {
   const token = document.querySelector('meta[name="_csrf"]')?.content;
   const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-  const params = new URLSearchParams();
-  uids.forEach((uid) => params.append("uids", uid));
-  params.append("status", statusName);
-
-  fetch("/parkjoon/admin/students/bulk-status", {
-    method: "POST",
-    headers: {
-      [header]: token,
-      "Content-Type": "application/x-www-form-urlencoded",
+  fetch(
+    `/parkjoon/admin/students/${detailStudentIdNum}/add-guardian?parentId=${parentId}&relationship=${relation}`,
+    {
+      method: "POST",
+      headers: { [header]: token },
     },
-    body: params,
-  })
-    .then(async (res) => {
-      if (res.ok) {
-        alert("변경되었습니다.");
-        location.reload();
-      } else {
-        const text = await res.text();
-        alert("실패: " + text);
-      }
-    })
-    .catch(() => alert("서버 통신 오류"));
+  ).then(async (res) => {
+    if (res.ok) {
+      alert("보호자가 추가되었습니다.");
+      location.reload();
+    } else {
+      alert("추가 실패");
+    }
+  });
+}
+
+// [상세 페이지] 관계 수정
+function updateGuardianRelation(parentId, relation) {
+  const token = document.querySelector('meta[name="_csrf"]')?.content;
+  const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+  fetch(
+    `/parkjoon/admin/students/${detailStudentIdNum}/update-guardian-relation?parentId=${parentId}&relationship=${relation}`,
+    {
+      method: "POST",
+      headers: { [header]: token },
+    },
+  ).then(async (res) => {
+    if (res.ok) {
+      alert("관계가 수정되었습니다.");
+      location.reload();
+    } else {
+      alert("수정 실패");
+    }
+  });
+}
+
+// [상세 페이지] 연동 해제
+function removeGuardian(parentId) {
+  if (!confirm("정말 연동을 해제하시겠습니까?")) return;
+  const token = document.querySelector('meta[name="_csrf"]')?.content;
+  const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+  fetch(
+    `/parkjoon/admin/students/${detailStudentIdNum}/remove-guardian?parentId=${parentId}`,
+    {
+      method: "POST",
+      headers: { [header]: token },
+    },
+  ).then(async (res) => {
+    if (res.ok) {
+      alert("해제되었습니다.");
+      location.reload();
+    } else {
+      alert("해제 실패");
+    }
+  });
+}
+
+// [등록 페이지] UI 추가
+function addGuardianToCreateUI(parent, relationCode, relationText) {
+  document.getElementById("noGuardianMsg").style.display = "none";
+  const container = document.getElementById("selectedGuardiansContainer");
+  const badge = document.createElement("span");
+  badge.className = "badge bg-white text-dark border me-2 mb-2 p-2";
+  badge.id = `guardian-badge-${parent.id}`;
+  badge.innerHTML = `${parent.name} (${relationText}) <i class="bi bi-x-circle ms-2 text-danger" style="cursor:pointer" onclick="removeGuardianUI(${parent.id})"></i>`;
+  container.appendChild(badge);
+
+  const inputs = document.getElementById("hiddenInputsContainer");
+  const inputHtml = `<div id="guardian-input-${parent.id}"><input type="hidden" name="guardians[${createGuardianIndex}].parentId" value="${parent.id}"><input type="hidden" name="guardians[${createGuardianIndex}].relationship" value="${relationCode}"></div>`;
+  inputs.insertAdjacentHTML("beforeend", inputHtml);
+  createGuardianIndex++;
+}
+
+function removeGuardianUI(parentId) {
+  document.getElementById(`guardian-badge-${parentId}`).remove();
+  document.getElementById(`guardian-input-${parentId}`).remove();
+  const container = document.getElementById("selectedGuardiansContainer");
+  if (container.querySelectorAll("span.badge").length === 0) {
+    document.getElementById("noGuardianMsg").style.display = "block";
+  }
 }

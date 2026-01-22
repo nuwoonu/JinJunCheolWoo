@@ -1,0 +1,204 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content" id="parent-create-container">
+      <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0">👪 학부모 등록</h2>
+      </div>
+
+      <div
+        class="card shadow-sm border-0"
+        style="max-width: 600px; margin: 0 auto"
+      >
+        <div class="card-body p-4">
+          <form th:action="@{/parkjoon/admin/parents/create}" method="post">
+            <div class="mb-3">
+              <label for="name" class="form-label fw-bold"
+                >이름 <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                required
+                placeholder="학부모 실명 입력"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label fw-bold"
+                >이메일 (ID) <span class="text-danger">*</span></label
+              >
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                required
+                placeholder="example@email.com"
+              />
+              <div class="form-text">로그인 아이디로 사용됩니다.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label fw-bold"
+                >비밀번호 <span class="text-danger">*</span></label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                required
+              />
+            </div>
+
+            <div class="mb-4">
+              <label for="phone" class="form-label fw-bold"
+                >연락처 <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="phone"
+                name="phone"
+                required
+                placeholder="010-1234-5678"
+              />
+              <div class="form-text">'-'를 포함하여 입력해주세요.</div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="mb-3">
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <label class="form-label fw-bold mb-0">자녀 연동</label>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  onclick="openStudentSearchModal()"
+                >
+                  <i class="bi bi-search"></i> 학생 검색
+                </button>
+              </div>
+              <div
+                id="selectedStudentsContainer"
+                class="border rounded p-2 bg-light"
+                style="min-height: 50px"
+              >
+                <p
+                  class="text-muted small text-center mb-0 py-2"
+                  id="noStudentMsg"
+                >
+                  연동할 자녀를 검색하여 추가하세요.
+                </p>
+                <!-- 선택된 학생 아이템이 여기에 추가됨 -->
+              </div>
+              <!-- 실제 전송될 input hidden들이 들어갈 곳 -->
+              <div id="hiddenInputsContainer"></div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <a th:href="@{/parkjoon/admin/parents}" class="btn btn-secondary"
+                >취소</a
+              >
+              <button type="submit" class="btn btn-primary">등록하기</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 학생 검색 모달 (프래그먼트 안으로 이동) -->
+      <div class="modal fade" id="studentSearchModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">학생 검색</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  id="studentSearchKeyword"
+                  class="form-control"
+                  placeholder="학생 이름 입력"
+                  onkeyup="if (event.key === 'Enter') searchStudents();"
+                />
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  onclick="searchStudents()"
+                >
+                  검색
+                </button>
+              </div>
+              <div
+                class="list-group"
+                id="studentSearchResult"
+                style="max-height: 300px; overflow-y: auto"
+              >
+                <!-- 검색 결과 -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 관계 선택 모달 -->
+      <div class="modal fade" id="relationSelectModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">관계 설정</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p class="mb-2 text-center fw-bold" id="relationTargetName">
+                학생이름
+              </p>
+              <label class="form-label small text-muted">관계 선택</label>
+              <select class="form-select" id="relationSelect">
+                <option
+                  th:each="rel : ${relationships}"
+                  th:value="${rel.name()}"
+                  th:text="${rel.description}"
+                >
+                  부
+                </option>
+              </select>
+            </div>
+            <div class="modal-footer justify-content-center">
+              <button
+                type="button"
+                class="btn btn-primary w-100"
+                onclick="confirmRelationAdd()"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/parent-manage.js}"></script>
+    </th:block>
+  </body>
+</html>

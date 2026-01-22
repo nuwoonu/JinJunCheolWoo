@@ -1,7 +1,9 @@
 package com.example.schoolmate.common.entity.info;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
@@ -52,5 +54,13 @@ public class StudentInfo extends BaseInfo {
                 .filter(a -> a.getSchoolYear() == currentYear)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * 가장 최근 학적 이력 가져오기
+     */
+    public Optional<StudentAssignment> getLatestAssignment() {
+        return assignments.stream()
+                .max(Comparator.comparingInt(StudentAssignment::getSchoolYear));
     }
 }

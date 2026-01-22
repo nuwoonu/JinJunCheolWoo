@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -15,11 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.entity.info.FamilyRelation;
+import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
+import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.FamilyRelationRepository;
+import com.example.schoolmate.common.repository.ParentInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,8 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class AdminStudentService {
     private final UserRepository userRepository;
+    private final ParentInfoRepository parentInfoRepository;
+    private final FamilyRelationRepository familyRelationRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -59,7 +65,14 @@ public class AdminStudentService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 학번의 학생을 찾을 수 없습니다: " + studentIdentityNum));
 
         // 2. DTO 변환 후 반환
-        return new StudentDTO.DetailResponse(user);
+        StudentDTO.DetailResponse response = new StudentDTO.DetailResponse(user);
+
+        // 3. 보호자 목록 조회
+        List<FamilyRelation> relations = familyRelationRepository
+                .findByStudentInfo_StudentIdentityNum(studentIdentityNum);
+        response.setGuardians(relations.stream().map(StudentDTO.LinkedGuardian::new).toList());
+
+        return response;
     }
 
     /**
@@ -92,6 +105,21 @@ public class AdminStudentService {
 
             assignment.setStudentInfo(info);
             info.getAssignments().add(assignment);
+        }
+
+        // 4. 보호자 연동 처리
+        if (request.getGuardians() != null && !request.getGuardians().isEmpty()) {
+            for (StudentDTO.ParentRelationRequest req : request.getGuardians()) {
+                ParentInfo parentInfo = parentInfoRepository.findById(req.getParentId()).orElse(null);
+                if (parentInfo != null) {
+                    FamilyRelation relation = new FamilyRelation();
+                    relation.setStudentInfo(info);
+                    relation.setParentInfo(parentInfo);
+                    relation.setRelationship(FamilyRelationship.valueOf(req.getRelationship()));
+                    // 양방향 연관관계 설정 (ParentInfo가 주인인 경우)
+                    parentInfo.getChildrenRelations().add(relation);
+                }
+            }
         }
 
         // 4. 저장 및 학번 반환
@@ -255,5 +283,53 @@ public class AdminStudentService {
                 info.setStatus(status);
             }
         }
+    }
+
+    /**
+     * 보호자 추가 (기존 학생)
+     */
+    public void addGuardian(String studentIdentityNum, Long parentId, FamilyRelationship relationship) {
+        User user = userRepository.findDetailByIdentityNum(studentIdentityNum)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+
+        ParentInfo parentInfo = parentInfoRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
+
+        boolean exists = parentInfo.getChildrenRelations().stream()
+                .anyMatch(r -> r.getStudentInfo().getId().equals(studentInfo.getId()));
+
+        if (!exists) {
+            FamilyRelation relation = new FamilyRelation();
+            relation.setStudentInfo(studentInfo);
+            relation.setParentInfo(parentInfo);
+            relation.setRelationship(relationship);
+            parentInfo.getChildrenRelations().add(relation);
+        }
+    }
+
+    /**
+     * 보호자 연동 해제
+     */
+    public void removeGuardian(String studentIdentityNum, Long parentId) {
+        ParentInfo parentInfo = parentInfoRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
+        parentInfo.getChildrenRelations()
+                .removeIf(r -> r.getStudentInfo().getStudentIdentityNum().equals(studentIdentityNum));
+    }
+
+    /**
+     * 보호자 관계 수정
+     */
+    public void updateGuardianRelationship(String studentIdentityNum, Long parentId, FamilyRelationship relationship) {
+        User user = userRepository.findDetailByIdentityNum(studentIdentityNum)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+
+        FamilyRelation relation = studentInfo.getFamilyRelations().stream()
+                .filter(r -> r.getParentInfo().getId().equals(parentId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("연동된 보호자가 아닙니다."));
+        relation.setRelationship(relationship);
     }
 }

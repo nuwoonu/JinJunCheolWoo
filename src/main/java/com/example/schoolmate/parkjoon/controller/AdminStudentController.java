@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
+import com.example.schoolmate.parkjoon.service.AdminParentService;
 import com.example.schoolmate.parkjoon.service.AdminStudentService;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminStudentController {
 
     private final AdminStudentService adminStudentService;
+    private final AdminParentService adminParentService; // 학부모 검색용
 
     // 1. 목록 페이지
     @GetMapping("")
@@ -51,6 +55,7 @@ public class AdminStudentController {
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("createRequest", new StudentDTO.CreateRequest());
+        model.addAttribute("relationships", FamilyRelationship.values());
         return "parkjoon/admin/students/create";
     }
 
@@ -62,6 +67,7 @@ public class AdminStudentController {
         try {
             StudentDTO.DetailResponse student = adminStudentService.getStudentDetailByIdentityNum(studentIdentityNum);
             model.addAttribute("student", student);
+            model.addAttribute("relationships", FamilyRelationship.values());
             return "parkjoon/admin/students/detail";
         } catch (IllegalArgumentException e) {
             // 존재하지 않는 학번일 경우 메시지를 담아 리다이렉트
@@ -160,5 +166,38 @@ public class AdminStudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("상태 변경 중 오류가 발생했습니다: " + e.getMessage());
         }
+    }
+
+    // 학부모 검색 API
+    @GetMapping("/search-parent")
+    @ResponseBody
+    public ResponseEntity<Page<ParentDTO.Summary>> searchParent(@RequestParam String keyword, Pageable pageable) {
+        ParentDTO.ParentSearchCondition cond = new ParentDTO.ParentSearchCondition();
+        cond.setType("name");
+        cond.setKeyword(keyword);
+        return ResponseEntity.ok(adminParentService.getParentList(cond, pageable));
+    }
+
+    @PostMapping("/{studentIdentityNum}/add-guardian")
+    @ResponseBody
+    public ResponseEntity<String> addGuardian(@PathVariable String studentIdentityNum, @RequestParam Long parentId,
+            @RequestParam FamilyRelationship relationship) {
+        adminStudentService.addGuardian(studentIdentityNum, parentId, relationship);
+        return ResponseEntity.ok("보호자가 추가되었습니다.");
+    }
+
+    @PostMapping("/{studentIdentityNum}/update-guardian-relation")
+    @ResponseBody
+    public ResponseEntity<String> updateGuardianRelation(@PathVariable String studentIdentityNum,
+            @RequestParam Long parentId, @RequestParam FamilyRelationship relationship) {
+        adminStudentService.updateGuardianRelationship(studentIdentityNum, parentId, relationship);
+        return ResponseEntity.ok("관계가 수정되었습니다.");
+    }
+
+    @PostMapping("/{studentIdentityNum}/remove-guardian")
+    @ResponseBody
+    public ResponseEntity<String> removeGuardian(@PathVariable String studentIdentityNum, @RequestParam Long parentId) {
+        adminStudentService.removeGuardian(studentIdentityNum, parentId);
+        return ResponseEntity.ok("연동이 해제되었습니다.");
     }
 }

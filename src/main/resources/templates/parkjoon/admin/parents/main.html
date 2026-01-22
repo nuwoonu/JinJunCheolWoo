@@ -6,6 +6,7 @@
 >
   <body>
     <div layout:fragment="content">
+      <!-- 로딩 오버레이 -->
       <div
         id="loadingOverlay"
         class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
@@ -21,19 +22,21 @@
         </div>
       </div>
 
+      <!-- 헤더 영역 -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-3">
-          <h2 class="mb-0">🎓 학생 정보 관리</h2>
+          <h2 class="mb-0">👪 학부모 관리</h2>
         </div>
-
         <div class="d-flex align-items-center gap-2">
+          <!-- CSV 파일 입력 (숨김) -->
           <input
             type="file"
             id="csvFileInput"
             accept=".csv"
             style="display: none"
-            onchange="uploadStudentCsv()"
+            onchange="uploadParentCsv()"
           />
+
           <div class="dropdown">
             <button
               class="btn btn-outline-dark radius-8 px-20 py-11 d-flex align-items-center gap-2 dropdown-toggle"
@@ -48,53 +51,39 @@
                 <a
                   class="dropdown-item"
                   href="javascript:void(0)"
-                  onclick="updateStatusBulk('ENROLLED', '재학')"
-                  >재학</a
+                  onclick="updateStatusBulk('ACTIVE', '연결됨')"
+                  >연결됨</a
                 >
               </li>
               <li>
                 <a
                   class="dropdown-item"
                   href="javascript:void(0)"
-                  onclick="updateStatusBulk('LEAVE_OF_ABSENCE', '휴학')"
-                  >휴학</a
+                  onclick="updateStatusBulk('PENDING', '승인대기')"
+                  >승인대기</a
                 >
               </li>
               <li><hr class="dropdown-divider" /></li>
               <li>
                 <a
-                  class="dropdown-item text-danger"
+                  class="dropdown-item text-secondary"
                   href="javascript:void(0)"
-                  onclick="updateStatusBulk('GRADUATED', '졸업')"
-                  >졸업</a
+                  onclick="updateStatusBulk('INACTIVE', '비활성')"
+                  >비활성</a
                 >
               </li>
               <li>
                 <a
                   class="dropdown-item text-danger"
                   href="javascript:void(0)"
-                  onclick="updateStatusBulk('DROPOUT', '자퇴')"
-                  >자퇴</a
-                >
-              </li>
-              <li>
-                <a
-                  class="dropdown-item text-danger"
-                  href="javascript:void(0)"
-                  onclick="updateStatusBulk('EXPELLED', '제적')"
-                  >제적</a
-                >
-              </li>
-              <li>
-                <a
-                  class="dropdown-item text-danger"
-                  href="javascript:void(0)"
-                  onclick="updateStatusBulk('TRANSFERRED', '전학')"
-                  >전학</a
+                  onclick="updateStatusBulk('BLOCKED', '차단')"
+                  >차단</a
                 >
               </li>
             </ul>
           </div>
+
+          <!-- CSV 업로드 버튼 -->
           <button
             type="button"
             class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
@@ -102,55 +91,31 @@
           >
             <i class="bi bi-file-earmark-spreadsheet"></i> CSV 일괄 등록
           </button>
+          <!-- 학부모 등록 버튼 -->
           <a
-            th:href="@{/parkjoon/admin/students/create}"
+            th:href="@{/parkjoon/admin/parents/create}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
           >
-            <i class="bi bi-person-plus-fill"></i> 신규 학생 등록
+            <i class="bi bi-person-plus-fill"></i> 학부모 등록
           </a>
         </div>
       </div>
 
+      <!-- 검색 및 목록 카드 -->
       <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
           <div class="row align-items-center">
             <div class="col">
-              <h5 class="mb-0 text-dark">전체 학생 목록</h5>
+              <h5 class="mb-0 text-dark">전체 학부모 목록</h5>
             </div>
-            <div class="col-auto d-flex align-items-center gap-3">
-              <div
-                class="form-check form-switch d-flex align-items-center gap-2 mb-0"
-              >
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="includeInactiveSwitch"
-                  th:checked="${condition?.includeInactive ?: false}"
-                  style="cursor: pointer; width: 34px; height: 17px"
-                />
-                <label
-                  class="form-check-label fw-medium text-secondary-light small"
-                  for="includeInactiveSwitch"
-                  style="cursor: pointer"
-                  >미재학생 포함</label
-                >
-              </div>
-
+            <div class="col-auto">
               <form
                 id="searchForm"
-                th:action="@{/parkjoon/admin/students}"
+                th:action="@{/parkjoon/admin/parents}"
                 method="get"
                 class="input-group input-group-sm"
-                style="width: 450px"
+                style="width: 400px"
               >
-                <input
-                  type="hidden"
-                  name="includeInactive"
-                  id="includeInactiveHidden"
-                  th:value="${condition?.includeInactive ?: false}"
-                />
-
                 <select
                   name="type"
                   class="form-select"
@@ -163,16 +128,22 @@
                     이름
                   </option>
                   <option
+                    value="childName"
+                    th:selected="${condition?.type == 'childName'}"
+                  >
+                    자녀 이름
+                  </option>
+                  <option
+                    value="phone"
+                    th:selected="${condition?.type == 'phone'}"
+                  >
+                    연락처
+                  </option>
+                  <option
                     value="email"
                     th:selected="${condition?.type == 'email'}"
                   >
                     이메일
-                  </option>
-                  <option
-                    value="idNum"
-                    th:selected="${condition?.type == 'idNum'}"
-                  >
-                    고유학번
                   </option>
                 </select>
                 <input
@@ -182,12 +153,11 @@
                   th:value="${condition?.keyword}"
                   placeholder="검색어 입력..."
                 />
-
                 <button class="btn btn-primary" type="submit">
                   <i class="bi bi-search"></i> 검색
                 </button>
                 <a
-                  th:href="@{/parkjoon/admin/students}"
+                  th:href="@{/parkjoon/admin/parents}"
                   class="btn btn-outline-secondary"
                   >초기화</a
                 >
@@ -205,64 +175,73 @@
                     <input
                       type="checkbox"
                       class="form-check-input"
-                      onclick="toggleCheckboxes(this, '.student-checkbox')"
+                      onclick="toggleCheckboxes(this, '.parent-checkbox')"
                     />
                   </th>
-                  <th class="ps-4" style="width: 150px">고유학번</th>
-                  <th>이름</th>
+                  <th class="ps-4" style="width: 150px">학부모 이름</th>
+                  <th>연락처</th>
                   <th>계정 (이메일)</th>
-                  <th>최근 소속 정보</th>
+                  <th>자녀 정보 (관계)</th>
                   <th>상태</th>
                   <th class="text-end pe-4">관리</th>
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="s : ${students}">
+                <tr th:each="p : ${parents}">
                   <td class="text-center">
                     <input
                       type="checkbox"
-                      class="form-check-input student-checkbox"
-                      th:value="${s.uid}"
+                      class="form-check-input parent-checkbox"
+                      th:value="${p.id}"
                     />
                   </td>
-                  <td
-                    class="ps-4 text-secondary"
-                    th:text="${s.studentIdentityNum ?: '-'}"
-                  >
-                    20261001
+                  <td class="ps-4 fw-bold text-dark" th:text="${p.name}">
+                    홍길동
                   </td>
+                  <td th:text="${p.phone}">010-1234-5678</td>
                   <td>
-                    <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
-                      class="fw-bold text-decoration-none text-dark"
-                      th:text="${s.name}"
-                      >학생명</a
+                    <span th:if="${p.linked}" th:text="${p.email}"
+                      >email@test.com</span
+                    >
+                    <span
+                      th:unless="${p.linked}"
+                      class="badge bg-light text-secondary border"
+                      >미연동</span
                     >
                   </td>
-                  <td th:text="${s.email}">email@school.com</td>
                   <td>
-                    <small class="text-muted" th:text="${s.latestClass}"
-                      >2026년 1-1-01</small
-                    >
+                    <div class="d-flex flex-wrap gap-1">
+                      <span
+                        th:each="child : ${p.childrenStrings}"
+                        class="badge bg-light text-dark border"
+                        th:text="${child}"
+                        >김철수(부)</span
+                      >
+                      <span
+                        th:if="${#lists.isEmpty(p.childrenStrings)}"
+                        class="text-muted small"
+                        >-</span
+                      >
+                    </div>
                   </td>
                   <td>
                     <span
                       class="badge"
-                      th:classappend="${s.status == '재학' ? 'bg-success-subtle text-success' : (s.status == '휴학' ? 'bg-warning-subtle text-warning' : 'bg-secondary-subtle text-secondary')}"
-                      th:text="${s.status}"
-                      >재학</span
+                      th:classappend="${p.status == '승인' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}"
+                      th:text="${p.status}"
+                      >승인</span
                     >
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
+                      th:href="@{/parkjoon/admin/parents/{id}(id=${p.id})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
                       상세보기
                     </a>
                   </td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(students.content)}">
+                <tr th:if="${#lists.isEmpty(parents.content)}">
                   <td colspan="7" class="text-center py-5 text-muted">
                     검색 결과가 없습니다.
                   </td>
@@ -272,41 +251,42 @@
           </div>
         </div>
 
+        <!-- 페이지네이션 -->
         <div
           class="card-footer bg-white py-3"
-          th:if="${students.totalPages > 0}"
+          th:if="${parents.totalPages > 0}"
         >
           <nav>
             <ul class="pagination pagination-sm justify-content-center mb-0">
               <li
                 class="page-item"
-                th:classappend="${!students.hasPrevious} ? 'disabled'"
+                th:classappend="${!parents.hasPrevious} ? 'disabled'"
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/parents(page=${parents.number}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&laquo;</a
                 >
               </li>
               <li
                 class="page-item"
-                th:each="i : ${#numbers.sequence(0, students.totalPages - 1)}"
-                th:classappend="${i == students.number} ? 'active'"
+                th:each="i : ${#numbers.sequence(0, parents.totalPages - 1)}"
+                th:classappend="${i == parents.number} ? 'active'"
               >
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/students(page=${i + 1}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/parents(page=${i + 1}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >1</a
                 >
               </li>
               <li
                 class="page-item"
-                th:classappend="${!students.hasNext} ? 'disabled'"
+                th:classappend="${!parents.hasNext} ? 'disabled'"
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number + 2}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/parents(page=${parents.number + 2}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&raquo;</a
                 >
               </li>
@@ -317,7 +297,7 @@
     </div>
 
     <th:block layout:fragment="script">
-      <script th:src="@{/assets/js/admin/student-manage.js}"></script>
+      <script th:src="@{/assets/js/admin/parent-manage.js}"></script>
     </th:block>
   </body>
 </html>

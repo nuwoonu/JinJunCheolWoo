@@ -1,10 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
   layout:decorate="~{parkjoon/admin/layouts/layout}"
 >
-  <div layout:fragment="content" class="container" style="max-width: 800px">
+  <div
+    layout:fragment="content"
+    class="container"
+    style="max-width: 800px"
+    id="student-create-container"
+  >
     <div class="d-flex align-items-center mb-4">
       <a
         th:href="@{/parkjoon/admin/students}"
@@ -108,6 +113,35 @@
             />
           </div>
         </div>
+
+        <h5 class="mb-4 text-primary fw-bold">
+          <i class="bi bi-people me-2"></i>보호자 연동 (선택)
+        </h5>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-bold mb-0">보호자 목록</label>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              onclick="openParentSearchModal()"
+            >
+              <i class="bi bi-search"></i> 보호자 검색
+            </button>
+          </div>
+          <div
+            id="selectedGuardiansContainer"
+            class="border rounded p-2 bg-light"
+            style="min-height: 50px"
+          >
+            <p
+              class="text-muted small text-center mb-0 py-2"
+              id="noGuardianMsg"
+            >
+              연동할 보호자를 검색하여 추가하세요.
+            </p>
+          </div>
+          <div id="hiddenInputsContainer"></div>
+        </div>
       </div>
       <div class="card-footer bg-light p-4 text-end">
         <button
@@ -120,5 +154,90 @@
         <button type="submit" class="btn btn-primary px-5">등록 완료</button>
       </div>
     </form>
+
+    <!-- 보호자 검색 모달 -->
+    <div class="modal fade" id="parentSearchModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">보호자 검색</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="input-group mb-3">
+              <input
+                type="text"
+                id="parentSearchKeyword"
+                class="form-control"
+                placeholder="보호자 이름 입력"
+                onkeyup="if (event.key === 'Enter') searchParents();"
+              />
+              <button
+                class="btn btn-primary"
+                type="button"
+                onclick="searchParents()"
+              >
+                검색
+              </button>
+            </div>
+            <div
+              class="list-group"
+              id="parentSearchResult"
+              style="max-height: 300px; overflow-y: auto"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 관계 선택 모달 -->
+    <div class="modal fade" id="relationSelectModal" tabindex="-1">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">관계 설정</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-2 text-center fw-bold" id="relationTargetName">
+              보호자명
+            </p>
+            <input type="hidden" id="relationTargetId" />
+            <input type="hidden" id="relationActionType" />
+            <label class="form-label small text-muted">관계 선택</label>
+            <select class="form-select" id="relationSelect">
+              <option
+                th:each="rel : ${relationships}"
+                th:value="${rel.name()}"
+                th:text="${rel.description}"
+              >
+                부
+              </option>
+            </select>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button
+              type="button"
+              class="btn btn-primary w-100"
+              onclick="confirmGuardianRelation()"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/student-manage.js}"></script>
+    </th:block>
   </div>
 </html>

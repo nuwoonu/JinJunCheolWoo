@@ -6,7 +6,11 @@
 >
   <body>
     <div layout:fragment="content">
-      <div class="container-fluid py-4">
+      <div
+        id="student-detail-container"
+        class="container-fluid py-4"
+        th:data-student-id-num="${student.studentIdentityNum}"
+      >
         <div class="mb-4">
           <a
             th:href="@{/parkjoon/admin/students}"
@@ -146,12 +150,24 @@
                         </select>
                       </div>
                       <div class="col-md-12">
-                        <label class="form-label fw-semibold">기초 생활 기록</label>
-                        <textarea name="basicHabits" class="form-control" rows="3" th:text="${student.basicHabits}"></textarea>
+                        <label class="form-label fw-semibold"
+                          >기초 생활 기록</label
+                        >
+                        <textarea
+                          name="basicHabits"
+                          class="form-control"
+                          rows="3"
+                          th:text="${student.basicHabits}"
+                        ></textarea>
                       </div>
                       <div class="col-md-12">
                         <label class="form-label fw-semibold">특이사항</label>
-                        <textarea name="specialNotes" class="form-control" rows="3" th:text="${student.specialNotes}"></textarea>
+                        <textarea
+                          name="specialNotes"
+                          class="form-control"
+                          rows="3"
+                          th:text="${student.specialNotes}"
+                        ></textarea>
                       </div>
                       <div class="col-12 text-end mt-4">
                         <button
@@ -230,9 +246,61 @@
                 </div>
 
                 <div class="tab-pane fade" id="parent">
-                  <div class="text-center py-5">
-                    <i class="bi bi-people fs-1 text-muted"></i>
-                    <p class="mt-3">보호자 연결 기능은 준비 중입니다.</p>
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <h6 class="fw-bold mb-0">연동된 보호자 목록</h6>
+                    <button
+                      class="btn btn-sm btn-primary"
+                      onclick="openParentSearchModal()"
+                    >
+                      <i class="bi bi-plus-lg"></i> 보호자 추가
+                    </button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th>보호자명</th>
+                          <th>연락처</th>
+                          <th>관계</th>
+                          <th class="text-end">관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="g : ${student.guardians}">
+                          <td class="fw-bold" th:text="${g.name}">김부모</td>
+                          <td th:text="${g.phone}">010-1234-5678</td>
+                          <td>
+                            <span
+                              class="badge bg-light text-dark border me-1"
+                              th:text="${g.relationship}"
+                              >부</span
+                            >
+                            <button
+                              class="btn btn-xs btn-link text-secondary p-0"
+                              th:onclick="openEditRelationModal([[${g.parentId}]], [[${g.name}]], [[${g.relationshipCode}]])"
+                              title="관계 수정"
+                            >
+                              <i class="bi bi-pencil-square"></i>
+                            </button>
+                          </td>
+                          <td class="text-end">
+                            <button
+                              class="btn btn-sm btn-outline-danger"
+                              th:onclick="removeGuardian([[${g.parentId}]])"
+                            >
+                              해제
+                            </button>
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(student.guardians)}">
+                          <td colspan="4" class="text-center py-4 text-muted">
+                            연동된 보호자가 없습니다.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -418,6 +486,87 @@
         <input type="hidden" name="uid" th:value="${student.uid}" />
         <input type="hidden" name="schoolYear" id="deleteSchoolYear" />
       </form>
+
+      <!-- 보호자 검색 모달 -->
+      <div class="modal fade" id="parentSearchModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">보호자 검색</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  id="parentSearchKeyword"
+                  class="form-control"
+                  placeholder="보호자 이름 입력"
+                  onkeyup="if (event.key === 'Enter') searchParents();"
+                />
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  onclick="searchParents()"
+                >
+                  검색
+                </button>
+              </div>
+              <div
+                class="list-group"
+                id="parentSearchResult"
+                style="max-height: 300px; overflow-y: auto"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 관계 선택 모달 -->
+      <div class="modal fade" id="relationSelectModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">관계 설정</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p class="mb-2 text-center fw-bold" id="relationTargetName">
+                보호자명
+              </p>
+              <input type="hidden" id="relationTargetId" />
+              <input type="hidden" id="relationActionType" />
+              <label class="form-label small text-muted">관계 선택</label>
+              <select class="form-select" id="relationSelect">
+                <option
+                  th:each="rel : ${relationships}"
+                  th:value="${rel.name()}"
+                  th:text="${rel.description}"
+                >
+                  부
+                </option>
+              </select>
+            </div>
+            <div class="modal-footer justify-content-center">
+              <button
+                type="button"
+                class="btn btn-primary w-100"
+                onclick="confirmGuardianRelation()"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <th:block layout:fragment="script">

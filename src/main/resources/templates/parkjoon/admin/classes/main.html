@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -68,6 +68,13 @@
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
+                  <th class="text-center" style="width: 50px">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      onclick="toggleCheckboxes(this, '.class-checkbox')"
+                    />
+                  </th>
                   <th class="ps-4">CID</th>
                   <th>학년/반</th>
                   <th>현재 담임 교사</th>
@@ -77,6 +84,13 @@
               </thead>
               <tbody>
                 <tr th:each="cls : ${classes}">
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      class="form-check-input class-checkbox"
+                      th:value="${cls.cid}"
+                    />
+                  </td>
                   <td class="ps-4" th:text="${cls.cid}">1</td>
                   <td class="fw-bold" th:text="${cls.gradeAndClass}">
                     1학년 1반
@@ -124,7 +138,7 @@
                   </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(classes)}">
-                  <td colspan="5" class="text-center py-5 text-muted">
+                  <td colspan="6" class="text-center py-5 text-muted">
                     <i class="bi bi-exclamation-circle d-block mb-2 fs-2"></i>
                     등록된 학급 정보가 없습니다.
                   </td>
@@ -135,5 +149,7 @@
         </div>
       </div>
     </section>
+
+    <!-- 학급 관리는 별도 JS 파일이 없으므로 공통 스크립트만으로 충분 -->
   </body>
 </html>
