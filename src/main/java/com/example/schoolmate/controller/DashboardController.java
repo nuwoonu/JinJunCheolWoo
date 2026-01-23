@@ -26,6 +26,7 @@ import com.example.schoolmate.dto.ChildDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -40,6 +41,11 @@ public class DashboardController {
     @GetMapping("/board")
     public String getBoard() {
         return "redirect:/dashboard";
+    }
+
+    @GetMapping("/index")
+    public String getMethodName() {
+        return "/dashboard/index";
     }
 
     @GetMapping("/dashboard")
@@ -103,6 +109,7 @@ public class DashboardController {
         model.addAttribute("boards", boards);
 
         return "parent/dashboard";
+
     }
 
     /**

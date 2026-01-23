@@ -1,5 +1,6 @@
 package com.example.schoolmate.cheol.dto;
 
+import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
 import com.example.schoolmate.common.entity.user.constant.Year;
 
@@ -20,7 +21,7 @@ public class GradeDTO {
     private String subjectCode;
     private TestType examType;
     private Double score;
-    private Integer semester;
+    private Semester semester;
     private Year year;
 
 }

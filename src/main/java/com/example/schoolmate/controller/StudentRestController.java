@@ -19,7 +19,6 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.cheol.service.StudentServiceImpl;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.RequiredArgsConstructor;
 
@@ -65,10 +64,10 @@ public class StudentRestController {
     }
 
     // 학년별 학생 목록 조회
-    // GET /api/students/year/{year}
-    @GetMapping("/year/{year}")
-    public ResponseEntity<List<StudentResponseDTO>> getStudentsByYear(@PathVariable Year year) {
-        List<StudentResponseDTO> students = studentService.getStudentsByYear(year);
+    // GET /api/students/grade/{grade}
+    @GetMapping("/grade/{grade}")
+    public ResponseEntity<List<StudentResponseDTO>> getStudentsByGrade(@PathVariable int grade) {
+        List<StudentResponseDTO> students = studentService.getStudentsByGrade(grade);
         return ResponseEntity.ok(students);
     }
 
@@ -83,10 +82,10 @@ public class StudentRestController {
     // 학년 + 반별 학생 목록 조회
     // GET /api/students/search?grade={grade}&classNum={classNum}
     @GetMapping("/search")
-    public ResponseEntity<List<StudentResponseDTO>> getStudentsByYearAndClass(
-            @RequestParam Year year,
+    public ResponseEntity<List<StudentResponseDTO>> getStudentsByGradeAndClass(
+            @RequestParam int grade,
             @RequestParam int classNum) {
-        List<StudentResponseDTO> students = studentService.getStudentsByYearAndClass(year, classNum);
+        List<StudentResponseDTO> students = studentService.getStudentsByGradeAndClass(grade, classNum);
         return ResponseEntity.ok(students);
     }
 

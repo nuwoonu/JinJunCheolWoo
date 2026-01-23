@@ -9,6 +9,7 @@ import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Gender;
 import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.parkjoon.entity.Classroom;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -16,6 +17,8 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,12 +35,6 @@ public class StudentInfo extends BaseInfo {
     @Column(nullable = false)
     private Long studentNumber; // 학번
 
-    @Enumerated(EnumType.STRING)
-    private Year year; // 학년
-
-    @Column(nullable = false)
-    private int classNum; // 반
-
     private LocalDate birthDate; // 생일
 
     private String address; // 주소
@@ -47,14 +44,14 @@ public class StudentInfo extends BaseInfo {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Classroom classroom;
+
     // 전체 학번 생성 메서드 (표시용)
     public String getFullStudentNumber() {
-        return String.format("%d-%d-%02d", year, classNum, studentNumber);
+        return String.format("%d-%d-%02d", classroom.getYear(), classroom.getClassNum(), studentNumber);
         // 예: "1-3-05" (1학년 3반 5번)
     }
-
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Grade> grades = new ArrayList<>();
 
     public void changeAddress(String address) {
         this.address = address;
@@ -88,4 +85,5 @@ public class StudentInfo extends BaseInfo {
                 .findFirst()
                 .orElse(null);
     }
+
 }

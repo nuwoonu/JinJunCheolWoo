@@ -4,10 +4,8 @@ import java.time.LocalDate;
 
 import com.example.schoolmate.common.entity.user.constant.Gender;
 import com.example.schoolmate.common.entity.user.constant.Status;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,11 +26,7 @@ public class StudentUpdateDTO {
 
     private String password;
 
-    @Min(value = 1, message = "학년은 1 이상이어야 합니다.")
-    private Year year;
-
-    @Min(value = 1, message = "반은 1 이상이어야 합니다.")
-    private Integer classNum;
+    private Long classroomId;
 
     private LocalDate birthDate;
 

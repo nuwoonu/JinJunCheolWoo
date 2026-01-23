@@ -25,7 +25,7 @@ public class StudentResponseDTO {
 
     private Long studentNumber;
 
-    private Year year;
+    private int year;
 
     private Integer classNum;
 
@@ -56,8 +56,8 @@ public class StudentResponseDTO {
     public StudentResponseDTO(StudentInfo student) {
         this.uid = student.getId();
         this.studentNumber = student.getStudentNumber();
-        this.year = student.getYear();
-        this.classNum = student.getClassNum();
+        this.year = student.getClassroom().getYear();
+        this.classNum = student.getClassroom().getClassNum();
         this.fullStudentNumber = student.getFullStudentNumber();
         this.studentIdentityNum = student.getStudentIdentityNum();
         this.birthDate = student.getBirthDate();

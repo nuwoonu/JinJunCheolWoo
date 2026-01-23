@@ -3,6 +3,7 @@ package com.example.schoolmate.cheol.entity;
 import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
+import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
 import com.example.schoolmate.common.entity.user.constant.Year;
 
@@ -38,8 +39,8 @@ public class Grade extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TestType testType; // 시험 종류
 
-    @Column(nullable = false)
-    private int semester; // 학기
+    @Enumerated(EnumType.STRING)
+    private Semester semester; // 학기
 
     @Column(nullable = false)
     private Double score; // 점수
@@ -55,29 +56,12 @@ public class Grade extends BaseEntity {
     @JoinColumn(name = "subject_id")
     private Subject subject;
 
-    // 양방향 연관관계 편의 메서드 추가
-    // 학생 설정 편의 메서드
-    public void setStudent(StudentInfo student) {
-        // 기존 관계 제거
-        if (this.student != null) {
-            this.student.getGrades().remove(this);
-        }
-        this.student = student;
-        // 새 관계 추가
-        if (student != null && !student.getGrades().contains(this)) {
-            student.getGrades().add(this);
-        }
+    public void setSubject(Subject subject) {
+        this.subject = subject;
     }
 
-    // 과목 설정 편의 메서드
-    public void setSubject(Subject subject) {
-        if (this.subject != null) {
-            this.subject.getGrades().remove(this);
-        }
-        this.subject = subject;
-        if (subject != null && !subject.getGrades().contains(this)) {
-            subject.getGrades().add(this);
-        }
+    public void setStudent(StudentInfo student) {
+        this.student = student;
     }
 
     public void changeScore(Double score) {

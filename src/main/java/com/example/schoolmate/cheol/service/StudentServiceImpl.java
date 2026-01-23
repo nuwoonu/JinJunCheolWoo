@@ -11,8 +11,9 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
-import com.example.schoolmate.common.entity.user.constant.Year;
 import com.example.schoolmate.common.repository.StudentInfoRepository;
+import com.example.schoolmate.parkjoon.entity.Classroom;
+import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class StudentServiceImpl {
 
     private final StudentInfoRepository studentRepository;
+    private final ClassroomRepository classroomRepository;
 
     @Transactional
     public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
@@ -30,11 +32,14 @@ public class StudentServiceImpl {
             throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
         }
 
+        // Classroom 조회
+        Classroom classroom = classroomRepository.findById(createDTO.getClassroomId())
+                .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
+
         // Student 엔티티 생성 (Setter 방식)
         StudentInfo student = new StudentInfo();
         student.setStudentNumber(createDTO.getStudentNumber());
-        student.setYear(createDTO.getYear());
-        student.setClassNum(createDTO.getClassNum());
+        student.setClassroom(classroom);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
@@ -62,20 +67,20 @@ public class StudentServiceImpl {
                 .collect(Collectors.toList());
     }
 
-    public List<StudentResponseDTO> getStudentsByYear(Year year) {
-        return studentRepository.findByYear(year).stream()
+    public List<StudentResponseDTO> getStudentsByGrade(int grade) {
+        return studentRepository.findByClassroomGrade(grade).stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public List<StudentResponseDTO> getStudentsByClassNum(int classNum) {
-        return studentRepository.findByClassNum(classNum).stream()
+        return studentRepository.findByClassroomClassNum(classNum).stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<StudentResponseDTO> getStudentsByYearAndClass(Year year, int classNum) {
-        return studentRepository.findByYearAndClassNum(year, classNum).stream()
+    public List<StudentResponseDTO> getStudentsByGradeAndClass(int grade, int classNum) {
+        return studentRepository.findByClassroomGradeAndClassroomClassNum(grade, classNum).stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -86,11 +91,11 @@ public class StudentServiceImpl {
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
 
         // 업데이트 가능한 필드만 변경 (Dirty Checking 활용)
-        if (updateDTO.getYear() != null) {
-            student.setYear(updateDTO.getYear());
-        }
-        if (updateDTO.getClassNum() != null) {
-            student.setClassNum(updateDTO.getClassNum());
+        if (updateDTO.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
+            student.setClassroom(classroom);
         }
         if (updateDTO.getBirthDate() != null) {
             student.setBirthDate(updateDTO.getBirthDate());

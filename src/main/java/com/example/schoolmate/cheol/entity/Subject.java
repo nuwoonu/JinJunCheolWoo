@@ -48,13 +48,6 @@ public class Subject {
         this.teacher = teacher;
     }
 
-    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Grade> grades = new ArrayList<>();
-
-    public List<Grade> getGrades() {
-        return grades;
-    }
-
     public void changeYear(Year year) {
         this.year = year;
     }
