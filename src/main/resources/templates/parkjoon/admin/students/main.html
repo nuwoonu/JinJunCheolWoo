@@ -118,38 +118,25 @@
               <h5 class="mb-0 text-dark">전체 학생 목록</h5>
             </div>
             <div class="col-auto d-flex align-items-center gap-3">
-              <div
-                class="form-check form-switch d-flex align-items-center gap-2 mb-0"
-              >
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="includeInactiveSwitch"
-                  th:checked="${condition?.includeInactive ?: false}"
-                  style="cursor: pointer; width: 34px; height: 17px"
-                />
-                <label
-                  class="form-check-label fw-medium text-secondary-light small"
-                  for="includeInactiveSwitch"
-                  style="cursor: pointer"
-                  >미재학생 포함</label
-                >
-              </div>
-
               <form
                 id="searchForm"
                 th:action="@{/parkjoon/admin/students}"
                 method="get"
                 class="input-group input-group-sm"
-                style="width: 450px"
               >
-                <input
-                  type="hidden"
-                  name="includeInactive"
-                  id="includeInactiveHidden"
-                  th:value="${condition?.includeInactive ?: false}"
-                />
+                <select
+                  name="status"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option value="">전체 상태</option>
+                  <option
+                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.StudentStatus).values()}"
+                    th:value="${s.name()}"
+                    th:text="${s.description}"
+                    th:selected="${condition.status == s.name()}"
+                  ></option>
+                </select>
 
                 <select
                   name="type"
@@ -181,6 +168,7 @@
                   class="form-control"
                   th:value="${condition?.keyword}"
                   placeholder="검색어 입력..."
+                  style="min-width: 150px"
                 />
 
                 <button class="btn btn-primary" type="submit">
@@ -281,7 +269,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/students(page=${students.number}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -293,7 +281,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/students(page=${i + 1}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/students(page=${i + 1}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >1</a
                 >
               </li>
@@ -303,7 +291,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number + 2}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/students(page=${students.number + 2}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&raquo;</a
                 >
               </li>

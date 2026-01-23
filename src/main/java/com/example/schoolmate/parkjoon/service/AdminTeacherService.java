@@ -25,7 +25,6 @@ import com.example.schoolmate.common.repository.NotificationRepository;
 import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
-import com.example.schoolmate.parkjoon.mapper.AdminTeacherMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -38,14 +37,13 @@ public class AdminTeacherService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // Security 설정 필요
-    private final AdminTeacherMapper adminTeacherMapper;
     private final NotificationRepository notificationRepository;
     private final TeacherInfoRepository teacherInfoRepository;
 
     public Page<TeacherDTO.DetailResponse> getTeacherList(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
         Page<User> userPage = userRepository.searchTeachers(cond, pageable);
         // Page 객체 내의 User 엔티티들을 DTO 생성자를 통해 DetailResponse로 변환
-        return userPage.map(adminTeacherMapper::toDetailResponse);
+        return userPage.map(TeacherDTO.DetailResponse::new);
     }
 
     /**

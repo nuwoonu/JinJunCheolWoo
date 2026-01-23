@@ -3,6 +3,7 @@ package com.example.schoolmate.common.dto;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ public class ParentDTO {
     public static class ParentSearchCondition {
         private String type; // name, email, phone, childName
         private String keyword;
+        private String status = ParentStatus.ACTIVE.name(); // 기본값: 연결됨
     }
 
     @Getter

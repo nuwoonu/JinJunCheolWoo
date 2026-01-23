@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
@@ -27,7 +27,7 @@
           class="nav-link text-white d-flex align-items-center"
           th:href="@{/parkjoon/admin/classes}"
         >
-          <span class="me-2">🏗️</span><span>학급 설정</span>
+          <span class="me-2">🏗️</span><span>학급 관리</span>
         </a>
       </li>
       <li class="nav-item">
@@ -52,6 +52,14 @@
           th:href="@{/parkjoon/admin/parents}"
         >
           <span class="me-2">👪</span><span>학부모 관리</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link text-white d-flex align-items-center"
+          th:href="@{/parkjoon/admin/staffs}"
+        >
+          <span class="me-2">🏢</span><span>교직원 관리</span>
         </a>
       </li>
     </ul>

@@ -1,5 +1,6 @@
 package com.example.schoolmate.common.repository.handler;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,17 +30,20 @@ public class StudentQueryHandler {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
 
-        List<User> content = query
+        JPAQuery<User> contentQuery = query
                 .selectFrom(user)
                 .leftJoin(info).on(info.user.eq(user)) // StudentInfo와 직접 조인
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
-                        inactiveFilter(cond.isIncludeInactive(), info))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(user.uid.desc())
-                .fetch();
+                        statusFilter(cond.getStatus(), info))
+                .orderBy(user.uid.desc());
+
+        if (pageable.isPaged()) {
+            contentQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
+        }
+
+        List<User> content = contentQuery.fetch();
 
         JPAQuery<Long> countQuery = query
                 .select(user.count())
@@ -48,16 +52,15 @@ public class StudentQueryHandler {
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
-                        inactiveFilter(cond.isIncludeInactive(), info));
+                        statusFilter(cond.getStatus(), info));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
-    private BooleanExpression inactiveFilter(boolean includeInactive, QStudentInfo info) {
-        if (includeInactive)
+    private BooleanExpression statusFilter(String status, QStudentInfo info) {
+        if (status == null || status.isEmpty())
             return null;
-        // 재학, 휴학 상태만 기본 노출
-        return info.status.in(StudentStatus.ENROLLED, StudentStatus.LEAVE_OF_ABSENCE).or(info.status.isNull());
+        return info.status.eq(StudentStatus.valueOf(status));
     }
 
     private BooleanExpression searchPredicate(String type, String keyword, QUser user, QStudentInfo info) {
@@ -102,5 +105,56 @@ public class StudentQueryHandler {
                 .fetchFirst(); // findAny와 같은 역할 (성능 최적화)
 
         return fetchOne != null;
+    }
+
+    public List<User> findStudentsByAssignment(int year, int grade, int classNum) {
+        QUser user = QUser.user;
+        QStudentInfo info = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+
+        return query.selectFrom(user)
+                .join(info).on(info.user.eq(user))
+                .join(info.assignments, assign)
+                .where(assign.schoolYear.eq(year)
+                        .and(assign.grade.eq(grade))
+                        .and(assign.classNum.eq(classNum)))
+                .fetch();
+    }
+
+    /**
+     * 해당 학년도에 배정되지 않은 재학생 조회 (랜덤 배정용)
+     */
+    public List<User> findUnassignedStudents(int year, int limit) {
+        QUser user = QUser.user;
+        QStudentInfo info = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+
+        // 해당 학년도에 배정 이력이 없는 학생 조회
+        List<User> candidates = query.selectFrom(user)
+                .join(info).on(info.user.eq(user))
+                .where(
+                        user.roles.contains(UserRole.STUDENT),
+                        info.status.eq(StudentStatus.ENROLLED),
+                        query.selectOne().from(assign)
+                                .where(assign.studentInfo.eq(info).and(assign.schoolYear.eq(year)))
+                                .notExists())
+                .fetch();
+
+        Collections.shuffle(candidates); // 랜덤 섞기
+        return candidates.stream().limit(limit).toList();
+    }
+
+    public long countByClassroom(int year, int grade, int classNum) {
+        QStudentInfo info = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+
+        Long count = query.select(info.count())
+                .from(info)
+                .join(info.assignments, assign)
+                .where(assign.schoolYear.eq(year)
+                        .and(assign.grade.eq(grade))
+                        .and(assign.classNum.eq(classNum)))
+                .fetchOne();
+        return count != null ? count : 0L;
     }
 }

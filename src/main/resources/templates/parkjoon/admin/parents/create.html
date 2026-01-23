@@ -5,18 +5,34 @@
   layout:decorate="~{parkjoon/admin/layouts/layout}"
 >
   <body>
-    <div layout:fragment="content" id="parent-create-container">
+    <div
+      layout:fragment="content"
+      class="container"
+      style="max-width: 800px"
+      id="parent-create-container"
+    >
       <div class="d-flex align-items-center mb-4">
-        <h2 class="mb-0">👪 학부모 등록</h2>
+        <a
+          th:href="@{/parkjoon/admin/parents}"
+          class="btn btn-link text-dark p-0 me-3"
+        >
+          <i class="bi bi-arrow-left fs-3"></i>
+        </a>
+        <h2 class="mb-0">✨ 신규 학부모 등록</h2>
       </div>
 
-      <div
-        class="card shadow-sm border-0"
-        style="max-width: 600px; margin: 0 auto"
+      <form
+        th:action="@{/parkjoon/admin/parents/create}"
+        method="post"
+        class="card shadow-sm"
       >
         <div class="card-body p-4">
-          <form th:action="@{/parkjoon/admin/parents/create}" method="post">
-            <div class="mb-3">
+          <h5 class="mb-4 text-primary fw-bold">
+            <i class="bi bi-person-circle me-2"></i>기본 정보
+          </h5>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
               <label for="name" class="form-label fw-bold"
                 >이름 <span class="text-danger">*</span></label
               >
@@ -30,7 +46,7 @@
               />
             </div>
 
-            <div class="mb-3">
+            <div class="col-md-6">
               <label for="code" class="form-label fw-bold"
                 >학부모 코드 <span class="text-danger">*</span></label
               >
@@ -44,7 +60,7 @@
               />
             </div>
 
-            <div class="mb-3">
+            <div class="col-md-6">
               <label for="email" class="form-label fw-bold"
                 >이메일 (ID) <span class="text-danger">*</span></label
               >
@@ -59,7 +75,7 @@
               <div class="form-text">로그인 아이디로 사용됩니다.</div>
             </div>
 
-            <div class="mb-3">
+            <div class="col-md-6">
               <label for="password" class="form-label fw-bold"
                 >비밀번호 <span class="text-danger">*</span></label
               >
@@ -72,7 +88,7 @@
               />
             </div>
 
-            <div class="mb-4">
+            <div class="col-md-12">
               <label for="phone" class="form-label fw-bold"
                 >연락처 <span class="text-danger">*</span></label
               >
@@ -86,48 +102,54 @@
               />
               <div class="form-text">'-'를 포함하여 입력해주세요.</div>
             </div>
+          </div>
 
-            <hr class="my-4" />
+          <hr class="my-4" />
 
-            <div class="mb-3">
-              <div
-                class="d-flex justify-content-between align-items-center mb-2"
+          <h5 class="mb-4 text-primary fw-bold">
+            <i class="bi bi-people me-2"></i>자녀 연동 (선택)
+          </h5>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">자녀 목록</label>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                onclick="openStudentSearchModal()"
               >
-                <label class="form-label fw-bold mb-0">자녀 연동</label>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary"
-                  onclick="openStudentSearchModal()"
-                >
-                  <i class="bi bi-search"></i> 학생 검색
-                </button>
-              </div>
-              <div
-                id="selectedStudentsContainer"
-                class="border rounded p-2 bg-light"
-                style="min-height: 50px"
-              >
-                <p
-                  class="text-muted small text-center mb-0 py-2"
-                  id="noStudentMsg"
-                >
-                  연동할 자녀를 검색하여 추가하세요.
-                </p>
-                <!-- 선택된 학생 아이템이 여기에 추가됨 -->
-              </div>
-              <!-- 실제 전송될 input hidden들이 들어갈 곳 -->
-              <div id="hiddenInputsContainer"></div>
+                <i class="bi bi-search"></i> 학생 검색
+              </button>
             </div>
-
-            <div class="d-flex justify-content-end gap-2">
-              <a th:href="@{/parkjoon/admin/parents}" class="btn btn-secondary"
-                >취소</a
+            <div
+              id="selectedStudentsContainer"
+              class="border rounded p-2 bg-light"
+              style="min-height: 50px"
+            >
+              <p
+                class="text-muted small text-center mb-0 py-2"
+                id="noStudentMsg"
               >
-              <button type="submit" class="btn btn-primary">등록하기</button>
+                연동할 자녀를 검색하여 추가하세요.
+              </p>
+              <!-- 선택된 학생 아이템이 여기에 추가됨 -->
             </div>
-          </form>
+            <!-- 실제 전송될 input hidden들이 들어갈 곳 -->
+            <div id="hiddenInputsContainer"></div>
+          </div>
         </div>
-      </div>
+
+        <div class="card-footer bg-light p-4 text-end">
+          <button
+            type="button"
+            class="btn btn-secondary px-4 me-2"
+            onclick="history.back()"
+          >
+            취소
+          </button>
+          <button type="submit" class="btn btn-primary px-5">등록 완료</button>
+        </div>
+      </form>
 
       <!-- 학생 검색 모달 (프래그먼트 안으로 이동) -->
       <div class="modal fade" id="studentSearchModal" tabindex="-1">

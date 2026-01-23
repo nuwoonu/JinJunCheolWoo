@@ -11,6 +11,7 @@ import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.QFamilyRelation;
 import com.example.schoolmate.common.entity.info.QParentInfo;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -34,19 +35,23 @@ public class ParentQueryHandler {
 
         // 1. 검색 조건에 맞는 Parent ID 조회 (페이징 적용)
         // OneToMany 관계(자녀) 조인 시 데이터 뻥튀기 방지를 위해 ID만 먼저 조회
-        List<Long> ids = query
+        JPAQuery<Long> idsQuery = query
                 .select(parent.id)
                 .from(parent)
                 .leftJoin(parent.user, user)
                 .leftJoin(parent.childrenRelations, relation)
                 .leftJoin(relation.studentInfo, student)
                 .leftJoin(student.user, studentUser)
-                .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser))
+                .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser),
+                        statusFilter(cond.getStatus(), parent))
                 .distinct()
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(parent.id.desc())
-                .fetch();
+                .orderBy(parent.id.desc());
+
+        if (pageable.isPaged()) {
+            idsQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
+        }
+
+        List<Long> ids = idsQuery.fetch();
 
         // 2. 조회된 ID로 Entity Fetch Join (N+1 방지)
         List<ParentInfo> content = query
@@ -68,9 +73,16 @@ public class ParentQueryHandler {
                 .leftJoin(parent.childrenRelations, relation)
                 .leftJoin(relation.studentInfo, student)
                 .leftJoin(student.user, studentUser)
-                .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser));
+                .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser),
+                        statusFilter(cond.getStatus(), parent));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression statusFilter(String status, QParentInfo parent) {
+        if (status == null || status.isEmpty())
+            return null;
+        return parent.status.eq(ParentStatus.valueOf(status));
     }
 
     private BooleanExpression searchPredicate(String type, String keyword,

@@ -4,17 +4,6 @@
 
 document.addEventListener("DOMContentLoaded", function () {
   // 서버 메시지 및 모달 처리는 admin-common.js에서 자동 수행됨
-  // --- [2] 미재학생 포함 스위치 제어 (목록 페이지) ---
-  const inactiveSwitch = document.getElementById("includeInactiveSwitch");
-  if (inactiveSwitch) {
-    inactiveSwitch.addEventListener("change", function () {
-      const hiddenInput = document.getElementById("includeInactiveHidden");
-      if (hiddenInput) {
-        hiddenInput.value = this.checked;
-        document.getElementById("searchForm").submit();
-      }
-    });
-  }
 
   // --- [4] 탭 상태 유지 (Hash 기반) ---
   // 1. 페이지 로드 시 URL 해시가 있으면 해당 탭 활성화

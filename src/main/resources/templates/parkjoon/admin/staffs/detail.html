@@ -9,7 +9,7 @@
       <div class="container-fluid py-4">
         <div class="mb-4">
           <a
-            th:href="@{/parkjoon/admin/teachers}"
+            th:href="@{/parkjoon/admin/staffs}"
             class="btn btn-outline-secondary btn-sm"
           >
             <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
@@ -26,19 +26,25 @@
               >
                 <span
                   class="fs-1 text-primary fw-bold"
-                  th:text="${#strings.substring(teacher.name, 0, 1)}"
-                  >이</span
+                  th:text="${#strings.substring(staff.name, 0, 1)}"
+                  >홍</span
                 >
               </div>
-              <h4 class="fw-bold mb-1" th:text="${teacher.name}">이교사</h4>
-              <p class="text-muted small mb-3" th:text="${teacher.email}">
-                teacher@school.com
+              <h4 class="fw-bold mb-1" th:text="${staff.name}">홍길동</h4>
+              <p class="text-muted small mb-3" th:text="${staff.email}">
+                staff@school.com
               </p>
               <div class="px-4">
                 <span
+                  class="badge bg-light text-dark border mb-2"
+                  th:text="${staff.employmentTypeDesc}"
+                  >정규직</span
+                >
+                <br />
+                <span
                   class="badge w-100 py-2 fs-6"
-                  th:classappend="${teacher.statusName == 'EMPLOYED' ? 'bg-success' : (teacher.statusName == 'LEAVE' ? 'bg-warning text-dark' : 'bg-secondary')}"
-                  th:text="${teacher.statusDesc}"
+                  th:classappend="${staff.statusName == 'EMPLOYED' ? 'bg-success' : 'bg-secondary'}"
+                  th:text="${staff.statusDesc}"
                   >재직</span
                 >
               </div>
@@ -51,7 +57,7 @@
               <div class="card-header bg-white border-bottom">
                 <ul
                   class="nav nav-tabs card-header-tabs"
-                  id="teacherTab"
+                  id="staffTab"
                   role="tablist"
                 >
                   <li class="nav-item">
@@ -76,10 +82,10 @@
                 <!-- 탭 1: 기본 정보 수정 -->
                 <div class="tab-pane fade show active" id="basic">
                   <form
-                    th:action="@{/parkjoon/admin/teachers/update}"
+                    th:action="@{/parkjoon/admin/staffs/update}"
                     method="post"
                   >
-                    <input type="hidden" name="uid" th:value="${teacher.uid}" />
+                    <input type="hidden" name="uid" th:value="${staff.uid}" />
                     <div class="row g-3">
                       <div class="col-md-6">
                         <label class="form-label fw-semibold">이름</label>
@@ -87,7 +93,7 @@
                           type="text"
                           name="name"
                           class="form-control"
-                          th:value="${teacher.name}"
+                          th:value="${staff.name}"
                           required
                         />
                       </div>
@@ -97,7 +103,7 @@
                           type="text"
                           name="code"
                           class="form-control"
-                          th:value="${teacher.code}"
+                          th:value="${staff.code}"
                           required
                         />
                       </div>
@@ -106,33 +112,22 @@
                         <input
                           type="text"
                           class="form-control"
-                          th:value="${teacher.email}"
+                          th:value="${staff.email}"
                           readonly
                         />
                       </div>
-                      <div class="col-md-12">
+                      <div class="col-md-6">
                         <label class="form-label fw-semibold">재직 상태</label>
                         <select name="statusName" class="form-select">
                           <option
                             th:each="st : ${statusList}"
                             th:value="${st.name()}"
                             th:text="${st.description}"
-                            th:selected="${st.name() == teacher.statusName}"
+                            th:selected="${st.name() == staff.statusName}"
                           ></option>
                         </select>
                       </div>
-                      <div class="col-md-12">
-                        <hr class="my-3" />
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label fw-semibold">담당 과목</label>
-                        <input
-                          type="text"
-                          name="subject"
-                          class="form-control"
-                          th:value="${teacher.subject}"
-                        />
-                      </div>
+                      <div class="col-md-12"><hr class="my-3" /></div>
                       <div class="col-md-6">
                         <label class="form-label fw-semibold">부서</label>
                         <select name="department" class="form-select">
@@ -140,20 +135,63 @@
                             th:each="dept : ${departments}"
                             th:value="${dept}"
                             th:text="${dept}"
-                            th:selected="${dept == teacher.department}"
+                            th:selected="${dept == staff.department}"
                           ></option>
                         </select>
                       </div>
                       <div class="col-md-6">
-                        <label class="form-label fw-semibold">직책</label>
-                        <select name="position" class="form-select">
+                        <label class="form-label fw-semibold">직함</label>
+                        <input
+                          type="text"
+                          name="jobTitle"
+                          class="form-control"
+                          th:value="${staff.jobTitle}"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">근무지</label>
+                        <input
+                          type="text"
+                          name="workLocation"
+                          class="form-control"
+                          th:value="${staff.workLocation}"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">내선 번호</label>
+                        <input
+                          type="text"
+                          name="extensionNumber"
+                          class="form-control"
+                          th:value="${staff.extensionNumber}"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">고용 형태</label>
+                        <select
+                          name="employmentType"
+                          id="employmentTypeSelect"
+                          class="form-select"
+                        >
                           <option
-                            th:each="pos : ${positions}"
-                            th:value="${pos}"
-                            th:text="${pos}"
-                            th:selected="${pos == teacher.position}"
+                            th:each="type : ${employmentTypes}"
+                            th:value="${type.name()}"
+                            th:text="${type.description}"
+                            th:selected="${type == staff.employmentType}"
                           ></option>
                         </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                          >계약 만료일</label
+                        >
+                        <input
+                          id="contractEndDateInput"
+                          type="date"
+                          name="contractEndDate"
+                          class="form-control"
+                          th:value="${staff.contractEndDate}"
+                        />
                       </div>
                       <div class="col-12 text-end mt-4">
                         <button
@@ -167,7 +205,7 @@
                   </form>
                 </div>
 
-                <!-- 탭 2: 알림 이력 (추후 구현) -->
+                <!-- 탭 2: 알림 이력 -->
                 <div class="tab-pane fade" id="notifications">
                   <div
                     class="d-flex justify-content-between align-items-center mb-3"
@@ -187,12 +225,12 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr th:each="noti : ${teacher.notifications}">
+                        <tr th:each="noti : ${staff.notifications}">
                           <td
                             class="text-secondary small"
                             th:text="${noti.sentDate}"
                           >
-                            2024-01-01 10:00
+                            2024-01-01
                           </td>
                           <td class="fw-bold" th:text="${noti.title}">제목</td>
                           <td>
@@ -215,7 +253,7 @@
                             >
                           </td>
                         </tr>
-                        <tr th:if="${#lists.isEmpty(teacher.notifications)}">
+                        <tr th:if="${#lists.isEmpty(staff.notifications)}">
                           <td colspan="4" class="text-center py-4 text-muted">
                             발송된 알림 내역이 없습니다.
                           </td>
@@ -230,5 +268,27 @@
         </div>
       </div>
     </div>
+    <th:block layout:fragment="script">
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const typeSelect = document.getElementById("employmentTypeSelect");
+          const dateInput = document.getElementById("contractEndDateInput");
+
+          function toggleDateInput() {
+            const val = typeSelect.value;
+            // 정규직(PERMANENT), 무기계약직(INDEFINITE_CONTRACT)은 만료일 없음
+            const isPermanent =
+              val === "PERMANENT" || val === "INDEFINITE_CONTRACT";
+            dateInput.disabled = isPermanent;
+            if (isPermanent) dateInput.value = ""; // 비활성화 시 값 초기화
+          }
+
+          if (typeSelect && dateInput) {
+            typeSelect.addEventListener("change", toggleDateInput);
+            toggleDateInput(); // 페이지 로드 시 초기 상태 적용
+          }
+        });
+      </script>
+    </th:block>
   </body>
 </html>

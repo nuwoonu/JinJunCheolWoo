@@ -111,7 +111,7 @@ public class TeacherDTO {
     public static class TeacherSearchCondition {
         private String type; // 검색 필드 (name, dept 등)
         private String keyword; // 검색어
-        private boolean includeRetired;
+        private String status = TeacherStatus.EMPLOYED.name(); // 기본값: 재직
     }
 
     @Getter

@@ -1,6 +1,6 @@
-package com.example.schoolmate.parkjoon.entity;
+package com.example.schoolmate.common.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
 
 import jakarta.persistence.Entity;
@@ -9,6 +9,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,4 +36,8 @@ public class Classroom extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uid") // 담임 교사(User)의 uid를 FK로 사용
     private User teacher; // Teacher 대신 User 사용
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private ClassroomStatus status = ClassroomStatus.ACTIVE;
 }

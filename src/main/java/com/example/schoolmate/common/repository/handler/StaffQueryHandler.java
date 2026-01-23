@@ -7,9 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 
-import com.example.schoolmate.common.dto.TeacherDTO;
-import com.example.schoolmate.common.entity.info.QTeacherInfo;
-import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.dto.StaffDTO;
+import com.example.schoolmate.common.entity.info.QStaffInfo;
+import com.example.schoolmate.common.entity.info.constant.EmploymentType;
+import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
@@ -21,26 +22,22 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class TeacherQueryHandler {
+public class StaffQueryHandler {
     private final JPAQueryFactory query;
 
-    public Page<User> search(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
+    public Page<User> search(StaffDTO.StaffSearchCondition cond, Pageable pageable) {
         QUser user = QUser.user;
-        QTeacherInfo info = QTeacherInfo.teacherInfo;
+        QStaffInfo info = QStaffInfo.staffInfo;
 
-        // 공통 필터 조건 정의
-        BooleanExpression isTeacher = user.roles.contains(UserRole.TEACHER);
+        BooleanExpression isStaff = user.roles.contains(UserRole.STAFF);
         BooleanExpression searchFilter = searchPredicate(cond.getType(), cond.getKeyword());
         BooleanExpression statusFilter = statusFilter(cond.getStatus());
+        BooleanExpression employmentTypeFilter = employmentTypeFilter(cond.getEmploymentType());
 
-        // 1. 컨텐츠 조회
         JPAQuery<User> contentQuery = query
                 .selectFrom(user).distinct()
-                .leftJoin(info).on(info.user.eq(user)) // TeacherInfo와 직접 조인
-                .where(
-                        isTeacher,
-                        searchFilter,
-                        statusFilter)
+                .leftJoin(info).on(info.user.eq(user))
+                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter)
                 .orderBy(user.uid.desc());
 
         if (pageable.isPaged()) {
@@ -49,15 +46,11 @@ public class TeacherQueryHandler {
 
         List<User> content = contentQuery.fetch();
 
-        // 2. 카운트 조회 (페이징을 위해 컨텐츠 쿼리와 동일한 필터 적용)
         JPAQuery<Long> countQuery = query
                 .select(user.countDistinct())
                 .from(user)
                 .leftJoin(info).on(info.user.eq(user))
-                .where(
-                        isTeacher,
-                        searchFilter,
-                        statusFilter);
+                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -65,23 +58,30 @@ public class TeacherQueryHandler {
     private BooleanExpression statusFilter(String status) {
         if (status == null || status.isEmpty())
             return null;
-        QTeacherInfo info = QTeacherInfo.teacherInfo;
-        return info.status.eq(TeacherStatus.valueOf(status));
+        QStaffInfo info = QStaffInfo.staffInfo;
+        return info.status.eq(StaffStatus.valueOf(status));
+    }
+
+    private BooleanExpression employmentTypeFilter(String employmentType) {
+        if (employmentType == null || employmentType.isEmpty())
+            return null;
+        QStaffInfo info = QStaffInfo.staffInfo;
+        return info.employmentType.eq(EmploymentType.valueOf(employmentType));
     }
 
     private BooleanExpression searchPredicate(String type, String keyword) {
         if (keyword == null || keyword.isEmpty())
             return null;
-
         QUser user = QUser.user;
-        QTeacherInfo info = QTeacherInfo.teacherInfo;
+        QStaffInfo info = QStaffInfo.staffInfo;
 
         return switch (type) {
             case "name" -> user.name.contains(keyword);
             case "email" -> user.email.contains(keyword);
             case "dept" -> info.department.contains(keyword);
-            case "subject" -> info.subject.contains(keyword);
-            case "position" -> info.position.contains(keyword);
+            case "jobTitle" -> info.jobTitle.contains(keyword);
+            case "code" -> info.code.contains(keyword);
+            case "extNum" -> info.extensionNumber.contains(keyword);
             default -> null;
         };
     }

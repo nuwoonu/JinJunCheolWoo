@@ -1,0 +1,205 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content">
+      <div
+        class="container-fluid py-4"
+        id="class-detail-container"
+        th:data-cid="${classroom.cid}"
+      >
+        <div class="mb-4">
+          <a
+            th:href="@{/parkjoon/admin/classes}"
+            class="btn btn-outline-secondary btn-sm"
+          >
+            <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+          </a>
+        </div>
+
+        <div class="row">
+          <!-- 좌측: 학급 정보 -->
+          <div class="col-md-4">
+            <div class="card mb-4 shadow-sm border-0">
+              <div class="card-body text-center py-4">
+                <div class="mb-3">
+                  <span
+                    class="badge bg-primary fs-6 mb-2"
+                    th:text="${classroom.year + '학년도'}"
+                    >2026학년도</span
+                  >
+                  <h3 class="fw-bold mb-0">
+                    <span th:text="${classroom.grade}">1</span>학년
+                    <span th:text="${classroom.classNum}">1</span>반
+                  </h3>
+                </div>
+
+                <form
+                  th:action="@{/parkjoon/admin/classes/update}"
+                  method="post"
+                  class="mt-4 text-start px-3"
+                >
+                  <input type="hidden" name="cid" th:value="${classroom.cid}" />
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted"
+                      >담임 교사</label
+                    >
+                    <div class="d-flex gap-2">
+                      <select name="teacherUid" class="form-select">
+                        <option value="">미배정</option>
+                        <option
+                          th:each="t : ${teachers}"
+                          th:value="${t.uid}"
+                          th:text="${t.displayName}"
+                          th:selected="${t.uid == classroom.teacherUid}"
+                        ></option>
+                      </select>
+                      <button type="submit" class="btn btn-primary btn-sm">
+                        변경
+                      </button>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted"
+                      >총 학생 수</label
+                    >
+                    <p
+                      class="h5 mb-0"
+                      th:text="${classroom.studentCount + '명'}"
+                    >
+                      25명
+                    </p>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측: 학생 명단 -->
+          <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+              <div
+                class="card-header bg-white py-3 d-flex justify-content-between align-items-center"
+              >
+                <h5 class="mb-0">학생 명단</h5>
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  onclick="openStudentSearchModal()"
+                >
+                  <i class="bi bi-person-plus"></i> 학생 추가
+                </button>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="ps-4">번호</th>
+                        <th>이름</th>
+                        <th>학번</th>
+                        <th>상태</th>
+                        <th class="text-end pe-4">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="s : ${classroom.students}">
+                        <td class="ps-4" th:text="${s.studentNum ?: '-'}">1</td>
+                        <td class="fw-bold" th:text="${s.name}">홍길동</td>
+                        <td th:text="${s.code}">20261001</td>
+                        <td>
+                          <span
+                            class="badge bg-light text-dark border"
+                            th:text="${s.status}"
+                            >재학</span
+                          >
+                        </td>
+                        <td class="text-end pe-4">
+                          <button
+                            class="btn btn-sm btn-outline-danger"
+                            th:onclick="removeStudent([[${s.uid}]])"
+                          >
+                            제외
+                          </button>
+                        </td>
+                      </tr>
+                      <tr th:if="${#lists.isEmpty(classroom.students)}">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                          배정된 학생이 없습니다.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 학생 검색 모달 -->
+      <div class="modal fade" id="studentSearchModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">학생 배정</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  id="studentSearchKeyword"
+                  class="form-control"
+                  placeholder="이름 검색"
+                  onkeyup="if (event.key === 'Enter') searchStudents();"
+                />
+                <button class="btn btn-primary" onclick="searchStudents()">
+                  검색
+                </button>
+              </div>
+              <div
+                class="list-group mb-3"
+                id="studentSearchResult"
+                style="max-height: 200px; overflow-y: auto"
+              ></div>
+
+              <div class="border-top pt-3">
+                <h6 class="small fw-bold text-muted mb-2">선택된 학생</h6>
+                <div
+                  id="selectedStudentsArea"
+                  class="d-flex flex-wrap gap-2"
+                ></div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="confirmAddStudents()"
+              >
+                배정하기
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/class-manage.js}"></script>
+    </th:block>
+  </body>
+</html>

@@ -1,11 +1,13 @@
 package com.example.schoolmate.common.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.example.schoolmate.common.dto.ParentDTO;
+import com.example.schoolmate.common.dto.StaffDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.ParentInfo;
@@ -16,9 +18,17 @@ public interface UserRepositoryCustom {
 
     Page<User> searchStudents(StudentDTO.StudentSearchCondition cond, Pageable pageable);
 
+    Page<User> searchStaffs(StaffDTO.StaffSearchCondition cond, Pageable pageable);
+
     Page<ParentInfo> searchParents(ParentDTO.ParentSearchCondition cond, Pageable pageable);
 
     Optional<User> findDetailByCode(String code);
 
     boolean existsStudentByCode(String code);
+
+    List<User> findStudentsByAssignment(int year, int grade, int classNum);
+
+    List<User> findUnassignedStudents(int year, int limit);
+
+    long countByClassroom(int year, int grade, int classNum);
 }

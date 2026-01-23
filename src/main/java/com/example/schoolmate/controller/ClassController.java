@@ -10,12 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.parkjoon.dto.AdminClassDTO;
-import com.example.schoolmate.parkjoon.mapper.AdminClassMapper;
-import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
-import com.example.schoolmate.parkjoon.service.AdminClassService;
+import com.example.schoolmate.common.dto.ClassDTO;
+import com.example.schoolmate.service.ClassService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,41 +25,44 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize("hasRole('ADMIN')")
 public class ClassController {
 
-    private final AdminClassService adminClassService;
-    private final ClassroomRepository classroomRepository;
-    private final UserRepository userRepository;
-    private final AdminClassMapper adminClassMapper;
+    private final ClassService classService;
 
     @GetMapping
     public String classManagement(Model model) {
         // 1. 학급 목록 변환
-        List<AdminClassDTO.ClassInfoResponse> classList = classroomRepository.findAll().stream()
-                .map(adminClassMapper::toClassInfoResponse)
-                .toList();
+        List<ClassDTO.DetailResponse> classList = classService.getClassList();
 
         // 2. 교사 목록 변환 (담임 배정용)
-        List<AdminClassDTO.TeacherSelectResponse> teacherList = userRepository.findAll().stream()
-                .filter(u -> u.hasRole(UserRole.TEACHER))
-                .map(adminClassMapper::toTeacherSelectResponse)
-                .toList();
+        List<ClassDTO.TeacherSelectResponse> teacherList = classService.getTeacherList();
 
         model.addAttribute("classes", classList);
         model.addAttribute("teachers", teacherList);
-        return "common/class-list";  // [woo 수정] 기존 템플릿 사용
+        return "common/class-list";
     }
 
     @PostMapping("/create")
     public String createClass(@RequestParam int year,
-                              @RequestParam int grade,
-                              @RequestParam int classNum) {
-        adminClassService.createClassroom(year, grade, classNum);
+            @RequestParam int grade,
+            @RequestParam int classNum) {
+
+        ClassDTO.CreateRequest request = new ClassDTO.CreateRequest();
+        request.setYear(year);
+        request.setGrade(grade);
+        request.setClassNum(classNum);
+
+        classService.createClass(request);
         return "redirect:/admin/classes";
     }
 
     @PostMapping("/assign")
     public String assignTeacher(@RequestParam Long classroomId,
-                                @RequestParam Long teacherUid) {
-        adminClassService.assignTeacher(classroomId, teacherUid);
+            @RequestParam Long teacherUid) {
+
+        ClassDTO.UpdateRequest request = new ClassDTO.UpdateRequest();
+        request.setCid(classroomId);
+        request.setTeacherUid(teacherUid);
+
+        classService.assignTeacher(request);
         return "redirect:/admin/classes";
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.opencsv.bean.CsvBindByName;
 
@@ -22,7 +23,7 @@ public class StudentDTO {
     public static class StudentSearchCondition {
         private String type;
         private String keyword;
-        private boolean includeInactive;
+        private String status = StudentStatus.ENROLLED.name(); // 기본값: 재학
     }
 
     @Getter
