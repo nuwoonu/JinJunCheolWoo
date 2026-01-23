@@ -193,6 +193,21 @@ public class AdminClassService {
                 a.getClassNum() == classroom.getClassNum());
     }
 
+    public void removeStudents(Long cid, List<Long> studentUids) {
+        Classroom classroom = classroomRepository.findById(cid)
+                .orElseThrow(() -> new IllegalArgumentException("학급 정보를 찾을 수 없습니다."));
+
+        List<User> users = userRepository.findAllById(studentUids);
+
+        for (User user : users) {
+            StudentInfo info = user.getInfo(StudentInfo.class);
+            // 해당 학년도의 배정 정보 삭제
+            info.getAssignments().removeIf(a -> a.getSchoolYear() == classroom.getYear() &&
+                    a.getGrade() == classroom.getGrade() &&
+                    a.getClassNum() == classroom.getClassNum());
+        }
+    }
+
     public void bulkUpdateClassStatus(List<Long> cids, String statusName) {
         ClassroomStatus status = ClassroomStatus.valueOf(statusName);
         List<Classroom> classrooms = classroomRepository.findAllById(cids);

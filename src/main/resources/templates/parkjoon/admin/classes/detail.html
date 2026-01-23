@@ -31,6 +31,12 @@
                     th:text="${classroom.year + '학년도'}"
                     >2026학년도</span
                   >
+                  <span
+                    class="badge fs-6 mb-2"
+                    th:classappend="${classroom.status == 'ACTIVE' ? 'bg-success' : 'bg-secondary'}"
+                    th:text="${classroom.statusDescription}"
+                    >운영</span
+                  >
                   <h3 class="fw-bold mb-0">
                     <span th:text="${classroom.grade}">1</span>학년
                     <span th:text="${classroom.classNum}">1</span>반
@@ -85,18 +91,34 @@
                 class="card-header bg-white py-3 d-flex justify-content-between align-items-center"
               >
                 <h5 class="mb-0">학생 명단</h5>
-                <button
-                  class="btn btn-sm btn-outline-primary"
-                  onclick="openStudentSearchModal()"
-                >
-                  <i class="bi bi-person-plus"></i> 학생 추가
-                </button>
+                <div class="d-flex gap-2">
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="removeSelectedStudents()"
+                  >
+                    <i class="bi bi-trash"></i> 선택 제외
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="openStudentSearchModal()"
+                  >
+                    <i class="bi bi-person-plus"></i> 학생 추가
+                  </button>
+                </div>
               </div>
               <div class="card-body p-0">
                 <div class="table-responsive">
                   <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                       <tr>
+                        <th class="text-center" style="width: 50px">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="selectAllStudents"
+                            onclick="toggleAllStudents(this)"
+                          />
+                        </th>
                         <th class="ps-4">번호</th>
                         <th>이름</th>
                         <th>학번</th>
@@ -106,6 +128,13 @@
                     </thead>
                     <tbody>
                       <tr th:each="s : ${classroom.students}">
+                        <td class="text-center">
+                          <input
+                            type="checkbox"
+                            class="form-check-input student-checkbox"
+                            th:value="${s.uid}"
+                          />
+                        </td>
                         <td class="ps-4" th:text="${s.studentNum ?: '-'}">1</td>
                         <td class="fw-bold" th:text="${s.name}">홍길동</td>
                         <td th:text="${s.code}">20261001</td>
@@ -126,7 +155,7 @@
                         </td>
                       </tr>
                       <tr th:if="${#lists.isEmpty(classroom.students)}">
-                        <td colspan="5" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                           배정된 학생이 없습니다.
                         </td>
                       </tr>

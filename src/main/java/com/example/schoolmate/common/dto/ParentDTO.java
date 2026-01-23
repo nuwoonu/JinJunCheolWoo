@@ -75,6 +75,7 @@ public class ParentDTO {
         private String code;
         private String phone;
         private String status;
+        private String statusName;
         private String email;
         private boolean linked;
         private List<String> childrenStrings;
@@ -85,6 +86,7 @@ public class ParentDTO {
             this.code = entity.getCode();
             this.phone = entity.getPhoneNumber();
             this.status = entity.getStatus().getDescription();
+            this.statusName = entity.getStatus().name();
             this.linked = entity.getUser() != null;
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";
             this.childrenStrings = entity.getChildrenRelations().stream()
@@ -104,6 +106,7 @@ public class ParentDTO {
         private String code;
         private String phone;
         private String email;
+        private String statusName;
     }
 
     @Getter

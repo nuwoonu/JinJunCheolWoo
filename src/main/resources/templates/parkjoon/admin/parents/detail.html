@@ -41,7 +41,7 @@
               <div class="px-4">
                 <span
                   class="badge w-100 py-2 fs-6"
-                  th:classappend="${parent.statusName == 'ACTIVE' ? 'bg-success' : (parent.statusName == 'PENDING' ? 'bg-warning text-dark' : 'bg-secondary')}"
+                  th:classappend="${parent.statusName == 'ACTIVE' ? 'bg-success-subtle text-success' : (parent.statusName == 'PENDING' ? 'bg-warning-subtle text-warning' : (parent.statusName == 'BLOCKED' ? 'bg-danger-subtle text-danger' : 'bg-secondary-subtle text-secondary'))}"
                   th:text="${parent.status}"
                   >연결됨</span
                 >
@@ -131,6 +131,17 @@
                           th:value="${parent.phone}"
                           required
                         />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">계정 상태</label>
+                        <select name="statusName" class="form-select">
+                          <option
+                            th:each="st : ${statuses}"
+                            th:value="${st.name()}"
+                            th:text="${st.description}"
+                            th:selected="${st.name() == parent.statusName}"
+                          ></option>
+                        </select>
                       </div>
                       <div class="col-md-12">
                         <label class="form-label fw-semibold">이메일</label>

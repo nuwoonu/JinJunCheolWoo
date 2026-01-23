@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.parkjoon.service.AdminParentService;
 
@@ -101,6 +102,7 @@ public class AdminParentController {
     public String detail(@PathVariable Long id, Model model) {
         ParentDTO.DetailResponse parent = adminParentService.getParentDetail(id);
         model.addAttribute("parent", parent);
+        model.addAttribute("statuses", ParentStatus.values());
         model.addAttribute("relationships", FamilyRelationship.values());
         return "parkjoon/admin/parents/detail";
     }

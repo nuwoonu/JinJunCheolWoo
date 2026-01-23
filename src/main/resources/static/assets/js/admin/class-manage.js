@@ -129,6 +129,40 @@ function removeStudent(uid) {
   }).then((res) => (res.ok ? location.reload() : alert("제외 실패")));
 }
 
+function toggleAllStudents(source) {
+  const checkboxes = document.querySelectorAll(".student-checkbox");
+  checkboxes.forEach((cb) => (cb.checked = source.checked));
+}
+
+function removeSelectedStudents() {
+  const checkboxes = document.querySelectorAll(".student-checkbox:checked");
+  if (checkboxes.length === 0) {
+    alert("선택된 학생이 없습니다.");
+    return;
+  }
+
+  if (
+    !confirm(
+      `선택한 ${checkboxes.length}명의 학생을 이 학급에서 제외하시겠습니까?`,
+    )
+  )
+    return;
+
+  const cid = document.getElementById("class-detail-container").dataset.cid;
+  const uids = Array.from(checkboxes).map((cb) => cb.value);
+  const token = document.querySelector('meta[name="_csrf"]')?.content;
+  const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+  const formData = new FormData();
+  formData.append("studentUids", uids);
+
+  fetch(`/parkjoon/admin/classes/${cid}/remove-students`, {
+    method: "POST",
+    headers: { [header]: token },
+    body: formData,
+  }).then((res) => (res.ok ? location.reload() : alert("일괄 제외 실패")));
+}
+
 // --- [등록 페이지용] ---
 
 function addStudentToCreateUI(student) {

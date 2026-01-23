@@ -189,6 +189,10 @@ public class AdminParentService {
         info.setParentName(request.getName());
         info.setPhoneNumber(request.getPhone());
 
+        if (request.getStatusName() != null) {
+            info.setStatus(ParentStatus.valueOf(request.getStatusName()));
+        }
+
         if (info.getUser() != null) {
             info.getUser().setName(request.getName());
             info.getUser().setEmail(request.getEmail());

@@ -243,7 +243,7 @@
                   <td>
                     <span
                       class="badge"
-                      th:classappend="${p.status == '승인' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}"
+                      th:classappend="${p.statusName == 'ACTIVE' ? 'bg-success-subtle text-success' : (p.statusName == 'PENDING' ? 'bg-warning-subtle text-warning' : (p.statusName == 'BLOCKED' ? 'bg-danger-subtle text-danger' : 'bg-secondary-subtle text-secondary'))}"
                       th:text="${p.status}"
                       >승인</span
                     >

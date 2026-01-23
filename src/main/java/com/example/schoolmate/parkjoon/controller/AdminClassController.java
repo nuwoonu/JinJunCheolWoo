@@ -118,6 +118,14 @@ public class AdminClassController {
         return ResponseEntity.ok("배정이 해제되었습니다.");
     }
 
+    @PostMapping("/{cid}/remove-students")
+    @ResponseBody
+    public ResponseEntity<String> removeStudents(@PathVariable Long cid,
+            @RequestParam("studentUids") List<Long> studentUids) {
+        adminClassService.removeStudents(cid, studentUids);
+        return ResponseEntity.ok("선택한 학생들의 배정이 해제되었습니다.");
+    }
+
     @PostMapping("/bulk-status")
     @ResponseBody
     public ResponseEntity<String> bulkStatus(@RequestParam("cids") List<Long> cids,
