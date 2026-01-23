@@ -188,6 +188,7 @@
                       onclick="toggleCheckboxes(this, '.teacher-checkbox')"
                     />
                   </th>
+                  <th class="ps-4" style="width: 150px">사번</th>
                   <th>이름</th>
                   <th>이메일</th>
                   <th>부서 / 직책</th>
@@ -204,6 +205,9 @@
                       class="form-check-input teacher-checkbox"
                       th:value="${t.uid}"
                     />
+                  </td>
+                  <td class="ps-4 text-secondary" th:text="${t.code}">
+                    T2024001
                   </td>
                   <td>
                     <div class="d-flex align-items-center">
@@ -266,7 +270,7 @@
                   </td>
                 </tr>
                 <tr th:if="${page.totalElements == 0}">
-                  <td colspan="7" class="text-center py-5 text-muted">
+                  <td colspan="8" class="text-center py-5 text-muted">
                     검색 결과가 없습니다.
                   </td>
                 </tr>

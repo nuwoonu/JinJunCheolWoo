@@ -111,6 +111,18 @@
                         />
                       </div>
                       <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                          >학부모 코드</label
+                        >
+                        <input
+                          type="text"
+                          name="code"
+                          class="form-control"
+                          th:value="${parent.code}"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
                         <label class="form-label fw-semibold">연락처</label>
                         <input
                           type="text"
@@ -169,13 +181,13 @@
                         <tr th:each="child : ${parent.children}">
                           <td class="fw-bold">
                             <a
-                              th:href="@{/parkjoon/admin/students/{id}(id=${child.identityNum})}"
+                              th:href="@{/parkjoon/admin/students/{id}(id=${child.code})}"
                               class="text-decoration-none text-dark"
                               th:text="${child.name}"
                               >김학생</a
                             >
                           </td>
-                          <td th:text="${child.identityNum}">2024001</td>
+                          <td th:text="${child.code}">2024001</td>
                           <td>
                             <span
                               class="badge bg-light text-dark border me-1"

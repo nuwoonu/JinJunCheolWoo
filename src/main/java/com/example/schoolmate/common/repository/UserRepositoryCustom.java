@@ -18,7 +18,7 @@ public interface UserRepositoryCustom {
 
     Page<ParentInfo> searchParents(ParentDTO.ParentSearchCondition cond, Pageable pageable);
 
-    Optional<User> findDetailByIdentityNum(String identityNum);
+    Optional<User> findDetailByCode(String code);
 
-    boolean existsStudentByIdentityNum(String identityNum);
+    boolean existsStudentByCode(String code);
 }

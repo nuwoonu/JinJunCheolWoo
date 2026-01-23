@@ -1,7 +1,8 @@
 package com.example.schoolmate.parkjoon.service;
 
-import java.io.BufferedReader;
+import java.io.Reader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
@@ -28,12 +29,15 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.NotificationRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ParentInfoRepository;
+import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Log4j2
 public class AdminParentService {
 
     private final UserRepository userRepository;
@@ -57,6 +61,9 @@ public class AdminParentService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
+        if (request.getCode() != null && parentInfoRepository.existsByCode(request.getCode())) {
+            throw new IllegalArgumentException("이미 존재하는 학부모 코드입니다: " + request.getCode());
+        }
 
         User user = User.builder()
                 .name(request.getName())
@@ -66,6 +73,7 @@ public class AdminParentService {
                 .build();
 
         ParentInfo info = new ParentInfo();
+        info.setCode(request.getCode());
         info.setParentName(request.getName());
         info.setPhoneNumber(request.getPhone());
         info.setStatus(ParentStatus.ACTIVE);
@@ -101,25 +109,18 @@ public class AdminParentService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void importParentsFromCsv(MultipartFile file) throws Exception {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
-            String line;
-            int rowNum = 1;
-            br.readLine(); // 헤더 스킵
+        try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+            List<ParentDTO.CsvImportRequest> beans = new CsvToBeanBuilder<ParentDTO.CsvImportRequest>(reader)
+                    .withType(ParentDTO.CsvImportRequest.class)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build()
+                    .parse();
 
-            while ((line = br.readLine()) != null) {
-                rowNum++;
-                String[] data = line.split(",");
-
-                if (data.length < 4) {
-                    throw new IllegalArgumentException(rowNum + "행: 필수 정보(이름, 이메일, 비밀번호, 연락처)가 누락되었습니다.");
-                }
-
-                String name = data[0].trim();
-                String email = data[1].trim();
-                String password = data[2].trim();
-                String phone = data[3].trim();
-
-                createParent(new ParentDTO.CreateRequest(name, email, password, phone, new ArrayList<>()));
+            for (ParentDTO.CsvImportRequest csvReq : beans) {
+                ParentDTO.CreateRequest req = new ParentDTO.CreateRequest(csvReq);
+                // 자녀 연동 정보는 CSV에서 받지 않으므로 빈 리스트로 초기화
+                req.setStudents(new ArrayList<>());
+                createParent(req);
             }
         } catch (IllegalArgumentException e) {
             throw e;
@@ -176,6 +177,14 @@ public class AdminParentService {
     public void updateParent(ParentDTO.UpdateRequest request) {
         ParentInfo info = parentInfoRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학부모 정보입니다."));
+
+        // 코드 변경 시 중복 체크
+        if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
+            if (parentInfoRepository.existsByCode(request.getCode())) {
+                throw new IllegalArgumentException("이미 존재하는 학부모 코드입니다: " + request.getCode());
+            }
+            info.setCode(request.getCode());
+        }
 
         info.setParentName(request.getName());
         info.setPhoneNumber(request.getPhone());

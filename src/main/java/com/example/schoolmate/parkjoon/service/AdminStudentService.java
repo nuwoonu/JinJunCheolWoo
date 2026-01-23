@@ -1,7 +1,8 @@
 package com.example.schoolmate.parkjoon.service;
 
-import java.io.BufferedReader;
+import java.io.Reader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,12 +26,15 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.ParentInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Log4j2
 public class AdminStudentService {
     private final UserRepository userRepository;
     private final ParentInfoRepository parentInfoRepository;
@@ -59,17 +63,17 @@ public class AdminStudentService {
     }
 
     @Transactional(readOnly = true)
-    public StudentDTO.DetailResponse getStudentDetailByIdentityNum(String studentIdentityNum) {
+    public StudentDTO.DetailResponse getStudentDetailByCode(String code) {
         // 1. 학번으로 유저 조회 (학생 권한 확인 포함)
-        User user = userRepository.findDetailByIdentityNum(studentIdentityNum)
-                .orElseThrow(() -> new IllegalArgumentException("해당 학번의 학생을 찾을 수 없습니다: " + studentIdentityNum));
+        User user = userRepository.findDetailByCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("해당 학번의 학생을 찾을 수 없습니다: " + code));
 
         // 2. DTO 변환 후 반환
         StudentDTO.DetailResponse response = new StudentDTO.DetailResponse(user);
 
         // 3. 보호자 목록 조회
         List<FamilyRelation> relations = familyRelationRepository
-                .findByStudentInfo_StudentIdentityNum(studentIdentityNum);
+                .findByStudentInfo_Code(code);
         response.setGuardians(relations.stream().map(StudentDTO.LinkedGuardian::new).toList());
 
         return response;
@@ -90,7 +94,7 @@ public class AdminStudentService {
 
         // 2. 학생 상세 정보 설정
         StudentInfo info = new StudentInfo();
-        info.setStudentIdentityNum(request.getStudentIdentityNum());
+        info.setCode(request.getCode());
         info.setStatus(StudentStatus.ENROLLED);
         info.setUser(user);
         user.getInfos().add(info);
@@ -126,7 +130,7 @@ public class AdminStudentService {
         userRepository.save(user);
 
         // 저장된 info에서 학번을 꺼내 반환 (request에 있는 것을 써도 되지만, 저장된 상태를 보장하기 위함)
-        return info.getStudentIdentityNum();
+        return info.getCode();
     }
 
     /**
@@ -141,7 +145,7 @@ public class AdminStudentService {
         StudentInfo info = user.getInfo(StudentInfo.class);
         if (info != null) {
             // 학번 변경 시 중복 체크 로직이 필요할 수 있음
-            info.setStudentIdentityNum(request.getStudentIdentityNum());
+            info.setCode(request.getCode());
             if (request.getStatusName() != null) {
                 info.setStatus(StudentStatus.valueOf(request.getStatusName()));
             }
@@ -172,7 +176,7 @@ public class AdminStudentService {
         assignment.setStudentNum(request.getStudentNum());
         info.getAssignments().add(assignment);
 
-        return info.getStudentIdentityNum();
+        return info.getCode();
     }
 
     /**
@@ -192,71 +196,37 @@ public class AdminStudentService {
         assignment.setClassNum(request.getClassNum());
         assignment.setStudentNum(request.getStudentNum());
 
-        return info.getStudentIdentityNum();
+        return info.getCode();
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void importStudentsFromCsv(MultipartFile file) throws Exception {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
-            String line;
-            int rowNum = 1; // 헤더 포함 행 번호 추적
-            br.readLine(); // 첫 줄 헤더 건너뛰기
+        try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+            log.info("CSV 파일 읽기 시작: {}", file.getOriginalFilename());
+            List<StudentDTO.CsvImportRequest> beans = new CsvToBeanBuilder<StudentDTO.CsvImportRequest>(reader)
+                    .withType(StudentDTO.CsvImportRequest.class)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build()
+                    .parse();
 
-            while ((line = br.readLine()) != null) {
-                rowNum++;
-                String[] data = line.split(",");
+            log.info("파싱된 데이터 개수: {}", beans.size());
 
-                // 1. 필수 데이터 검증
-                if (data.length < 4) {
-                    throw new IllegalArgumentException(rowNum + "행: 필수 인적사항(이름, 이메일, 비밀번호, 학번)이 누락되었습니다.");
+            for (StudentDTO.CsvImportRequest csvReq : beans) {
+                // 1. 중복 체크
+                if (userRepository.existsByEmail(csvReq.getEmail())) {
+                    throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
+                }
+                if (userRepository.existsStudentByCode(csvReq.getCode())) {
+                    throw new IllegalArgumentException("이미 존재하는 학번입니다: " + csvReq.getCode());
                 }
 
-                String name = data[0].trim();
-                String email = data[1].trim();
-                String password = data[2].trim();
-                String identityNum = data[3].trim();
-
-                // 2. 중복 체크 (발견 시 즉시 예외 발생 -> 전체 롤백)
-                if (userRepository.existsByEmail(email)) {
-                    throw new IllegalArgumentException(rowNum + "행: 이미 존재하는 이메일입니다. (" + email + ")");
-                }
-                if (userRepository.existsStudentByIdentityNum(identityNum)) {
-                    throw new IllegalArgumentException(rowNum + "행: 이미 존재하는 고유학번입니다. (" + identityNum + ")");
-                }
-
-                // 3. User 및 StudentInfo 엔티티 생성
-                User user = User.builder()
-                        .name(name)
-                        .email(email)
-                        .password(passwordEncoder.encode(password))
-                        .roles(new HashSet<>(Set.of(UserRole.STUDENT)))
-                        .build();
-
-                StudentInfo info = new StudentInfo();
-                info.setStudentIdentityNum(identityNum);
-                info.setStatus(StudentStatus.ENROLLED);
-                info.setUser(user);
-                user.getInfos().add(info);
-
-                // 4. 배정 정보(Assignment) 처리
-                if (data.length >= 8 && !data[4].trim().isEmpty()) {
-                    try {
-                        StudentAssignment assign = new StudentAssignment();
-                        assign.setSchoolYear(Integer.parseInt(data[4].trim()));
-                        assign.setGrade(Integer.parseInt(data[5].trim()));
-                        assign.setClassNum(Integer.parseInt(data[6].trim()));
-                        assign.setStudentNum(Integer.parseInt(data[7].trim()));
-
-                        assign.setStudentInfo(info);
-                        info.getAssignments().add(assign);
-                    } catch (NumberFormatException e) {
-                        throw new IllegalArgumentException(rowNum + "행: 학년도, 학년, 반, 번호는 숫자여야 합니다.");
-                    }
-                }
-
-                // 개별 저장 (하나라도 실패하면 @Transactional에 의해 전체 취소)
-                userRepository.save(user);
+                // 2. DTO 변환 및 생성 로직 재사용
+                StudentDTO.CreateRequest createReq = new StudentDTO.CreateRequest(csvReq);
+                createStudent(createReq);
             }
+        } catch (Exception e) {
+            log.error("CSV 처리 중 오류 발생: ", e);
+            throw e;
         }
     }
 
@@ -268,7 +238,7 @@ public class AdminStudentService {
         // 해당 학년도의 이력만 제거
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
 
-        return info.getStudentIdentityNum();
+        return info.getCode();
     }
 
     /**
@@ -288,8 +258,8 @@ public class AdminStudentService {
     /**
      * 보호자 추가 (기존 학생)
      */
-    public void addGuardian(String studentIdentityNum, Long parentId, FamilyRelationship relationship) {
-        User user = userRepository.findDetailByIdentityNum(studentIdentityNum)
+    public void addGuardian(String code, Long parentId, FamilyRelationship relationship) {
+        User user = userRepository.findDetailByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
 
@@ -311,18 +281,18 @@ public class AdminStudentService {
     /**
      * 보호자 연동 해제
      */
-    public void removeGuardian(String studentIdentityNum, Long parentId) {
+    public void removeGuardian(String code, Long parentId) {
         ParentInfo parentInfo = parentInfoRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
         parentInfo.getChildrenRelations()
-                .removeIf(r -> r.getStudentInfo().getStudentIdentityNum().equals(studentIdentityNum));
+                .removeIf(r -> r.getStudentInfo().getCode().equals(code));
     }
 
     /**
      * 보호자 관계 수정
      */
-    public void updateGuardianRelationship(String studentIdentityNum, Long parentId, FamilyRelationship relationship) {
-        User user = userRepository.findDetailByIdentityNum(studentIdentityNum)
+    public void updateGuardianRelationship(String code, Long parentId, FamilyRelationship relationship) {
+        User user = userRepository.findDetailByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
 

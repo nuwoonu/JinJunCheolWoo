@@ -81,7 +81,7 @@ function searchStudents() {
         item.innerHTML = `
           <div>
             <span class="fw-bold">${s.name}</span>
-            <small class="text-muted ms-2">${s.studentIdentityNum || "-"}</small>
+            <small class="text-muted ms-2">${s.code || "-"}</small>
             <div class="small text-secondary">${s.latestClass || "소속 정보 없음"}</div>
           </div>
           <span class="badge bg-primary rounded-pill">선택</span>

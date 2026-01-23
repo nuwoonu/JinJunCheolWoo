@@ -26,6 +26,7 @@ public class TeacherDTO {
         private Long uid;
         private String name;
         private String email;
+        private String code;
         private String subject;
 
         private TeacherStatus status; // Enum 객체 자체 (상태 비교용)
@@ -47,6 +48,7 @@ public class TeacherDTO {
 
             // 2. TeacherInfo가 존재할 경우에만 상세 정보 세팅
             if (ti != null) {
+                this.code = ti.getCode();
                 this.subject = ti.getSubject();
                 this.department = ti.getDepartment();
                 this.position = ti.getPosition();
@@ -72,6 +74,7 @@ public class TeacherDTO {
     public static class UpdateRequest {
         private Long uid; // 수정할 대상의 식별자 (필수)
         private String name; // User 엔티티의 이름을 수정하기 위함
+        private String code;
         private String subject;
         private String department;
         private String position;
@@ -87,6 +90,7 @@ public class TeacherDTO {
         private String name;
         private String email;
         private String password;
+        private String code;
         private String subject;
         private String department;
         private String position;
@@ -95,6 +99,7 @@ public class TeacherDTO {
             this.name = csv.getName();
             this.email = csv.getEmail();
             this.password = csv.getPassword();
+            this.code = csv.getCode();
             this.subject = csv.getSubject();
             this.department = csv.getDepartment();
             this.position = csv.getPosition();
@@ -120,6 +125,9 @@ public class TeacherDTO {
 
         @CsvBindByName(column = "비밀번호")
         private String password;
+
+        @CsvBindByName(column = "사번")
+        private String code;
 
         @CsvBindByName(column = "부서")
         private String department;

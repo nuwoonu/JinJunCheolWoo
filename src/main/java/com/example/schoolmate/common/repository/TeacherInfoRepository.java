@@ -8,4 +8,6 @@ import com.example.schoolmate.common.entity.info.TeacherInfo;
 
 public interface TeacherInfoRepository extends JpaRepository<TeacherInfo, Long> {
     List<TeacherInfo> findBySubject(String subject);
+
+    boolean existsByCode(String code);
 }

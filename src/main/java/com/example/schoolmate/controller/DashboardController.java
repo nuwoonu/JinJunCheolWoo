@@ -84,8 +84,8 @@ public class DashboardController {
             ParentInfo parentInfo = parentUser.getInfo(ParentInfo.class);
             if (parentInfo != null && parentInfo.getChildrenRelations() != null) {
                 List<ChildDTO> children = parentInfo.getChildrenRelations().stream()
-                    .map(relation -> convertToChildDTO(relation.getStudentInfo()))
-                    .collect(Collectors.toList());
+                        .map(relation -> convertToChildDTO(relation.getStudentInfo()))
+                        .collect(Collectors.toList());
                 model.addAttribute("children", children);
             } else {
                 model.addAttribute("children", new ArrayList<>());
@@ -123,12 +123,12 @@ public class DashboardController {
         StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
 
         return ChildDTO.builder()
-            .id(studentUser.getUid())
-            .name(studentUser.getName())
-            .studentNumber(studentInfo.getStudentIdentityNum())
-            .grade(assignment != null ? assignment.getGrade() : null)
-            .classNum(assignment != null ? assignment.getClassNum() : null)
-            .profileImageUrl(imageUrl)
-            .build();
+                .id(studentUser.getUid())
+                .name(studentUser.getName())
+                .studentNumber(studentInfo.getCode())
+                .grade(assignment != null ? assignment.getGrade() : null)
+                .classNum(assignment != null ? assignment.getClassNum() : null)
+                .profileImageUrl(imageUrl)
+                .build();
     }
 }

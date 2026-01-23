@@ -22,6 +22,7 @@ import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.NotificationRepository;
+import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.example.schoolmate.parkjoon.mapper.AdminTeacherMapper;
@@ -39,6 +40,7 @@ public class AdminTeacherService {
     private final PasswordEncoder passwordEncoder; // Security 설정 필요
     private final AdminTeacherMapper adminTeacherMapper;
     private final NotificationRepository notificationRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
 
     public Page<TeacherDTO.DetailResponse> getTeacherList(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
         Page<User> userPage = userRepository.searchTeachers(cond, pageable);
@@ -63,6 +65,10 @@ public class AdminTeacherService {
     }
 
     public void createTeacher(TeacherDTO.CreateRequest request) {
+        if (request.getCode() != null && teacherInfoRepository.existsByCode(request.getCode())) {
+            throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
+        }
+
         // 1. 유저 기본 정보 생성
         User user = User.builder()
                 .name(request.getName())
@@ -73,6 +79,7 @@ public class AdminTeacherService {
 
         // 2. 교사 상세 정보 생성
         TeacherInfo info = new TeacherInfo();
+        info.setCode(request.getCode());
         info.setSubject(request.getSubject());
         info.setDepartment(request.getDepartment());
         info.setPosition(request.getPosition());
@@ -97,6 +104,13 @@ public class AdminTeacherService {
         // 3. 교사 상세 정보 수정
         TeacherInfo info = user.getInfo(TeacherInfo.class);
         if (info != null && request.getStatusName() != null) {
+            // 사번 변경 시 중복 체크
+            if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
+                if (teacherInfoRepository.existsByCode(request.getCode())) {
+                    throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
+                }
+                info.setCode(request.getCode());
+            }
             TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
             info.update(request.getSubject(), request.getDepartment(), request.getPosition(), newStatus);
         }
@@ -117,6 +131,10 @@ public class AdminTeacherService {
                 try {
                     if (userRepository.existsByEmail(csvReq.getEmail())) {
                         log.warn("이미 존재하는 이메일 건너뜀: {}", csvReq.getEmail());
+                        continue;
+                    }
+                    if (teacherInfoRepository.existsByCode(csvReq.getCode())) {
+                        log.warn("이미 존재하는 사번 건너뜀: {}", csvReq.getCode());
                         continue;
                     }
                     TeacherDTO.CreateRequest createReq = new TeacherDTO.CreateRequest(csvReq);

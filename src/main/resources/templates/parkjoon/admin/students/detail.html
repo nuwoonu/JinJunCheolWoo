@@ -9,7 +9,7 @@
       <div
         id="student-detail-container"
         class="container-fluid py-4"
-        th:data-student-id-num="${student.studentIdentityNum}"
+        th:data-student-id-num="${student.code}"
       >
         <div class="mb-4">
           <a
@@ -34,10 +34,7 @@
                 >
               </div>
               <h4 class="fw-bold mb-1" th:text="${student.name}">홍길동</h4>
-              <p
-                class="text-muted small mb-3"
-                th:text="${student.studentIdentityNum}"
-              >
+              <p class="text-muted small mb-3" th:text="${student.code}">
                 202610001
               </p>
               <div class="px-4">
@@ -111,12 +108,12 @@
                         />
                       </div>
                       <div class="col-md-6">
-                        <label class="form-label fw-semibold">고유 학번</label>
+                        <label class="form-label fw-semibold">학번</label>
                         <input
                           type="text"
-                          name="studentIdentityNum"
+                          name="code"
                           class="form-control"
-                          th:value="${student.studentIdentityNum}"
+                          th:value="${student.code}"
                           required
                         />
                       </div>

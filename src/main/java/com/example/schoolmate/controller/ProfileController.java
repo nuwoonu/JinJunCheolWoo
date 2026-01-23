@@ -78,7 +78,7 @@ public class ProfileController {
         return ChildDTO.builder()
                 .id(user.getUid())
                 .name(user.getName())
-                .studentNumber(studentInfo != null ? studentInfo.getStudentIdentityNum() : null)
+                .studentNumber(studentInfo != null ? studentInfo.getCode() : null)
                 .grade(assignment != null ? assignment.getGrade() : null)
                 .classNum(assignment != null ? assignment.getClassNum() : null)
                 .profileImageUrl(imageUrl)

@@ -23,10 +23,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StudentInfo extends BaseInfo {
-    // 학년도에 상관없는 학생 고유의 고정 학번 (예: 입학연도+일련번호)
-    @Column(name = "student_identity_num", nullable = false, unique = true)
-    private String studentIdentityNum;
-
     @Enumerated(EnumType.STRING)
     private StudentStatus status = StudentStatus.ENROLLED;
 

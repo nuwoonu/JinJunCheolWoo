@@ -38,13 +38,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public Optional<User> findDetailByIdentityNum(String identityNum) {
-        return studentQueryHandler.findDetailByIdentityNum(identityNum);
+    public Optional<User> findDetailByCode(String code) {
+        return studentQueryHandler.findDetailByCode(code);
     }
 
     @Override
-    public boolean existsStudentByIdentityNum(String identityNum) {
-        return studentQueryHandler.existsByIdentityNum(identityNum);
+    public boolean existsStudentByCode(String code) {
+        return studentQueryHandler.existsByCode(code);
     }
 
 }

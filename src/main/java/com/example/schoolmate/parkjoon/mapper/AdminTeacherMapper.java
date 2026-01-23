@@ -20,6 +20,7 @@ public class AdminTeacherMapper {
                 .uid(user.getUid())
                 .name(user.getName())
                 .email(user.getEmail())
+                .code(info != null ? info.getCode() : "-")
                 .subject(info != null ? info.getSubject() : "-")
                 // Enum 정보 매핑
                 .status(currentStatus)

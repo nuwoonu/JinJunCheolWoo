@@ -3,6 +3,7 @@ package com.example.schoolmate.common.dto;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
+import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,7 +34,16 @@ public class ParentDTO {
         private String email;
         private String password;
         private String phone;
+        private String code;
         private List<StudentRelationRequest> students = new ArrayList<>();
+
+        public CreateRequest(CsvImportRequest csv) {
+            this.name = csv.getName();
+            this.email = csv.getEmail();
+            this.password = csv.getPassword();
+            this.phone = csv.getPhone();
+            this.code = csv.getCode();
+        }
     }
 
     @Getter
@@ -60,6 +70,7 @@ public class ParentDTO {
     public static class Summary {
         private Long id;
         private String name;
+        private String code;
         private String phone;
         private String status;
         private String email;
@@ -69,6 +80,7 @@ public class ParentDTO {
         public Summary(ParentInfo entity) {
             this.id = entity.getId();
             this.name = entity.getParentName();
+            this.code = entity.getCode();
             this.phone = entity.getPhoneNumber();
             this.status = entity.getStatus().getDescription();
             this.linked = entity.getUser() != null;
@@ -87,6 +99,7 @@ public class ParentDTO {
     public static class UpdateRequest {
         private Long id;
         private String name;
+        private String code;
         private String phone;
         private String email;
     }
@@ -97,6 +110,7 @@ public class ParentDTO {
     public static class DetailResponse {
         private Long id;
         private String name;
+        private String code;
         private String email;
         private String phone;
         private String status;
@@ -107,6 +121,7 @@ public class ParentDTO {
         public DetailResponse(ParentInfo entity) {
             this.id = entity.getId();
             this.name = entity.getParentName();
+            this.code = entity.getCode();
             this.phone = entity.getPhoneNumber();
             this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
@@ -124,16 +139,35 @@ public class ParentDTO {
     public static class LinkedStudent {
         private Long uid;
         private String name;
-        private String identityNum;
+        private String code;
         private String relationship;
         private String relationshipCode;
 
         public LinkedStudent(StudentInfo info, FamilyRelationship relation) {
             this.uid = info.getUser().getUid();
             this.name = info.getUser().getName();
-            this.identityNum = info.getStudentIdentityNum();
+            this.code = info.getCode();
             this.relationship = relation.getDescription();
             this.relationshipCode = relation.name();
         }
+    }
+
+    @Getter
+    @Setter
+    public static class CsvImportRequest {
+        @CsvBindByName(column = "이름")
+        private String name;
+
+        @CsvBindByName(column = "이메일")
+        private String email;
+
+        @CsvBindByName(column = "비밀번호")
+        private String password;
+
+        @CsvBindByName(column = "연락처")
+        private String phone;
+
+        @CsvBindByName(column = "학부모코드")
+        private String code;
     }
 }

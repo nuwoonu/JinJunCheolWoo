@@ -172,7 +172,7 @@
                     value="idNum"
                     th:selected="${condition?.type == 'idNum'}"
                   >
-                    고유학번
+                    학번
                   </option>
                 </select>
                 <input
@@ -208,7 +208,7 @@
                       onclick="toggleCheckboxes(this, '.student-checkbox')"
                     />
                   </th>
-                  <th class="ps-4" style="width: 150px">고유학번</th>
+                  <th class="ps-4" style="width: 150px">학번</th>
                   <th>이름</th>
                   <th>계정 (이메일)</th>
                   <th>최근 소속 정보</th>
@@ -225,15 +225,12 @@
                       th:value="${s.uid}"
                     />
                   </td>
-                  <td
-                    class="ps-4 text-secondary"
-                    th:text="${s.studentIdentityNum ?: '-'}"
-                  >
+                  <td class="ps-4 text-secondary" th:text="${s.code ?: '-'}">
                     20261001
                   </td>
                   <td>
                     <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
+                      th:href="@{/parkjoon/admin/students/{id}(id=${s.code})}"
                       class="fw-bold text-decoration-none text-dark"
                       th:text="${s.name}"
                       >학생명</a
@@ -255,7 +252,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
+                      th:href="@{/parkjoon/admin/students/{id}(id=${s.code})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
                       상세보기

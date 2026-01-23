@@ -67,10 +67,10 @@ public class StudentService {
     /**
      * 학생 상세 조회 by 고유학번
      */
-    public StudentDTO.DetailResponse getStudentByIdentityNum(String identityNum) {
-        log.info("학생 상세 조회: identityNum={}", identityNum);
-        User user = userRepository.findDetailByIdentityNum(identityNum)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다: " + identityNum));
+    public StudentDTO.DetailResponse getStudentByCode(String code) {
+        log.info("학생 상세 조회: code={}", code);
+        User user = userRepository.findDetailByCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다: " + code));
 
         return new StudentDTO.DetailResponse(user);
     }

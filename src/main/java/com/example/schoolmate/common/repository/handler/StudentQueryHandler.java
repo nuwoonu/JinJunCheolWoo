@@ -66,12 +66,12 @@ public class StudentQueryHandler {
         return switch (type) {
             case "name" -> user.name.contains(keyword);
             case "email" -> user.email.contains(keyword);
-            case "idNum" -> info.studentIdentityNum.contains(keyword);
+            case "idNum" -> info.code.contains(keyword);
             default -> null;
         };
     }
 
-    public Optional<User> findDetailByIdentityNum(String identityNum) {
+    public Optional<User> findDetailByCode(String code) {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
@@ -83,7 +83,7 @@ public class StudentQueryHandler {
                 // 학적 이력 조인 (최신순 정렬을 위해 fetchJoin 유지)
                 .leftJoin(info.assignments, assign).fetchJoin()
                 .where(
-                        info.studentIdentityNum.eq(identityNum),
+                        info.code.eq(code),
                         user.roles.contains(UserRole.STUDENT))
                 .fetchOne();
 
@@ -93,12 +93,12 @@ public class StudentQueryHandler {
     /**
      * 고유 학번 중복 여부 확인
      */
-    public boolean existsByIdentityNum(String identityNum) {
+    public boolean existsByCode(String code) {
         QStudentInfo info = QStudentInfo.studentInfo;
         Integer fetchOne = query
                 .selectOne()
                 .from(info)
-                .where(info.studentIdentityNum.eq(identityNum))
+                .where(info.code.eq(code))
                 .fetchFirst(); // findAny와 같은 역할 (성능 최적화)
 
         return fetchOne != null;

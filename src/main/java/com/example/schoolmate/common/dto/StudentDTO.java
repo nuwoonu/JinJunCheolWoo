@@ -6,6 +6,7 @@ import java.util.List;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
+import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +33,7 @@ public class StudentDTO {
         private String name;
         private String email;
         private String password;
-        private String studentIdentityNum;
+        private String code;
 
         // 초기 배정 정보
         private Integer year;
@@ -42,6 +43,17 @@ public class StudentDTO {
 
         // 보호자 연동 정보
         private List<ParentRelationRequest> guardians = new ArrayList<>();
+
+        public CreateRequest(CsvImportRequest csv) {
+            this.name = csv.getName();
+            this.email = csv.getEmail();
+            this.password = csv.getPassword();
+            this.code = csv.getCode();
+            this.year = csv.getYear();
+            this.grade = csv.getGrade();
+            this.classNum = csv.getClassNum();
+            this.studentNum = csv.getStudentNum();
+        }
     }
 
     @Getter
@@ -60,7 +72,7 @@ public class StudentDTO {
     public static class UpdateRequest {
         private Long uid;
         private String name;
-        private String studentIdentityNum;
+        private String code;
         private String statusName;
         private String basicHabits;
         private String specialNotes;
@@ -83,7 +95,7 @@ public class StudentDTO {
         private Long uid;
         private String name;
         private String email;
-        private String studentIdentityNum;
+        private String code;
         private String latestClass;
         private String status;
 
@@ -93,7 +105,7 @@ public class StudentDTO {
             this.email = user.getEmail();
             StudentInfo info = user.getInfo(StudentInfo.class);
             if (info != null) {
-                this.studentIdentityNum = info.getStudentIdentityNum();
+                this.code = info.getCode();
                 this.status = info.getStatus() != null ? info.getStatus().getDescription() : "-";
                 this.latestClass = info.getLatestAssignment()
                         .map(a -> a.getSchoolYear() + "년 " + a.getGrade() + "-" + a.getClassNum() + "-"
@@ -110,7 +122,7 @@ public class StudentDTO {
         private Long uid;
         private String name;
         private String email;
-        private String studentIdentityNum;
+        private String code;
         private String statusName;
         private String statusDescription;
         private String basicHabits;
@@ -124,7 +136,7 @@ public class StudentDTO {
             this.email = user.getEmail();
             StudentInfo info = user.getInfo(StudentInfo.class);
             if (info != null) {
-                this.studentIdentityNum = info.getStudentIdentityNum();
+                this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : "";
                 this.statusDescription = info.getStatus() != null ? info.getStatus().getDescription() : "";
                 this.basicHabits = info.getBasicHabits();
@@ -151,5 +163,33 @@ public class StudentDTO {
             this.relationship = relation.getRelationship().getDescription();
             this.relationshipCode = relation.getRelationship().name();
         }
+    }
+
+    @Getter
+    @Setter
+    public static class CsvImportRequest {
+        @CsvBindByName(column = "이름")
+        private String name;
+
+        @CsvBindByName(column = "이메일")
+        private String email;
+
+        @CsvBindByName(column = "비밀번호")
+        private String password;
+
+        @CsvBindByName(column = "학번")
+        private String code;
+
+        @CsvBindByName(column = "학년도")
+        private Integer year;
+
+        @CsvBindByName(column = "학년")
+        private Integer grade;
+
+        @CsvBindByName(column = "반")
+        private Integer classNum;
+
+        @CsvBindByName(column = "번호")
+        private Integer studentNum;
     }
 }

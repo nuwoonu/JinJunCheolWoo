@@ -72,7 +72,7 @@ public class MyChildrenController {
         return ChildDTO.builder()
                 .id(studentUser.getUid())
                 .name(studentUser.getName())
-                .studentNumber(studentInfo.getStudentIdentityNum())
+                .studentNumber(studentInfo.getCode())
                 .grade(assignment != null ? assignment.getGrade() : null)
                 .classNum(assignment != null ? assignment.getClassNum() : null)
                 .profileImageUrl(imageUrl)
