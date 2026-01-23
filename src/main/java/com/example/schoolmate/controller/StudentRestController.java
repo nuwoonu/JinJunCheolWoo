@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.schoolmate.cheol.dto.studentDTO.StudentCreateDTO;
-import com.example.schoolmate.cheol.dto.studentDTO.StudentResponseDTO;
-import com.example.schoolmate.cheol.dto.studentDTO.StudentUpdateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.cheol.service.StudentServiceImpl;
 import com.example.schoolmate.common.entity.user.constant.Year;
 

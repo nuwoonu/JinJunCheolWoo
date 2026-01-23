@@ -2,8 +2,8 @@ package com.example.schoolmate.service;
 
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.cheol.dto.studentDTO.StudentCreateDTO;
-import com.example.schoolmate.cheol.dto.studentDTO.StudentResponseDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.StudentInfoRepository;

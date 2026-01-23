@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.cheol.dto.studentDTO.StudentCreateDTO;
-import com.example.schoolmate.cheol.dto.studentDTO.StudentResponseDTO;
-import com.example.schoolmate.cheol.dto.studentDTO.StudentUpdateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Year;
