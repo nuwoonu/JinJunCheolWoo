@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>자녀 현황</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">자녀 현황</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / 자녀 현황</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 자녀가 없을 때 -->
+    <div th:if="${children == null or children.empty}" class="card">
+      <div class="card-body text-center py-5">
+        <i class="ri-user-search-line text-5xl text-secondary-light mb-3"></i>
+        <h5 class="text-secondary-light">등록된 자녀가 없습니다.</h5>
+        <p class="text-secondary-light">관리자에게 자녀 등록을 요청해주세요.</p>
+      </div>
+    </div>
+
+    <!-- 자녀 목록 -->
+    <div th:if="${children != null and !children.empty}" class="row gy-4">
+      <div th:each="child : ${children}" class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <!-- 자녀 기본 정보 -->
+            <div class="d-flex flex-wrap align-items-center gap-24 mb-24">
+              <div class="position-relative">
+                <figure class="w-120-px h-120-px rounded-circle overflow-hidden mb-0 border border-width-4-px border-primary-100">
+                  <img th:src="${child.profileImageUrl}" alt="Student Image" class="w-100 h-100 object-fit-cover" th:id="'preview-' + ${child.id}">
+                </figure>
+                <input type="file" class="d-none" th:id="'file-' + ${child.id}" accept="image/*"
+                       th:onchange="'uploadPhoto(' + ${child.id} + ', this)'">
+                <button type="button" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle w-32-px h-32-px p-0 d-flex align-items-center justify-content-center"
+                        th:onclick="'document.getElementById(\'file-' + ${child.id} + '\').click()'"
+                        title="사진 변경">
+                  <i class="ri-camera-line"></i>
+                </button>
+              </div>
+              <div>
+                <h4 class="fw-semibold mb-2" th:text="${child.name}"></h4>
+                <div class="d-flex flex-wrap gap-16 mb-2">
+                  <span class="badge bg-primary-100 text-primary-600 px-12 py-6 radius-4">
+                    <i class="ri-hashtag me-1"></i>학번: <span th:text="${child.studentNumber}"></span>
+                  </span>
+                  <span class="badge bg-success-100 text-success-600 px-12 py-6 radius-4">
+                    <i class="ri-book-open-line me-1"></i><span th:text="${child.grade}"></span>학년 <span th:text="${child.classNum}"></span>반
+                  </span>
+                </div>
+                <span th:id="'status-' + ${child.id}" class="text-sm"></span>
+              </div>
+            </div>
+
+            <!-- 출석 현황 -->
+            <div class="row gy-4">
+              <div class="col-md-6">
+                <div class="card bg-neutral-50 border-0">
+                  <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0">
+                      <i class="ri-calendar-check-line text-primary-600 me-2"></i>출석 현황
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="d-flex flex-wrap gap-16">
+                      <div class="text-center">
+                        <div class="w-60-px h-60-px bg-success-100 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+                          <span class="text-success-600 fw-bold text-xl">-</span>
+                        </div>
+                        <span class="text-sm text-secondary-light">출석</span>
+                      </div>
+                      <div class="text-center">
+                        <div class="w-60-px h-60-px bg-warning-100 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+                          <span class="text-warning-600 fw-bold text-xl">-</span>
+                        </div>
+                        <span class="text-sm text-secondary-light">지각</span>
+                      </div>
+                      <div class="text-center">
+                        <div class="w-60-px h-60-px bg-danger-100 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+                          <span class="text-danger-600 fw-bold text-xl">-</span>
+                        </div>
+                        <span class="text-sm text-secondary-light">결석</span>
+                      </div>
+                      <div class="text-center">
+                        <div class="w-60-px h-60-px bg-info-100 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+                          <span class="text-info-600 fw-bold text-xl">-</span>
+                        </div>
+                        <span class="text-sm text-secondary-light">조퇴</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary-light text-sm mt-3 mb-0">
+                      <i class="ri-information-line me-1"></i>출석 데이터가 아직 등록되지 않았습니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 수강 과목 -->
+              <div class="col-md-6">
+                <div class="card bg-neutral-50 border-0">
+                  <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0">
+                      <i class="ri-book-2-line text-primary-600 me-2"></i>수강 과목
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <p class="text-secondary-light text-sm mb-0">
+                      <i class="ri-information-line me-1"></i>수강 과목 데이터가 아직 등록되지 않았습니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 최근 성적 -->
+            <div class="mt-16">
+              <div class="card bg-neutral-50 border-0">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                  <h6 class="mb-0">
+                    <i class="ri-file-chart-line text-primary-600 me-2"></i>최근 성적
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <p class="text-secondary-light text-sm mb-0">
+                    <i class="ri-information-line me-1"></i>성적 데이터가 아직 등록되지 않았습니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <th:block layout:fragment="script">
+    <script th:inline="javascript">
+      function uploadPhoto(childId, input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // 이미지 미리보기
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('preview-' + childId).src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // 업로드
+        const statusEl = document.getElementById('status-' + childId);
+        statusEl.innerHTML = '<span class="text-warning"><i class="ri-loader-4-line"></i> 업로드 중...</span>';
+
+        const formData = new FormData();
+        formData.append('studentId', childId);
+        formData.append('file', file);
+
+        fetch('/profile/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          }
+          throw new Error('업로드 실패');
+        })
+        .then(imageUrl => {
+          statusEl.innerHTML = '<span class="text-success"><i class="ri-check-line"></i> 사진이 변경되었습니다.</span>';
+          document.getElementById('preview-' + childId).src = imageUrl;
+          setTimeout(() => {
+            statusEl.innerHTML = '';
+          }, 3000);
+        })
+        .catch(error => {
+          statusEl.innerHTML = '<span class="text-danger"><i class="ri-close-line"></i> 업로드 실패</span>';
+          console.error('Upload error:', error);
+        });
+      }
+    </script>
+  </th:block>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Login</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #343a40;
+        display: flex;
+        align-items: center;
+        height: 100vh;
+      }
+      .login-box {
+        width: 400px;
+        margin: auto;
+        padding: 40px;
+        background: #fff;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-box shadow">
+      <h3 class="text-center mb-4">🏫 관리자 시스템</h3>
+      <form th:action="@{/parkjoon/admin/login_proc}" method="post">
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="username" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            required
+          />
+        </div>
+        <div th:if="${param.error}" class="text-danger small mb-3">
+          이메일 또는 비밀번호가 올바르지 않습니다.
+        </div>
+        <div th:if="${param.logout}" class="alert alert-success small mb-3 py-2">
+          로그아웃 되었습니다.
+        </div>
+        <button type="submit" class="btn btn-primary w-100">
+          관리자 로그인
+        </button>
+      </form>
+    </div>
+  </body>
+</html>

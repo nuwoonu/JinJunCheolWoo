@@ -1,4 +1,12 @@
 spring:
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 2s # 파일 변경 감지 간격
+      quiet-period: 1s # 변경 후 안정화 대기 시간
+    livereload:
+      enabled: true
+      port: 35729 # LiveReload 포트
   application:
     name: schoolmate
   thymeleaf:
@@ -9,14 +17,16 @@ spring:
     username: javadb
     password: 12345
   jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         highlight_sql: true
-  profiles:
-    include: oauth
+  # profiles:
+  #   include: oauth
   servlet:
     multipart:
       enabled: true
@@ -35,4 +45,4 @@ com:
   example:
     schoolmate:
       upload:
-        path: // 업로드 경로 설정할것!
+        path: /Users/hyeonwoo/Desktop/backend/upload

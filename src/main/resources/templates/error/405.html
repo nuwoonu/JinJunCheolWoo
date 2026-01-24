@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>405 - 잘못된 요청 방식</title>
+  </head>
+  <div class="d-flex flex-column align-items-center justify-content-center py-80" layout:fragment="content">
+    <div class="text-center">
+      <i class="ri-forbid-line text-warning-600" style="font-size: 80px;"></i>
+      <h1 class="display-1 fw-bold text-warning-600 mt-3">405</h1>
+      <h4 class="text-secondary-light mb-3">잘못된 요청 방식입니다</h4>
+      <p class="text-secondary-light mb-4">
+        정상적인 경로를 통해 다시 시도해 주세요.<br />
+        문제가 지속되면 관리자에게 문의해 주세요.
+      </p>
+      <a th:href="@{/}" class="btn btn-primary-600 px-4 py-2">
+        <i class="ri-home-line me-2"></i>홈으로 돌아가기
+      </a>
+    </div>
+  </div>
+</html>

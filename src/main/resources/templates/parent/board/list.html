@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학부모 게시판</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">학부모 게시판</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / 학부모 게시판</span>
+        </div>
+      </div>
+      <a th:href="@{/parent/board/create}" class="btn btn-primary-600 d-flex align-items-center gap-6">
+        <span class="d-flex text-md"><i class="ri-add-large-line"></i></span>
+        글쓰기
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title fw-semibold mb-0">게시글 목록</h5>
+          <form th:action="@{/parent/board/list}" method="get" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="size" th:value="${pageRequestDTO.size}" />
+            <select name="type" class="form-select" style="width: 120px">
+              <option value="" th:selected="${pageRequestDTO.type == null}">전체</option>
+              <option value="t" th:selected="${pageRequestDTO.type == 't'}">제목</option>
+              <option value="c" th:selected="${pageRequestDTO.type == 'c'}">내용</option>
+              <option value="w" th:selected="${pageRequestDTO.type == 'w'}">작성자</option>
+              <option value="tc" th:selected="${pageRequestDTO.type == 'tc'}">제목+내용</option>
+            </select>
+            <input
+              type="text"
+              name="keyword"
+              class="form-control"
+              style="width: 200px"
+              th:value="${pageRequestDTO.keyword}"
+              placeholder="검색어 입력"
+            />
+            <button type="submit" class="btn btn-primary">검색</button>
+          </form>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table bordered-table mb-0">
+            <thead>
+              <tr>
+                <th scope="col" style="width: 80px">번호</th>
+                <th scope="col">제목</th>
+                <th scope="col" style="width: 120px">작성자</th>
+                <th scope="col" style="width: 150px">작성일</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${result.dtoList.size() == 0}">
+                <td colspan="4" class="text-center py-4">등록된 게시글이 없습니다.</td>
+              </tr>
+              <tr th:each="dto : ${result.dtoList}">
+                <td th:text="${dto.bno}"></td>
+                <td>
+                  <a
+                    th:href="@{/parent/board/read(bno=${dto.bno}, page=${result.current}, size=${result.pageRequestDTO.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}"
+                    class="text-primary-600 hover-text-primary-700"
+                    th:text="${dto.title}"
+                  ></a>
+                </td>
+                <td th:text="${dto.writerName}"></td>
+                <td th:text="${#temporals.format(dto.createDate, 'yyyy-MM-dd HH:mm')}"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <nav aria-label="Page navigation" class="mt-4" th:if="${result.dtoList.size() > 0}">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${!result.prev} ? 'disabled'">
+              <a
+                class="page-link"
+                th:href="@{/parent/board/list(page=${result.prevPage}, size=${result.pageRequestDTO.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}"
+              >
+                이전
+              </a>
+            </li>
+            <li
+              th:each="page : ${result.pageNumList}"
+              th:class="'page-item ' + (${result.current == page} ? 'active' : '')"
+            >
+              <a
+                class="page-link"
+                th:href="@{/parent/board/list(page=${page}, size=${result.pageRequestDTO.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}"
+                th:text="${page}"
+              ></a>
+            </li>
+            <li class="page-item" th:classappend="${!result.next} ? 'disabled'">
+              <a
+                class="page-link"
+                th:href="@{/parent/board/list(page=${result.nextPage}, size=${result.pageRequestDTO.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}"
+              >
+                다음
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <th:block layout:fragment="script">
+    <script th:inline="javascript">
+      let msg = [[${msg}]];
+      if (msg) {
+        alert(msg);
+      }
+    </script>
+  </th:block>
+</html>

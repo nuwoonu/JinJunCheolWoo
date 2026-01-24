@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content">
+      <div
+        id="loadingOverlay"
+        class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="background-color: rgba(0, 0, 0, 0.5); z-index: 9999"
+      >
+        <div class="text-center">
+          <div
+            class="spinner-border text-light"
+            role="status"
+            style="width: 3rem; height: 3rem"
+          ></div>
+          <h5 class="text-white mt-3">데이터 처리 중입니다...</h5>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+          <h2 class="mb-0">🎓 학생 정보 관리</h2>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            style="display: none"
+            onchange="uploadStudentCsv()"
+          />
+          <button
+            type="button"
+            class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            onclick="document.getElementById('csvFileInput').click()"
+          >
+            <i class="bi bi-file-earmark-spreadsheet"></i> CSV 일괄 등록
+          </button>
+          <a
+            th:href="@{/parkjoon/admin/students/create}"
+            class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
+          >
+            <i class="bi bi-person-plus-fill"></i> 신규 학생 등록
+          </a>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <div class="row align-items-center">
+            <div class="col">
+              <h5 class="mb-0 text-dark">전체 학생 목록</h5>
+            </div>
+            <div class="col-auto d-flex align-items-center gap-3">
+              <div
+                class="form-check form-switch d-flex align-items-center gap-2 mb-0"
+              >
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="includeInactiveSwitch"
+                  th:checked="${condition?.includeInactive ?: false}"
+                  style="cursor: pointer; width: 34px; height: 17px"
+                />
+                <label
+                  class="form-check-label fw-medium text-secondary-light small"
+                  for="includeInactiveSwitch"
+                  style="cursor: pointer"
+                  >미재학생 포함</label
+                >
+              </div>
+
+              <form
+                id="searchForm"
+                th:action="@{/parkjoon/admin/students}"
+                method="get"
+                class="input-group input-group-sm"
+                style="width: 450px"
+              >
+                <input
+                  type="hidden"
+                  name="includeInactive"
+                  id="includeInactiveHidden"
+                  th:value="${condition?.includeInactive ?: false}"
+                />
+
+                <select
+                  name="type"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option
+                    value="name"
+                    th:selected="${condition?.type == 'name'}"
+                  >
+                    이름
+                  </option>
+                  <option
+                    value="email"
+                    th:selected="${condition?.type == 'email'}"
+                  >
+                    이메일
+                  </option>
+                  <option
+                    value="idNum"
+                    th:selected="${condition?.type == 'idNum'}"
+                  >
+                    고유학번
+                  </option>
+                </select>
+                <input
+                  type="text"
+                  name="keyword"
+                  class="form-control"
+                  th:value="${condition?.keyword}"
+                  placeholder="검색어 입력..."
+                />
+
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-search"></i> 검색
+                </button>
+                <a
+                  th:href="@{/parkjoon/admin/students}"
+                  class="btn btn-outline-secondary"
+                  >초기화</a
+                >
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-4" style="width: 150px">고유학번</th>
+                  <th>이름</th>
+                  <th>계정 (이메일)</th>
+                  <th>최근 소속 정보</th>
+                  <th>상태</th>
+                  <th class="text-end pe-4">관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="s : ${students}">
+                  <td
+                    class="ps-4 text-secondary"
+                    th:text="${s.studentIdentityNum ?: '-'}"
+                  >
+                    20261001
+                  </td>
+                  <td>
+                    <a
+                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
+                      class="fw-bold text-decoration-none text-dark"
+                      th:text="${s.name}"
+                      >학생명</a
+                    >
+                  </td>
+                  <td th:text="${s.email}">email@school.com</td>
+                  <td>
+                    <small class="text-muted" th:text="${s.latestClass}"
+                      >2026년 1-1-01</small
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      th:classappend="${s.status == '재학' ? 'bg-success-subtle text-success' : (s.status == '휴학' ? 'bg-warning-subtle text-warning' : 'bg-secondary-subtle text-secondary')}"
+                      th:text="${s.status}"
+                      >재학</span
+                    >
+                  </td>
+                  <td class="text-end pe-4">
+                    <a
+                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
+                      class="btn btn-sm btn-outline-primary radius-8 px-3"
+                    >
+                      상세보기
+                    </a>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(students.content)}">
+                  <td colspan="6" class="text-center py-5 text-muted">
+                    검색 결과가 없습니다.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div
+          class="card-footer bg-white py-3"
+          th:if="${students.totalPages > 0}"
+        >
+          <nav>
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+              <li
+                class="page-item"
+                th:classappend="${!students.hasPrevious} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/students(page=${students.number}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  >&laquo;</a
+                >
+              </li>
+              <li
+                class="page-item"
+                th:each="i : ${#numbers.sequence(0, students.totalPages - 1)}"
+                th:classappend="${i == students.number} ? 'active'"
+              >
+                <a
+                  class="page-link"
+                  th:text="${i + 1}"
+                  th:href="@{/parkjoon/admin/students(page=${i + 1}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  >1</a
+                >
+              </li>
+              <li
+                class="page-item"
+                th:classappend="${!students.hasNext} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/students(page=${students.number + 2}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  >&raquo;</a
+                >
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/student-manage.js}"></script>
+    </th:block>
+  </body>
+</html>
