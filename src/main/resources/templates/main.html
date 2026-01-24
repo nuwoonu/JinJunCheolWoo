@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchoolMate</title>
+
+    <link rel="stylesheet" th:href="@{/css/remixicon.css}" />
+    <link rel="stylesheet" th:href="@{/css/lib/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  </head>
+  <body>
+    <!-- 네비게이션  바 -->
+    <nav class="py-10 px-24 bg-white shadowsm">
+      <div class="container d-flex justify-content-between align-items-center">
+        <!-- 왼쪽 상단 로고 부분. -->
+        <a th:href="@{/home}">
+          <img th:src="@{/images/schoolmateLogo.png}" alt="SchoolMate" width="173" height="40" />
+        </a>
+        <!-- 오른쪽 상단 버튼 -->
+        <div class="d-flex gap-12">
+          <a th:href="@{/login}" class="btn btn-outline-primary px-20 py-8">
+            <!-- 폰트어썸 아이콘 적용 -->
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> 로그인</a
+          >
+          <a th:href="@{/register}" class="btn btn-primary-600 text-white px-20 py-8">
+            <i class="fa-solid fa-user-plus"></i> 회원 가입</a
+          >
+        </div>
+      </div>
+    </nav>
+    <section class="py-80 bg-neutral-50">
+      <div class="container">
+        <div class="text-center">
+          <h1 class="disaply-5 fw-bold text-primary-light mb-16">스마트한 학급 관리, SchoolMate</h1>
+          <p class="text-lg text-secondary-light mb-32">학생, 교사 , 학부모를 위한 통합 학급 관리 플랫폼 입니다.</p>
+          <div class="d-flex justify-content-center gap-16"></div>
+        </div>
+      </div>
+    </section>
+    <script th:src="@{/js/lib/jquery-3.7.1.min.js}"></script>
+    <script th:src="@{/js/lib/bootstrap.bundle.min.js}"></script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-package com.example.schoolmate.controller;
+package com.example.schoolmate.repository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,6 +24,7 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 
+//Joon님의 생성
 @SpringBootTest
 public class UserDataTest {
     @Autowired

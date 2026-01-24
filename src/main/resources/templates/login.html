@@ -183,18 +183,18 @@
     <div class="d-lg-flex bg-white">
       <div class="lg-w-50 px-24 py-32 d-flex justify-content-center align-items-center">
         <div class="max-w-540-px mx-auto">
-          <a href="@{/}" class="">
+          <a href="/login" class="">
             <img src="/images/logo.png" alt="Logo" />
           </a>
           <div class="mt-32 mb-32">
-            <h1 class="h6 fw-bold text-primary-light mb-8">Welcome Back 👋</h1>
-            <p class="text-sm text-secondary-light mb-0">Log in to your account to continue</p>
+            <h1 class="h6 fw-bold text-primary-light mb-8">어서오세요 👋</h1>
+            <p class="text-sm text-secondary-light mb-0">로그인을 해주세요.</p>
           </div>
           <form action="/login" method="post" class="d-flex flex-column gap-32 submit-form">
             <div class="d-flex flex-column gap-16">
               <div>
                 <label for="email" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
-                  Email Address
+                  ID(Email)
                   <span class="text-danger-600">*</span>
                 </label>
                 <input type="email" id="email" name="email" class="email-field form-control" placeholder="Enter your email" required />
@@ -226,15 +226,15 @@
             <div class="d-flex justify-content-between gap-2">
               <div class="form-check style-check d-flex align-items-center">
                 <input class="form-check-input border border-neutral-400" type="checkbox" value="" id="remeber" />
-                <label class="form-check-label" for="remeber">Remember me </label>
+                <label class="form-check-label" for="remeber">자동 아이디</label>
               </div>
               <a href="javascript:void(0)" class="text-primary-600 fw-medium text-decoration-underline"
-                >Forgot Password?</a
+                >비밀번호 찾기</a
               >
             </div>
             <div class="">
               <button type="submit" class="loginBtn btn btn-primary-600 text-sm btn-sm px-12 py-16 w-100 radius-8">
-                Log In
+                로그인
               </button>
             </div>
             <div class="text-center text-sm text-secondary-light">SNS 간편로그인</div>
@@ -257,9 +257,8 @@
             </div>
           </form>
           <div class="mt-32 text-center text-sm">
-            Don't have an account?
-            <a href="register.html" class="text-primary-600 fw-semibold text-decoration-underline">
-              Create an account
+            <a th:href="@{/register}" class="text-primary-600 fw-semibold text-decoration-underline">
+              회원 가입
             </a>
           </div>
         </div>
