@@ -7,6 +7,9 @@ import com.example.schoolmate.common.entity.user.constant.Semester;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +23,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Enrollment {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -31,6 +36,7 @@ public class Enrollment {
     @ManyToOne
     private TeacherInfo teacherInfo;
 
+    @ManyToOne
     private Subject subject;
 
 }

@@ -31,13 +31,15 @@ public class SchoolCalendarDTO {
 
     private EventType eventType;
 
-    private String eventTypeText; // "학교행사", "시험" 등 >>??
+    // 대상 학년 (null이면 전체)
+    private Integer targetGrade;
 
-    private Integer targetGrade; // 대상 학년 (null이면 전체)
+    // 이벤트 상세 설명
+    private String description;
 
-    private String description; // 상세 설명
+    // D-2, D-DAY 표시
+    private Integer dDay;
 
-    private Integer dDay; // 계산 필드 (D-2, D-DAY) >>?
-
-    private String dateRangeText; // 계산 필드 ("1/23(금)") >>?
+    // 00/00(0) 표시
+    private String dateRangeText;
 }

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <title>학사 일정 (목록)</title>
+</head>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-24">
+        <h2>학사 일정 목록</h2>
+        <div>
+            <a th:href="@{/soojin/calendar/monthly}" class="btn btn-outline-secondary">📅 달력 보기</a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/soojin/admin/add}" class="btn btn-primary">+ 일정 등록</a>
+        </div>
+    </div>
+
+    <!-- 검색 필터 -->
+    <div class="card mb-4 bg-light">
+        <div class="card-body">
+            <form th:action="@{/soojin/list}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">시작일</label>
+                    <input type="date" name="start" class="form-control" th:value="${param.start}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">종료일</label>
+                    <input type="date" name="end" class="form-control" th:value="${param.end}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">학년</label>
+                    <select name="grade" class="form-select">
+                        <option value="">전체</option>
+                        <option value="1" th:selected="${param.grade != null and param.grade.toString() == '1'}">1학년</option>
+                        <option value="2" th:selected="${param.grade != null and param.grade.toString() == '2'}">2학년</option>
+                        <option value="3" th:selected="${param.grade != null and param.grade.toString() == '3'}">3학년</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">유형</label>
+                    <select name="eventType" class="form-select">
+                        <option value="">전체</option>
+                        <option th:each="type : ${T(com.example.schoolmate.soojin.entity.constant.EventType).values()}"
+                                th:value="${type}" th:text="${type.description}"
+                                th:selected="${param.eventType != null and param.eventType.toString() == type.name()}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">조회</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 일정 목록 테이블 -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>기간</th>
+                    <th>D-Day</th>
+                    <th>유형</th>
+                    <th>제목</th>
+                    <th>대상</th>
+                    <th>설명</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(events)}">
+                    <td colspan="6" class="text-center py-4">등록된 일정이 없습니다.</td>
+                </tr>
+                <tr th:each="event : ${events}">
+                    <td th:text="${event.dateRangeText}">1/1(월)</td>
+                    <td><span class="badge bg-secondary" th:text="'D' + (${event.dDay} >= 0 ? '-' + ${event.dDay} : '+' + ${T(java.lang.Math).abs(event.dDay)})">D-Day</span></td>
+                    <td><span class="badge bg-info text-dark" th:text="${event.eventTypeText}">행사</span></td>
+                    <td class="fw-bold" th:text="${event.title}">입학식</td>
+                    <td th:text="${event.targetGrade == null ? '전체' : event.targetGrade + '학년'}">전체</td>
+                    <td th:text="${event.description}" class="text-muted small"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</html>

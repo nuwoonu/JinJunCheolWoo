@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang="ko"
   xmlns:th="http://www.thymeleaf.org"
@@ -32,7 +32,6 @@
       <div class="card-body">
         <h5 class="card-title fw-semibold mb-4">새 학생 등록</h5>
         <form th:action="@{/student/add}" th:object="${studentDTO}" method="post">
-
           <!-- 기본 정보 -->
           <div class="row gy-3 mb-4">
             <div class="col-md-3">
@@ -68,8 +67,18 @@
             </div>
             <div class="col-md-3">
               <label for="studentNumber" class="form-label">번호 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="studentNumber" th:field="*{studentNumber}" placeholder="번호를 입력하세요" />
-              <div class="text-danger small" th:if="${#fields.hasErrors('studentNumber')}" th:errors="*{studentNumber}"></div>
+              <input
+                type="text"
+                class="form-control"
+                id="studentNumber"
+                th:field="*{studentNum}"
+                placeholder="번호를 입력하세요"
+              />
+              <div
+                class="text-danger small"
+                th:if="${#fields.hasErrors('studentNumber')}"
+                th:errors="*{studentNum}"
+              ></div>
             </div>
           </div>
 
@@ -87,12 +96,24 @@
           <div class="row gy-3 mb-4">
             <div class="col-md-6">
               <label for="email" class="form-label">이메일 <span class="text-danger">*</span></label>
-              <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="이메일을 입력하세요" />
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                th:field="*{email}"
+                placeholder="이메일을 입력하세요"
+              />
               <div class="text-danger small" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
             </div>
             <div class="col-md-6">
               <label for="password" class="form-label">비밀번호 <span class="text-danger">*</span></label>
-              <input type="password" class="form-control" id="password" th:field="*{password}" placeholder="비밀번호를 입력하세요" />
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                th:field="*{password}"
+                placeholder="비밀번호를 입력하세요"
+              />
               <div class="text-danger small" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
             </div>
           </div>

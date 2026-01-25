@@ -30,7 +30,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = { "grades", "assignments", "familyRelations" })
+@ToString(exclude = {  "grades", "assignments", "familyRelations" })
 public class StudentInfo extends BaseInfo {
     @Column(nullable = false)
     private Long studentNumber; // 학번
@@ -75,6 +75,10 @@ public class StudentInfo extends BaseInfo {
     // [수정] 학부모와의 다중 관계를 위한 리스트
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyRelation> familyRelations = new ArrayList<>();
+
+    // 성적 정보
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Grade> grades = new ArrayList<>();
 
     /**
      * 현재 학년도 소속 정보 가져오기 헬퍼 메서드
