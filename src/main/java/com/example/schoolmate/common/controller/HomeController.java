@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class HomeController {
 
+    @GetMapping("/")
+    public String getIndex() {
+        return "redirect:/main";
+    }
+
     @GetMapping("/home")
     public String getHome(Authentication auth) {
         if (auth == null) {

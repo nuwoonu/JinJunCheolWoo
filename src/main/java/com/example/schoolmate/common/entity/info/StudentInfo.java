@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
+import com.example.schoolmate.common.entity.info.assignment.TeacherStudent;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.info.constant.TeacherRole;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -36,12 +38,26 @@ public class StudentInfo extends BaseInfo {
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyRelation> familyRelations = new ArrayList<>();
 
+    // 담당 교사 목록 (학생 -> 교사 관계)
+    @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TeacherStudent> teacherStudents = new ArrayList<>();
+
     /**
      * 현재 학년도 소속 정보 가져오기 헬퍼 메서드
      */
     public StudentAssignment getCurrentAssignment(int currentYear) {
         return assignments.stream()
                 .filter(a -> a.getSchoolYear() == currentYear)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 특정 학년도의 담임교사 조회
+     */
+    public TeacherStudent getHomeroomTeacher(int schoolYear) {
+        return teacherStudents.stream()
+                .filter(ts -> ts.getSchoolYear() == schoolYear && ts.getRole() == TeacherRole.HOMEROOM)
                 .findFirst()
                 .orElse(null);
     }

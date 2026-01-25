@@ -9,36 +9,157 @@
     <link rel="stylesheet" th:href="@{/css/lib/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+      .main-hero {
+        background-color: var(--primary-600);
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .main-nav {
+        background: #fff;
+        border-bottom: 1px solid #e0e0e0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+      }
+      .main-nav .nav-link {
+        color: #000;
+        font-weight: 500;
+        padding: 0.5rem 1.2rem;
+        transition: all 0.3s;
+        border-radius: 8px;
+      }
+      .main-nav .nav-link:hover {
+        color: var(--primary-600);
+        background: rgba(37, 161, 148, 0.1);
+      }
+      .main-nav .btn-login {
+        color: #000;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+      .main-nav .btn-login:hover {
+        color: var(--primary-600);
+      }
+      .main-nav .btn-register {
+        color: #fff;
+        font-weight: 500;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+        padding: 0.5rem 1.2rem;
+        border-radius: 20px;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(37, 161, 148, 0.3);
+      }
+      .main-nav .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 161, 148, 0.4);
+      }
+      .main-nav .logo-text {
+        color: var(--primary-700) !important;
+        font-weight: 800 !important;
+      }
+      .main-hero {
+        margin-top: 60px;
+      }
+      .hero-subtitle {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+      }
+      .hero-title {
+        color: #fff;
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 3rem;
+      }
+      .feature-label {
+        display: inline-block;
+        background-color: #fff;
+        color: var(--primary-700);
+        font-size: 1.5rem;
+        font-weight: 700;
+        padding: 0.3rem 0.6rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+      }
+      .feature-desc {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        margin-top: 1.5rem;
+      }
+      .hero-image {
+        position: absolute;
+        right: 10%;
+        bottom: 5%;
+        max-width: 400px;
+        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2));
+      }
+      @media (max-width: 992px) {
+        .hero-title {
+          font-size: 2.5rem;
+        }
+        .hero-image {
+          display: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <!-- 네비게이션  바 -->
-    <nav class="py-10 px-24 bg-white shadowsm">
-      <div class="container d-flex justify-content-between align-items-center">
-        <!-- 왼쪽 상단 로고 부분. -->
-        <a th:href="@{/home}">
-          <img th:src="@{/images/schoolmateLogo.png}" alt="SchoolMate" width="173" height="40" />
-        </a>
-        <!-- 오른쪽 상단 버튼 -->
-        <div class="d-flex gap-12">
-          <a th:href="@{/login}" class="btn btn-outline-primary px-20 py-8">
-            <!-- 폰트어썸 아이콘 적용 -->
-            <i class="fa-solid fa-arrow-right-to-bracket"></i> 로그인</a
+    <!-- 네비게이션 바 -->
+    <nav class="main-nav py-12">
+      <div class="container-fluid px-16 d-flex justify-content-between align-items-center">
+        <!-- 로고 -->
+        <div class="d-flex align-items-center gap-20">
+          <a th:href="@{/home}">
+            <img th:src="@{/images/schoolmateLogo.png}" alt="SchoolMate" width="173" height="40" />
+          </a>
+          <!-- 메뉴 -->
+          <div class="d-none d-md-flex gap-8">
+            <a href="#features" class="nav-link">서비스 소개</a>
+            <a href="#about" class="nav-link">학교 찾기</a>
+            <a href="#contact" class="nav-link">공지사항</a>
+            <a href="#HR" class="nav-link">인재채용</a>
+          </div>
+        </div>
+        <!-- 로그인/회원가입 -->
+        <div class="d-flex gap-20 align-items-center">
+          <a th:href="@{/login}" class="btn-login text-decoration-none"
+            ><i class="fa-solid fa-arrow-right-to-bracket"></i> 로그인</a
           >
-          <a th:href="@{/register}" class="btn btn-primary-600 text-white px-20 py-8">
-            <i class="fa-solid fa-user-plus"></i> 회원 가입</a
+          <a th:href="@{/register}" class="btn-register text-decoration-none"
+            ><i class="fa-solid fa-user-plus"></i> 회원가입</a
           >
         </div>
       </div>
     </nav>
-    <section class="py-80 bg-neutral-50">
+
+    <!-- 히어로 섹션 -->
+    <section class="main-hero">
       <div class="container">
-        <div class="text-center">
-          <h1 class="disaply-5 fw-bold text-primary-light mb-16">스마트한 학급 관리, SchoolMate</h1>
-          <p class="text-lg text-secondary-light mb-32">학생, 교사 , 학부모를 위한 통합 학급 관리 플랫폼 입니다.</p>
-          <div class="d-flex justify-content-center gap-16"></div>
+        <div class="row">
+          <div class="col-lg-7">
+            <p class="hero-subtitle mb-16">스마트한 학급 관리의 시작</p>
+            <h1 class="hero-title">SchoolMate</h1>
+
+            <div class="mb-32">
+              <span class="feature-label">학생, 교사, 학부모를 위한</span><br />
+              <span class="feature-label">통합 학급 관리 플랫폼</span>
+            </div>
+
+            <p class="feature-desc">
+              출결 관리부터 성적 확인, 학급 소통까지<br />
+              SchoolMate와 함께하세요.
+            </p>
+          </div>
         </div>
       </div>
     </section>
+
     <script th:src="@{/js/lib/jquery-3.7.1.min.js}"></script>
     <script th:src="@{/js/lib/bootstrap.bundle.min.js}"></script>
   </body>
