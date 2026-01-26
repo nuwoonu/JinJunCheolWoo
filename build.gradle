@@ -64,6 +64,11 @@ test {
     useJUnitPlatform()
 }
 
+// Spring Boot DevTools 설정
+bootRun {
+	sourceResources sourceSets.main
+}
+
 // test JUnit
 tasks.named('test') {
 	useJUnitPlatform()

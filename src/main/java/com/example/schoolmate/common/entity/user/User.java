@@ -77,10 +77,6 @@ public class User extends BaseEntity {
         return this.roles.contains(role);
     }
 
-    public boolean isAdmin() {
-        return hasRole(UserRole.ADMIN);
-    }
-
     // --- Info 관련 편의 메서드 ---
 
     /**
@@ -101,11 +97,6 @@ public class User extends BaseEntity {
                 .map(clazz::cast)
                 .findFirst()
                 .orElse(null);
-    }
-
-    public boolean hasInfo(String infoType) {
-        return infos.stream()
-                .anyMatch(info -> info.getClass().getSimpleName().toUpperCase().contains(infoType.toUpperCase()));
     }
 
     // --- 정보 변경 메서드 ---

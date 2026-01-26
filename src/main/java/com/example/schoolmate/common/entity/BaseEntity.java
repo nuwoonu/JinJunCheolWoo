@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(value = AuditingEntityListener.class)
 public abstract class BaseEntity {
 
     @CreatedDate
@@ -23,4 +23,5 @@ public abstract class BaseEntity {
 
     @LastModifiedDate
     private LocalDateTime updateDate;
+
 }

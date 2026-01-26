@@ -1,0 +1,127 @@
+/* Register Page Styles */
+.register-left {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.register-left img {
+  max-width: 80%;
+  height: auto;
+}
+
+.register-right {
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.register-form {
+  max-width: 400px;
+  width: 100%;
+}
+
+.register-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 32px;
+}
+
+.btn-kakao {
+  background-color: #fee500;
+  color: #000000;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.btn-kakao:hover {
+  background-color: #e6cf00;
+  color: #000000;
+}
+
+.btn-social {
+  background-color: #ffffff;
+  color: #1a1a1a;
+  border: 1px solid #e0e0e0;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.btn-social:hover {
+  background-color: #f8f9fa;
+  border-color: #c0c0c0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.divider span {
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.login-link a {
+  color: #25a194;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+.social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 991px) {
+  .register-left {
+    display: none;
+  }
+
+  .register-right {
+    min-height: 100vh;
+  }
+}

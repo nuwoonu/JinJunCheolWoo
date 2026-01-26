@@ -1,7 +1,6 @@
 package com.example.schoolmate.common.entity.info.assignment;
 
 import com.example.schoolmate.common.entity.info.StudentInfo;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

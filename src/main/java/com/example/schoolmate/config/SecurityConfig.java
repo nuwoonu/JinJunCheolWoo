@@ -3,14 +3,12 @@ package com.example.schoolmate.config;
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.CustomLoginSuccessHandler;
 
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,20 +26,15 @@ public class SecurityConfig {
                 this.customLoginSuccessHandler = customLoginSuccessHandler;
         }
 
-        // [추가] 정적 리소스에 대해서는 시큐리티 설정을 완전히 무시하도록 설정
-        @Bean
-        WebSecurityCustomizer webSecurityCustomizer() {
-                return (web) -> web.ignoring()
-                                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()) // html, css, js 등
-                                                                                                      // 기본 위치
-                                .requestMatchers("/favicon.ico", "/resources/**", "/error"); // 파비콘과 에러 페이지 직접 명시
-        }
-
         @Bean
         SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http.authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers("/", "/login", "/register", "/user/register").permitAll()
-                                .requestMatchers("/assets/**", "/img/**", "/js/**", "/css/**").permitAll()
+                                // 로고 클릭시 각 롤에 맞게 메인페이지 보내기 위해 /home 권한설정.
+                                .requestMatchers("/", "/main", "/home", "/login", "/register", "/user/register")
+                                .permitAll()
+
+                                // images 불러사용 하기 위해 추가 [woo]
+                                .requestMatchers("/assets/**", "/images/**", "/img/**", "/js/**", "/css/**").permitAll()
                                 .requestMatchers("/error/**").permitAll()
 
                                 // 관리자 전용 영역

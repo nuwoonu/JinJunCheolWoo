@@ -2,6 +2,8 @@ package com.example.schoolmate.service;
 
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -87,5 +89,10 @@ public class StudentService {
         }
 
         return user;
+    }
+
+    public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createStudent'");
     }
 }
