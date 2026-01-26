@@ -7,11 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class LoginController {
 
-    @GetMapping("/")
-    public String gethome() {
-        return "redirect:/login";
-    }
-
     @GetMapping("/login")
     public String getLogin() {
         return "login";
@@ -19,6 +14,6 @@ public class LoginController {
 
     @GetMapping("/register")
     public String getRegister() {
-        return "redirect:/user/register";
+        return "register";
     }
 }

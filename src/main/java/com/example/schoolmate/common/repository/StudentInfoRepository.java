@@ -21,6 +21,10 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long> 
     @Query("SELECT s FROM StudentInfo s WHERE s.user.email = :email")
     Optional<StudentInfo> findByUserEmail(@Param("email") String email);
 
+    // TODO: grades 필드 추가 후 활성화
+    // @Query("SELECT s FROM StudentInfo s JOIN FETCH s.grades WHERE s.id = :id")
+    // Optional<StudentInfo> findByIdWithGrades(@Param("id") Long id);
+
     // Classroom 기반 조회 메서드
     List<StudentInfo> findByClassroom(Classroom classroom);
 
@@ -30,4 +34,13 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long> 
 
     List<StudentInfo> findByClassroomGradeAndClassroomClassNum(int grade, int classNum);
 
+    // 학급 ID로 학생 찾기
+    List<StudentInfo> findByClassroomCid(Long classroomId);
+
+    // 학년도, 학년, 반으로 학생 찾기
+    List<StudentInfo> findByClassroomYearAndClassroomGradeAndClassroomClassNum(int year, int grade, int classNum);
+
+    // [woo] User UID로 학생 정보 조회 - 게시판 권한 체크 시 학생의 학급 정보 확인용
+    @Query("SELECT s FROM StudentInfo s WHERE s.user.uid = :uid")
+    Optional<StudentInfo> findByUserUid(@Param("uid") Long uid);
 }

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학년 게시판 - 상세</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 class="fw-semibold mb-0">게시판</h6>
+          <p class="text-neutral-600 mt-4 mb-0" th:text="${targetGrade} + '학년 게시판'">학년 게시판</p>
+        </div>
+        <ul class="d-flex align-items-center gap-2">
+          <li class="fw-medium">
+            <a th:href="@{/dashboard}" class="d-flex align-items-center gap-1 hover-text-primary">
+              <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+              홈
+            </a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">게시판</li>
+          <li>-</li>
+          <li class="fw-medium">
+            <a th:href="@{/board/grade/{grade}(grade=${targetGrade})}" class="hover-text-primary"
+               th:text="${targetGrade} + '학년 게시판'">학년 게시판</a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">상세보기</li>
+        </ul>
+      </div>
+
+      <!-- 게시물 상세 -->
+      <div class="card radius-12">
+        <div class="card-header py-16 px-24 border-bottom">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <span th:if="${board.pinned}" class="badge bg-danger-100 text-danger-600 mb-8">공지</span>
+              <h5 class="mb-8" th:text="${board.title}">제목</h5>
+              <div class="d-flex gap-16 text-secondary-light">
+                <span>
+                  <iconify-icon icon="mdi:account" class="me-4"></iconify-icon>
+                  <span th:text="${board.writerName}">작성자</span>
+                </span>
+                <span>
+                  <iconify-icon icon="mdi:calendar" class="me-4"></iconify-icon>
+                  <span th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd HH:mm')}">작성일</span>
+                </span>
+                <span>
+                  <iconify-icon icon="mdi:eye" class="me-4"></iconify-icon>
+                  <span th:text="${board.viewCount}">조회수</span>
+                </span>
+              </div>
+            </div>
+            <!-- 수정/삭제 버튼 (작성자 또는 ADMIN) -->
+            <div class="d-flex gap-8" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+              <button type="button" class="btn btn-outline-primary-600 radius-8" onclick="editBoard()">
+                <iconify-icon icon="mdi:pencil" class="me-4"></iconify-icon>
+                수정
+              </button>
+              <button type="button" class="btn btn-outline-danger-600 radius-8" onclick="deleteBoard()">
+                <iconify-icon icon="mdi:delete" class="me-4"></iconify-icon>
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-24">
+          <div class="content" style="min-height: 300px; white-space: pre-wrap;" th:text="${board.content}">
+            내용
+          </div>
+        </div>
+        <div class="card-footer py-16 px-24 border-top">
+          <a th:href="@{/board/grade/{grade}(grade=${targetGrade})}" class="btn btn-secondary-600 radius-8">
+            <iconify-icon icon="mdi:arrow-left" class="me-4"></iconify-icon>
+            목록으로
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="css">
+    </th:block>
+
+    <th:block layout:fragment="script">
+      <script th:inline="javascript">
+        const boardId = [[${board.id}]];
+        const targetGrade = [[${targetGrade}]];
+
+        function editBoard() {
+          alert('수정 기능은 추후 구현 예정입니다.');
+        }
+
+        function deleteBoard() {
+          if (!confirm('정말 삭제하시겠습니까?')) return;
+
+          fetch('/api/board/' + boardId, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => {
+            if (response.ok) {
+              alert('삭제되었습니다.');
+              location.href = '/board/grade/' + targetGrade;
+            } else {
+              return response.text().then(text => { throw new Error(text); });
+            }
+          })
+          .catch(error => {
+            alert('삭제 실패: ' + error.message);
+          });
+        }
+      </script>
+    </th:block>
+  </body>
+</html>
