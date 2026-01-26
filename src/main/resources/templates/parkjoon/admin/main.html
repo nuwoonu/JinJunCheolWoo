@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -29,7 +29,7 @@
                     총 학생 수
                   </div>
                   <div class="h5 mb-0 font-weight-bold text-gray-800">
-                    520명
+                    <span th:text="${stats.totalStudents}">0</span>명
                   </div>
                 </div>
               </div>
@@ -49,7 +49,11 @@
                   >
                     재직 교직원
                   </div>
-                  <div class="h5 mb-0 font-weight-bold text-gray-800">45명</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <span th:text="${stats.totalTeachers + stats.totalStaffs}"
+                      >0</span
+                    >명
+                  </div>
                 </div>
               </div>
             </div>
@@ -66,9 +70,11 @@
                   <div
                     class="text-xs font-weight-bold text-warning text-uppercase mb-1"
                   >
-                    시설 예약 대기
+                    학부모 승인 대기
                   </div>
-                  <div class="h5 mb-0 font-weight-bold text-gray-800">3건</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <span th:text="${stats.pendingParents}">0</span>건
+                  </div>
                 </div>
               </div>
             </div>

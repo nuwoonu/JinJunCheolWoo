@@ -12,6 +12,10 @@ import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.info.constant.StaffStatus;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 
 public interface UserRepositoryCustom {
     Page<User> searchTeachers(TeacherDTO.TeacherSearchCondition condition, Pageable pageable);
@@ -31,4 +35,14 @@ public interface UserRepositoryCustom {
     List<User> findUnassignedStudents(int year, int limit);
 
     long countByClassroom(int year, int grade, int classNum);
+
+    Optional<User> findTeacherByCode(String code);
+
+    long countStudentsByStatus(StudentStatus status);
+
+    long countTeachersByStatus(TeacherStatus status);
+
+    long countStaffsByStatus(StaffStatus status);
+
+    long countParentsByStatus(ParentStatus status);
 }

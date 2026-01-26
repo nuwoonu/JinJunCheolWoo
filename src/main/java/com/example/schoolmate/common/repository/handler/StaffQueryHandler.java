@@ -85,4 +85,13 @@ public class StaffQueryHandler {
             default -> null;
         };
     }
+
+    public long countByStatus(StaffStatus status) {
+        QStaffInfo info = QStaffInfo.staffInfo;
+        Long count = query.select(info.count())
+                .from(info)
+                .where(info.status.eq(status))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
 }

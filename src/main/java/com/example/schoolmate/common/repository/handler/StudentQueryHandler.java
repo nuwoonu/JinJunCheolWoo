@@ -157,4 +157,13 @@ public class StudentQueryHandler {
                 .fetchOne();
         return count != null ? count : 0L;
     }
+
+    public long countByStatus(StudentStatus status) {
+        QStudentInfo info = QStudentInfo.studentInfo;
+        Long count = query.select(info.count())
+                .from(info)
+                .where(info.status.eq(status))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
 }

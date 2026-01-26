@@ -1,6 +1,7 @@
 package com.example.schoolmate.common.repository.handler;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -84,5 +85,25 @@ public class TeacherQueryHandler {
             case "position" -> info.position.contains(keyword);
             default -> null;
         };
+    }
+
+    public Optional<User> findTeacherByCode(String code) {
+        QUser user = QUser.user;
+        QTeacherInfo info = QTeacherInfo.teacherInfo;
+
+        User result = query.selectFrom(user)
+                .join(info).on(info.user.eq(user))
+                .where(info.code.eq(code))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
+    public long countByStatus(TeacherStatus status) {
+        QTeacherInfo info = QTeacherInfo.teacherInfo;
+        Long count = query.select(info.count())
+                .from(info)
+                .where(info.status.eq(status))
+                .fetchOne();
+        return count != null ? count : 0L;
     }
 }

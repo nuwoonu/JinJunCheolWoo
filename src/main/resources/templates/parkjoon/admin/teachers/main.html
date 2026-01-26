@@ -196,16 +196,6 @@
                   </td>
                   <td>
                     <div class="d-flex align-items-center">
-                      <div
-                        class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
-                        style="width: 32px; height: 32px"
-                      >
-                        <span
-                          class="small fw-bold text-primary"
-                          th:text="${t.name != null ? #strings.substring(t.name,0,1) : ''}"
-                          >이</span
-                        >
-                      </div>
                       <a
                         th:href="@{/parkjoon/admin/teachers/{id}(id=${t.uid})}"
                         class="fw-bold text-decoration-none text-dark"

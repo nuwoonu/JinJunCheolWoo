@@ -1,11 +1,13 @@
 package com.example.schoolmate.parkjoon.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +20,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.ClassDTO;
+import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.parkjoon.service.AdminClassService;
 
@@ -92,6 +96,7 @@ public class AdminClassController {
 
         List<ClassDTO.TeacherSelectResponse> teachers = adminClassService.getTeacherListForDropdown();
         model.addAttribute("teachers", teachers);
+        model.addAttribute("statuses", ClassroomStatus.values());
 
         return "parkjoon/admin/classes/detail";
     }
@@ -135,6 +140,41 @@ public class AdminClassController {
             return ResponseEntity.ok("상태가 변경되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/import-csv")
+    @ResponseBody
+    public ResponseEntity<String> importCsv(@RequestParam("file") MultipartFile file) {
+        try {
+            String result = adminClassService.importClassesFromCsv(file);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{cid}/roster-csv")
+    public ResponseEntity<byte[]> downloadRoster(@PathVariable Long cid) {
+        String csv = adminClassService.generateRosterCsv(cid);
+        byte[] bytes = csv.getBytes(StandardCharsets.UTF_8); // 한글 깨짐 방지 위해 BOM 추가 고려 가능
+        String fileName = "class_" + cid + "_roster.csv";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+                .body(bytes);
+    }
+
+    @PostMapping("/delete")
+    public String delete(@RequestParam Long cid, RedirectAttributes ra) {
+        try {
+            adminClassService.deleteClass(cid);
+            ra.addFlashAttribute("successMessage", "학급이 영구 삭제되었습니다.");
+            return "redirect:/parkjoon/admin/classes";
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "삭제 실패: " + e.getMessage());
+            return "redirect:/parkjoon/admin/classes/" + cid;
         }
     }
 }

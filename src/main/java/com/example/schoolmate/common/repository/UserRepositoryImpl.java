@@ -16,6 +16,10 @@ import com.example.schoolmate.common.repository.handler.ParentQueryHandler;
 import com.example.schoolmate.common.repository.handler.StaffQueryHandler;
 import com.example.schoolmate.common.repository.handler.StudentQueryHandler;
 import com.example.schoolmate.common.repository.handler.TeacherQueryHandler;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.info.constant.StaffStatus;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -69,6 +73,31 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     @Override
     public long countByClassroom(int year, int grade, int classNum) {
         return studentQueryHandler.countByClassroom(year, grade, classNum);
+    }
+
+    @Override
+    public Optional<User> findTeacherByCode(String code) {
+        return teacherQueryHandler.findTeacherByCode(code);
+    }
+
+    @Override
+    public long countStudentsByStatus(StudentStatus status) {
+        return studentQueryHandler.countByStatus(status);
+    }
+
+    @Override
+    public long countTeachersByStatus(TeacherStatus status) {
+        return teacherQueryHandler.countByStatus(status);
+    }
+
+    @Override
+    public long countStaffsByStatus(StaffStatus status) {
+        return staffQueryHandler.countByStatus(status);
+    }
+
+    @Override
+    public long countParentsByStatus(ParentStatus status) {
+        return parentQueryHandler.countByStatus(status);
     }
 
 }

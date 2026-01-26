@@ -98,4 +98,13 @@ public class ParentQueryHandler {
             default -> null;
         };
     }
+
+    public long countByStatus(ParentStatus status) {
+        QParentInfo parent = QParentInfo.parentInfo;
+        Long count = query.select(parent.count())
+                .from(parent)
+                .where(parent.status.eq(status))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
 }

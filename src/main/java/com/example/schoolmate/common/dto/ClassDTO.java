@@ -2,6 +2,7 @@ package com.example.schoolmate.common.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.user.User;
@@ -9,6 +10,8 @@ import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 
 import lombok.AllArgsConstructor;
+import com.example.schoolmate.common.entity.log.ClassroomHistory;
+import com.opencsv.bean.CsvBindByName;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,6 +50,9 @@ public class ClassDTO {
     @AllArgsConstructor
     public static class UpdateRequest {
         private Long cid;
+        private Integer grade;
+        private Integer classNum;
+        private String status;
         private Long teacherUid;
     }
 
@@ -72,6 +78,9 @@ public class ClassDTO {
 
         @Builder.Default
         private List<StudentSummary> students = new ArrayList<>();
+
+        @Builder.Default
+        private List<HistoryResponse> histories = new ArrayList<>();
 
         public static DetailResponse from(Classroom classroom, int studentCount) {
             User teacher = classroom.getTeacher();
@@ -132,6 +141,39 @@ public class ClassDTO {
             return TeacherSelectResponse.builder()
                     .uid(user.getUid())
                     .displayName(user.getName() + " (" + subject + ")")
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class CsvImportRequest {
+        @CsvBindByName(column = "학년도")
+        private Integer year;
+        @CsvBindByName(column = "학년")
+        private Integer grade;
+        @CsvBindByName(column = "반")
+        private Integer classNum;
+        @CsvBindByName(column = "담임교사사번")
+        private String teacherCode;
+        @CsvBindByName(column = "학생학번목록")
+        private String studentCodes; // 쉼표로 구분
+    }
+
+    @Getter
+    @Builder
+    public static class HistoryResponse {
+        private String actionType;
+        private String description;
+        private String createdBy;
+        private LocalDateTime createdAt;
+
+        public static HistoryResponse from(ClassroomHistory history) {
+            return HistoryResponse.builder()
+                    .actionType(history.getActionType())
+                    .description(history.getDescription())
+                    .createdBy(history.getCreatedBy())
+                    .createdAt(history.getCreatedAt())
                     .build();
         }
     }

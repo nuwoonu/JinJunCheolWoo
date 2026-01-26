@@ -206,3 +206,14 @@ function updateStatusBulk(statusName, statusLabel) {
     "cids",
   );
 }
+
+/**
+ * CSV 일괄 업로드
+ */
+function uploadClassCsv() {
+  uploadCsv(
+    "/parkjoon/admin/classes/import-csv",
+    "CSV 파일을 통해 학급을 일괄 생성하시겠습니까?\n(형식: 학년도,학년,반,담임교사사번,학생학번목록)",
+    "학급 일괄 생성이 완료되었습니다.",
+  );
+}

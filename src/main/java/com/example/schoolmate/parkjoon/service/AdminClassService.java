@@ -1,12 +1,21 @@
 package com.example.schoolmate.parkjoon.service;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.schoolmate.common.entity.log.ClassroomHistory;
+import com.opencsv.bean.CsvToBeanBuilder;
 
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
@@ -15,6 +24,7 @@ import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.repository.ClassroomHistoryRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 
@@ -29,6 +39,7 @@ public class AdminClassService {
 
     private final ClassroomRepository classroomRepository;
     private final UserRepository userRepository;
+    private final ClassroomHistoryRepository classroomHistoryRepository;
 
     @Transactional(readOnly = true)
     public Page<ClassDTO.DetailResponse> getClassList(ClassDTO.SearchCondition cond, Pageable pageable) {
@@ -68,6 +79,11 @@ public class AdminClassService {
         }).collect(Collectors.toList());
 
         response.setStudents(studentSummaries);
+
+        // 이력 조회
+        List<ClassroomHistory> histories = classroomHistoryRepository.findByClassroomIdOrderByCreatedAtDesc(cid);
+        response.setHistories(histories.stream().map(ClassDTO.HistoryResponse::from).toList());
+
         return response;
     }
 
@@ -123,6 +139,9 @@ public class AdminClassService {
             addStudents(cid, randomStudents.stream().map(User::getUid).toList());
         }
 
+        logChange(cid, "CREATE",
+                "학급 생성 (학년도: " + request.getYear() + ", " + request.getGrade() + "-" + request.getClassNum() + ")");
+
         return cid;
     }
 
@@ -130,12 +149,34 @@ public class AdminClassService {
         Classroom classroom = classroomRepository.findById(request.getCid())
                 .orElseThrow(() -> new IllegalArgumentException("학급 정보를 찾을 수 없습니다."));
 
+        // 1. 학년/반 변경 시 중복 체크
+        if (request.getGrade() != null && request.getClassNum() != null) {
+            if (classroom.getGrade() != request.getGrade() || classroom.getClassNum() != request.getClassNum()) {
+                boolean exists = classroomRepository.existsByYearAndGradeAndClassNum(
+                        classroom.getYear(), request.getGrade(), request.getClassNum());
+                if (exists) {
+                    throw new IllegalArgumentException("이미 존재하는 학급(학년/반)입니다.");
+                }
+                classroom.setGrade(request.getGrade());
+                classroom.setClassNum(request.getClassNum());
+                logChange(classroom.getCid(), "UPDATE", "학년/반 변경: " + request.getGrade() + "-" + request.getClassNum());
+            }
+        }
+
+        // 2. 상태 변경
+        if (request.getStatus() != null) {
+            classroom.setStatus(ClassroomStatus.valueOf(request.getStatus()));
+        }
+
+        // 3. 담임 교사 변경
         if (request.getTeacherUid() != null) {
             User teacher = userRepository.findById(request.getTeacherUid())
                     .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
             classroom.setTeacher(teacher);
+            logChange(classroom.getCid(), "UPDATE", "담임 교사 변경: " + teacher.getName());
         } else {
             classroom.setTeacher(null);
+            logChange(classroom.getCid(), "UPDATE", "담임 교사 해제");
         }
     }
 
@@ -176,6 +217,8 @@ public class AdminClassService {
                 info.getAssignments().add(assignment);
             }
         }
+
+        logChange(cid, "ASSIGN_STUDENT", users.size() + "명 학생 배정");
     }
 
     public void removeStudent(Long cid, Long studentUid) {
@@ -191,6 +234,8 @@ public class AdminClassService {
         info.getAssignments().removeIf(a -> a.getSchoolYear() == classroom.getYear() &&
                 a.getGrade() == classroom.getGrade() &&
                 a.getClassNum() == classroom.getClassNum());
+
+        logChange(cid, "REMOVE_STUDENT", "학생 제외: " + user.getName());
     }
 
     public void removeStudents(Long cid, List<Long> studentUids) {
@@ -206,6 +251,8 @@ public class AdminClassService {
                     a.getGrade() == classroom.getGrade() &&
                     a.getClassNum() == classroom.getClassNum());
         }
+
+        logChange(cid, "REMOVE_STUDENT", users.size() + "명 학생 일괄 제외");
     }
 
     public void bulkUpdateClassStatus(List<Long> cids, String statusName) {
@@ -213,6 +260,127 @@ public class AdminClassService {
         List<Classroom> classrooms = classroomRepository.findAllById(cids);
         for (Classroom classroom : classrooms) {
             classroom.setStatus(status);
+            logChange(classroom.getCid(), "UPDATE", "상태 변경: " + status.getDescription());
         }
+    }
+
+    // --- CSV Import ---
+    public String importClassesFromCsv(MultipartFile file) throws Exception {
+        List<String> skippedStudentCodes = new ArrayList<>();
+        int successClassCount = 0;
+
+        try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+            List<ClassDTO.CsvImportRequest> beans = new CsvToBeanBuilder<ClassDTO.CsvImportRequest>(reader)
+                    .withType(ClassDTO.CsvImportRequest.class)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build().parse();
+
+            for (ClassDTO.CsvImportRequest req : beans) {
+                // 1. 학급 조회 또는 생성
+                Classroom classroom = classroomRepository.findAll().stream()
+                        .filter(c -> c.getYear() == req.getYear() && c.getGrade() == req.getGrade()
+                                && c.getClassNum() == req.getClassNum())
+                        .findFirst().orElse(null);
+
+                if (classroom == null) {
+                    classroom = new Classroom();
+                    classroom.setYear(req.getYear());
+                    classroom.setGrade(req.getGrade());
+                    classroom.setClassNum(req.getClassNum());
+                    classroom = classroomRepository.save(classroom);
+                    logChange(classroom.getCid(), "CREATE", "CSV 일괄 생성");
+                }
+                successClassCount++;
+
+                // 2. 담임 교사 배정
+                if (req.getTeacherCode() != null && !req.getTeacherCode().isBlank()) {
+                    User teacher = userRepository.findTeacherByCode(req.getTeacherCode())
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 교사 사번: " + req.getTeacherCode()));
+                    classroom.setTeacher(teacher);
+                }
+
+                // 3. 학생 배정
+                if (req.getStudentCodes() != null && !req.getStudentCodes().isBlank()) {
+                    String[] codes = req.getStudentCodes().split(",");
+                    for (String code : codes) {
+                        String trimmedCode = code.trim();
+                        if (trimmedCode.isEmpty())
+                            continue;
+
+                        User student = userRepository.findDetailByCode(trimmedCode).orElse(null);
+                        if (student != null) {
+                            addStudents(classroom.getCid(), List.of(student.getUid()));
+                        } else {
+                            skippedStudentCodes.add(trimmedCode);
+                            log.warn("CSV Import: 존재하지 않는 학생 학번 건너뜀 - {}", trimmedCode);
+                        }
+                    }
+                }
+            }
+        }
+
+        StringBuilder resultMsg = new StringBuilder();
+        resultMsg.append("학급 일괄 생성이 완료되었습니다. (처리된 학급: ").append(successClassCount).append("건)");
+        if (!skippedStudentCodes.isEmpty()) {
+            resultMsg.append("\n[주의] 존재하지 않는 학번이 제외되었습니다 (").append(skippedStudentCodes.size()).append("명): ");
+            resultMsg.append(String.join(", ", skippedStudentCodes));
+        }
+        return resultMsg.toString();
+    }
+
+    // --- History Log ---
+    private void logChange(Long cid, String action, String desc) {
+        String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+        ClassroomHistory history = ClassroomHistory.builder()
+                .classroomId(cid)
+                .actionType(action)
+                .description(desc)
+                .createdBy(adminName)
+                .build();
+        classroomHistoryRepository.save(history);
+    }
+
+    // --- Roster Export ---
+    public String generateRosterCsv(Long cid) {
+        ClassDTO.DetailResponse detail = getClassDetail(cid);
+        StringBuilder sb = new StringBuilder();
+        sb.append("번호,이름,학번,상태\n");
+
+        // 번호순 정렬 (번호가 없으면 이름순)
+        List<ClassDTO.StudentSummary> sortedStudents = detail.getStudents().stream()
+                .sorted((s1, s2) -> {
+                    if (s1.getStudentNum() != null && s2.getStudentNum() != null) {
+                        return s1.getStudentNum().compareTo(s2.getStudentNum());
+                    }
+                    return s1.getName().compareTo(s2.getName());
+                })
+                .toList();
+
+        for (ClassDTO.StudentSummary s : sortedStudents) {
+            sb.append(s.getStudentNum() != null ? s.getStudentNum() : "-").append(",")
+                    .append(s.getName()).append(",")
+                    .append(s.getCode()).append(",")
+                    .append(s.getStatus()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    public void deleteClass(Long cid) {
+        Classroom classroom = classroomRepository.findById(cid)
+                .orElseThrow(() -> new IllegalArgumentException("학급 정보를 찾을 수 없습니다."));
+
+        // 1. 교사 배정 확인
+        if (classroom.getTeacher() != null) {
+            throw new IllegalStateException("담임 교사가 배정된 학급은 삭제할 수 없습니다. 먼저 교사 배정을 해제하세요.");
+        }
+
+        // 2. 학생 배정 확인
+        long studentCount = userRepository.countByClassroom(classroom.getYear(), classroom.getGrade(),
+                classroom.getClassNum());
+        if (studentCount > 0) {
+            throw new IllegalStateException("학생이 배정된 학급은 삭제할 수 없습니다. 먼저 학생들을 제외하세요.");
+        }
+
+        classroomRepository.delete(classroom);
     }
 }

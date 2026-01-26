@@ -11,6 +11,21 @@
           <h2 class="mb-0">🏫 학급 관리</h2>
         </div>
         <div class="d-flex align-items-center gap-2">
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            style="display: none"
+            onchange="uploadClassCsv()"
+          />
+          <button
+            type="button"
+            class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            onclick="document.getElementById('csvFileInput').click()"
+          >
+            <i class="bi bi-file-earmark-spreadsheet"></i> CSV 일괄 생성
+          </button>
+
           <a
             href="javascript:void(0)"
             class="btn btn-outline-dark radius-8 px-20 py-11 d-flex align-items-center gap-2 dropdown-toggle"
