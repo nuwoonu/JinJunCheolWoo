@@ -22,15 +22,31 @@
       "id": "c:\\git\\JinJunCheolWoobuildschoolmate",
       "script": "build",
       "description": "Assembles and tests this project.",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
+      "group": "build",
       "project": "schoolmate",
       "buildFile": "C:\\git\\JinJunCheolWoo\\build.gradle",
       "rootProject": "schoolmate",
       "projectFolder": "c:\\git\\JinJunCheolWoo",
       "workspaceFolder": "c:\\git\\JinJunCheolWoo",
+      "args": "",
+      "javaDebug": false,
+      "problemMatcher": ["$gradle"],
+      "label": "gradle: build"
+    },
+    {
+      "type": "gradle",
+      "id": "c:\\source\\JinJunCheolWoobuildschoolmate",
+      "script": "build",
+      "description": "Assembles and tests this project.",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "project": "schoolmate",
+      "buildFile": "C:\\source\\JinJunCheolWoo\\build.gradle",
+      "rootProject": "schoolmate",
+      "projectFolder": "c:\\source\\JinJunCheolWoo",
+      "workspaceFolder": "c:\\source\\JinJunCheolWoo",
       "args": "",
       "javaDebug": false,
       "problemMatcher": ["$gradle"],
