@@ -24,13 +24,11 @@ public class SchoolMealDTO {
 
     private Long id;
 
-    private LocalDate mealDate; // 날짜
+    private LocalDate mealDate;
 
-    private MealTargetType targetType; // 급식 대상 (전체/학생/교직원)
+    private MealTargetType targetType;
 
-    private MealType mealType; // 조식/중식/석식
-
-    private String mealTypeText; // "조식", "중식", "석식" >>?
+    private MealType mealType;
 
     private String menu;
 

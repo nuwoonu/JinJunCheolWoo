@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>일정 수정</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5" style="max-width: 600px;">
+    <h3 class="mb-4">🛠 일정 수정</h3>
+    
+    <form th:action="@{/soojin/admin/update}" method="post" th:object="${event}">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="mb-3">
+            <label for="title" class="form-label">일정 제목 <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="title" th:field="*{title}" required>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="startDate" class="form-label">시작일 <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="startDate" th:field="*{startDate}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="endDate" class="form-label">종료일</label>
+                <input type="date" class="form-control" id="endDate" th:field="*{endDate}">
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="eventType" class="form-label">일정 유형 <span class="text-danger">*</span></label>
+                <select class="form-select" id="eventType" th:field="*{eventType}" required>
+                    <option th:each="type : ${eventTypes}" 
+                            th:value="${type}" 
+                            th:text="${type.description}">학교행사</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="targetGrade" class="form-label">대상 학년</label>
+                <select class="form-select" id="targetGrade" th:field="*{targetGrade}">
+                    <option value="">전체 학년</option>
+                    <option value="1">1학년</option>
+                    <option value="2">2학년</option>
+                    <option value="3">3학년</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="description" class="form-label">상세 설명</label>
+            <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <div>
+                <a th:href="@{/soojin/calendar/monthly}" class="btn btn-secondary">취소</a>
+            </div>
+            <div>
+                <button type="button" class="btn btn-danger me-2" onclick="if(confirm('정말 삭제하시겠습니까?')) document.getElementById('deleteForm').submit();">삭제</button>
+                <button type="submit" class="btn btn-primary">수정하기</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 삭제용 폼 -->
+    <form id="deleteForm" th:action="@{/soojin/admin/delete/{id}(id=${event.id})}" method="post" style="display:none;">
+    </form>
+</div>
+</body>
+</html>

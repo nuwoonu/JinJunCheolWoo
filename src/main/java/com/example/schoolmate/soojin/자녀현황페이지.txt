@@ -1,0 +1,103 @@
+
+
+<내 자녀 현황 페이지 구성 요소>
+- 학생 출결 (+학생 프로필 안에 현재 상태로 표시 => 출석(입실) / 지각 / 조퇴 / 결석 / (퇴실))
+- 시간표 -> 엑셀 첨부 기능
+- 학사일정표(캘린더) -> 엑셀 첨부 기능
+- 급식 -> 엑셀 첨부 기능
+- 가정통신문 (학부모에게 보내는 공지 - 첨부파일)
+- 학급 공지사항(알림장)
+
+
+<사이드 바 구성 요소>
+- 학생 관리
+   - 출결
+   - 성적
+- 공지사항
+   - 학교 공지 -> 공통
+   - 가정통신문 -> 공통
+   - 학급 공지사항(알림장) -> 학생의 학급에 따라 다르게
+- 학부모 게시판
+   - 전체 게시판
+   - 학급 게시판
+- 상담 신청
+
+
+(1) entity
+- 학생 출결 == StudentAttendance
+- 시간표 == StudentTimetable
+
+- 학사일정표(캘린더) == SchoolCalendar
+- 급식 == SchoolMeal
+
+- 가정통신문 == NoticeToParents
+- 학급 공지사항 == ClassNotice.java
+
+
+Service에서 작성 시 자동으로 세팅하면, 
+선생님이 담임 변경되어도 과거 공지 기록 그대로 유지
+조회 시 JOIN 없이 바로 필터링 가능
+// Service에서
+ClassNotice notice = ClassNotice.builder()
+    .title(dto.getTitle())
+    .content(dto.getContent())
+    .writerTeacher(teacher)
+    .grade(teacher.getClassroom().getGrade())      // 자동
+    .classNum(teacher.getClassroom().getClassNum()) // 자동
+    .build();
+
+- 급식 표시(교직원, 학생)
+Service에서 필터링:
+// 학부모/학생 조회 시
+targetType IN ('ALL', 'STUDENT')
+// 교직원 조회 시
+targetType IN ('ALL', 'STAFF')
+
+- 캘린더
+전체/학년별 일정: targetGrade가 null이면 전체, 값이 있으면 해당 학년만
+기간 행사: endDate로 여러 날 일정 표현 (당일이면 null)
+일정 유형: Enum으로 구분해서 화면에서 색상/아이콘 다르게 표시 가능
+
+(2) repository
+
+(3) dto
+학부모 페이지에서는, MyChildrenStatusDTO 사용
+
+(4) service
+- getChildrenWithStatus(Long parentUid): 로그인한 학부모의 자녀 현황
+- getAttendanceSummary(Long studentInfoId): 출결 요약
+- getTodayTimetable(Integer grade, Integer classNum): 오늘 시간표
+- getTodayMeal(): 오늘 급식
+- getRecentNotices(): 최신 공지사항
+
+
+(5) controller
+GET /parent/status → 자녀 현황 페이지
+
+
+soojin/parent/mychildren/status/{uid} - uid : 학생번호
+
+MyChildrenStatusController
+
+MyChildrenStatusService
+
+MyChildrenStatusDTO
+
+
+<데이터 흐름>
+
+로그인한 User (PARENT 역할)
+    ↓
+User.getInfo(ParentInfo.class)
+    ↓
+ParentInfo.childrenRelations (List<FamilyRelation>)
+    ↓
+FamilyRelation.studentInfo (StudentInfo)
+    ↓
+StudentInfo.user + StudentInfo.assignments (현재 학년 정보)
+    ↓
+MyChildrenStatusDTO로 변환하여 View에 전달
+
+
+<기본 테이블>
+

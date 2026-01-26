@@ -1,0 +1,147 @@
+
+<!-- 내용에 맞게 수정 중 -->
+
+<!doctype html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>자녀 현황</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="d-flex flex-wrap gap-12 mb-24" th:if="${children != null and children.size() > 1}">
+      <a th:each="c : ${children}" 
+         th:href="@{'/parent/children/status/' + ${c.id}}"
+         th:text="${c.name}"
+         class="btn px-24 py-10 rounded-pill fw-bold shadow-sm"
+         th:classappend="${#vars.childId != null and #vars.childId == c.id} ? 'btn-primary' : 'btn-white text-secondary-light border-neutral-200'">
+      </a>
+    </div>
+
+    <div th:if="${children == null or children.empty}" class="card border-0 shadow-sm p-80 text-center">
+      <i class="ri-user-search-line text-5xl text-neutral-300 mb-16"></i>
+      <h5 class="text-secondary-light">등록된 자녀가 없습니다.</h5>
+    </div>
+
+    <div th:if="${children != null and !children.empty}" th:with="child=${children[0]}">
+      
+      <div class="card border-0 shadow-sm p-24 mb-24" style="border-radius: 16px">
+        <div class="d-flex align-items-center gap-24">
+          <figure class="w-100-px h-100-px rounded-circle overflow-hidden mb-0 border border-width-4-px border-primary-100">
+            <img th:src="${child.profileImageUrl}" alt="Student" class="w-100 h-100 object-fit-cover" />
+          </figure>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center justify-content-between mb-8">
+              <div class="d-flex align-items-center gap-12">
+                <h3 class="fw-bold mb-0" th:text="${child.name}">이름</h3>
+                <span th:id="'badge-' + ${child.id}" class="badge bg-success-600 px-16 py-8 rounded-pill fs-13">
+                  출석(입실)
+                </span>
+              </div>
+              <button class="btn btn-outline-neutral-200 btn-sm" th:onclick="refreshStatus([[${child.id}]])">
+                <i class="ri-refresh-line"></i> 갱신
+              </button>
+            </div>
+            <div class="text-secondary-light fw-medium">
+              <span th:text="${child.grade}"></span>학년 <span th:text="${child.classNum}"></span>반 
+              <span class="mx-8 text-neutral-200">|</span> 학번: <span th:text="${child.studentNumber}"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row gy-4 mb-24">
+        <div class="col-xl-3 col-md-6">
+          <div class="card h-100 border-0 shadow-sm p-20" style="border-radius: 12px">
+            <h6 class="fw-bold mb-20 text-sm"><i class="ri-pie-chart-line text-primary-600 me-2"></i>누적 출결</h6>
+            <div class="d-flex justify-content-around text-center px-8">
+              <div><h4 class="mb-4 text-success-600 fw-bold">20</h4><span class="text-xs text-secondary-light">출석</span></div>
+              <div><h4 class="mb-4 text-warning-main fw-bold">1</h4><span class="text-xs text-secondary-light">지각</span></div>
+              <div><h4 class="mb-4 text-danger-main fw-bold">0</h4><span class="text-xs text-secondary-light">결석</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-5 col-md-6">
+          <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius: 12px">
+            <div class="p-16 border-bottom bg-neutral-50"><h6 class="fw-bold mb-0 text-sm">오늘의 시간표 (7교시)</h6></div>
+            <table class="table table-sm mb-0 text-center border-neutral-100">
+              <thead class="bg-neutral-50 text-xxs"><tr><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr></thead>
+              <tbody class="text-sm fw-bold">
+                <tr><td>국어</td><td>수학</td><td>영어</td><td>과학</td><td>사회</td><td>체육</td><td>자율</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-xl-4 col-md-12">
+          <div class="card h-100 border-0 shadow-sm p-20" style="border-radius: 12px">
+            <h6 class="fw-bold mb-16 text-sm">학교 일정</h6>
+            <div class="p-12 bg-primary-50 rounded-8 d-flex justify-content-between align-items-center">
+              <span class="text-sm fw-bold text-primary-700">1/23(금) 겨울방학식</span>
+              <span class="badge bg-primary-600 text-white border-0">D-2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row gy-4">
+        <div class="col-xl-8">
+          <div class="card border-0 shadow-sm p-20 mb-24" style="border-radius: 12px">
+            <h6 class="fw-bold mb-16 text-sm">최신 가정통신문</h6>
+            <div class="p-12 bg-neutral-50 rounded-8 d-flex justify-content-between align-items-center">
+              <span class="text-sm fw-medium">[안내] 체험학습 신청서 안내</span>
+              <a href="#" class="text-neutral-400"><i class="ri-download-2-line"></i></a>
+            </div>
+          </div>
+          <div class="card border-0 shadow-sm p-20" style="border-radius: 12px">
+            <h6 class="fw-bold mb-16 text-sm">학급 알림장</h6>
+            <div class="p-16 bg-neutral-50 rounded-12 border-start border-4 border-primary-600">
+              <p class="text-sm text-secondary-light mb-0">• 수학 익힘책 45쪽까지 풀기</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4">
+          <div class="card border-0 shadow-sm p-20" style="border-radius: 12px">
+            <h6 class="fw-bold mb-16 text-sm">오늘의 급식</h6>
+            <div class="bg-neutral-50 p-16 rounded-12 mb-12">
+              <p class="text-sm text-secondary-light mb-8">잡곡밥, 미역국, 제육볶음, 김치</p>
+              <span class="text-xs fw-bold text-primary-600">645 kcal</span>
+            </div>
+            <div class="w-100 h-100-px bg-neutral-100 rounded-12 d-flex align-items-center justify-content-center text-xs text-neutral-300">사진 준비 중</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <th:block layout:fragment="script">
+    <script th:inline="javascript">
+      /**
+       * 실시간 출결 상태 갱신 함수
+       */
+      function refreshStatus(childId) {
+        const badge = document.getElementById('badge-' + childId);
+        badge.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> 확인 중';
+        
+        // 실제 API 구현 전까지는 간단한 UI 피드백만 제공
+        fetch('/api/parent/child-status/' + childId)
+          .then(res => res.json())
+          .then(data => {
+            badge.innerText = data.status || "출석(입실)";
+            badge.className = 'badge bg-success-600 px-16 py-8 rounded-pill fs-13';
+          })
+          .catch(err => {
+            console.warn("API 호출 실패: 고정값으로 유지합니다.");
+            badge.innerText = "출석(입실)";
+            badge.className = 'badge bg-success-600 px-16 py-8 rounded-pill fs-13';
+          });
+      }
+    </script>
+  </th:block>
+</html>
