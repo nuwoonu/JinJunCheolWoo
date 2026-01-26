@@ -22,6 +22,7 @@ import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.parkjoon.service.AdminParentService;
+import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.parkjoon.service.AdminStudentService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class AdminStudentController {
 
     private final AdminStudentService adminStudentService;
     private final AdminParentService adminParentService; // 학부모 검색용
+    private final SystemSettingService systemSettingService;
 
     // 1. 목록 페이지
     @GetMapping("")
@@ -54,7 +56,11 @@ public class AdminStudentController {
     // 2. 등록 페이지 이동
     @GetMapping("/create")
     public String createForm(Model model) {
-        model.addAttribute("createRequest", new StudentDTO.CreateRequest());
+        StudentDTO.CreateRequest request = new StudentDTO.CreateRequest();
+        request.setYear(systemSettingService.getCurrentSchoolYear()); // 기본 학년도 설정
+
+        model.addAttribute("createRequest", request);
+        model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
         model.addAttribute("relationships", FamilyRelationship.values());
         return "parkjoon/admin/students/create";
     }
@@ -68,6 +74,7 @@ public class AdminStudentController {
             StudentDTO.DetailResponse student = adminStudentService.getStudentDetailByCode(code);
             model.addAttribute("student", student);
             model.addAttribute("relationships", FamilyRelationship.values());
+            model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
             return "parkjoon/admin/students/detail";
         } catch (IllegalArgumentException e) {
             // 존재하지 않는 학번일 경우 메시지를 담아 리다이렉트

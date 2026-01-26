@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.parkjoon.service.AdminClassService;
 
 import lombok.RequiredArgsConstructor;
@@ -39,13 +40,14 @@ public class AdminClassController {
 
     private final AdminClassService adminClassService;
     private final UserRepository userRepository;
+    private final SystemSettingService systemSettingService;
 
     @GetMapping
     public String list(@ModelAttribute ClassDTO.SearchCondition condition,
             @PageableDefault(size = 20, sort = "cid", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
         if (condition.getYear() == null) {
-            condition.setYear(LocalDate.now().getYear());
+            condition.setYear(systemSettingService.getCurrentSchoolYear());
         }
 
         Page<ClassDTO.DetailResponse> classes = adminClassService.getClassList(condition, pageable);
@@ -58,7 +60,7 @@ public class AdminClassController {
     public String createForm(Model model) {
         log.info("========== [AdminClassController] GET /create 진입 ==========");
         try {
-            model.addAttribute("currentYear", LocalDate.now().getYear());
+            model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
 
             log.info("교사 목록 조회 요청 시작");
             List<ClassDTO.TeacherSelectResponse> teachers = adminClassService.getTeacherListForDropdown();
