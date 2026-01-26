@@ -49,9 +49,9 @@ public class CalendarController {
 
     @GetMapping("/calendar/monthly")
     public String monthlyView(
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer grade,
+            @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "grade", required = false) Integer grade,
             Model model) {
 
         LocalDate now = LocalDate.now();
@@ -71,10 +71,10 @@ public class CalendarController {
 
     @GetMapping("/calendar/list")
     public String listView(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @RequestParam(required = false) Integer grade,
-            @RequestParam(required = false) EventType eventType,
+            @RequestParam(value = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(value = "grade", required = false) Integer grade,
+            @RequestParam(value = "eventType", required = false) EventType eventType,
             Model model) {
         if (start == null) {
             start = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
@@ -91,9 +91,10 @@ public class CalendarController {
     // API (AJAX용) - 페이지 새로고침 없이 데이터 주고 받음
     @GetMapping("/api/events")
     @ResponseBody
-    public List<SchoolCalendarDTO> getEvents(@RequestParam int year,
-            @RequestParam int month,
-            @RequestParam(required = false) Integer grade) {
+    public List<SchoolCalendarDTO> getEvents(
+            @RequestParam("year") int year,
+            @RequestParam("month") int month,
+            @RequestParam(value = "grade", required = false) Integer grade) {
         return calendarService.getMonthlyCalendar(year, month, grade);
     }
 

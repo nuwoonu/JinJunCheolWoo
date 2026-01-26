@@ -24,7 +24,7 @@ import lombok.ToString;
 
 @Getter
 @Builder
-@ToString(exclude = { "grades" })
+@ToString(exclude = {})
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

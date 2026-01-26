@@ -19,12 +19,12 @@ public class SchoolMealController {
     private final SchoolMealService schoolMealService;
 
     @GetMapping("/meal/monthly")
-    public String monthlyView(@RequestParam String param) {
+    public String monthlyView(@RequestParam("param") String param) {
         return "soojin/meal/monthly";
     }
 
     @GetMapping("/meal/list")
-    public String listView(@RequestParam String param) {
+    public String listView(@RequestParam("param") String param) {
         return "soojin/meal/list";
     }
 
