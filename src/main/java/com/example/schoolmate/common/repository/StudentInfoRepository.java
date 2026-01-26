@@ -21,9 +21,6 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long> 
     @Query("SELECT s FROM StudentInfo s WHERE s.user.email = :email")
     Optional<StudentInfo> findByUserEmail(@Param("email") String email);
 
-    @Query("SELECT s FROM StudentInfo s JOIN FETCH s.grades WHERE s.id = :id")
-    Optional<StudentInfo> findByIdWithGrades(@Param("id") Long id);
-
     // Classroom 기반 조회 메서드
     List<StudentInfo> findByClassroom(Classroom classroom);
 

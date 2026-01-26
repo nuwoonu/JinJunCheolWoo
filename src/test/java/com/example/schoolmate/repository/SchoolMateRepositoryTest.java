@@ -110,8 +110,8 @@ public class SchoolMateRepositoryTest {
             studentInfo.setUser(user);
             studentInfo.setStudentIdentityNum("2026" + String.format("%04d", i)); // 고유 학번
             studentInfo.setStudentNumber((long) i); // 출석번호
-            studentInfo.setYear(years[i % 3]); // Year enum (FIRST, SECOND, THIRD)
-            studentInfo.setClassNum(i % 5 + 1); // 1~5반
+            studentInfo.getClassroom().setYear(1); // Year enum (FIRST, SECOND, THIRD)
+            studentInfo.getClassroom().setClassNum(i % 5 + 1); // 1~5반
             studentInfo.setStatus(StudentStatus.ENROLLED);
 
             // 3. 학년 배정 추가 (2026학년도)
@@ -130,7 +130,7 @@ public class SchoolMateRepositoryTest {
 
             System.out.println("학생 저장 완료: " + user.getEmail());
             System.out.println(" - 고유학번: " + studentInfo.getStudentIdentityNum());
-            System.out.println(" - 학년: " + studentInfo.getYear().getDescription());
+            System.out.println(" - 학년: " + studentInfo.getClassroom().getYear());
             System.out.println(" - 2026년 배정: " + assignment.getGrade() + "학년 "
                     + assignment.getClassNum() + "반 " + assignment.getStudentNum() + "번");
         });

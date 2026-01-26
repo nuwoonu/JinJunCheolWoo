@@ -30,7 +30,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = { "grades", "assignments", "familyRelations" })
+@ToString(exclude = { "assignments", "familyRelations" })
 public class StudentInfo extends BaseInfo {
     @Column(nullable = false)
     private Long studentNumber; // 학번
