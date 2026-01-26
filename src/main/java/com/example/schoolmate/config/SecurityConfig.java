@@ -2,6 +2,7 @@ package com.example.schoolmate.config;
 
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.CustomLoginSuccessHandler;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -73,19 +74,19 @@ public class SecurityConfig {
         }
 
         @Bean
-        public AccessDeniedHandler accessDeniedHandler() {
+        AccessDeniedHandler accessDeniedHandler() {
                 return new CustomAccessDeniedHandler();
         }
 
         @Bean
-        public PasswordEncoder passwordEncoder() {
+        PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
         }
 
         // [Joon님 추가] 어드민 전용 필터 체인
         @Bean
         @Order(1) // 우선순위 1등
-        public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .securityMatcher("/parkjoon/admin/**") // 이 경로로 시작하는 요청만 담당
                                 .authorizeHttpRequests(auth -> auth
@@ -95,6 +96,7 @@ public class SecurityConfig {
                                                                 "/css/**",
                                                                 "/js/**")
                                                 .permitAll() // 어드민 로그인창 및 정적 리소스 허용
+                                                // .requestMatchers("/parkjoon/admin/notifications/send").permitAll()
                                                 .anyRequest().hasRole("ADMIN") // 나머지는 무조건 ADMIN 권한 필요
                                 )
                                 .formLogin(form -> form
@@ -109,11 +111,9 @@ public class SecurityConfig {
                                                 .logoutUrl("/parkjoon/admin/logout")
                                                 .logoutSuccessUrl("/parkjoon/admin/login?logout=true")
                                                 .invalidateHttpSession(true)
-                                                .deleteCookies("JSESSIONID"))
-                                .exceptionHandling(exception -> exception
-                                                .accessDeniedPage("/error/403") // 권한 부족 시 403 페이지로
-                                )
-                                .csrf(csrf -> csrf.disable());
+                                                .deleteCookies("JSESSIONID"));
+                // .csrf(csrf -> csrf.disable()); // CSRF 활성화 (기본값)
+
                 return http.build();
         }
 }

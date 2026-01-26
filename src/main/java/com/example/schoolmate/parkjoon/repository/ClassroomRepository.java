@@ -7,9 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.schoolmate.parkjoon.entity.Classroom;
+import com.example.schoolmate.common.entity.Classroom;
 
-public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
+public interface ClassroomRepository extends JpaRepository<Classroom, Long>, ClassroomRepositoryCustom {
+    boolean existsByYearAndGradeAndClassNum(int year, int grade, int classNum);
 
     // 담임 교사 ID와 학년도로 학급 찾기
     Optional<Classroom> findByHomeroomTeacherIdAndYear(Long teacherId, int year);

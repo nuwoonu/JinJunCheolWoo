@@ -1,5 +1,7 @@
 package com.example.schoolmate.parkjoon.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,7 +18,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
+import com.example.schoolmate.parkjoon.service.AdminParentService;
 import com.example.schoolmate.parkjoon.service.AdminStudentService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminStudentController {
 
     private final AdminStudentService adminStudentService;
+    private final AdminParentService adminParentService; // 학부모 검색용
 
     // 1. 목록 페이지
     @GetMapping("")
@@ -49,17 +55,19 @@ public class AdminStudentController {
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("createRequest", new StudentDTO.CreateRequest());
+        model.addAttribute("relationships", FamilyRelationship.values());
         return "parkjoon/admin/students/create";
     }
 
     // 3. 상세 페이지 이동
-    @GetMapping("/{studentIdentityNum}")
-    public String detail(@PathVariable String studentIdentityNum,
+    @GetMapping("/{code}")
+    public String detail(@PathVariable String code,
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            StudentDTO.DetailResponse student = adminStudentService.getStudentDetailByIdentityNum(studentIdentityNum);
+            StudentDTO.DetailResponse student = adminStudentService.getStudentDetailByCode(code);
             model.addAttribute("student", student);
+            model.addAttribute("relationships", FamilyRelationship.values());
             return "parkjoon/admin/students/detail";
         } catch (IllegalArgumentException e) {
             // 존재하지 않는 학번일 경우 메시지를 담아 리다이렉트
@@ -73,10 +81,10 @@ public class AdminStudentController {
     public String create(StudentDTO.CreateRequest request, RedirectAttributes redirectAttributes) {
         try {
             // 서비스에서 저장된 학번을 받아옴
-            String identityNum = adminStudentService.createStudent(request);
+            String code = adminStudentService.createStudent(request);
 
             // 상세 페이지로 이동
-            return "redirect:/parkjoon/admin/students/" + identityNum;
+            return "redirect:/parkjoon/admin/students/" + code;
         } catch (Exception e) {
             // 중복 학번 등 예외 발생 시 에러 메시지와 함께 작성 폼으로 유지
             redirectAttributes.addFlashAttribute("errorMessage", "등록 중 오류가 발생했습니다: " + e.getMessage());
@@ -91,24 +99,43 @@ public class AdminStudentController {
 
         // 수정 후 다시 해당 학생의 상세 페이지로 이동 (학번 기준)
         redirectAttributes.addFlashAttribute("successMessage", "기본 정보가 수정되었습니다.");
-        return "redirect:/parkjoon/admin/students/" + request.getStudentIdentityNum();
+        return "redirect:/parkjoon/admin/students/" + request.getCode();
     }
 
-    // 학적 이력(학년/반) 추가 또는 수정
-    @PostMapping("/upsert-assignment")
-    public String upsertAssignment(StudentDTO.AssignmentRequest request, RedirectAttributes redirectAttributes) {
-        // 서비스에서 해당 학번을 찾아오기 위해 DTO에 학번 정보가 포함되어야 함
-        String identityNum = adminStudentService.upsertAssignmentAndReturnId(request);
+    // 학적 이력 추가
+    @PostMapping("/assignment/create")
+    public String createAssignment(StudentDTO.AssignmentRequest request, RedirectAttributes redirectAttributes) {
+        try {
+            String code = adminStudentService.createAssignment(request);
+            redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 추가되었습니다.");
+            return "redirect:/parkjoon/admin/students/" + code + "#history";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "추가 실패: " + e.getMessage());
+            // 에러 발생 시 되돌아갈 학번 조회
+            StudentDTO.DetailResponse student = adminStudentService.getStudentDetail(request.getUid());
+            return "redirect:/parkjoon/admin/students/" + student.getCode() + "#history";
+        }
+    }
 
-        redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 저장되었습니다.");
-        return "redirect:/parkjoon/admin/students/" + identityNum;
+    // 학적 이력 수정
+    @PostMapping("/assignment/update")
+    public String updateAssignment(StudentDTO.AssignmentRequest request, RedirectAttributes redirectAttributes) {
+        try {
+            String code = adminStudentService.updateAssignment(request);
+            redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 수정되었습니다.");
+            return "redirect:/parkjoon/admin/students/" + code + "#history";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "수정 실패: " + e.getMessage());
+            StudentDTO.DetailResponse student = adminStudentService.getStudentDetail(request.getUid());
+            return "redirect:/parkjoon/admin/students/" + student.getCode() + "#history";
+        }
     }
 
     @PostMapping("/delete-assignment")
     public String deleteAssignment(@RequestParam Long uid, @RequestParam int schoolYear, RedirectAttributes ra) {
-        String identityNum = adminStudentService.deleteAssignment(uid, schoolYear);
+        String code = adminStudentService.deleteAssignment(uid, schoolYear);
         ra.addFlashAttribute("successMessage", schoolYear + "학년도 이력이 삭제되었습니다.");
-        return "redirect:/parkjoon/admin/students/" + identityNum;
+        return "redirect:/parkjoon/admin/students/" + code + "#history";
     }
 
     @PostMapping("/import-csv")
@@ -125,5 +152,52 @@ public class AdminStudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("등록 중 오류 발생: " + e.getMessage());
         }
+    }
+
+    // 일괄 상태 변경 (예: 졸업 처리)
+    @PostMapping("/bulk-status")
+    @ResponseBody
+    public ResponseEntity<String> bulkUpdateStatus(@RequestParam("uids") List<Long> uids,
+            @RequestParam("status") String status) {
+        try {
+            adminStudentService.bulkUpdateStudentStatus(uids, status);
+            return ResponseEntity.ok("선택한 학생들의 상태가 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("상태 변경 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    // 학부모 검색 API
+    @GetMapping("/search-parent")
+    @ResponseBody
+    public ResponseEntity<Page<ParentDTO.Summary>> searchParent(@RequestParam String keyword, Pageable pageable) {
+        ParentDTO.ParentSearchCondition cond = new ParentDTO.ParentSearchCondition();
+        cond.setType("name");
+        cond.setKeyword(keyword);
+        return ResponseEntity.ok(adminParentService.getParentList(cond, pageable));
+    }
+
+    @PostMapping("/{code}/add-guardian")
+    @ResponseBody
+    public ResponseEntity<String> addGuardian(@PathVariable String code, @RequestParam Long parentId,
+            @RequestParam FamilyRelationship relationship) {
+        adminStudentService.addGuardian(code, parentId, relationship);
+        return ResponseEntity.ok("보호자가 추가되었습니다.");
+    }
+
+    @PostMapping("/{code}/update-guardian-relation")
+    @ResponseBody
+    public ResponseEntity<String> updateGuardianRelation(@PathVariable String code,
+            @RequestParam Long parentId, @RequestParam FamilyRelationship relationship) {
+        adminStudentService.updateGuardianRelationship(code, parentId, relationship);
+        return ResponseEntity.ok("관계가 수정되었습니다.");
+    }
+
+    @PostMapping("/{code}/remove-guardian")
+    @ResponseBody
+    public ResponseEntity<String> removeGuardian(@PathVariable String code, @RequestParam Long parentId) {
+        adminStudentService.removeGuardian(code, parentId);
+        return ResponseEntity.ok("연동이 해제되었습니다.");
     }
 }

@@ -1,9 +1,9 @@
-package com.example.schoolmate.parkjoon.entity;
+package com.example.schoolmate.common.entity;
 
+import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
@@ -14,6 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -27,8 +29,8 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "classroom", uniqueConstraints = {
-    // 같은 연도에 같은 학년 같은 반이 중복되면 안됨
-    @UniqueConstraint(columnNames = {"year", "grade", "class_num"})
+        // 같은 연도에 같은 학년 같은 반이 중복되면 안됨
+        @UniqueConstraint(columnNames = { "year", "grade", "class_num" })
 })
 @Getter
 @Setter
@@ -40,14 +42,18 @@ public class Classroom extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cid;
 
-    private int year;      // 학년도 (2025, 2026...)
-    private int grade;     // 학년 (1~6)
-    private int classNum;  // 반 번호
+    private int year; // 학년도 (2025, 2026...)
+    private int grade; // 학년 (1~6)
+    private int classNum; // 반 번호
 
     // 기존 User 연결 (유지)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uid")
-    private User teacher;
+    @JoinColumn(name = "uid") // 담임 교사(User)의 uid를 FK로 사용
+    private User teacher; // Teacher 대신 User 사용
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private ClassroomStatus status = ClassroomStatus.ACTIVE;
 
     // ========== 담임 교사 연결 (추가) ==========
     // 한 학급에 담임 한 명, 교사는 여러 해에 걸쳐 담임 가능하므로 ManyToOne

@@ -66,8 +66,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 // StudentInfo가 있으면 학생 정보 추가
                 StudentInfo studentInfo = user.getInfo(StudentInfo.class);
                 if (studentInfo != null) {
-                        dto.setStudentIdentityNum(studentInfo.getStudentIdentityNum());
-                        dto.setStudentNumber(studentInfo.getStudentIdentityNum()); // 하위 호환
+                        dto.setStudentIdentityNum(studentInfo.getCode());
+                        dto.setStudentNumber(studentInfo.getCode()); // 하위 호환
 
                         int currentYear = LocalDate.now().getYear();
                         StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
@@ -101,10 +101,14 @@ public class CustomUserDetailsService implements UserDetailsService {
          * 주요 역할 결정 (우선순위: ADMIN > TEACHER > PARENT > STUDENT)
          */
         private UserRole getPrimaryRole(User user) {
-                if (user.getRoles().contains(UserRole.ADMIN)) return UserRole.ADMIN;
-                if (user.getRoles().contains(UserRole.TEACHER)) return UserRole.TEACHER;
-                if (user.getRoles().contains(UserRole.PARENT)) return UserRole.PARENT;
-                if (user.getRoles().contains(UserRole.STUDENT)) return UserRole.STUDENT;
+                if (user.getRoles().contains(UserRole.ADMIN))
+                        return UserRole.ADMIN;
+                if (user.getRoles().contains(UserRole.TEACHER))
+                        return UserRole.TEACHER;
+                if (user.getRoles().contains(UserRole.PARENT))
+                        return UserRole.PARENT;
+                if (user.getRoles().contains(UserRole.STUDENT))
+                        return UserRole.STUDENT;
                 return user.getRoles().iterator().next();
         }
 }

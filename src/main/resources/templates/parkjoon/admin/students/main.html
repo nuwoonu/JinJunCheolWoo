@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -34,6 +34,67 @@
             style="display: none"
             onchange="uploadStudentCsv()"
           />
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-dark radius-8 px-20 py-11 d-flex align-items-center gap-2 dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-pencil-square"></i> 선택 상태 변경
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('ENROLLED', '재학')"
+                  >재학</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('LEAVE_OF_ABSENCE', '휴학')"
+                  >휴학</a
+                >
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('GRADUATED', '졸업')"
+                  >졸업</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('DROPOUT', '자퇴')"
+                  >자퇴</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('EXPELLED', '제적')"
+                  >제적</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('TRANSFERRED', '전학')"
+                  >전학</a
+                >
+              </li>
+            </ul>
+          </div>
           <button
             type="button"
             class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
@@ -57,38 +118,25 @@
               <h5 class="mb-0 text-dark">전체 학생 목록</h5>
             </div>
             <div class="col-auto d-flex align-items-center gap-3">
-              <div
-                class="form-check form-switch d-flex align-items-center gap-2 mb-0"
-              >
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="includeInactiveSwitch"
-                  th:checked="${condition?.includeInactive ?: false}"
-                  style="cursor: pointer; width: 34px; height: 17px"
-                />
-                <label
-                  class="form-check-label fw-medium text-secondary-light small"
-                  for="includeInactiveSwitch"
-                  style="cursor: pointer"
-                  >미재학생 포함</label
-                >
-              </div>
-
               <form
                 id="searchForm"
                 th:action="@{/parkjoon/admin/students}"
                 method="get"
                 class="input-group input-group-sm"
-                style="width: 450px"
               >
-                <input
-                  type="hidden"
-                  name="includeInactive"
-                  id="includeInactiveHidden"
-                  th:value="${condition?.includeInactive ?: false}"
-                />
+                <select
+                  name="status"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option value="">전체 상태</option>
+                  <option
+                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.StudentStatus).values()}"
+                    th:value="${s.name()}"
+                    th:text="${s.description}"
+                    th:selected="${condition.status == s.name()}"
+                  ></option>
+                </select>
 
                 <select
                   name="type"
@@ -111,7 +159,7 @@
                     value="idNum"
                     th:selected="${condition?.type == 'idNum'}"
                   >
-                    고유학번
+                    학번
                   </option>
                 </select>
                 <input
@@ -120,6 +168,7 @@
                   class="form-control"
                   th:value="${condition?.keyword}"
                   placeholder="검색어 입력..."
+                  style="min-width: 150px"
                 />
 
                 <button class="btn btn-primary" type="submit">
@@ -140,7 +189,14 @@
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th class="ps-4" style="width: 150px">고유학번</th>
+                  <th class="text-center" style="width: 50px">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      onclick="toggleCheckboxes(this, '.student-checkbox')"
+                    />
+                  </th>
+                  <th class="ps-4" style="width: 150px">학번</th>
                   <th>이름</th>
                   <th>계정 (이메일)</th>
                   <th>최근 소속 정보</th>
@@ -150,15 +206,19 @@
               </thead>
               <tbody>
                 <tr th:each="s : ${students}">
-                  <td
-                    class="ps-4 text-secondary"
-                    th:text="${s.studentIdentityNum ?: '-'}"
-                  >
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      class="form-check-input student-checkbox"
+                      th:value="${s.uid}"
+                    />
+                  </td>
+                  <td class="ps-4 text-secondary" th:text="${s.code ?: '-'}">
                     20261001
                   </td>
                   <td>
                     <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
+                      th:href="@{/parkjoon/admin/students/{id}(id=${s.code})}"
                       class="fw-bold text-decoration-none text-dark"
                       th:text="${s.name}"
                       >학생명</a
@@ -180,7 +240,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.studentIdentityNum})}"
+                      th:href="@{/parkjoon/admin/students/{id}(id=${s.code})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
                       상세보기
@@ -188,7 +248,7 @@
                   </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(students.content)}">
-                  <td colspan="6" class="text-center py-5 text-muted">
+                  <td colspan="7" class="text-center py-5 text-muted">
                     검색 결과가 없습니다.
                   </td>
                 </tr>
@@ -209,7 +269,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/students(page=${students.number}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -221,7 +281,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/students(page=${i + 1}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/students(page=${i + 1}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >1</a
                 >
               </li>
@@ -231,7 +291,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number + 2}, includeInactive=${condition?.includeInactive}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{/parkjoon/admin/students(page=${students.number + 2}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&raquo;</a
                 >
               </li>

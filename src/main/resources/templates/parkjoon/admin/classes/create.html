@@ -1,0 +1,189 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content" class="container" style="max-width: 800px">
+      <div class="d-flex align-items-center mb-4">
+        <a
+          th:href="@{/parkjoon/admin/classes}"
+          class="btn btn-link text-dark p-0 me-3"
+          ><i class="bi bi-arrow-left fs-3"></i
+        ></a>
+        <h2 class="mb-0">✨ 신규 학급 생성</h2>
+      </div>
+
+      <form
+        th:action="@{/parkjoon/admin/classes/create}"
+        method="post"
+        class="card shadow-sm"
+      >
+        <div class="card-body p-4">
+          <h5 class="mb-4 text-primary fw-bold">
+            <i class="bi bi-info-circle me-2"></i>학급 기본 정보
+          </h5>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold">학년도</label>
+              <input
+                type="number"
+                name="year"
+                class="form-control"
+                th:value="${currentYear}"
+                required
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">학년</label>
+              <select name="grade" class="form-select" required>
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">반</label>
+              <input
+                type="number"
+                name="classNum"
+                class="form-control"
+                placeholder="예: 1"
+                required
+              />
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label fw-bold">담임 교사 (선택)</label>
+              <select name="teacherUid" class="form-select">
+                <option value="">미배정</option>
+                <option
+                  th:each="t : ${teachers}"
+                  th:value="${t.uid}"
+                  th:text="${t.displayName}"
+                ></option>
+              </select>
+              <div class="form-text">
+                담임 교사는 나중에 배정할 수도 있습니다.
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4" />
+
+          <h5 class="mb-4 text-primary fw-bold">
+            <i class="bi bi-people-fill me-2"></i>학생 배정 (선택)
+          </h5>
+
+          <div class="row g-3">
+            <!-- 1. 수동 검색 추가 -->
+            <div class="col-md-12">
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <label class="form-label fw-bold mb-0">학생 직접 추가</label>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  onclick="openStudentSearchModal()"
+                >
+                  <i class="bi bi-search"></i> 학생 검색
+                </button>
+              </div>
+              <div
+                id="selectedStudentsContainer"
+                class="border rounded p-2 bg-light"
+                style="min-height: 50px"
+              >
+                <p
+                  class="text-muted small text-center mb-0 py-2"
+                  id="noStudentMsg"
+                >
+                  배정할 학생을 검색하여 추가하세요.
+                </p>
+              </div>
+              <div id="hiddenInputsContainer"></div>
+            </div>
+
+            <!-- 2. 랜덤 배정 -->
+            <div class="col-md-12">
+              <label class="form-label fw-bold"
+                >랜덤 배정 (미배정 학생 중)</label
+              >
+              <div class="input-group">
+                <span class="input-group-text">인원 수</span>
+                <input
+                  type="number"
+                  name="randomCount"
+                  class="form-control"
+                  placeholder="0"
+                  min="0"
+                />
+                <span class="input-group-text">명</span>
+              </div>
+              <div class="form-text">
+                해당 학년도에 아직 반이 배정되지 않은 학생 중에서 무작위로
+                선택하여 배정합니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer bg-light p-4 text-end">
+          <button
+            type="button"
+            class="btn btn-secondary px-4 me-2"
+            onclick="history.back()"
+          >
+            취소
+          </button>
+          <button type="submit" class="btn btn-primary px-5">학급 생성</button>
+        </div>
+      </form>
+
+      <!-- 학생 검색 모달 -->
+      <div class="modal fade" id="studentSearchModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">학생 검색</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  id="studentSearchKeyword"
+                  class="form-control"
+                  placeholder="이름 검색"
+                  onkeyup="if (event.key === 'Enter') searchStudents();"
+                />
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  onclick="searchStudents()"
+                >
+                  검색
+                </button>
+              </div>
+              <div
+                class="list-group"
+                id="studentSearchResult"
+                style="max-height: 300px; overflow-y: auto"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/class-manage.js}"></script>
+    </th:block>
+  </body>
+</html>

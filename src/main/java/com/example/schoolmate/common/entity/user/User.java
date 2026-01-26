@@ -79,6 +79,18 @@ public class User extends BaseEntity {
 
     // --- Info 관련 편의 메서드 ---
 
+    /**
+     * 상세 정보(Info)를 추가하며 연관 관계를 설정합니다.
+     * 권한(Role)은 비즈니스 로직에 따라 별도로 관리(addRole/removeRole)해야 합니다.
+     */
+    public void addInfo(BaseInfo info) {
+        if (info == null)
+            return;
+
+        this.infos.add(info);
+        info.setUser(this); // 양방향 연관관계 설정
+    }
+
     public <T extends BaseInfo> T getInfo(Class<T> clazz) {
         return infos.stream()
                 .filter(clazz::isInstance)

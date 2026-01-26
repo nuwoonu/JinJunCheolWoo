@@ -1,5 +1,6 @@
 package com.example.schoolmate.common.repository.handler;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,9 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 import com.example.schoolmate.common.dto.StudentDTO;
-import com.example.schoolmate.common.entity.info.QFamilyRelation;
-import com.example.schoolmate.common.entity.info.QParentInfo;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
+import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.QStudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
@@ -37,66 +37,47 @@ public class StudentQueryHandler {
     // QueryDSL의 핵심 클래스. JPQL 쿼리를 자바 코드로 작성 가능하게 함
     private final JPAQueryFactory query;
 
-    /**
-     * 학생 목록 검색 (페이징 지원)
-     *
-     * @param cond     검색 조건 (이름, 이메일, 학번 등의 검색 타입 및 키워드 포함)
-     * @param pageable 페이징 정보 (페이지 번호, 사이즈, 정렬)
-     * @return 조건에 맞는 학생 User 엔티티 Page 객체
-     */
     public Page<User> search(StudentDTO.StudentSearchCondition cond, Pageable pageable) {
         // QueryDSL의 Q클래스 인스턴스 - 컴파일 타임에 생성된 메타모델
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
 
-        // 실제 데이터 조회 쿼리
-        List<User> content = query
+        JPAQuery<User> contentQuery = query
                 .selectFrom(user)
-                // BaseInfo를 상속받은 StudentInfo와 조인 (JOINED 전략이므로 _super 사용)
-                .leftJoin(user.infos, info._super)
+                .leftJoin(info).on(info.user.eq(user)) // StudentInfo와 직접 조인
                 .where(
-                        // 학생 권한을 가진 유저만 필터링
                         user.roles.contains(UserRole.STUDENT),
-                        // 동적 검색 조건 (이름/이메일/학번)
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
-                        // 비활성 학생(졸업/퇴학 등) 필터링
-                        inactiveFilter(cond.isIncludeInactive(), info))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(user.uid.desc())
-                .fetch();
+                        statusFilter(cond.getStatus(), info))
+                .orderBy(user.uid.desc());
 
-        // 페이징을 위한 전체 카운트 쿼리 (지연 실행으로 성능 최적화)
+        if (pageable.isPaged()) {
+            contentQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
+        }
+
+        List<User> content = contentQuery.fetch();
+
         JPAQuery<Long> countQuery = query
                 .select(user.count())
                 .from(user)
-                .leftJoin(user.infos, info._super)
+                .leftJoin(info).on(info.user.eq(user))
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
-                        inactiveFilter(cond.isIncludeInactive(), info));
+                        statusFilter(cond.getStatus(), info));
 
-        // PageableExecutionUtils: 데이터가 페이지 사이즈보다 적으면 count 쿼리를 실행하지 않음
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
-    /**
-     * 비활성 학생 필터링 조건 생성
-     *
-     * includeInactive가 false면 재학/휴학 상태만 조회함.
-     * null을 반환하면 QueryDSL의 where절에서 해당 조건이 무시됨.
-     */
-    private BooleanExpression inactiveFilter(boolean includeInactive, QStudentInfo info) {
-        if (includeInactive)
-            return null; // 모든 상태 포함
-        // 재학(ENROLLED), 휴학(LEAVE_OF_ABSENCE) 상태만 기본 노출
-        // StudentInfo가 없는 경우(isNull)도 포함 (신규 등록 등)
-        return info.status.in(StudentStatus.ENROLLED, StudentStatus.LEAVE_OF_ABSENCE).or(info.status.isNull());
+    private BooleanExpression statusFilter(String status, QStudentInfo info) {
+        if (status == null || status.isEmpty())
+            return null;
+        return info.status.eq(StudentStatus.valueOf(status));
     }
-
+  
     /**
-     * 동적 검색 조건 생성
      *
+     * 
      * 검색 타입(type)에 따라 다른 필드에서 키워드를 검색함.
      * BooleanExpression을 반환하여 where절에 동적으로 추가됨.
      */
@@ -104,9 +85,9 @@ public class StudentQueryHandler {
         if (keyword == null || keyword.isEmpty())
             return null; // 키워드 없으면 조건 무시
         return switch (type) {
-            case "name" -> user.name.contains(keyword);   // 이름으로 검색
-            case "email" -> user.email.contains(keyword); // 이메일로 검색
-            case "idNum" -> info.studentIdentityNum.contains(keyword); // 고유학번으로 검색
+            case "name" -> user.name.contains(keyword);
+            case "email" -> user.email.contains(keyword);
+            case "idNum" -> info.code.contains(keyword);
             default -> null;
         };
     }
@@ -117,52 +98,99 @@ public class StudentQueryHandler {
      * 학생 상세 페이지에서 필요한 모든 연관 데이터를 한 번의 쿼리로 가져옴.
      * fetchJoin을 사용하여 N+1 문제를 방지함.
      *
-     * @param identityNum 고유학번 (예: 20250001)
+     * @param code 고유학번 (예: 20250001)
      * @return 학생 User 엔티티 (학적이력, 보호자 정보 포함)
      */
-    public Optional<User> findDetailByIdentityNum(String identityNum) {
+    public Optional<User> findDetailByCode(String code) {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
-        QFamilyRelation relation = QFamilyRelation.familyRelation;
-        QParentInfo parent = QParentInfo.parentInfo;
 
-        User result = query
-                .selectFrom(user)
-                // StudentInfo와 innerJoin: 학생 정보가 없는 유저는 제외
-                // fetchJoin: 지연로딩 대신 즉시 로딩하여 N+1 문제 방지
-                .innerJoin(user.infos, info._super).fetchJoin()
-                // 학적 이력(연도별 학급 배정 정보) 조인
+        // StudentInfo를 기준으로 조회하여 User와 하위 정보를 한 번에 Fetch Join
+        StudentInfo result = query
+                .selectFrom(info)
+                .innerJoin(info.user, user).fetchJoin() // User Fetch Join
+                // 학적 이력 조인 (최신순 정렬을 위해 fetchJoin 유지)
                 .leftJoin(info.assignments, assign).fetchJoin()
-                // 보호자 관계 테이블과 보호자 정보 조인
-                .leftJoin(info.familyRelations, relation).fetchJoin()
-                .leftJoin(relation.parentInfo, parent).fetchJoin()
                 .where(
-                        info.studentIdentityNum.eq(identityNum),
+                        info.code.eq(code),
                         user.roles.contains(UserRole.STUDENT))
-                .fetchOne(); // 단일 결과 조회 (없으면 null)
+                .fetchOne();
 
-        return Optional.ofNullable(result);
+        return Optional.ofNullable(result).map(StudentInfo::getUser);
     }
 
     /**
-     * 고유학번 중복 여부 확인
-     *
-     * 신규 학생 등록 또는 학번 수정 시 중복 체크에 사용함.
-     * selectOne + fetchFirst 조합으로 존재 여부만 빠르게 확인함.
-     *
-     * @param identityNum 확인할 고유학번
-     * @return 이미 존재하면 true, 없으면 false
+     * 고유 학번 중복 여부 확인
      */
-    public boolean existsByIdentityNum(String identityNum) {
+    public boolean existsByCode(String code) {
         QStudentInfo info = QStudentInfo.studentInfo;
-        // selectOne: SELECT 1로 변환되어 불필요한 데이터 로딩 방지
         Integer fetchOne = query
                 .selectOne()
                 .from(info)
-                .where(info.studentIdentityNum.eq(identityNum))
-                .fetchFirst(); // limit 1과 동일. 첫 번째 결과만 가져옴
+                .where(info.code.eq(code))
+                .fetchFirst(); // findAny와 같은 역할 (성능 최적화)
 
         return fetchOne != null;
+    }
+
+    public List<User> findStudentsByAssignment(int year, int grade, int classNum) {
+        QUser user = QUser.user;
+        QStudentInfo info = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+
+        return query.selectFrom(user)
+                .join(info).on(info.user.eq(user))
+                .join(info.assignments, assign)
+                .where(assign.schoolYear.eq(year)
+                        .and(assign.grade.eq(grade))
+                        .and(assign.classNum.eq(classNum)))
+                .fetch();
+    }
+
+    /**
+     * 해당 학년도에 배정되지 않은 재학생 조회 (랜덤 배정용)
+     */
+    public List<User> findUnassignedStudents(int year, int limit) {
+        QUser user = QUser.user;
+        QStudentInfo info = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+
+        // 해당 학년도에 배정 이력이 없는 학생 조회
+        List<User> candidates = query.selectFrom(user)
+                .join(info).on(info.user.eq(user))
+                .where(
+                        user.roles.contains(UserRole.STUDENT),
+                        info.status.eq(StudentStatus.ENROLLED),
+                        query.selectOne().from(assign)
+                                .where(assign.studentInfo.eq(info).and(assign.schoolYear.eq(year)))
+                                .notExists())
+                .fetch();
+
+        Collections.shuffle(candidates); // 랜덤 섞기
+        return candidates.stream().limit(limit).toList();
+    }
+
+    public long countByClassroom(int year, int grade, int classNum) {
+        QStudentInfo info = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+
+        Long count = query.select(info.count())
+                .from(info)
+                .join(info.assignments, assign)
+                .where(assign.schoolYear.eq(year)
+                        .and(assign.grade.eq(grade))
+                        .and(assign.classNum.eq(classNum)))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
+
+    public long countByStatus(StudentStatus status) {
+        QStudentInfo info = QStudentInfo.studentInfo;
+        Long count = query.select(info.count())
+                .from(info)
+                .where(info.status.eq(status))
+                .fetchOne();
+        return count != null ? count : 0L;
     }
 }

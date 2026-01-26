@@ -31,11 +31,11 @@ public class TeacherStudentDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AssignRequest {
-        private Long teacherInfoId;     // 교사 Info ID
-        private Long studentInfoId;     // 학생 Info ID
-        private int schoolYear;         // 학년도
-        private String roleName;        // TeacherRole enum name (HOMEROOM, SUBJECT 등)
-        private String subjectName;     // 교과담당인 경우 과목명
+        private Long teacherInfoId; // 교사 Info ID
+        private Long studentInfoId; // 학생 Info ID
+        private int schoolYear; // 학년도
+        private String roleName; // TeacherRole enum name (HOMEROOM, SUBJECT 등)
+        private String subjectName; // 교과담당인 경우 과목명
     }
 
     /**
@@ -45,10 +45,10 @@ public class TeacherStudentDTO {
     @Setter
     @NoArgsConstructor
     public static class BulkAssignRequest {
-        private Long teacherInfoId;           // 교사 Info ID
-        private List<Long> studentInfoIds;    // 학생 Info ID 목록
-        private int schoolYear;               // 학년도
-        private String roleName;              // TeacherRole enum name
+        private Long teacherInfoId; // 교사 Info ID
+        private List<Long> studentInfoIds; // 학생 Info ID 목록
+        private int schoolYear; // 학년도
+        private String roleName; // TeacherRole enum name
     }
 
     /**
@@ -74,16 +74,16 @@ public class TeacherStudentDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AssignedStudentResponse {
-        private Long relationId;        // TeacherStudent ID
-        private Long studentInfoId;     // 학생 Info ID
-        private Long studentUid;        // 학생 User ID
-        private String studentName;     // 학생 이름
-        private String studentIdentityNum;  // 고유학번
+        private Long relationId; // TeacherStudent ID
+        private Long studentInfoId; // 학생 Info ID
+        private Long studentUid; // 학생 User ID
+        private String studentName; // 학생 이름
+        private String studentCode; // 고유학번
         private int schoolYear;
-        private String roleName;        // HOMEROOM, SUBJECT 등
-        private String roleDesc;        // 담임교사, 교과담당 등
-        private String subjectName;     // 교과담당인 경우 과목명
-        private String classInfo;       // 학년-반-번호 (예: "2-3-15")
+        private String roleName; // HOMEROOM, SUBJECT 등
+        private String roleDesc; // 담임교사, 교과담당 등
+        private String subjectName; // 교과담당인 경우 과목명
+        private String classInfo; // 학년-반-번호 (예: "2-3-15")
 
         public AssignedStudentResponse(TeacherStudent ts) {
             this.relationId = ts.getId();
@@ -95,7 +95,7 @@ public class TeacherStudentDTO {
             StudentInfo si = ts.getStudentInfo();
             if (si != null) {
                 this.studentInfoId = si.getId();
-                this.studentIdentityNum = si.getStudentIdentityNum();
+                this.studentCode = si.getCode();
 
                 User user = si.getUser();
                 if (user != null) {
@@ -123,15 +123,15 @@ public class TeacherStudentDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AssignedTeacherResponse {
-        private Long relationId;        // TeacherStudent ID
-        private Long teacherInfoId;     // 교사 Info ID
-        private Long teacherUid;        // 교사 User ID
-        private String teacherName;     // 교사 이름
+        private Long relationId; // TeacherStudent ID
+        private Long teacherInfoId; // 교사 Info ID
+        private Long teacherUid; // 교사 User ID
+        private String teacherName; // 교사 이름
         private int schoolYear;
-        private String roleName;        // HOMEROOM, SUBJECT 등
-        private String roleDesc;        // 담임교사, 교과담당 등
-        private String subjectName;     // 교과담당인 경우 과목명
-        private String department;      // 소속 부서
+        private String roleName; // HOMEROOM, SUBJECT 등
+        private String roleDesc; // 담임교사, 교과담당 등
+        private String subjectName; // 교과담당인 경우 과목명
+        private String department; // 소속 부서
 
         public AssignedTeacherResponse(TeacherStudent ts) {
             this.relationId = ts.getId();
@@ -178,9 +178,9 @@ public class TeacherStudentDTO {
     public static class TeacherAssignmentSummary {
         private Long teacherUid;
         private String teacherName;
-        private int homeroomCount;      // 담임 학생 수
-        private int subjectCount;       // 교과담당 학생 수
-        private int totalCount;         // 전체 담당 학생 수
+        private int homeroomCount; // 담임 학생 수
+        private int subjectCount; // 교과담당 학생 수
+        private int totalCount; // 전체 담당 학생 수
 
         public static TeacherAssignmentSummary from(User teacher, List<TeacherStudent> assignments) {
             int homeroom = (int) assignments.stream()

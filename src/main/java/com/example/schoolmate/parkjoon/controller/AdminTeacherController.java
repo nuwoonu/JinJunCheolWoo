@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.parkjoon.service.AdminTeacherService;
 
 import org.springframework.data.domain.Sort;
@@ -33,6 +36,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class AdminTeacherController {
     private final AdminTeacherService adminTeacherService;
+    private final UserRepository userRepository;
 
     @GetMapping
     public String list(
@@ -47,41 +51,47 @@ public class AdminTeacherController {
         model.addAttribute("page", teacherPage);
         model.addAttribute("condition", condition); // 검색 상태 유지를 위해 전달
 
-        // 공통 데이터 (부서, 직책 등)
+        return "parkjoon/admin/teachers/main";
+    }
+
+    @GetMapping("/create")
+    public String createForm(Model model) {
+        model.addAttribute("departments", List.of("교무부", "학생부", "연구부", "정보부", "행정실"));
+        model.addAttribute("positions", List.of("평교사", "부장", "교감", "교장"));
+        return "parkjoon/admin/teachers/create";
+    }
+
+    @GetMapping("/{uid}")
+    public String detail(@PathVariable Long uid, Model model) {
+        TeacherDTO.DetailResponse teacher = adminTeacherService.getTeacherDetail(uid);
+        model.addAttribute("teacher", teacher);
+
         model.addAttribute("statusList", TeacherStatus.values());
         model.addAttribute("departments", List.of("교무부", "학생부", "연구부", "정보부", "행정실"));
         model.addAttribute("positions", List.of("평교사", "부장", "교감", "교장"));
 
-        return "parkjoon/admin/teachers/main";
+        return "parkjoon/admin/teachers/detail";
     }
 
     @PostMapping("/create")
     public String create(@ModelAttribute TeacherDTO.CreateRequest request,
-            TeacherDTO.TeacherSearchCondition condition,
             RedirectAttributes redirectAttributes) {
 
         log.info("Create 교사");
         adminTeacherService.createTeacher(request);
 
-        redirectAttributes.addAttribute("includeRetired", condition.isIncludeRetired());
-        return "redirect:/parkjoon/admin/teachers";
+        // 생성된 교사의 상세 페이지로 리다이렉트 (이메일로 조회)
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        return "redirect:/parkjoon/admin/teachers/" + user.getUid();
     }
 
     @PostMapping("/update")
     public String update(
             @ModelAttribute TeacherDTO.UpdateRequest request,
-            TeacherDTO.TeacherSearchCondition condition,
-            @RequestParam(name = "page", defaultValue = "1") int page, // 1부터 들어옴
             RedirectAttributes redirectAttributes) {
 
         adminTeacherService.updateTeacher(request);
-
-        redirectAttributes.addAttribute("includeRetired", condition.isIncludeRetired());
-        redirectAttributes.addAttribute("type", condition.getType());
-        redirectAttributes.addAttribute("keyword", condition.getKeyword());
-        redirectAttributes.addAttribute("page", page); // 받은 1을 그대로 리다이렉트
-
-        return "redirect:/parkjoon/admin/teachers";
+        return "redirect:/parkjoon/admin/teachers/" + request.getUid();
     }
 
     @PostMapping("/import-csv")
@@ -97,4 +107,18 @@ public class AdminTeacherController {
                     .body("CSV 처리 중 오류 발생: " + e.getMessage());
         }
     }
+
+    @PostMapping("/bulk-status")
+    @ResponseBody
+    public ResponseEntity<String> bulkUpdateStatus(@RequestParam("uids") List<Long> uids,
+            @RequestParam("status") String status) {
+        try {
+            adminTeacherService.bulkUpdateTeacherStatus(uids, status);
+            return ResponseEntity.ok("선택한 교사들의 상태가 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("상태 변경 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
 }

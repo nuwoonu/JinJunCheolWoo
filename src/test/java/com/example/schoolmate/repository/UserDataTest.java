@@ -169,7 +169,6 @@ public class UserDataTest {
         studentInfo.setUser(studentUser);
         studentInfo.setCode("ST-TEST-0001");
         studentInfo.setStudentNumber(1L);
-        studentInfo.setStudentIdentityNum("2026-TEST-0001");
         studentInfo.setBirthDate(LocalDate.of(2010, 5, 1));
         studentInfo.setAddress("서울시 테스트구 테스트로 1");
         studentInfo.setPhone("010-1234-5678");
@@ -211,5 +210,5 @@ public class UserDataTest {
 
         System.out.println("학부모 계정 생성 완료: " + parentEmail);
     }
-    
+
 }

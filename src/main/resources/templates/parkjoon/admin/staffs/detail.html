@@ -1,0 +1,294 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content">
+      <div class="container-fluid py-4">
+        <div class="mb-4">
+          <a
+            th:href="@{/parkjoon/admin/staffs}"
+            class="btn btn-outline-secondary btn-sm"
+          >
+            <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+          </a>
+        </div>
+
+        <div class="row">
+          <!-- 좌측: 프로필 카드 -->
+          <div class="col-md-4">
+            <div class="card mb-4 text-center py-4 shadow-sm border-0">
+              <div
+                class="avatar-lg bg-primary-subtle rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                style="width: 100px; height: 100px"
+              >
+                <span
+                  class="fs-1 text-primary fw-bold"
+                  th:text="${#strings.substring(staff.name, 0, 1)}"
+                  >홍</span
+                >
+              </div>
+              <h4 class="fw-bold mb-1" th:text="${staff.name}">홍길동</h4>
+              <p class="text-muted small mb-3" th:text="${staff.email}">
+                staff@school.com
+              </p>
+              <div class="px-4">
+                <span
+                  class="badge bg-light text-dark border mb-2"
+                  th:text="${staff.employmentTypeDesc}"
+                  >정규직</span
+                >
+                <br />
+                <span
+                  class="badge w-100 py-2 fs-6"
+                  th:classappend="${staff.statusName == 'EMPLOYED' ? 'bg-success' : 'bg-secondary'}"
+                  th:text="${staff.statusDesc}"
+                  >재직</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측: 상세 정보 탭 -->
+          <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-white border-bottom">
+                <ul
+                  class="nav nav-tabs card-header-tabs"
+                  id="staffTab"
+                  role="tablist"
+                >
+                  <li class="nav-item">
+                    <a
+                      class="nav-link active fw-bold"
+                      data-bs-toggle="tab"
+                      href="#basic"
+                      >기본 정보</a
+                    >
+                  </li>
+                  <li class="nav-item">
+                    <a
+                      class="nav-link fw-bold"
+                      data-bs-toggle="tab"
+                      href="#notifications"
+                      >알림 이력</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body tab-content p-4">
+                <!-- 탭 1: 기본 정보 수정 -->
+                <div class="tab-pane fade show active" id="basic">
+                  <form
+                    th:action="@{/parkjoon/admin/staffs/update}"
+                    method="post"
+                  >
+                    <input type="hidden" name="uid" th:value="${staff.uid}" />
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">이름</label>
+                        <input
+                          type="text"
+                          name="name"
+                          class="form-control"
+                          th:value="${staff.name}"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">사번</label>
+                        <input
+                          type="text"
+                          name="code"
+                          class="form-control"
+                          th:value="${staff.code}"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">이메일</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          th:value="${staff.email}"
+                          readonly
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">재직 상태</label>
+                        <select name="statusName" class="form-select">
+                          <option
+                            th:each="st : ${statusList}"
+                            th:value="${st.name()}"
+                            th:text="${st.description}"
+                            th:selected="${st.name() == staff.statusName}"
+                          ></option>
+                        </select>
+                      </div>
+                      <div class="col-md-12"><hr class="my-3" /></div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">부서</label>
+                        <select name="department" class="form-select">
+                          <option
+                            th:each="dept : ${departments}"
+                            th:value="${dept}"
+                            th:text="${dept}"
+                            th:selected="${dept == staff.department}"
+                          ></option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">직함</label>
+                        <input
+                          type="text"
+                          name="jobTitle"
+                          class="form-control"
+                          th:value="${staff.jobTitle}"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">근무지</label>
+                        <input
+                          type="text"
+                          name="workLocation"
+                          class="form-control"
+                          th:value="${staff.workLocation}"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">내선 번호</label>
+                        <input
+                          type="text"
+                          name="extensionNumber"
+                          class="form-control"
+                          th:value="${staff.extensionNumber}"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">고용 형태</label>
+                        <select
+                          name="employmentType"
+                          id="employmentTypeSelect"
+                          class="form-select"
+                        >
+                          <option
+                            th:each="type : ${employmentTypes}"
+                            th:value="${type.name()}"
+                            th:text="${type.description}"
+                            th:selected="${type == staff.employmentType}"
+                          ></option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                          >계약 만료일</label
+                        >
+                        <input
+                          id="contractEndDateInput"
+                          type="date"
+                          name="contractEndDate"
+                          class="form-control"
+                          th:value="${staff.contractEndDate}"
+                        />
+                      </div>
+                      <div class="col-12 text-end mt-4">
+                        <button
+                          type="submit"
+                          class="btn btn-primary px-4 fw-bold"
+                        >
+                          정보 수정 저장
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- 탭 2: 알림 이력 -->
+                <div class="tab-pane fade" id="notifications">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <h6 class="fw-bold mb-0">최근 발송 알림</h6>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 150px">발송일시</th>
+                          <th>제목</th>
+                          <th style="width: 100px">발신자</th>
+                          <th style="width: 100px" class="text-center">
+                            수신확인
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="noti : ${staff.notifications}">
+                          <td
+                            class="text-secondary small"
+                            th:text="${noti.sentDate}"
+                          >
+                            2024-01-01
+                          </td>
+                          <td class="fw-bold" th:text="${noti.title}">제목</td>
+                          <td>
+                            <span
+                              class="badge bg-light text-dark border"
+                              th:text="${noti.senderName}"
+                              >관리자</span
+                            >
+                          </td>
+                          <td class="text-center">
+                            <span
+                              th:if="${noti.isRead}"
+                              class="badge bg-success-subtle text-success border border-success-subtle"
+                              >읽음</span
+                            >
+                            <span
+                              th:unless="${noti.isRead}"
+                              class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"
+                              >안읽음</span
+                            >
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(staff.notifications)}">
+                          <td colspan="4" class="text-center py-4 text-muted">
+                            발송된 알림 내역이 없습니다.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <th:block layout:fragment="script">
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const typeSelect = document.getElementById("employmentTypeSelect");
+          const dateInput = document.getElementById("contractEndDateInput");
+
+          function toggleDateInput() {
+            const val = typeSelect.value;
+            // 정규직(PERMANENT), 무기계약직(INDEFINITE_CONTRACT)은 만료일 없음
+            const isPermanent =
+              val === "PERMANENT" || val === "INDEFINITE_CONTRACT";
+            dateInput.disabled = isPermanent;
+            if (isPermanent) dateInput.value = ""; // 비활성화 시 값 초기화
+          }
+
+          if (typeSelect && dateInput) {
+            typeSelect.addEventListener("change", toggleDateInput);
+            toggleDateInput(); // 페이지 로드 시 초기 상태 적용
+          }
+        });
+      </script>
+    </th:block>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+package com.example.schoolmate.parkjoon.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.schoolmate.common.dto.NotificationDTO;
+import com.example.schoolmate.parkjoon.service.AdminNotificationService;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequestMapping("/parkjoon/admin/notifications")
+@RequiredArgsConstructor
+public class AdminNotificationController {
+
+    private final AdminNotificationService adminNotificationService;
+
+    @PostMapping("/send")
+    @ResponseBody
+    public ResponseEntity<String> sendNotification(@RequestBody NotificationDTO.SendRequest request) {
+        try {
+            adminNotificationService.sendNotification(request);
+            return ResponseEntity.ok("알림이 성공적으로 발송되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("알림 발송 실패: " + e.getMessage());
+        }
+    }
+}

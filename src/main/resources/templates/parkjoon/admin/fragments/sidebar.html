@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
@@ -22,37 +22,176 @@
           <span class="me-2">📊</span><span>대시보드</span>
         </a>
       </li>
+      <li class="nav-item border-top my-2"></li>
+
+      <!-- 학교 운영 관리 (그룹화) -->
+      <li class="nav-item">
+        <a
+          class="nav-link text-white d-flex align-items-center collapsed"
+          href="#schoolOperSubmenu"
+          data-bs-toggle="collapse"
+        >
+          <span class="me-2">🏫</span><span>학교 운영 관리</span>
+          <i class="bi bi-chevron-down ms-auto small"></i>
+        </a>
+        <div class="collapse" id="schoolOperSubmenu">
+          <ul class="nav flex-column ms-3">
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/classes}"
+                >학급 관리</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/teachers}"
+                >교사 관리</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/students}"
+                >학생 관리</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/parents}"
+                >학부모 관리</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/staffs}"
+                >교직원 관리</a
+              >
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- 구분선 -->
+      <li class="nav-item border-top my-2"></li>
+
+      <!-- 기준 정보 관리 -->
+      <li class="nav-item">
+        <a
+          class="nav-link text-white d-flex align-items-center collapsed"
+          href="#masterSubmenu"
+          data-bs-toggle="collapse"
+        >
+          <span class="me-2">⚙️</span><span>기준 정보 관리</span>
+          <i class="bi bi-chevron-down ms-auto small"></i>
+        </a>
+        <div class="collapse" id="masterSubmenu">
+          <ul class="nav flex-column ms-3">
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/master/schedule}"
+                >학사 일정</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/master/subjects}"
+                >교과목 코드</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/master/settings}"
+                >학년도 설정</a
+              >
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- 학교 전체 공지 -->
       <li class="nav-item">
         <a
           class="nav-link text-white d-flex align-items-center"
-          th:href="@{/parkjoon/admin/classes}"
+          th:href="@{/parkjoon/admin/notices}"
         >
-          <span class="me-2">🏗️</span><span>학급 설정</span>
+          <span class="me-2">📢</span><span>전체 공지사항</span>
         </a>
       </li>
+
+      <!-- 시설 및 자산 관리 -->
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:href="@{/parkjoon/admin/teachers}"
+          class="nav-link text-white d-flex align-items-center collapsed"
+          href="#facilitySubmenu"
+          data-bs-toggle="collapse"
         >
-          <span class="me-2">👨‍🏫</span><span>교사 관리</span>
+          <span class="me-2">🏢</span><span>시설/자산 관리</span>
+          <i class="bi bi-chevron-down ms-auto small"></i>
+        </a>
+        <div class="collapse" id="facilitySubmenu">
+          <ul class="nav flex-column ms-3">
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/facilities/rooms}"
+                >시설(강의실) 관리</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/facilities/assets}"
+                >기자재 관리</a
+              >
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- 통계 (메인 대시보드 활용 권장하지만 메뉴가 필요하다면) -->
+      <!--
+      <li class="nav-item">
+        <a class="nav-link text-white d-flex align-items-center" href="#">
+          <span class="me-2">📈</span><span>통계/리포트</span>
         </a>
       </li>
+      -->
+
+      <!-- 시스템 감사 로그 -->
       <li class="nav-item">
         <a
-          class="nav-link text-white d-flex align-items-center"
-          th:href="@{/parkjoon/admin/students}"
+          class="nav-link text-white d-flex align-items-center collapsed"
+          href="#auditSubmenu"
+          data-bs-toggle="collapse"
         >
-          <span class="me-2">👨‍🎓</span><span>학생 관리</span>
+          <span class="me-2">🛡️</span><span>감사 로그</span>
+          <i class="bi bi-chevron-down ms-auto small"></i>
         </a>
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link text-white d-flex align-items-center"
-          th:href="@{/parkjoon/admin/parents}"
-        >
-          <span class="me-2">👪</span><span>학부모 관리</span>
-        </a>
+        <div class="collapse" id="auditSubmenu">
+          <ul class="nav flex-column ms-3">
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/audit/access}"
+                >접속 기록</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white-50"
+                th:href="@{/parkjoon/admin/audit/changes}"
+                >정보 변경 이력</a
+              >
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
 

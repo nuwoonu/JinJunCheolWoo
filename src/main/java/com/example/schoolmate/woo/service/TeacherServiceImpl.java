@@ -17,10 +17,9 @@ import com.example.schoolmate.cheol.repository.SubjectRepository;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
-import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.repository.StudentInfoRepository;
 import com.example.schoolmate.common.repository.TeacherInfoRepository;
-import com.example.schoolmate.parkjoon.entity.Classroom;
+import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
@@ -63,8 +62,6 @@ public class TeacherServiceImpl implements TeacherService {
                 .map(TeacherResponseDTO::new)
                 .collect(Collectors.toList());
     }
-
-
 
     // 교사 정보 수정
     @Override

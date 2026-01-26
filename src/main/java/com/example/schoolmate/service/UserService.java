@@ -61,7 +61,8 @@ public class UserService {
             case STUDENT -> createStudentInfo(user, dto);
             case TEACHER -> createTeacherInfo(user, dto);
             case PARENT -> createParentInfo(user, dto);
-            case ADMIN -> {} // Admin은 Info 없이 역할만
+            case ADMIN -> {
+            } // Admin은 Info 없이 역할만
             default -> throw new IllegalArgumentException("지원하지 않는 역할입니다: " + dto.getRole());
         }
 
@@ -74,10 +75,9 @@ public class UserService {
     private void createStudentInfo(User user, CustomUserDTO dto) {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
-        studentInfo.setStudentIdentityNum(dto.getStudentIdentityNum() != null
+        studentInfo.setCode(dto.getStudentIdentityNum() != null
                 ? dto.getStudentIdentityNum()
                 : dto.getStudentNumber());
-        studentInfo.setCode(studentInfo.getStudentIdentityNum());
 
         // 초기 학급 배정
         if (dto.getGrade() != null && dto.getClassNum() != null) {
@@ -210,7 +210,7 @@ public class UserService {
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
         if (studentInfo != null) {
             builder.role(UserRole.STUDENT)
-                    .studentIdentityNum(studentInfo.getStudentIdentityNum());
+                    .studentIdentityNum(studentInfo.getCode());
 
             int currentYear = LocalDate.now().getYear();
             StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);

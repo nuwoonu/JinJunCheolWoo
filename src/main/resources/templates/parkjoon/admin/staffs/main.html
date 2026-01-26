@@ -1,0 +1,319 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+          <h2 class="mb-0">🏢 교직원 정보 관리</h2>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            style="display: none"
+            onchange="uploadCsvFile()"
+          />
+
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-dark radius-8 px-20 py-11 d-flex align-items-center gap-2 dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-pencil-square"></i> 선택 상태 변경
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('EMPLOYED', '재직')"
+                  >재직</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('LEAVE', '휴직')"
+                  >휴직</a
+                >
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('RETIRED', '퇴직')"
+                  >퇴직</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            onclick="document.getElementById('csvFileInput').click()"
+          >
+            <i class="bi bi-file-earmark-spreadsheet"></i> CSV 등록
+          </button>
+
+          <a
+            th:href="@{/parkjoon/admin/staffs/create}"
+            class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
+          >
+            <i class="bi bi-person-plus-fill"></i> 신규 등록
+          </a>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <div class="row align-items-center">
+            <div class="col">
+              <h5 class="mb-0 text-dark me-3">전체 교직원 목록</h5>
+            </div>
+            <div class="col-auto d-flex align-items-center gap-3">
+              <form
+                id="searchForm"
+                th:action="@{/parkjoon/admin/staffs}"
+                method="get"
+                class="input-group input-group-sm"
+              >
+                <select
+                  name="status"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option value="">전체 상태</option>
+                  <option
+                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.StaffStatus).values()}"
+                    th:value="${s.name()}"
+                    th:text="${s.description}"
+                    th:selected="${condition.status == s.name()}"
+                  ></option>
+                </select>
+
+                <select
+                  name="employmentType"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option value="">전체 고용형태</option>
+                  <option
+                    th:each="e : ${T(com.example.schoolmate.common.entity.info.constant.EmploymentType).values()}"
+                    th:value="${e.name()}"
+                    th:text="${e.description}"
+                    th:selected="${condition.employmentType == e.name()}"
+                  ></option>
+                </select>
+
+                <select
+                  name="type"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option
+                    value="name"
+                    th:selected="${condition.type == 'name'}"
+                  >
+                    이름
+                  </option>
+                  <option
+                    value="dept"
+                    th:selected="${condition.type == 'dept'}"
+                  >
+                    부서
+                  </option>
+                  <option
+                    value="extNum"
+                    th:selected="${condition.type == 'extNum'}"
+                  >
+                    내선번호
+                  </option>
+                  <option
+                    value="email"
+                    th:selected="${condition.type == 'email'}"
+                  >
+                    이메일
+                  </option>
+                  <option
+                    value="jobTitle"
+                    th:selected="${condition.type == 'jobTitle'}"
+                  >
+                    직함
+                  </option>
+                  <option
+                    value="code"
+                    th:selected="${condition.type == 'code'}"
+                  >
+                    사번
+                  </option>
+                </select>
+                <input
+                  type="text"
+                  name="keyword"
+                  class="form-control"
+                  th:value="${condition.keyword}"
+                  placeholder="검색어 입력..."
+                  style="min-width: 150px"
+                />
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-search"></i> 검색
+                </button>
+                <a
+                  th:href="@{/parkjoon/admin/staffs}"
+                  class="btn btn-outline-secondary"
+                  >초기화</a
+                >
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="text-center" style="width: 50px">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      onclick="toggleCheckboxes(this, '.staff-checkbox')"
+                    />
+                  </th>
+                  <th class="ps-4" style="width: 150px">사번</th>
+                  <th>이름</th>
+                  <th>부서 / 직함</th>
+                  <th>고용 형태</th>
+                  <th>내선 번호</th>
+                  <th>이메일</th>
+                  <th>상태</th>
+                  <th class="text-end pe-4">관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="s : ${staffs}">
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      class="form-check-input staff-checkbox"
+                      th:value="${s.uid}"
+                    />
+                  </td>
+                  <td class="ps-4 text-secondary" th:text="${s.code}">
+                    S2024001
+                  </td>
+                  <td>
+                    <a
+                      th:href="@{/parkjoon/admin/staffs/{id}(id=${s.uid})}"
+                      class="fw-bold text-decoration-none text-dark"
+                      th:text="${s.name}"
+                      >홍길동</a
+                    >
+                  </td>
+                  <td>
+                    <span th:text="${s.department}">행정실</span> /
+                    <span class="small text-muted" th:text="${s.jobTitle}"
+                      >주무관</span
+                    >
+                  </td>
+                  <td th:text="${s.employmentTypeDesc}">정규직</td>
+                  <td th:text="${s.extensionNumber}">123</td>
+                  <td th:text="${s.email}">staff@school.com</td>
+                  <td>
+                    <span
+                      class="badge"
+                      th:classappend="${s.statusName == 'EMPLOYED' ? 'bg-success-subtle text-success' : (s.statusName == 'LEAVE' ? 'bg-warning-subtle text-warning' : 'bg-secondary-subtle text-secondary')}"
+                      th:text="${s.statusDesc}"
+                      >재직</span
+                    >
+                  </td>
+                  <td class="text-end pe-4">
+                    <a
+                      th:href="@{/parkjoon/admin/staffs/{id}(id=${s.uid})}"
+                      class="btn btn-sm btn-outline-primary radius-8 px-3"
+                      >상세보기</a
+                    >
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(staffs)}">
+                  <td colspan="8" class="text-center py-5 text-muted">
+                    검색 결과가 없습니다.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 페이지네이션 (생략 가능하나 구색 맞춤) -->
+        <div class="card-footer bg-white py-3" th:if="${page.totalPages > 0}">
+          <nav>
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+              <li
+                class="page-item"
+                th:classappend="${!page.hasPrevious} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/staffs(page=${page.number}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
+                  >&laquo;</a
+                >
+              </li>
+              <li
+                class="page-item"
+                th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                th:classappend="${i == page.number} ? 'active'"
+              >
+                <a
+                  class="page-link"
+                  th:text="${i + 1}"
+                  th:href="@{/parkjoon/admin/staffs(page=${i + 1}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
+                  >1</a
+                >
+              </li>
+              <li
+                class="page-item"
+                th:classappend="${!page.hasNext} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/staffs(page=${page.number + 2}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
+                  >&raquo;</a
+                >
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+      <div
+        id="loadingOverlay"
+        class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="background-color: rgba(0, 0, 0, 0.5); z-index: 9999"
+      >
+        <div class="text-center">
+          <div
+            class="spinner-border text-light"
+            role="status"
+            style="width: 3rem; height: 3rem"
+          ></div>
+          <h5 class="text-white mt-3">데이터 처리 중입니다...</h5>
+        </div>
+      </div>
+    </div>
+    <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/staff-manage.js}"></script>
+    </th:block>
+  </body>
+</html>

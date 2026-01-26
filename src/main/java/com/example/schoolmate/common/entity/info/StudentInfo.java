@@ -2,13 +2,14 @@ package com.example.schoolmate.common.entity.info;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Gender;
-import com.example.schoolmate.common.entity.user.constant.Year;
-import com.example.schoolmate.parkjoon.entity.Classroom;
+import com.example.schoolmate.common.entity.Classroom;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -60,10 +61,6 @@ public class StudentInfo extends BaseInfo {
         this.phone = phone;
     }
 
-    // 학년도에 상관없는 학생 고유의 고정 학번 (예: 입학연도+일련번호)
-    @Column(name = "student_identity_num", nullable = false, unique = true)
-    private String studentIdentityNum;
-
     @Enumerated(EnumType.STRING)
     private StudentStatus status = StudentStatus.ENROLLED;
 
@@ -75,6 +72,14 @@ public class StudentInfo extends BaseInfo {
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyRelation> familyRelations = new ArrayList<>();
 
+    // 기초 생활 기록
+    @Column(columnDefinition = "TEXT")
+    private String basicHabits;
+
+    // 특이사항
+    @Column(columnDefinition = "TEXT")
+    private String specialNotes;
+
     /**
      * 현재 학년도 소속 정보 가져오기 헬퍼 메서드
      */
@@ -85,4 +90,11 @@ public class StudentInfo extends BaseInfo {
                 .orElse(null);
     }
 
+    /**
+     * 가장 최근 학적 이력 가져오기
+     */
+    public Optional<StudentAssignment> getLatestAssignment() {
+        return assignments.stream()
+                .max(Comparator.comparingInt(StudentAssignment::getSchoolYear));
+    }
 }

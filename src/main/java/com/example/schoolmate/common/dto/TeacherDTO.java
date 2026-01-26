@@ -12,6 +12,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TeacherDTO {
 
     // 목록 및 상세 조회용
@@ -23,6 +26,7 @@ public class TeacherDTO {
         private Long uid;
         private String name;
         private String email;
+        private String code;
         private String subject;
 
         private TeacherStatus status; // Enum 객체 자체 (상태 비교용)
@@ -31,6 +35,8 @@ public class TeacherDTO {
 
         private String department;
         private String position;
+        @Builder.Default
+        private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
 
         public DetailResponse(User user) {
             this.uid = user.getUid();
@@ -42,6 +48,7 @@ public class TeacherDTO {
 
             // 2. TeacherInfo가 존재할 경우에만 상세 정보 세팅
             if (ti != null) {
+                this.code = ti.getCode();
                 this.subject = ti.getSubject();
                 this.department = ti.getDepartment();
                 this.position = ti.getPosition();
@@ -54,6 +61,10 @@ public class TeacherDTO {
                 }
             }
         }
+
+        public void setNotifications(List<NotificationDTO.NotificationHistory> notifications) {
+            this.notifications = notifications;
+        }
     }
 
     // 정보 수정 요청용
@@ -63,6 +74,7 @@ public class TeacherDTO {
     public static class UpdateRequest {
         private Long uid; // 수정할 대상의 식별자 (필수)
         private String name; // User 엔티티의 이름을 수정하기 위함
+        private String code;
         private String subject;
         private String department;
         private String position;
@@ -78,6 +90,7 @@ public class TeacherDTO {
         private String name;
         private String email;
         private String password;
+        private String code;
         private String subject;
         private String department;
         private String position;
@@ -86,6 +99,7 @@ public class TeacherDTO {
             this.name = csv.getName();
             this.email = csv.getEmail();
             this.password = csv.getPassword();
+            this.code = csv.getCode();
             this.subject = csv.getSubject();
             this.department = csv.getDepartment();
             this.position = csv.getPosition();
@@ -97,7 +111,7 @@ public class TeacherDTO {
     public static class TeacherSearchCondition {
         private String type; // 검색 필드 (name, dept 등)
         private String keyword; // 검색어
-        private boolean includeRetired;
+        private String status = TeacherStatus.EMPLOYED.name(); // 기본값: 재직
     }
 
     @Getter
@@ -111,6 +125,9 @@ public class TeacherDTO {
 
         @CsvBindByName(column = "비밀번호")
         private String password;
+
+        @CsvBindByName(column = "사번")
+        private String code;
 
         @CsvBindByName(column = "부서")
         private String department;

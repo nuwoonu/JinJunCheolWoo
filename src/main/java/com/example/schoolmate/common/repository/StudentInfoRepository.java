@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.parkjoon.entity.Classroom;
+import com.example.schoolmate.common.entity.Classroom;
 
 public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long> {
     // 특정 유저(User)의 학생 정보 찾기

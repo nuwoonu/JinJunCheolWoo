@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -20,6 +20,44 @@
             onchange="uploadCsvFile()"
           />
 
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-dark radius-8 px-20 py-11 d-flex align-items-center gap-2 dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-pencil-square"></i> 선택 상태 변경
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('EMPLOYED', '재직')"
+                  >재직</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('LEAVE', '휴직')"
+                  >휴직</a
+                >
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="javascript:void(0)"
+                  onclick="updateStatusBulk('RETIRED', '퇴직')"
+                  >퇴직</a
+                >
+              </li>
+            </ul>
+          </div>
+
           <button
             type="button"
             class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
@@ -29,13 +67,12 @@
             CSV 교사 등록
           </button>
 
-          <button
+          <a
+            th:href="@{/parkjoon/admin/teachers/create}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
-            data-bs-toggle="modal"
-            data-bs-target="#createTeacherModal"
           >
             <i class="bi bi-person-plus-fill"></i> 신규 교사 등록
-          </button>
+          </a>
         </div>
       </div>
 
@@ -47,42 +84,26 @@
             </div>
 
             <div class="col-auto d-flex align-items-center gap-3">
-              <div
-                class="form-check form-switch d-flex align-items-center gap-2 mb-0"
-              >
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="includeRetiredSwitch"
-                  th:checked="${condition.includeRetired}"
-                  style="
-                    cursor: pointer;
-                    width: 34px;
-                    height: 17px;
-                    margin-top: 0;
-                  "
-                />
-                <label
-                  class="form-check-label fw-medium text-secondary-light small"
-                  for="includeRetiredSwitch"
-                  style="cursor: pointer; white-space: nowrap"
-                  >퇴직자 포함</label
-                >
-              </div>
               <form
                 id="searchForm"
                 th:action="@{/parkjoon/admin/teachers}"
                 method="get"
                 class="input-group input-group-sm"
-                style="width: 450px"
               >
-                <input
-                  type="hidden"
-                  name="includeRetired"
-                  id="includeRetiredHidden"
-                  th:value="${condition.includeRetired}"
-                />
+                <select
+                  name="status"
+                  class="form-select"
+                  style="max-width: 120px"
+                >
+                  <option value="">전체 상태</option>
+                  <option
+                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.TeacherStatus).values()}"
+                    th:value="${s.name()}"
+                    th:text="${s.description}"
+                    th:selected="${condition.status == s.name()}"
+                  ></option>
+                </select>
+
                 <select
                   name="type"
                   class="form-select"
@@ -125,6 +146,7 @@
                   class="form-control"
                   th:value="${condition.keyword}"
                   placeholder="검색어 입력..."
+                  style="min-width: 150px"
                 />
                 <button class="btn btn-primary" type="submit">
                   <i class="bi bi-search"></i> 검색
@@ -144,7 +166,14 @@
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th class="ps-4">UID</th>
+                  <th class="text-center" style="width: 50px">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      onclick="toggleCheckboxes(this, '.teacher-checkbox')"
+                    />
+                  </th>
+                  <th class="ps-4" style="width: 150px">사번</th>
                   <th>이름</th>
                   <th>이메일</th>
                   <th>부서 / 직책</th>
@@ -155,20 +184,24 @@
               </thead>
               <tbody>
                 <tr th:each="t : ${teachers}">
-                  <td class="ps-4" th:text="${t.uid}">101</td>
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      class="form-check-input teacher-checkbox"
+                      th:value="${t.uid}"
+                    />
+                  </td>
+                  <td class="ps-4 text-secondary" th:text="${t.code}">
+                    T2024001
+                  </td>
                   <td>
                     <div class="d-flex align-items-center">
-                      <div
-                        class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
-                        style="width: 32px; height: 32px"
+                      <a
+                        th:href="@{/parkjoon/admin/teachers/{id}(id=${t.uid})}"
+                        class="fw-bold text-decoration-none text-dark"
+                        th:text="${t.name}"
+                        >이교사</a
                       >
-                        <span
-                          class="small fw-bold text-primary"
-                          th:text="${t.name != null ? #strings.substring(t.name,0,1) : ''}"
-                          >이</span
-                        >
-                      </div>
-                      <span class="fw-bold" th:text="${t.name}">이교사</span>
                     </div>
                   </td>
                   <td th:text="${t.email}">teacher@school.ac.kr</td>
@@ -203,16 +236,16 @@
                     >
                   </td>
                   <td class="text-end pe-4">
-                    <button
-                      class="btn btn-sm btn-outline-secondary"
-                      th:onclick="openEditModal([[${t}]])"
+                    <a
+                      th:href="@{/parkjoon/admin/teachers/{id}(id=${t.uid})}"
+                      class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
-                      정보 수정
-                    </button>
+                      상세보기
+                    </a>
                   </td>
                 </tr>
                 <tr th:if="${page.totalElements == 0}">
-                  <td colspan="7" class="text-center py-5 text-muted">
+                  <td colspan="8" class="text-center py-5 text-muted">
                     검색 결과가 없습니다.
                   </td>
                 </tr>
@@ -230,7 +263,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/teachers(page=${page.number}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
+                  th:href="@{/parkjoon/admin/teachers(page=${page.number}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -243,7 +276,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/teachers(page=${i + 1}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
+                  th:href="@{/parkjoon/admin/teachers(page=${i + 1}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
                   >1</a
                 >
               </li>
@@ -254,7 +287,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/teachers(page=${page.number + 2}, type=${condition.type}, keyword=${condition.keyword}, includeRetired=${condition.includeRetired})}"
+                  th:href="@{/parkjoon/admin/teachers(page=${page.number + 2}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
                   >&raquo;</a
                 >
               </li>
@@ -263,204 +296,6 @@
         </div>
       </div>
 
-      <div class="modal fade" id="createTeacherModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <form th:action="@{/parkjoon/admin/teachers/create}" method="post">
-              <div class="modal-header">
-                <h5 class="modal-title font-weight-bold">
-                  ✨ 신규 교사 계정 생성
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label class="form-label">이름</label>
-                  <input
-                    type="text"
-                    name="name"
-                    class="form-control"
-                    placeholder="성함 입력"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">이메일 (ID)</label>
-                  <input
-                    type="email"
-                    name="email"
-                    class="form-control"
-                    placeholder="example@school.com"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">초기 비밀번호</label>
-                  <input
-                    type="password"
-                    name="password"
-                    class="form-control"
-                    placeholder="초기 비밀번호"
-                    required
-                  />
-                </div>
-                <hr />
-                <div class="mb-3">
-                  <label class="form-label">담당 과목</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    class="form-control"
-                    placeholder="예: 수학, 영어"
-                  />
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">부서</label>
-                    <select name="department" class="form-select">
-                      <option
-                        th:each="dept : ${departments}"
-                        th:value="${dept}"
-                        th:text="${dept}"
-                      ></option>
-                    </select>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">직책</label>
-                    <select name="position" class="form-select">
-                      <option
-                        th:each="pos : ${positions}"
-                        th:value="${pos}"
-                        th:text="${pos}"
-                      ></option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer bg-light">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  취소
-                </button>
-                <button type="submit" class="btn btn-primary">계정 생성</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal fade" id="editTeacherModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <form th:action="@{/parkjoon/admin/teachers/update}" method="post">
-              <input type="hidden" name="page" th:value="${page.number + 1}" />
-              <input type="hidden" name="uid" id="edit-uid" />
-              <div class="modal-header bg-light">
-                <h5 class="modal-title font-weight-bold">📝 교사 정보 수정</h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label class="form-label">이름</label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="edit-name"
-                    class="form-control"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">이메일</label>
-                  <input
-                    type="email"
-                    id="edit-email"
-                    class="form-control"
-                    readonly
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">재직 상태</label>
-                  <select
-                    name="statusName"
-                    id="edit-status"
-                    class="form-select"
-                  >
-                    <option
-                      th:each="st : ${statusList}"
-                      th:value="${st.name()}"
-                      th:text="${st.description}"
-                    ></option>
-                  </select>
-                </div>
-                <hr />
-                <div class="mb-3">
-                  <label class="form-label">담당 과목</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    id="edit-subject"
-                    class="form-control"
-                  />
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">부서</label>
-                    <select
-                      name="department"
-                      id="edit-department"
-                      class="form-select"
-                    >
-                      <option
-                        th:each="dept : ${departments}"
-                        th:value="${dept}"
-                        th:text="${dept}"
-                      ></option>
-                    </select>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">직책</label>
-                    <select
-                      name="position"
-                      id="edit-position"
-                      class="form-select"
-                    >
-                      <option
-                        th:each="pos : ${positions}"
-                        th:value="${pos}"
-                        th:text="${pos}"
-                      ></option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  취소
-                </button>
-                <button type="submit" class="btn btn-success">저장하기</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
       <div
         id="loadingOverlay"
         class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"

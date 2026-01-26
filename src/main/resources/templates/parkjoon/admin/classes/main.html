@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -7,133 +7,241 @@
   <body>
     <section layout:fragment="content">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>🏫 학년/반 설정 및 담임 배정</h2>
-      </div>
-
-      <div class="card mb-4 shadow-sm border-0">
-        <div class="card-header bg-primary text-white py-3">
-          <h5 class="mb-0">✨ 신규 학급 생성</h5>
+        <div class="d-flex align-items-center gap-3">
+          <h2 class="mb-0">🏫 학급 관리</h2>
         </div>
-        <div class="card-body p-4">
-          <form
-            th:action="@{/parkjoon/admin/classes/create}"
-            method="post"
-            class="row g-3"
+        <div class="d-flex align-items-center gap-2">
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            style="display: none"
+            onchange="uploadClassCsv()"
+          />
+          <button
+            type="button"
+            class="btn btn-outline-success radius-8 px-20 py-11 d-flex align-items-center gap-2"
+            onclick="document.getElementById('csvFileInput').click()"
           >
-            <div class="col-md-3">
-              <label class="form-label small text-muted">학년도</label>
-              <input
-                type="number"
-                name="year"
-                class="form-control"
-                placeholder="2026"
-                required
-              />
-            </div>
-            <div class="col-md-3">
-              <label class="form-label small text-muted">학년</label>
-              <input
-                type="number"
-                name="grade"
-                class="form-control"
-                placeholder="1~3"
-                required
-              />
-            </div>
-            <div class="col-md-3">
-              <label class="form-label small text-muted">반</label>
-              <input
-                type="number"
-                name="classNum"
-                class="form-control"
-                placeholder="1~N"
-                required
-              />
-            </div>
-            <div class="col-md-3 d-flex align-items-end">
-              <button type="submit" class="btn btn-primary w-100">
-                <i class="bi bi-plus-circle me-1"></i> 학급 추가
-              </button>
-            </div>
-          </form>
+            <i class="bi bi-file-earmark-spreadsheet"></i> CSV 일괄 생성
+          </button>
+
+          <a
+            href="javascript:void(0)"
+            class="btn btn-outline-dark radius-8 px-20 py-11 d-flex align-items-center gap-2 dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-pencil-square"></i> 선택 상태 변경
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a
+                class="dropdown-item"
+                href="javascript:void(0)"
+                onclick="updateStatusBulk('ACTIVE', '운영')"
+                >운영</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item text-secondary"
+                href="javascript:void(0)"
+                onclick="updateStatusBulk('FINISHED', '종료')"
+                >종료</a
+              >
+            </li>
+          </ul>
+          <a
+            th:href="@{/parkjoon/admin/classes/create}"
+            class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
+          >
+            <i class="bi bi-plus-circle"></i> 신규 학급 생성
+          </a>
         </div>
       </div>
 
       <div class="card shadow-sm border-0">
-        <div class="card-header bg-dark text-white py-3">
-          <h5 class="mb-0">📋 학급 편성 및 담임 교사 배정 현황</h5>
+        <div class="card-header bg-white py-3">
+          <div class="row align-items-center">
+            <div class="col">
+              <h5 class="mb-0 text-dark">학급 목록</h5>
+            </div>
+            <div class="col-auto">
+              <form
+                th:action="@{/parkjoon/admin/classes}"
+                method="get"
+                class="d-flex gap-2"
+              >
+                <select
+                  name="status"
+                  class="form-select form-select-sm"
+                  style="width: 100px"
+                >
+                  <option value="">전체 상태</option>
+                  <option
+                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.ClassroomStatus).values()}"
+                    th:value="${s.name()}"
+                    th:text="${s.description}"
+                    th:selected="${condition.status == s.name()}"
+                  ></option>
+                </select>
+                <input
+                  type="number"
+                  name="year"
+                  class="form-control form-control-sm"
+                  th:value="${condition.year}"
+                  placeholder="학년도"
+                  style="width: 100px"
+                />
+                <select
+                  name="grade"
+                  class="form-select form-select-sm"
+                  style="width: 100px"
+                >
+                  <option value="">전체 학년</option>
+                  <option value="1" th:selected="${condition.grade == 1}">
+                    1학년
+                  </option>
+                  <option value="2" th:selected="${condition.grade == 2}">
+                    2학년
+                  </option>
+                  <option value="3" th:selected="${condition.grade == 3}">
+                    3학년
+                  </option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary">
+                  조회
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th class="ps-4">CID</th>
+                  <th class="text-center" style="width: 50px">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      onclick="toggleCheckboxes(this, '.class-checkbox')"
+                    />
+                  </th>
+                  <th class="ps-4">학년도</th>
                   <th>학년/반</th>
-                  <th>현재 담임 교사</th>
-                  <th>담당 과목</th>
-                  <th class="text-center">담임 변경 배정</th>
+                  <th>담임 교사</th>
+                  <th>학생 수</th>
+                  <th>상태</th>
+                  <th class="text-end pe-4">관리</th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="cls : ${classes}">
-                  <td class="ps-4" th:text="${cls.cid}">1</td>
-                  <td class="fw-bold" th:text="${cls.gradeAndClass}">
-                    1학년 1반
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      class="form-check-input class-checkbox"
+                      th:value="${cls.cid}"
+                    />
+                  </td>
+                  <td class="ps-4" th:text="${cls.year}">2026</td>
+                  <td class="fw-bold">
+                    <a
+                      th:href="@{/parkjoon/admin/classes/{id}(id=${cls.cid})}"
+                      class="text-decoration-none text-dark"
+                    >
+                      <span th:text="${cls.grade}">1</span>학년
+                      <span th:text="${cls.classNum}">1</span>반
+                    </a>
                   </td>
                   <td>
                     <span
-                      th:classappend="${cls.teacherName == '미배정' ? 'badge bg-secondary' : 'badge bg-success'}"
+                      th:if="${cls.teacherName != '미배정'}"
+                      class="badge bg-success-subtle text-success"
                       th:text="${cls.teacherName}"
                       >홍길동</span
                     >
-                  </td>
-                  <td th:text="${cls.subject}">수학</td>
-                  <td>
-                    <form
-                      th:action="@{/parkjoon/admin/classes/assign}"
-                      method="post"
-                      class="d-flex justify-content-center align-items-center"
+                    <span
+                      th:unless="${cls.teacherName != '미배정'}"
+                      class="badge bg-secondary-subtle text-secondary"
+                      >미배정</span
                     >
-                      <input
-                        type="hidden"
-                        name="classroomId"
-                        th:value="${cls.cid}"
-                      />
-                      <select
-                        name="teacherUid"
-                        class="form-select form-select-sm me-2"
-                        style="width: 200px"
-                      >
-                        <option value="">교사 선택</option>
-                        <option
-                          th:each="t : ${teachers}"
-                          th:value="${t.uid}"
-                          th:text="${t.displayName}"
-                        >
-                          이교사 (국어)
-                        </option>
-                      </select>
-                      <button
-                        type="submit"
-                        class="btn btn-sm btn-outline-primary"
-                      >
-                        배정
-                      </button>
-                    </form>
+                  </td>
+                  <td th:text="${cls.studentCount + '명'}">25명</td>
+                  <td>
+                    <span
+                      class="badge"
+                      th:classappend="${cls.status == 'ACTIVE' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}"
+                      th:text="${cls.statusDescription}"
+                      >운영</span
+                    >
+                  </td>
+                  <td class="text-end pe-4">
+                    <a
+                      th:href="@{/parkjoon/admin/classes/{id}(id=${cls.cid})}"
+                      class="btn btn-sm btn-outline-primary radius-8 px-3"
+                      >상세보기</a
+                    >
                   </td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(classes)}">
-                  <td colspan="5" class="text-center py-5 text-muted">
-                    <i class="bi bi-exclamation-circle d-block mb-2 fs-2"></i>
-                    등록된 학급 정보가 없습니다.
+                <tr th:if="${#lists.isEmpty(classes.content)}">
+                  <td colspan="7" class="text-center py-5 text-muted">
+                    등록된 학급이 없습니다.
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+
+        <!-- 페이지네이션 추가 -->
+        <div
+          class="card-footer bg-white py-3"
+          th:if="${classes.totalPages > 0}"
+        >
+          <nav>
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+              <li
+                class="page-item"
+                th:classappend="${!classes.hasPrevious} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/classes(page=${classes.number}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
+                  >&laquo;</a
+                >
+              </li>
+              <li
+                class="page-item"
+                th:each="i : ${#numbers.sequence(0, classes.totalPages - 1)}"
+                th:classappend="${i == classes.number} ? 'active'"
+              >
+                <a
+                  class="page-link"
+                  th:text="${i + 1}"
+                  th:href="@{/parkjoon/admin/classes(page=${i + 1}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
+                  >1</a
+                >
+              </li>
+              <li
+                class="page-item"
+                th:classappend="${!classes.hasNext} ? 'disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/parkjoon/admin/classes(page=${classes.number + 2}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
+                  >&raquo;</a
+                >
+              </li>
+            </ul>
+          </nav>
+        </div>
       </div>
     </section>
   </body>
+  <th:block layout:fragment="script">
+    <script th:src="@{/assets/js/admin/class-manage.js}"></script>
+  </th:block>
 </html>

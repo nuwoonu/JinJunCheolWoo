@@ -6,7 +6,6 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.repository.StudentInfoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -28,7 +27,6 @@ import java.util.stream.Collectors;
 public class StudentService {
 
     private final UserRepository userRepository;
-    private final StudentInfoRepository studentInfoRepository;
 
     /**
      * 전체 학생 목록 조회 (SummaryResponse)
@@ -71,10 +69,10 @@ public class StudentService {
     /**
      * 학생 상세 조회 by 고유학번
      */
-    public StudentDTO.DetailResponse getStudentByIdentityNum(String identityNum) {
-        log.info("학생 상세 조회: identityNum={}", identityNum);
-        User user = userRepository.findDetailByIdentityNum(identityNum)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다: " + identityNum));
+    public StudentDTO.DetailResponse getStudentByCode(String code) {
+        log.info("학생 상세 조회: code={}", code);
+        User user = userRepository.findDetailByCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다: " + code));
 
         return new StudentDTO.DetailResponse(user);
     }
