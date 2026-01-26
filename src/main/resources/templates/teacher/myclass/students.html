@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학생 관리</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div class="">
+          <h6 class="fw-semibold mb-0">나의 학급</h6>
+          <p class="text-neutral-600 mt-4 mb-0">학생 관리</p>
+        </div>
+        <ul class="d-flex align-items-center gap-2">
+          <li class="fw-medium">
+            <a th:href="@{/dashboard}" class="d-flex align-items-center gap-1 hover-text-primary">
+              <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+              홈
+            </a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">
+            <a th:href="@{/teacher/myclass}" class="hover-text-primary">나의 학급</a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">학생 관리</li>
+        </ul>
+      </div>
+
+      <!-- 학급이 없는 경우 -->
+      <div th:if="${classInfo == null}" class="card">
+        <div class="card-body text-center py-48">
+          <iconify-icon icon="mdi:account-group-outline" class="text-neutral-400 mb-16" style="font-size: 64px;"></iconify-icon>
+          <h5 class="text-neutral-600 mb-8">담당 학급이 없습니다</h5>
+          <p class="text-neutral-500 mb-0" th:text="${errorMessage}">관리자에게 문의하세요.</p>
+        </div>
+      </div>
+
+      <!-- 학급 정보 헤더 -->
+      <div th:if="${classInfo != null}" class="card radius-12 mb-24">
+        <div class="card-body p-20">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-16">
+            <div class="d-flex align-items-center gap-16">
+              <div class="w-48-px h-48-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center">
+                <iconify-icon icon="mdi:google-classroom" class="text-primary-600 text-2xl"></iconify-icon>
+              </div>
+              <div>
+                <h6 class="mb-0" th:text="${classInfo.year} + '학년도 ' + ${classInfo.grade} + '학년 ' + ${classInfo.classNum} + '반'"></h6>
+                <span class="text-secondary-light text-sm">
+                  담임: <span th:text="${classInfo.homeroomTeacherName} ?: '-'"></span>
+                  | 총 <span th:text="${classInfo.totalStudents}"></span>명
+                </span>
+              </div>
+            </div>
+            <div class="d-flex gap-8">
+              <a th:href="@{/teacher/myclass}" class="btn btn-outline-neutral-300 radius-8">
+                <iconify-icon icon="mdi:arrow-left" class="me-4"></iconify-icon>
+                학급 현황
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 학생 목록 테이블 -->
+      <div th:if="${classInfo != null}" class="card radius-12">
+        <div class="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
+          <h6 class="mb-0">학생 목록</h6>
+        </div>
+        <div class="card-body p-24">
+          <div class="table-responsive">
+            <table class="table bordered-table mb-0" id="studentTable" data-page-length="10">
+              <thead>
+                <tr>
+                  <th scope="col" class="text-center" style="width: 80px;">번호</th>
+                  <th scope="col">이름</th>
+                  <th scope="col">연락처</th>
+                  <th scope="col">이메일</th>
+                  <th scope="col" class="text-center" style="width: 120px;">상세</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:if="${#lists.isEmpty(classInfo.students)}">
+                  <td colspan="5" class="text-center py-24 text-secondary-light">등록된 학생이 없습니다.</td>
+                </tr>
+                <tr th:each="student : ${classInfo.students}">
+                  <td class="text-center" th:text="${student.studentNumber}"></td>
+                  <td>
+                    <div class="d-flex align-items-center gap-12">
+                      <div class="w-40-px h-40-px bg-neutral-100 rounded-circle d-flex justify-content-center align-items-center">
+                        <iconify-icon icon="mdi:account" class="text-neutral-500 text-xl"></iconify-icon>
+                      </div>
+                      <span class="fw-medium" th:text="${student.name}"></span>
+                    </div>
+                  </td>
+                  <td th:text="${student.phone} ?: '-'"></td>
+                  <td th:text="${student.email} ?: '-'"></td>
+                  <td class="text-center">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-primary-600 radius-4 view-student-btn"
+                            th:data-student-id="${student.studentId}"
+                            th:data-student-name="${student.name}"
+                            th:data-student-number="${student.studentNumber}"
+                            th:data-student-phone="${student.phone}"
+                            th:data-student-email="${student.email}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#studentDetailModal">
+                      <iconify-icon icon="mdi:eye-outline"></iconify-icon>
+                      보기
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 학생 상세 모달 -->
+      <div class="modal fade" id="studentDetailModal" tabindex="-1" aria-labelledby="studentDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content radius-12">
+            <div class="modal-header border-bottom py-16 px-24">
+              <h6 class="modal-title" id="studentDetailModalLabel">학생 정보</h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-24">
+              <div class="text-center mb-24">
+                <div class="w-80-px h-80-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-16">
+                  <iconify-icon icon="mdi:account" class="text-primary-600 text-4xl"></iconify-icon>
+                </div>
+                <h5 class="mb-4" id="modalStudentName">-</h5>
+                <span class="text-secondary-light" id="modalStudentNumber">-</span>
+              </div>
+              <div class="d-flex flex-column gap-16">
+                <div class="d-flex justify-content-between align-items-center py-12 border-bottom">
+                  <span class="text-secondary-light">
+                    <iconify-icon icon="mdi:phone" class="me-8"></iconify-icon>
+                    연락처
+                  </span>
+                  <span class="fw-medium" id="modalStudentPhone">-</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-12 border-bottom">
+                  <span class="text-secondary-light">
+                    <iconify-icon icon="mdi:email" class="me-8"></iconify-icon>
+                    이메일
+                  </span>
+                  <span class="fw-medium" id="modalStudentEmail">-</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-top py-16 px-24">
+              <button type="button" class="btn btn-outline-neutral-300 radius-8" data-bs-dismiss="modal">닫기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="css">
+      <link rel="stylesheet" th:href="@{/css/lib/dataTables.min.css}" />
+    </th:block>
+
+    <th:block layout:fragment="script">
+      <script th:src="@{/js/lib/dataTables.min.js}"></script>
+      <script th:inline="none">
+        // DataTable 초기화
+        $(document).ready(function() {
+          if ($('#studentTable tbody tr').length > 1 ||
+              ($('#studentTable tbody tr').length === 1 && !$('#studentTable tbody tr td').hasClass('text-center'))) {
+            $('#studentTable').DataTable({
+              language: {
+                search: "검색:",
+                lengthMenu: "_MENU_ 개씩 보기",
+                info: "총 _TOTAL_명 중 _START_~_END_",
+                infoEmpty: "데이터 없음",
+                infoFiltered: "(전체 _MAX_명 중 검색)",
+                paginate: {
+                  first: "처음",
+                  last: "마지막",
+                  next: "다음",
+                  previous: "이전"
+                },
+                emptyTable: "등록된 학생이 없습니다."
+              },
+              order: [[0, 'asc']]
+            });
+          }
+
+          // 학생 상세 보기 모달
+          $('.view-student-btn').on('click', function() {
+            const name = $(this).data('student-name');
+            const number = $(this).data('student-number');
+            const phone = $(this).data('student-phone') || '-';
+            const email = $(this).data('student-email') || '-';
+
+            $('#modalStudentName').text(name);
+            $('#modalStudentNumber').text(number + '번');
+            $('#modalStudentPhone').text(phone);
+            $('#modalStudentEmail').text(email);
+          });
+        });
+      </script>
+    </th:block>
+  </body>
+</html>

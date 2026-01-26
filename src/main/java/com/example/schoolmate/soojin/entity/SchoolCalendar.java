@@ -14,14 +14,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @ToString
 @Getter
 @Table(name = "school_calendar_tbl")
@@ -56,30 +54,5 @@ public class SchoolCalendar extends BaseEntity {
     // 일정 상세 설명 (null 가능)
     @Column(length = 1000)
     private String description;
-
-    // 일정 수정용
-    public void changeTitle(String title) {
-        this.title = title;
-    }
-
-    public void changeStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public void changeEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public void changeEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public void changeTargetGrade(Integer targetGrade) {
-        this.targetGrade = targetGrade;
-    }
-
-    public void changeDescription(String description) {
-        this.description = description;
-    }
 
 }

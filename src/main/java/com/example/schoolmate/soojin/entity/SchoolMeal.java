@@ -15,14 +15,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @ToString
 @Getter
 @Table(name = "school_meal_tbl")
@@ -58,29 +56,4 @@ public class SchoolMeal extends BaseEntity {
     // 알레르기 정보 (null 가능)
     @Column(length = 500)
     private String allergyInfo;
-
-    public void changeMealDate(LocalDate mealDate) {
-        this.mealDate = mealDate;
-    }
-
-    public void changeTargetType(MealTargetType targetType) {
-        this.targetType = targetType;
-    }
-
-    public void changeMealType(MealType mealType) {
-        this.mealType = mealType;
-    }
-
-    public void changeMenu(String menu) {
-        this.menu = menu;
-    }
-
-    public void changeCalories(Integer calories) {
-        this.calories = calories;
-    }
-
-    public void changeAllergyInfo(String allergyInfo) {
-        this.allergyInfo = allergyInfo;
-    }
-
 }

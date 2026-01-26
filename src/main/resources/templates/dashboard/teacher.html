@@ -23,88 +23,44 @@
         <div class="mt-24">
             <div class="row gy-4">
 
-                <!-- Dashboard widgets start -->
-                <div class="col-xxl-7">
-                    <div class="card radius-12 border-0 h-100">
-                        <div class="card-body p-24">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <div class="radius-8 overflow-hidden position-relative z-1 h-100 py-32 px-20 text-center d-flex justify-content-center align-items-center">
-                                        <img src="/images/bg/edit-profile-bg.png" alt="BG Image" class="position-absolute start-0 top-0 w-100 h-100 object-fit-cover z-n1">
-                                        <div class="">
-                                            <span class="mb-12">
-                                                <img src="/images/thumbs/edit-profile-img.png" alt="BG Image" class="rounded-circle object-fit-cover">
-                                            </span>
-                                            <h6 class="text-white">Courtney Henry</h6>
-                                            <span class="text-white text-lg d-block">Class: 1-A, V-B</span>
-                                            <span class="text-white text-lg d-block">Physics</span>
-                                            <div class="mt-12">
-                                                <a href="edit-teacher.html" class="px-20 py-8 text-white bg-white bg-opacity-10 radius-6 fw-medium text-lg">Edit Profile</a>
-                                            </div>
-                                        </div>
-                                    </div>
+                <!-- 나의 학급 현황 카드 Start -->
+                <div class="col-xxl-4 col-lg-6">
+                    <div class="card radius-12 h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between py-16 px-20 border-bottom">
+                            <h6 class="text-lg mb-0">
+                                <iconify-icon icon="mdi:google-classroom" class="me-8 text-primary-600"></iconify-icon>
+                                나의 학급
+                            </h6>
+                            <a th:href="@{/teacher/myclass/students}" class="btn btn-sm btn-outline-primary-600">
+                                학생 관리
+                                <iconify-icon icon="mdi:arrow-right" class="ms-4"></iconify-icon>
+                            </a>
+                        </div>
+                        <div class="card-body p-20" th:if="${classInfo != null}">
+                            <div class="d-flex align-items-center gap-16 mb-20">
+                                <div class="w-56-px h-56-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center">
+                                    <iconify-icon icon="mdi:school" class="text-primary-600 text-2xl"></iconify-icon>
+                                </div>
+                                <div>
+                                    <h5 class="mb-4" th:text="${classInfo.grade} + '학년 ' + ${classInfo.classNum} + '반'">3학년 2반</h5>
+                                    <span class="text-secondary-light text-sm" th:text="${classInfo.year} + '학년도'">2026학년도</span>
                                 </div>
                             </div>
+                            <div class="d-flex justify-content-between align-items-center py-12 border-top">
+                                <span class="text-secondary-light">
+                                    <iconify-icon icon="mdi:account-group" class="me-4"></iconify-icon>
+                                    총 학생 수
+                                </span>
+                                <span class="fw-semibold text-lg" th:text="${classInfo.totalStudents} + '명'">30명</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-20 text-center" th:if="${classInfo == null}">
+                            <iconify-icon icon="mdi:alert-circle-outline" class="text-warning-600 text-4xl mb-12"></iconify-icon>
+                            <p class="text-secondary-light mb-0">담당 학급이 없습니다</p>
                         </div>
                     </div>
                 </div>
-                <!-- Dashboard widgets end -->
-
-                <!-- User activity Start -->
-                <div class="col-xxl-5">
-                    <div class="card radius-12 border-0 h-100">
-                        <div class="card-body py-24 d-flex flex-column justify-content-center">
-                            <div
-                                class="d-flex align-items-center gap-20 flex-sm-nowrap flex-wrap justify-content-around">
-                                <div class="d-flex flex-column gap-12">
-                                    <div class="d-flex align-items-center gap-12">
-                                        <div class="">
-                                            <span
-                                                class="w-20-px h-20-px bg-primary-600 rounded-circle position-relative">
-                                                <span
-                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
-                                            </span>
-                                        </div>
-                                        <div class="">
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-12">
-                                        <div class="">
-                                            <span
-                                                class="w-20-px h-20-px bg-warning-600 rounded-circle position-relative">
-                                                <span
-                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-12">
-                                        <div class="">
-                                            <span class="w-20-px h-20-px bg-success rounded-circle position-relative">
-                                                <span
-                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-12">
-                                        <div class="">
-                                            <span class="w-20-px h-20-px bg-purple rounded-circle position-relative">
-                                                <span
-                                                    class="w-10-px h-10-px bg-white rounded-circle position-absolute top-50 start-50 translate-middle"></span>
-                                            </span>
-                                        </div>
-                                        <div class="">                                                                                    
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-center">
-                                    <div id="userOverviewDonutChart" class="apexcharts-tooltip-z-none"></div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-                <!-- User activity End -->
+                <!-- 나의 학급 현황 카드 End -->
 
                 <!-- Notice Board start -->
                 <div class="col-xxl-4 col-lg-6">
@@ -694,68 +650,15 @@
     </div>
 
     <th:block layout:fragment="css">
-      <link rel="stylesheet" th:href="@{/css/lib/apexcharts.css}" />
-      <link rel="stylesheet" th:href="@{/css/lib/dataTables.min.css}" />
+        <link rel="stylesheet" th:href="@{/css/lib/dataTables.min.css}" />
+        <link rel="stylesheet" th:href="@{/css/lib/calendar.css}" />
     </th:block>
 
     <th:block layout:fragment="script">
-      <!-- Apex Chart js -->
-      <script th:src="@{/js/lib/apexcharts.min.js}"></script>
       <!-- Data Table js -->
       <script th:src="@{/js/lib/dataTables.min.js}"></script>
 
 <script>
-
-    // ================================ Users Overview Donut chart Start ================================ 
-    var options = {
-        series: [300, 200, 500, 172],
-        colors: ['#487FFF', '#9935FE', '#FF9F29', "#45B369"],
-        labels: ['Total Visitors', 'Registrations', 'Total Page Views', 'Registrations'],
-        legend: {
-            show: false
-        },
-        chart: {
-            type: 'donut',
-            height: 270,
-            sparkline: {
-                enabled: true // Remove whitespace
-            },
-            margin: {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0
-            },
-            padding: {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0
-            }
-        },
-        stroke: {
-            width: 0,
-        },
-        dataLabels: {
-            enabled: false
-        },
-        responsive: [{
-            breakpoint: 480,
-            options: {
-                chart: {
-                    width: 200
-                },
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }],
-    };
-
-    var chart = new ApexCharts(document.querySelector("#userOverviewDonutChart"), options);
-    chart.render();
-    // ================================ Users Overview Donut chart End ================================ 
-
     // ============================= Calendar Js Start =================================
     let display = document.querySelector(".display");
     let days = document.querySelector(".days");

@@ -17,15 +17,20 @@ import com.example.schoolmate.board.service.ParentBoardService;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
+import com.example.schoolmate.woo.dto.ClassStudentDTO;
+import com.example.schoolmate.woo.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -36,10 +41,17 @@ public class DashboardController {
     private final ProfileRepository profileRepository;
     private final NoticeService noticeService;
     private final ParentBoardService parentBoardService;
+    private final TeacherService teacherService;
+    private final TeacherInfoRepository teacherInfoRepository;
 
     @GetMapping("/board")
     public String getBoard() {
         return "redirect:/dashboard";
+    }
+
+    @GetMapping("/index")
+    public String getMethodName() {
+        return "/dashboard/index";
     }
 
     @GetMapping("/dashboard")
@@ -70,7 +82,24 @@ public class DashboardController {
     }
 
     @GetMapping("/teacher/dashboard")
-    public String getTeacherDashboard() {
+    public String getTeacherDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+        int currentYear = LocalDate.now().getYear();
+
+        // 교사 정보 조회 후 학급 정보 가져오기
+        TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
+        if (teacherInfo != null) {
+            try {
+                ClassStudentDTO classInfo = teacherService.getMyClassStudents(teacherInfo.getId(), currentYear);
+                model.addAttribute("classInfo", classInfo);
+            } catch (Exception e) {
+                // 담당 학급이 없는 경우
+                model.addAttribute("classInfo", null);
+            }
+        } else {
+            model.addAttribute("classInfo", null);
+        }
+
         return "dashboard/teacher";
     }
 
@@ -84,8 +113,8 @@ public class DashboardController {
             ParentInfo parentInfo = parentUser.getInfo(ParentInfo.class);
             if (parentInfo != null && parentInfo.getChildrenRelations() != null) {
                 List<ChildDTO> children = parentInfo.getChildrenRelations().stream()
-                    .map(relation -> convertToChildDTO(relation.getStudentInfo()))
-                    .collect(Collectors.toList());
+                        .map(relation -> convertToChildDTO(relation.getStudentInfo()))
+                        .collect(Collectors.toList());
                 model.addAttribute("children", children);
             } else {
                 model.addAttribute("children", new ArrayList<>());
@@ -103,6 +132,7 @@ public class DashboardController {
         model.addAttribute("boards", boards);
 
         return "parent/dashboard";
+
     }
 
     /**
@@ -123,12 +153,12 @@ public class DashboardController {
         StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
 
         return ChildDTO.builder()
-            .id(studentUser.getUid())
-            .name(studentUser.getName())
-            .studentNumber(studentInfo.getStudentIdentityNum())
-            .grade(assignment != null ? assignment.getGrade() : null)
-            .classNum(assignment != null ? assignment.getClassNum() : null)
-            .profileImageUrl(imageUrl)
-            .build();
+                .id(studentUser.getUid())
+                .name(studentUser.getName())
+                .studentNumber(studentInfo.getStudentIdentityNum())
+                .grade(assignment != null ? assignment.getGrade() : null)
+                .classNum(assignment != null ? assignment.getClassNum() : null)
+                .profileImageUrl(imageUrl)
+                .build();
     }
 }

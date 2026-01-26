@@ -55,9 +55,6 @@ public class SecurityConfig {
                                 // 학부모 전용 영역 (대시보드, 자녀 현황)
                                 .requestMatchers("/parent/dashboard", "/parent/children/**").hasRole("PARENT")
 
-                                // soojin 폴더 내 기능 구현 중
-                                .requestMatchers("/soojin/**").hasAnyRole("ADMIN", "TEACHER", "STUDENT", "PARENT")
-
                                 .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
                 )
                                 .formLogin(form -> form

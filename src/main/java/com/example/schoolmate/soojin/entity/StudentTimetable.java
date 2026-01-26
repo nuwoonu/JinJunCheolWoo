@@ -63,5 +63,5 @@ public class StudentTimetable extends BaseEntity {
     // @ManyToOne(fetch = FetchType.LAZY)
     // @JoinColumn(name = "teacher_info_id")
     // private TeacherInfo teacher;
-    // 테스트
+
 }

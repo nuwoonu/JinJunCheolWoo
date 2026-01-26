@@ -496,7 +496,8 @@
               <span class="text-secondary-light">/ 교사 정보 관리</span>
             </div>
           </div>
-          <button type="button" class="my-sidebar-btn btn btn-primary-600 d-flex align-items-center gap-6">
+          <button type="button" class="my-sidebar-btn btn btn-primary-600 d-flex align-items-center gap-6"
+                  sec:authorize="hasRole('ADMIN')">
             <span class="d-flex text-md">
               <i class="ri-add-large-line"></i>
             </span>
@@ -643,7 +644,7 @@
                       <th scope="col">부서</th>
                       <th scope="col">직책</th>
                       <th scope="col">상태</th>
-                      <th scope="col">관리</th>
+                      <th scope="col" sec:authorize="hasRole('ADMIN')">관리</th>
                     </tr>
                   </thead>
                   <!-- [woo 수정] 테이블 바디 - Thymeleaf 동적 바인딩 -->
@@ -660,7 +661,7 @@
                               class="px-24 py-4 radius-4 fw-medium text-sm"
                               th:text="${t.statusDesc ?: '미정'}">재직</span>
                       </td>
-                      <td>
+                      <td sec:authorize="hasRole('ADMIN')">
                         <button type="button" class="edit-sidebar-btn btn btn-sm btn-outline-primary-600"
                                 th:data-uid="${t.uid}"
                                 th:data-name="${t.name}"
@@ -694,8 +695,8 @@
       </footer>
     </main>
 
-    <!-- [woo 수정] Add sidebar - 교사 추가 폼 -->
-    <div
+    <!-- [woo 수정] Add sidebar - 교사 추가 폼 (ADMIN만) -->
+    <div sec:authorize="hasRole('ADMIN')"
       class="my-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-700-px w-100 translate-x-full duration-300 active-translate-0"
     >
       <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
@@ -751,8 +752,8 @@
     </div>
     <!-- Add sidebar end -->
 
-    <!-- [woo 수정] Edit sidebar - 교사 수정 폼 -->
-    <div
+    <!-- [woo 수정] Edit sidebar - 교사 수정 폼 (ADMIN만) -->
+    <div sec:authorize="hasRole('ADMIN')"
       class="edit-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-700-px w-100 translate-x-full duration-300 active-translate-0"
     >
       <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
