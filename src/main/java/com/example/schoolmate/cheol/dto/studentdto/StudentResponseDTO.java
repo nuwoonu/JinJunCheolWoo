@@ -31,7 +31,7 @@ public class StudentResponseDTO {
 
     private String fullStudentNumber; // "1-3-05" 형식
 
-    private String studentIdentityNum; // 고유 학번
+    private String studentCode; // 고유 학번
 
     private LocalDate birthDate;
 
@@ -59,7 +59,7 @@ public class StudentResponseDTO {
         this.year = student.getClassroom().getYear();
         this.classNum = student.getClassroom().getClassNum();
         this.fullStudentNumber = student.getFullStudentNumber();
-        this.studentIdentityNum = student.getStudentIdentityNum();
+        this.studentCode = student.getCode();
         this.birthDate = student.getBirthDate();
         this.address = student.getAddress();
         this.phone = student.getPhone();

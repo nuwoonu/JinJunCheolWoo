@@ -2,7 +2,7 @@ package com.example.schoolmate.board.entity;
 
 import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.parkjoon.entity.Classroom;
+import com.example.schoolmate.common.entity.Classroom;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,9 +24,9 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "board", indexes = {
-    @Index(name = "idx_board_type", columnList = "board_type"),
-    @Index(name = "idx_board_type_grade", columnList = "board_type, target_grade"),
-    @Index(name = "idx_board_type_classroom", columnList = "board_type, target_classroom_id")
+        @Index(name = "idx_board_type", columnList = "board_type"),
+        @Index(name = "idx_board_type_grade", columnList = "board_type, target_grade"),
+        @Index(name = "idx_board_type_classroom", columnList = "board_type, target_classroom_id")
 })
 @Getter
 @Setter

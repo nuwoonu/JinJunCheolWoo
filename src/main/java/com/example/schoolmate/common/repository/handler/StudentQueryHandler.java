@@ -73,23 +73,11 @@ public class StudentQueryHandler {
         if (status == null || status.isEmpty())
             return null;
         return info.status.eq(StudentStatus.valueOf(status));
-    /**
-     * 비활성 학생 필터링 조건 생성
-     *
-     * includeInactive가 false면 재학/휴학 상태만 조회함.
-     * null을 반환하면 QueryDSL의 where절에서 해당 조건이 무시됨.
-     */
-    private BooleanExpression inactiveFilter(boolean includeInactive, QStudentInfo info) {
-        if (includeInactive)
-            return null; // 모든 상태 포함
-        // 재학(ENROLLED), 휴학(LEAVE_OF_ABSENCE) 상태만 기본 노출
-        // StudentInfo가 없는 경우(isNull)도 포함 (신규 등록 등)
-        return info.status.in(StudentStatus.ENROLLED, StudentStatus.LEAVE_OF_ABSENCE).or(info.status.isNull());
     }
-
+  
     /**
-     * 동적 검색 조건 생성
      *
+     * 
      * 검색 타입(type)에 따라 다른 필드에서 키워드를 검색함.
      * BooleanExpression을 반환하여 where절에 동적으로 추가됨.
      */
@@ -104,17 +92,16 @@ public class StudentQueryHandler {
         };
     }
 
-    public Optional<User> findDetailByCode(String code) {
     /**
      * 고유학번으로 학생 상세 정보 조회 (연관 데이터 전부 로딩)
      *
      * 학생 상세 페이지에서 필요한 모든 연관 데이터를 한 번의 쿼리로 가져옴.
      * fetchJoin을 사용하여 N+1 문제를 방지함.
      *
-     * @param identityNum 고유학번 (예: 20250001)
+     * @param code 고유학번 (예: 20250001)
      * @return 학생 User 엔티티 (학적이력, 보호자 정보 포함)
      */
-    public Optional<User> findDetailByIdentityNum(String identityNum) {
+    public Optional<User> findDetailByCode(String code) {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;

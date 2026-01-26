@@ -13,7 +13,6 @@ import com.example.schoolmate.board.dto.BoardResponseDTO;
 import com.example.schoolmate.board.entity.Board;
 import com.example.schoolmate.board.entity.BoardType;
 import com.example.schoolmate.board.repository.BoardRepository;
-import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
@@ -21,7 +20,7 @@ import com.example.schoolmate.common.repository.StudentInfoRepository;
 import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
-import com.example.schoolmate.parkjoon.entity.Classroom;
+import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -156,7 +155,8 @@ public class BoardService {
     @Transactional
     public BoardResponseDTO createBoard(BoardRequestDTO request, CustomUserDTO userDTO) {
         // 작성 권한 체크
-        validateWritePermission(request.getBoardType(), userDTO, request.getTargetGrade(), request.getTargetClassroomId());
+        validateWritePermission(request.getBoardType(), userDTO, request.getTargetGrade(),
+                request.getTargetClassroomId());
 
         User writer = userRepository.findById(userDTO.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -250,7 +250,8 @@ public class BoardService {
     /**
      * 작성 권한 검증
      */
-    private void validateWritePermission(BoardType type, CustomUserDTO userDTO, Integer targetGrade, Long targetClassroomId) {
+    private void validateWritePermission(BoardType type, CustomUserDTO userDTO, Integer targetGrade,
+            Long targetClassroomId) {
         // ADMIN은 모든 게시판 작성 가능
         if (isAdmin(userDTO)) {
             return;
@@ -387,18 +388,21 @@ public class BoardService {
     }
 
     private boolean isStudentInClassroom(Long userId, Long classroomId) {
-        if (classroomId == null) return false;
+        if (classroomId == null)
+            return false;
         return studentInfoRepository.findByUserUid(userId)
                 .map(info -> info.getClassroom() != null && info.getClassroom().getCid().equals(classroomId))
                 .orElse(false);
     }
 
     private boolean isHomeroomTeacher(Long userId, Long classroomId) {
-        if (classroomId == null) return false;
+        if (classroomId == null)
+            return false;
         return classroomRepository.findById(classroomId)
                 .map(classroom -> {
                     TeacherInfo teacher = classroom.getHomeroomTeacher();
-                    if (teacher == null) return false;
+                    if (teacher == null)
+                        return false;
                     return teacherInfoRepository.findByUserUid(userId)
                             .map(t -> t.getId().equals(teacher.getId()))
                             .orElse(false);
