@@ -32,15 +32,40 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     // 읽기 전용
+    // @GetMapping("/calendar/monthly")
+    // public String monthlyView(@RequestParam(defaultValue =
+    // "#{T(java.time.LocalDate).now().getYear()}") int year,
+    // @RequestParam(defaultValue =
+    // "#{T(java.time.LocalDate).now().getMonthValue()}") int month,
+    // @RequestParam(required = false) Integer grade,
+    // Model model) {
+    // List<SchoolCalendarDTO> events = calendarService.getMonthlyCalendar(year,
+    // month, grade);
+    // model.addAttribute("events", events);
+    // model.addAttribute("year", year);
+    // model.addAttribute("month", month);
+    // return "soojin/calendar/monthly";
+    // }
+
     @GetMapping("/calendar/monthly")
-    public String monthlyView(@RequestParam(defaultValue = "#{T(java.time.LocalDate).now().getYear()}") int year,
-            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().getMonthValue()}") int month,
+    public String monthlyView(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer grade,
             Model model) {
+
+        LocalDate now = LocalDate.now();
+        if (year == null)
+            year = now.getYear();
+        if (month == null)
+            month = now.getMonthValue();
+
         List<SchoolCalendarDTO> events = calendarService.getMonthlyCalendar(year, month, grade);
+
         model.addAttribute("events", events);
         model.addAttribute("year", year);
         model.addAttribute("month", month);
+
         return "soojin/calendar/monthly";
     }
 

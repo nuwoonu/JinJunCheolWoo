@@ -10,7 +10,7 @@
     <div class="d-flex justify-content-between align-items-center mb-24">
         <h2>학사 일정 목록</h2>
         <div>
-            <a th:href="@{/soojin/calendar/monthly}" class="btn btn-outline-secondary">📅 달력 보기</a>
+            <a th:href="@{/soojin/calendar/monthly}" class="btn btn-outline-secondary">달력 보기</a>
             <a sec:authorize="hasRole('ADMIN')" th:href="@{/soojin/admin/add}" class="btn btn-primary">+ 일정 등록</a>
         </div>
     </div>

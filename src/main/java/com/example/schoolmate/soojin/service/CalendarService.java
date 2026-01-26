@@ -24,6 +24,7 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @RequiredArgsConstructor
 public class CalendarService {
+    
     private final CalendarRepository calendarRepository;
 
     // ✅ 조회 (모든 사용자 - 관리자, 선생님, 학생)
