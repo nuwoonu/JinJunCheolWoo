@@ -12,6 +12,6 @@ public enum UserRole {
     PARENT("학부모"),
     ADMIN("관리자"),
     OTHER("기타");
-
+    
     private final String description;
 }

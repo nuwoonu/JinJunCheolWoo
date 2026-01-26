@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Gender;
@@ -30,7 +29,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = { "grades", "assignments", "familyRelations" })
+@ToString(exclude = { "assignments", "familyRelations" })
 public class StudentInfo extends BaseInfo {
     @Column(nullable = false)
     private Long studentNumber; // 학번
