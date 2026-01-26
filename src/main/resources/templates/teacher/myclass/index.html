@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학급 현황</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div class="">
+          <h6 class="fw-semibold mb-0">나의 학급</h6>
+          <p class="text-neutral-600 mt-4 mb-0">학급 현황</p>
+        </div>
+        <ul class="d-flex align-items-center gap-2">
+          <li class="fw-medium">
+            <a th:href="@{/dashboard}" class="d-flex align-items-center gap-1 hover-text-primary">
+              <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+              홈
+            </a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">나의 학급</li>
+          <li>-</li>
+          <li class="fw-medium">학급 현황</li>
+        </ul>
+      </div>
+
+      <!-- 학급이 없는 경우 -->
+      <div th:if="${classInfo == null}" class="card">
+        <div class="card-body text-center py-48">
+          <iconify-icon icon="mdi:account-group-outline" class="text-neutral-400 mb-16" style="font-size: 64px;"></iconify-icon>
+          <h5 class="text-neutral-600 mb-8">담당 학급이 없습니다</h5>
+          <p class="text-neutral-500 mb-0" th:text="${errorMessage}">관리자에게 문의하세요.</p>
+        </div>
+      </div>
+
+      <!-- 학급 정보 카드들 -->
+      <div th:if="${classInfo != null}" class="row gy-4">
+        <!-- 학급 정보 카드 -->
+        <div class="col-xxl-4 col-lg-6">
+          <div class="card radius-12 h-100">
+            <div class="card-body p-24">
+              <div class="d-flex align-items-center gap-16 mb-24">
+                <div class="w-64-px h-64-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center">
+                  <iconify-icon icon="mdi:google-classroom" class="text-primary-600 text-3xl"></iconify-icon>
+                </div>
+                <div>
+                  <h6 class="mb-4">학급 정보</h6>
+                  <span class="text-secondary-light" th:text="${classInfo.year} + '학년도'"></span>
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-12">
+                <div class="d-flex justify-content-between">
+                  <span class="text-secondary-light">학년</span>
+                  <span class="fw-semibold" th:text="${classInfo.grade} + '학년'"></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-secondary-light">반</span>
+                  <span class="fw-semibold" th:text="${classInfo.classNum} + '반'"></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-secondary-light">학급명</span>
+                  <span class="fw-semibold" th:text="${classInfo.className} ?: '-'"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 담임 교사 카드 -->
+        <div class="col-xxl-4 col-lg-6">
+          <div class="card radius-12 h-100">
+            <div class="card-body p-24">
+              <div class="d-flex align-items-center gap-16 mb-24">
+                <div class="w-64-px h-64-px bg-success-100 rounded-circle d-flex justify-content-center align-items-center">
+                  <iconify-icon icon="mdi:account-tie" class="text-success-600 text-3xl"></iconify-icon>
+                </div>
+                <div>
+                  <h6 class="mb-4">담임 교사</h6>
+                  <span class="text-secondary-light">담당 선생님 정보</span>
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-12">
+                <div class="d-flex justify-content-between">
+                  <span class="text-secondary-light">이름</span>
+                  <span class="fw-semibold" th:text="${classInfo.homeroomTeacherName} ?: '-'"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 학생 수 카드 -->
+        <div class="col-xxl-4 col-lg-6">
+          <div class="card radius-12 h-100">
+            <div class="card-body p-24">
+              <div class="d-flex align-items-center gap-16 mb-24">
+                <div class="w-64-px h-64-px bg-warning-100 rounded-circle d-flex justify-content-center align-items-center">
+                  <iconify-icon icon="mdi:account-group" class="text-warning-600 text-3xl"></iconify-icon>
+                </div>
+                <div>
+                  <h6 class="mb-4">학생 현황</h6>
+                  <span class="text-secondary-light">총 학생 수</span>
+                </div>
+              </div>
+              <div class="text-center">
+                <span class="text-5xl fw-bold text-primary-600" th:text="${classInfo.totalStudents}">0</span>
+                <span class="text-xl text-secondary-light">명</span>
+              </div>
+              <div class="mt-16 text-center">
+                <a th:href="@{/teacher/myclass/students}" class="btn btn-primary-600 radius-8">
+                  <iconify-icon icon="mdi:account-details" class="me-4"></iconify-icon>
+                  학생 관리
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 학생 목록 미리보기 -->
+        <div class="col-12">
+          <div class="card radius-12">
+            <div class="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
+              <h6 class="mb-0">학생 목록</h6>
+              <a th:href="@{/teacher/myclass/students}" class="btn btn-sm btn-outline-primary-600">
+                전체 보기
+                <iconify-icon icon="mdi:arrow-right" class="ms-4"></iconify-icon>
+              </a>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table bordered-table mb-0">
+                  <thead>
+                    <tr>
+                      <th scope="col">번호</th>
+                      <th scope="col">이름</th>
+                      <th scope="col">연락처</th>
+                      <th scope="col">이메일</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:if="${#lists.isEmpty(classInfo.students)}">
+                      <td colspan="4" class="text-center py-24 text-secondary-light">등록된 학생이 없습니다.</td>
+                    </tr>
+                    <tr th:each="student, stat : ${classInfo.students}" th:if="${stat.index < 5}">
+                      <td th:text="${student.studentNumber}"></td>
+                      <td th:text="${student.name}"></td>
+                      <td th:text="${student.phone} ?: '-'"></td>
+                      <td th:text="${student.email} ?: '-'"></td>
+                    </tr>
+                    <tr th:if="${classInfo.totalStudents > 5}">
+                      <td colspan="4" class="text-center py-8 text-secondary-light">
+                        외 <span th:text="${classInfo.totalStudents - 5}"></span>명...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="css">
+    </th:block>
+
+    <th:block layout:fragment="script">
+    </th:block>
+  </body>
+</html>

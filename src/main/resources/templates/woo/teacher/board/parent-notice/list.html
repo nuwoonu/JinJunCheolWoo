@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title th:text="${boardTypeName}">학부모 공지</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 class="fw-semibold mb-0">게시판</h6>
+          <p class="text-neutral-600 mt-4 mb-0" th:text="${boardTypeName}">학부모 공지</p>
+        </div>
+        <ul class="d-flex align-items-center gap-2">
+          <li class="fw-medium">
+            <a th:href="@{/dashboard}" class="d-flex align-items-center gap-1 hover-text-primary">
+              <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+              홈
+            </a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">게시판</li>
+          <li>-</li>
+          <li class="fw-medium" th:text="${boardTypeName}">학부모 공지</li>
+        </ul>
+      </div>
+
+      <!-- 학년 탭 (선택적) -->
+      <div class="card radius-12 mb-24">
+        <div class="card-body p-16">
+          <div class="d-flex gap-8">
+            <a th:href="@{/board/parent-notice}"
+               th:classappend="${targetGrade == null} ? 'btn-primary-600' : 'btn-outline-primary-600'"
+               class="btn radius-8">전체</a>
+            <a th:href="@{/board/parent-notice/grade/1}"
+               th:classappend="${targetGrade == 1} ? 'btn-primary-600' : 'btn-outline-primary-600'"
+               class="btn radius-8">1학년</a>
+            <a th:href="@{/board/parent-notice/grade/2}"
+               th:classappend="${targetGrade == 2} ? 'btn-primary-600' : 'btn-outline-primary-600'"
+               class="btn radius-8">2학년</a>
+            <a th:href="@{/board/parent-notice/grade/3}"
+               th:classappend="${targetGrade == 3} ? 'btn-primary-600' : 'btn-outline-primary-600'"
+               class="btn radius-8">3학년</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 게시판 목록 -->
+      <div class="card radius-12">
+        <div class="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
+          <h6 class="mb-0" th:text="${boardTypeName}">학부모 공지</h6>
+          <!-- 작성 버튼 (교사/ADMIN만) -->
+          <a th:href="@{/board/parent-notice/write(targetGrade=${targetGrade})}"
+             class="btn btn-primary-600 radius-8"
+             sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+            <iconify-icon icon="mdi:plus" class="me-4"></iconify-icon>
+            글쓰기
+          </a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table bordered-table mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 60px;">번호</th>
+                  <th scope="col">제목</th>
+                  <th scope="col" style="width: 100px;">대상</th>
+                  <th scope="col" style="width: 120px;">작성자</th>
+                  <th scope="col" style="width: 120px;">작성일</th>
+                  <th scope="col" style="width: 80px;">조회</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:if="${#lists.isEmpty(boards.content)}">
+                  <td colspan="6" class="text-center py-24 text-secondary-light">등록된 게시물이 없습니다.</td>
+                </tr>
+                <tr th:each="board, stat : ${boards.content}"
+                    th:classappend="${board.pinned} ? 'bg-primary-50' : ''">
+                  <td>
+                    <span th:if="${board.pinned}" class="badge bg-danger-100 text-danger-600">공지</span>
+                    <span th:unless="${board.pinned}" th:text="${boards.totalElements - (currentPage * boards.size) - stat.index}"></span>
+                  </td>
+                  <td>
+                    <a th:href="@{/board/parent-notice/{id}(id=${board.id})}"
+                       class="text-primary-600 hover-text-primary-700 fw-medium"
+                       th:text="${board.title}">
+                    </a>
+                  </td>
+                  <td>
+                    <span th:if="${board.targetClassroomName != null}" th:text="${board.targetClassroomName}" class="badge bg-info-100 text-info-600"></span>
+                    <span th:elseif="${board.targetGrade != null}" th:text="${board.targetGrade} + '학년'" class="badge bg-success-100 text-success-600"></span>
+                    <span th:else class="badge bg-primary-100 text-primary-600">전체</span>
+                  </td>
+                  <td th:text="${board.writerName}"></td>
+                  <td th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd')}"></td>
+                  <td th:text="${board.viewCount}"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 페이지네이션 -->
+          <div class="d-flex justify-content-center py-16" th:if="${boards.totalPages > 1}">
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item" th:classappend="${boards.first} ? 'disabled' : ''">
+                  <a class="page-link"
+                     th:href="${targetGrade != null} ? @{/board/parent-notice/grade/{grade}(grade=${targetGrade}, page=${currentPage - 1})} : @{/board/parent-notice(page=${currentPage - 1})}">
+                    <iconify-icon icon="mdi:chevron-left"></iconify-icon>
+                  </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, boards.totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active' : ''">
+                  <a class="page-link"
+                     th:href="${targetGrade != null} ? @{/board/parent-notice/grade/{grade}(grade=${targetGrade}, page=${i})} : @{/board/parent-notice(page=${i})}"
+                     th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${boards.last} ? 'disabled' : ''">
+                  <a class="page-link"
+                     th:href="${targetGrade != null} ? @{/board/parent-notice/grade/{grade}(grade=${targetGrade}, page=${currentPage + 1})} : @{/board/parent-notice(page=${currentPage + 1})}">
+                    <iconify-icon icon="mdi:chevron-right"></iconify-icon>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="css">
+    </th:block>
+
+    <th:block layout:fragment="script">
+    </th:block>
+  </body>
+</html>

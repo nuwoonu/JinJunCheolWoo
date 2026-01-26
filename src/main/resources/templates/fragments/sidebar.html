@@ -106,6 +106,28 @@
         </a>
       </li>
 
+      <!-- 나의 학급 - TEACHER만 -->
+      <li class="dropdown" sec:authorize="hasRole('TEACHER')">
+        <a href="javascript:void(0)">
+          <i class="ri-team-line"></i>
+          <span>나의 학급</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/teacher/myclass}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학급 현황
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/teacher/myclass/students}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생 관리
+            </a>
+          </li>
+        </ul>
+      </li>
+
       <!-- Students - TEACHER, ADMIN, STUDENT만 (학부모 제외) -->
       <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN', 'STUDENT')">
         <a href="javascript:void(0)">
@@ -169,18 +191,6 @@
               선생님 목록
             </a>
           </li>
-          <li>
-            <a th:href="@{/teacher/edit}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              수정
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/teacher/details}">
-              <i class="ri-circle-fill circle-icon w-auto"></i>
-              자세히
-            </a>
-          </li>
         </ul>
       </li>
 
@@ -200,21 +210,65 @@
         </ul>
       </li>
 
-      <!-- 게시판 - STUDENT 제외 (ADMIN, TEACHER, PARENT만) -->
-      <li class="dropdown" sec:authorize="hasAnyRole('ADMIN', 'TEACHER', 'PARENT')">
+      <!-- [woo] 공지사항 - 전체 -->
+      <li class="dropdown" sec:authorize="isAuthenticated()">
+        <a href="javascript:void(0)">
+          <i class="ri-megaphone-line"></i>
+          <span>공지사항</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/board/school-notice}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학교 공지
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- [woo] 게시판 - 학생/교사/ADMIN -->
+      <li class="dropdown" sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-article-line"></i>
           <span>게시판</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/parent/notice/list}">
+            <a th:href="@{/board/grade/1}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학년 게시판
+            </a>
+          </li>
+          <li sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
+            <a th:href="@{/board/class/1/1}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              우리 반 게시판
+            </a>
+          </li>
+          <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+            <a th:href="@{/board/teacher}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              교직원 게시판
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- [woo] 학부모 게시판 - 학부모/교사/ADMIN -->
+      <li class="dropdown" sec:authorize="hasAnyRole('PARENT', 'TEACHER', 'ADMIN')">
+        <a href="javascript:void(0)">
+          <i class="ri-parent-line"></i>
+          <span>학부모 게시판</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a th:href="@{/board/parent-notice}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학부모 공지
             </a>
           </li>
           <li>
-            <a th:href="@{/parent/board/list}">
+            <a th:href="@{/board/parent}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학부모 게시판
             </a>

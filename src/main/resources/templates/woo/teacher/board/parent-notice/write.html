@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학부모 공지 - 작성</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 class="fw-semibold mb-0">게시판</h6>
+          <p class="text-neutral-600 mt-4 mb-0">학부모 공지 작성</p>
+        </div>
+        <ul class="d-flex align-items-center gap-2">
+          <li class="fw-medium">
+            <a th:href="@{/dashboard}" class="d-flex align-items-center gap-1 hover-text-primary">
+              <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+              홈
+            </a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">게시판</li>
+          <li>-</li>
+          <li class="fw-medium">
+            <a th:href="@{/board/parent-notice}" class="hover-text-primary">학부모 공지</a>
+          </li>
+          <li>-</li>
+          <li class="fw-medium">작성</li>
+        </ul>
+      </div>
+
+      <!-- 작성 폼 -->
+      <div class="card radius-12">
+        <div class="card-header py-16 px-24 border-bottom">
+          <h6 class="mb-0">학부모 공지 작성</h6>
+        </div>
+        <div class="card-body p-24">
+          <form id="boardForm">
+            <input type="hidden" name="boardType" th:value="${boardType}">
+
+            <div class="mb-20">
+              <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                공지 대상
+              </label>
+              <select name="targetGrade" class="form-select radius-8">
+                <option value="">전체 학부모</option>
+                <option value="1" th:selected="${targetGrade == 1}">1학년 학부모</option>
+                <option value="2" th:selected="${targetGrade == 2}">2학년 학부모</option>
+                <option value="3" th:selected="${targetGrade == 3}">3학년 학부모</option>
+              </select>
+            </div>
+
+            <div class="mb-20">
+              <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                제목 <span class="text-danger-600">*</span>
+              </label>
+              <input type="text" name="title" class="form-control radius-8" placeholder="제목을 입력하세요" required>
+            </div>
+
+            <div class="mb-20">
+              <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                내용 <span class="text-danger-600">*</span>
+              </label>
+              <textarea name="content" class="form-control radius-8" rows="15" placeholder="내용을 입력하세요" required></textarea>
+            </div>
+
+            <div class="mb-20" sec:authorize="hasRole('ADMIN')">
+              <label class="form-check-label d-flex align-items-center gap-8">
+                <input type="checkbox" name="isPinned" class="form-check-input">
+                <span>상단 고정</span>
+              </label>
+            </div>
+
+            <div class="d-flex gap-12">
+              <button type="submit" class="btn btn-primary-600 radius-8">
+                <iconify-icon icon="mdi:check" class="me-4"></iconify-icon>
+                등록
+              </button>
+              <a th:href="@{/board/parent-notice}" class="btn btn-secondary-600 radius-8">
+                <iconify-icon icon="mdi:close" class="me-4"></iconify-icon>
+                취소
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <th:block layout:fragment="css">
+    </th:block>
+
+    <th:block layout:fragment="script">
+      <script th:inline="none">
+        document.getElementById('boardForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const formData = new FormData(this);
+          const targetGradeValue = formData.get('targetGrade');
+
+          const data = {
+            boardType: formData.get('boardType'),
+            title: formData.get('title'),
+            content: formData.get('content'),
+            targetGrade: targetGradeValue ? parseInt(targetGradeValue) : null,
+            isPinned: formData.get('isPinned') === 'on'
+          };
+
+          fetch('/api/board', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          })
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              return response.text().then(text => { throw new Error(text); });
+            }
+          })
+          .then(result => {
+            alert('등록되었습니다.');
+            location.href = '/board/parent-notice/' + result.id;
+          })
+          .catch(error => {
+            alert('등록 실패: ' + error.message);
+          });
+        });
+      </script>
+    </th:block>
+  </body>
+</html>

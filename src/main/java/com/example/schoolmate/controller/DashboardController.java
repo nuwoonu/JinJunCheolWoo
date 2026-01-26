@@ -17,12 +17,16 @@ import com.example.schoolmate.board.service.ParentBoardService;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
+import com.example.schoolmate.woo.dto.ClassStudentDTO;
+import com.example.schoolmate.woo.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -36,6 +40,8 @@ public class DashboardController {
     private final ProfileRepository profileRepository;
     private final NoticeService noticeService;
     private final ParentBoardService parentBoardService;
+    private final TeacherService teacherService;
+    private final TeacherInfoRepository teacherInfoRepository;
 
     @GetMapping("/board")
     public String getBoard() {
@@ -70,7 +76,24 @@ public class DashboardController {
     }
 
     @GetMapping("/teacher/dashboard")
-    public String getTeacherDashboard() {
+    public String getTeacherDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+        int currentYear = LocalDate.now().getYear();
+
+        // 교사 정보 조회 후 학급 정보 가져오기
+        TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
+        if (teacherInfo != null) {
+            try {
+                ClassStudentDTO classInfo = teacherService.getMyClassStudents(teacherInfo.getId(), currentYear);
+                model.addAttribute("classInfo", classInfo);
+            } catch (Exception e) {
+                // 담당 학급이 없는 경우
+                model.addAttribute("classInfo", null);
+            }
+        } else {
+            model.addAttribute("classInfo", null);
+        }
+
         return "dashboard/teacher";
     }
 
