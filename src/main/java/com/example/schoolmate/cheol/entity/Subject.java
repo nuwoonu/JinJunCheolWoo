@@ -24,7 +24,7 @@ import lombok.ToString;
 
 @Getter
 @Builder
-@ToString()
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
