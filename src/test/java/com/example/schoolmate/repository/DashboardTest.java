@@ -30,7 +30,7 @@ public class DashboardTest {
                 .title("행사1")
                 .startDate(LocalDate.of(2026, 1, 27))
                 .endDate(LocalDate.of(2026, 1, 28))
-                .eventType(EventType.SCHOOL_EVENT)
+                .eventType(EventType.EVENT)
                 .targetGrade(1)
                 .description("1학년 행사1")
                 .build();
