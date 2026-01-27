@@ -31,6 +31,13 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 학생 관리 서비스
+ * 
+ * 학생(User + StudentInfo) 데이터에 대한 CRUD 및 비즈니스 로직을 담당합니다.
+ * - 학번 생성 및 중복 체크
+ * - 학급 배정 이력 관리 및 보호자 관계(FamilyRelation) 설정
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional

@@ -14,8 +14,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 학생 데이터 전송 객체 (DTO)
+ * 
+ * 학생 관리 기능에서 사용되는 요청/응답 객체들을 포함합니다.
+ */
 public class StudentDTO {
 
+    /**
+     * 학생 검색 조건
+     * - type: 검색 필드 (이름, 이메일, 학번)
+     * - keyword: 검색어
+     * - status: 학적 상태 (재학, 휴학 등)
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -26,6 +37,10 @@ public class StudentDTO {
         private String status = StudentStatus.ENROLLED.name(); // 기본값: 재학
     }
 
+    /**
+     * 학생 신규 등록 요청
+     * - 계정 정보(이름, 이메일, 비번)와 초기 학급 배정 정보를 포함합니다.
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -57,6 +72,9 @@ public class StudentDTO {
         }
     }
 
+    /**
+     * 학생 등록 시 보호자 연동 정보
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -66,6 +84,10 @@ public class StudentDTO {
         private String relationship;
     }
 
+    /**
+     * 학생 기본 정보 수정 요청
+     * - 이름, 학번, 상태, 특이사항 등을 수정합니다.
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -79,6 +101,9 @@ public class StudentDTO {
         private String specialNotes;
     }
 
+    /**
+     * 학적(반 배정) 이력 추가/수정 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -91,6 +116,10 @@ public class StudentDTO {
         private int studentNum;
     }
 
+    /**
+     * 학생 목록 조회용 요약 정보 응답
+     * - 목록 테이블에 표시될 핵심 정보만 담습니다.
+     */
     @Getter
     public static class SummaryResponse {
         private Long uid;
@@ -116,6 +145,10 @@ public class StudentDTO {
         }
     }
 
+    /**
+     * 학생 상세 정보 응답
+     * - 기본 정보, 학적 이력, 보호자 목록 등 모든 정보를 포함합니다.
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -147,6 +180,9 @@ public class StudentDTO {
         }
     }
 
+    /**
+     * 학생 상세 정보 내 보호자 정보
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -166,6 +202,10 @@ public class StudentDTO {
         }
     }
 
+    /**
+     * CSV 파일 일괄 등록 요청
+     * - OpenCSV 라이브러리와 매핑됩니다.
+     */
     @Getter
     @Setter
     public static class CsvImportRequest {

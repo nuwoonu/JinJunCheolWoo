@@ -22,10 +22,18 @@ import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.parkjoon.service.AdminParentService;
+import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.parkjoon.service.AdminStudentService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 학생 관리 컨트롤러
+ * 
+ * 학생 정보의 등록, 조회, 수정, 상태 변경을 처리합니다.
+ * - 학생 목록 검색 및 상세 조회
+ * - 신규 학생 등록(개별/CSV) 및 학적 이력(Assignment) 관리
+ */
 @Controller
 @RequestMapping("/parkjoon/admin/students")
 @RequiredArgsConstructor
@@ -33,6 +41,7 @@ public class AdminStudentController {
 
     private final AdminStudentService adminStudentService;
     private final AdminParentService adminParentService; // 학부모 검색용
+    private final SystemSettingService systemSettingService;
 
     // 1. 목록 페이지
     @GetMapping("")
@@ -54,7 +63,11 @@ public class AdminStudentController {
     // 2. 등록 페이지 이동
     @GetMapping("/create")
     public String createForm(Model model) {
-        model.addAttribute("createRequest", new StudentDTO.CreateRequest());
+        StudentDTO.CreateRequest request = new StudentDTO.CreateRequest();
+        request.setYear(systemSettingService.getCurrentSchoolYear()); // 기본 학년도 설정
+
+        model.addAttribute("createRequest", request);
+        model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
         model.addAttribute("relationships", FamilyRelationship.values());
         return "parkjoon/admin/students/create";
     }
@@ -68,6 +81,7 @@ public class AdminStudentController {
             StudentDTO.DetailResponse student = adminStudentService.getStudentDetailByCode(code);
             model.addAttribute("student", student);
             model.addAttribute("relationships", FamilyRelationship.values());
+            model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
             return "parkjoon/admin/students/detail";
         } catch (IllegalArgumentException e) {
             // 존재하지 않는 학번일 경우 메시지를 담아 리다이렉트

@@ -27,6 +27,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 학급(반) 정보 엔티티
+ * 
+ * 특정 학년도의 학급 구성 정보를 관리합니다.
+ * - 학년도, 학년, 반 번호, 담임 교사 및 소속 학생들
+ */
 @Entity
 @Table(name = "classroom", uniqueConstraints = {
         // 같은 연도에 같은 학년 같은 반이 중복되면 안됨

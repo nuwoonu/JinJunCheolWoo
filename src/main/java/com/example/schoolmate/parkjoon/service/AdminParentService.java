@@ -34,6 +34,13 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 학부모 관리 서비스
+ * 
+ * 학부모(User + ParentInfo) 데이터에 대한 CRUD 및 비즈니스 로직을 담당합니다.
+ * - 학부모 계정 생성 및 자녀(Student)와의 연동(FamilyRelation) 관리
+ * - CSV 일괄 등록 및 상태 변경 기능 제공
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

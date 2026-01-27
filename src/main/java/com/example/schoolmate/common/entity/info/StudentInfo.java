@@ -24,6 +24,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * 학생 상세 정보 엔티티
+ * 
+ * 학생 고유의 학적 정보를 관리합니다.
+ * - 학번(studentNumber), 생년월일, 주소, 연락처
+ * - 학적 상태(재학, 휴학 등) 및 학급 배정 이력(assignments)
+ */
 @Entity
 @DiscriminatorValue("STUDENT")
 @Getter
@@ -31,7 +38,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(exclude = { "assignments", "familyRelations" })
 public class StudentInfo extends BaseInfo {
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long studentNumber; // 학번
 
     private LocalDate birthDate; // 생일
@@ -45,6 +52,9 @@ public class StudentInfo extends BaseInfo {
 
     // 전체 학번 생성 메서드 (표시용)
     public String getFullStudentNumber() {
+        if (classroom == null || studentNumber == null) {
+            return "-";
+        }
         return String.format("%d-%d-%02d", classroom.getYear(), classroom.getClassNum(), studentNumber);
         // 예: "1-3-05" (1학년 3반 5번)
     }
