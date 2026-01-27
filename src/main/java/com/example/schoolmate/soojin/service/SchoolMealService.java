@@ -22,7 +22,7 @@ public class SchoolMealService {
 
         private final SchoolMealRepository schoolMealRepository;
 
-        // ✅ 조회 (모든 사용자 - 관리자, 선생님, 학생)
+        // ✅조회 (모든 사용자 - 관리자, 선생님, 학생)
 
         // 1. 월별 급식 조회
         @Transactional(readOnly = true)
