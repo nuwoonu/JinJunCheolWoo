@@ -16,12 +16,12 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 
     // 검색 기능
     @Query("SELECT n, n.writer FROM Notice n " +
-           "WHERE (:type IS NULL OR :type = '' OR " +
-           "(:type = 't' AND n.title LIKE %:keyword%) OR " +
-           "(:type = 'c' AND n.content LIKE %:keyword%) OR " +
-           "(:type = 'w' AND n.writer.name LIKE %:keyword%) OR " +
-           "(:type = 'tc' AND (n.title LIKE %:keyword% OR n.content LIKE %:keyword%))) " +
-           "ORDER BY n.nno DESC")
+            "WHERE (:type IS NULL OR :type = '' OR " +
+            "(:type = 't' AND n.title LIKE %:keyword%) OR " +
+            "(:type = 'c' AND n.content LIKE %:keyword%) OR " +
+            "(:type = 'w' AND n.writer.name LIKE %:keyword%) OR " +
+            "(:type = 'tc' AND (n.title LIKE %:keyword% OR n.content LIKE %:keyword%))) " +
+            "ORDER BY n.nno DESC")
     Page<Object[]> searchList(@Param("type") String type, @Param("keyword") String keyword, Pageable pageable);
 
     // 단건 조회 (작성자 포함)

@@ -31,8 +31,8 @@ public class AdminScheduleApiController {
 
     @GetMapping
     public ResponseEntity<List<SchoolCalendarDTO.Response>> getEvents(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         // FullCalendar가 보내는 시간 포함 ISO 포맷을 받아서 LocalDate로 변환
         return ResponseEntity.ok(adminScheduleService.getEvents(start.toLocalDate(), end.toLocalDate()));
     }

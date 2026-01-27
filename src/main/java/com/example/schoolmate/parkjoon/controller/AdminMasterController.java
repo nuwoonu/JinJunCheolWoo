@@ -56,7 +56,7 @@ public class AdminMasterController {
     }
 
     @PostMapping("/subjects/delete")
-    public String deleteSubject(@RequestParam String code, RedirectAttributes ra) {
+    public String deleteSubject(@RequestParam("code") String code, RedirectAttributes ra) {
         adminSubjectService.deleteSubject(code);
         ra.addFlashAttribute("successMessage", "과목이 삭제되었습니다.");
         return "redirect:/parkjoon/admin/master/subjects";
@@ -69,7 +69,8 @@ public class AdminMasterController {
     }
 
     @PostMapping("/settings")
-    public String updateSettings(@RequestParam int year, @RequestParam int semester, RedirectAttributes ra) {
+    public String updateSettings(@RequestParam("year") int year, @RequestParam("semester") int semester,
+            RedirectAttributes ra) {
         systemSettingService.updateSystemSetting(year, semester);
         ra.addFlashAttribute("successMessage", "시스템 설정이 저장되었습니다.");
         return "redirect:/parkjoon/admin/master/settings";
