@@ -2,8 +2,11 @@ package com.example.schoolmate.common.entity.info;
 
 import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.Gender;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -32,4 +35,7 @@ public abstract class BaseInfo extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private String code;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 }

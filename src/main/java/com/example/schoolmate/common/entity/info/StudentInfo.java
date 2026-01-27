@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
-import com.example.schoolmate.common.entity.user.constant.Gender;
 import com.example.schoolmate.common.entity.Classroom;
 
 import jakarta.persistence.CascadeType;
@@ -40,9 +39,6 @@ public class StudentInfo extends BaseInfo {
     private String address; // 주소
 
     private String phone; // 연락처
-
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Classroom classroom;
