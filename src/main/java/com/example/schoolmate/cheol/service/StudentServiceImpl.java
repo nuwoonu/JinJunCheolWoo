@@ -11,9 +11,9 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.repository.StudentInfoRepository;
 import com.example.schoolmate.common.entity.Classroom;
-import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 
 import lombok.RequiredArgsConstructor;
 

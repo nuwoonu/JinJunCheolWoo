@@ -26,11 +26,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.parkjoon.service.AdminClassService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 학급 관리 컨트롤러
+ * 
+ * 학급(Classroom)의 생성, 조회, 수정, 삭제 및 학생 배정 기능을 담당합니다.
+ * - 학년도/학년/반 기준 학급 목록 조회
+ * - 담임 교사 배정 및 학생 구성 관리, CSV 일괄 등록 지원
+ */
 @Controller
 @RequestMapping("/parkjoon/admin/classes")
 @RequiredArgsConstructor
@@ -39,13 +47,14 @@ public class AdminClassController {
 
     private final AdminClassService adminClassService;
     private final UserRepository userRepository;
+    private final SystemSettingService systemSettingService;
 
     @GetMapping
     public String list(@ModelAttribute ClassDTO.SearchCondition condition,
             @PageableDefault(size = 20, sort = "cid", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
         if (condition.getYear() == null) {
-            condition.setYear(LocalDate.now().getYear());
+            condition.setYear(systemSettingService.getCurrentSchoolYear());
         }
 
         Page<ClassDTO.DetailResponse> classes = adminClassService.getClassList(condition, pageable);
@@ -58,7 +67,7 @@ public class AdminClassController {
     public String createForm(Model model) {
         log.info("========== [AdminClassController] GET /create 진입 ==========");
         try {
-            model.addAttribute("currentYear", LocalDate.now().getYear());
+            model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
 
             log.info("교사 목록 조회 요청 시작");
             List<ClassDTO.TeacherSelectResponse> teachers = adminClassService.getTeacherListForDropdown();

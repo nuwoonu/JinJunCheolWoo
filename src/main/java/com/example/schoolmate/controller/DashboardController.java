@@ -23,6 +23,7 @@ import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.TeacherInfoRepository;
+import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
@@ -43,6 +44,7 @@ public class DashboardController {
     private final ParentBoardService parentBoardService;
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
+    private final SystemSettingService systemSettingService;
 
     @GetMapping("/board")
     public String getBoard() {
@@ -84,7 +86,7 @@ public class DashboardController {
     @GetMapping("/teacher/dashboard")
     public String getTeacherDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
         Long uid = authUserDTO.getCustomUserDTO().getUid();
-        int currentYear = LocalDate.now().getYear();
+        int currentYear = systemSettingService.getCurrentSchoolYear();
 
         // 교사 정보 조회 후 학급 정보 가져오기
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
@@ -149,7 +151,7 @@ public class DashboardController {
         }
 
         // 현재 학년도 배정 정보
-        int currentYear = LocalDate.now().getYear();
+        int currentYear = systemSettingService.getCurrentSchoolYear();
         StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
 
         return ChildDTO.builder()

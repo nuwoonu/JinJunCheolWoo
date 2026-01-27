@@ -11,6 +11,12 @@ import com.example.schoolmate.common.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 알림 발송 서비스
+ * 
+ * 관리자가 특정 사용자(학부모, 교사 등)에게 시스템 알림을 전송하는 기능을 담당합니다.
+ * - 알림 엔티티 생성 및 저장
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional

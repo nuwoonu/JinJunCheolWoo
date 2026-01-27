@@ -25,12 +25,19 @@ import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.ClassroomHistoryRepository;
+import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 학급 관리 서비스
+ * 
+ * 학급 엔티티에 대한 비즈니스 로직을 수행합니다.
+ * - 학급 생성 시 중복 체크, 학생 배정/제외 로직
+ * - 학급 상태 변경 및 변경 이력(History) 기록
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional

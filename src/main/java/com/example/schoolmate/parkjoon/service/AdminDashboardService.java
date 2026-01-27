@@ -12,6 +12,12 @@ import com.example.schoolmate.common.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 대시보드 서비스
+ * 
+ * 대시보드에 필요한 각종 통계 데이터를 DB에서 조회하여 DTO로 변환합니다.
+ * - UserRepository를 통해 사용자 유형별(학생, 교사, 직원, 학부모) 상태별 카운트 조회
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

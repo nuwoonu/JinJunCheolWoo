@@ -11,8 +11,8 @@ import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 
 import lombok.RequiredArgsConstructor;
 

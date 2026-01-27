@@ -29,6 +29,13 @@ import com.example.schoolmate.parkjoon.service.AdminStaffService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 교직원 관리 컨트롤러
+ * 
+ * 교직원 정보의 등록, 조회, 수정, 상태 변경을 처리합니다.
+ * - 부서, 직함, 고용 형태별 교직원 목록 조회
+ * - 신규 교직원 등록 및 상세 정보 관리
+ */
 @Controller
 @RequestMapping("/parkjoon/admin/staffs")
 @RequiredArgsConstructor

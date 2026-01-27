@@ -47,7 +47,7 @@ public class SchoolCalendar extends BaseEntity {
 
     // 일정 유형
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private EventType eventType;
 
     // 대상 학년 (null - 전체)
@@ -79,6 +79,16 @@ public class SchoolCalendar extends BaseEntity {
     }
 
     public void changeDescription(String description) {
+        this.description = description;
+    }
+
+    public void update(String title, LocalDate startDate, LocalDate endDate, EventType eventType, Integer targetGrade,
+            String description) {
+        this.title = title;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.eventType = eventType;
+        this.targetGrade = targetGrade;
         this.description = description;
     }
 

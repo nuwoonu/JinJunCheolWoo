@@ -2,8 +2,11 @@ package com.example.schoolmate.common.entity.info;
 
 import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.Gender;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +19,13 @@ import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 사용자 상세 정보의 최상위 추상 클래스
+ * 
+ * User 엔티티와 1:N 관계를 맺으며, 사용자의 역할(Role)별 구체적인 정보를 담습니다.
+ * - 상속 전략: TABLE_PER_CLASS (구현 클래스마다 별도의 테이블 생성)
+ * - 공통 필드: 고유 식별 코드(code), 연관된 User(uid)
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Getter
@@ -32,4 +42,7 @@ public abstract class BaseInfo extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private String code;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 }

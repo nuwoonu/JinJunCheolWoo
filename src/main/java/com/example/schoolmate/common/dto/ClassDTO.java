@@ -17,8 +17,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 학급 데이터 전송 객체 (DTO)
+ * 
+ * 학급 관리 기능에서 사용되는 요청/응답 객체들을 포함합니다.
+ */
 public class ClassDTO {
 
+    /**
+     * 학급 검색 조건
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -29,6 +37,9 @@ public class ClassDTO {
         private String status = ClassroomStatus.ACTIVE.name(); // 기본값: 운영 중
     }
 
+    /**
+     * 학급 생성 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -44,6 +55,9 @@ public class ClassDTO {
         private Integer randomCount; // 랜덤 배정할 인원 수
     }
 
+    /**
+     * 학급 정보 수정 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -56,6 +70,10 @@ public class ClassDTO {
         private Long teacherUid;
     }
 
+    /**
+     * 학급 상세 정보 및 목록 조회용 응답
+     * - 담임 교사, 학생 수, 학생 명단, 변경 이력 등을 포함합니다.
+     */
     @Getter
     @Setter
     @Builder
@@ -108,6 +126,9 @@ public class ClassDTO {
         }
     }
 
+    /**
+     * 학급 상세 내 학생 명단 정보
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -121,12 +142,18 @@ public class ClassDTO {
         private String status;
     }
 
+    /**
+     * 학생 배정 요청
+     */
     @Getter
     @Setter
     public static class StudentAssignmentRequest {
         private List<Long> studentUids;
     }
 
+    /**
+     * 담임 교사 선택 드롭다운용 응답
+     */
     @Getter
     @Builder
     public static class TeacherSelectResponse {
@@ -145,6 +172,9 @@ public class ClassDTO {
         }
     }
 
+    /**
+     * CSV 파일 일괄 생성 요청
+     */
     @Getter
     @Setter
     public static class CsvImportRequest {
@@ -160,6 +190,9 @@ public class ClassDTO {
         private String studentCodes; // 쉼표로 구분
     }
 
+    /**
+     * 학급 변경 이력 응답
+     */
     @Getter
     @Builder
     public static class HistoryResponse {

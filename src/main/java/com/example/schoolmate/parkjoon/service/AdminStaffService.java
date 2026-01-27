@@ -30,6 +30,13 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 교직원 관리 서비스
+ * 
+ * 교직원(User + StaffInfo) 데이터에 대한 CRUD 및 비즈니스 로직을 담당합니다.
+ * - 행정실, 시설관리 등 교사가 아닌 직원들의 정보 관리
+ * - 사번 중복 체크 및 CSV 일괄 등록 지원
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional

@@ -29,6 +29,13 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 교사 관리 서비스
+ * 
+ * 교사(User + TeacherInfo) 데이터에 대한 CRUD 및 비즈니스 로직을 담당합니다.
+ * - 교사 계정 생성 및 사번/이메일 중복 체크
+ * - 담당 과목, 부서, 직책 등 교무 정보 관리
+ */
 @Log4j2
 @Service
 @RequiredArgsConstructor

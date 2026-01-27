@@ -13,6 +13,12 @@ import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 교직원(행정직 등) 상세 정보 엔티티
+ * 
+ * 교사가 아닌 일반 직원의 인사 정보를 관리합니다.
+ * - 부서, 직함, 근무지, 고용 형태 및 계약 만료일
+ */
 @Entity
 @DiscriminatorValue("STAFF")
 @Getter
