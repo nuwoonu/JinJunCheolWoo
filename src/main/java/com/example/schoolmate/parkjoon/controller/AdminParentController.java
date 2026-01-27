@@ -26,6 +26,13 @@ import com.example.schoolmate.parkjoon.service.AdminParentService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 학부모 관리 컨트롤러
+ * 
+ * 학부모 정보의 등록, 조회, 수정 및 자녀 연동을 처리합니다.
+ * - 학부모 목록 검색 및 상세 조회
+ * - 자녀 추가/해제 및 관계 설정 기능
+ */
 @Controller
 @RequestMapping("/parkjoon/admin/parents")
 @RequiredArgsConstructor

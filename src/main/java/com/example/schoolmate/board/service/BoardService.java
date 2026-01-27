@@ -16,12 +16,12 @@ import com.example.schoolmate.board.repository.BoardRepository;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.repository.StudentInfoRepository;
 import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.common.entity.Classroom;
-import com.example.schoolmate.parkjoon.repository.ClassroomRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

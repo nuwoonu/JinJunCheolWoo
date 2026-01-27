@@ -15,6 +15,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 학부모 상세 정보 엔티티
+ * 
+ * 학부모의 인적 사항 및 자녀와의 관계를 관리합니다.
+ * - 실명, 연락처, 계정 상태(승인대기, 활성 등)
+ */
 @Entity
 @DiscriminatorValue("PARENT")
 @Getter

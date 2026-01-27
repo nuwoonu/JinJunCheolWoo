@@ -15,6 +15,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 가족 관계 엔티티 (학생-학부모 연결)
+ * 
+ * 학생(StudentInfo)과 학부모(ParentInfo) 간의 N:M 관계를 해소하는 연결 엔티티입니다.
+ * - 관계 유형(부, 모, 조부모 등) 및 대표 보호자 여부 저장
+ */
 @Entity
 @Getter
 @Setter

@@ -8,7 +8,7 @@
     <div layout:fragment="content">
       <h2 class="mb-4">⚙️ 시스템 기준 정보 설정</h2>
 
-      <div class="card shadow-sm border-0">
+      <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-5">
           <form th:action="@{/parkjoon/admin/master/settings}" method="post">
             <div class="row mb-4">
@@ -51,6 +51,47 @@
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- 진급 처리 섹션 (UI만 구현, 기능은 추후 연동) -->
+      <div class="card shadow-sm border-0 border-start border-warning border-4">
+        <div class="card-body p-5">
+          <h4 class="card-title text-dark fw-bold mb-3">🎓 학생 진급 처리</h4>
+          <p class="card-text text-muted mb-4">
+            학년도가 변경되면 기존 재학생들의 학년을 일괄적으로 진급시키고, 최고
+            학년 학생은 졸업 처리할 수 있습니다.<br />
+            <span class="text-danger fw-bold"
+              >* 주의: 이 작업은 대량의 데이터 변경을 유발하며, 실행 후 되돌릴
+              수 없습니다.</span
+            >
+          </p>
+
+          <div
+            class="d-flex align-items-center justify-content-between bg-light p-4 rounded"
+          >
+            <div>
+              <h6 class="fw-bold mb-1">
+                <span th:text="${setting.currentSchoolYear}">2025</span>학년도
+                기준 일괄 진급
+              </h6>
+              <small class="text-muted"
+                >대상: 전체 재학생 (졸업 예정자 포함)</small
+              >
+            </div>
+            <!-- 기능 미구현 상태이므로 alert만 띄움 -->
+            <button
+              type="button"
+              class="btn btn-warning px-4 fw-bold text-dark"
+              onclick="
+                alert(
+                  '현재 준비 중인 기능입니다.\n(학생 Info 엔티티 연동 필요)',
+                )
+              "
+            >
+              <i class="bi bi-arrow-up-circle me-2"></i>일괄 진급 실행
+            </button>
+          </div>
         </div>
       </div>
     </div>

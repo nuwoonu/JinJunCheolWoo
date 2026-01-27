@@ -1,4 +1,4 @@
-package com.example.schoolmate.parkjoon.repository;
+package com.example.schoolmate.common.repository;
 
 import java.util.List;
 import java.util.Optional;

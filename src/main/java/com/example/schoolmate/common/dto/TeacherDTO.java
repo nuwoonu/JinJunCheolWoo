@@ -15,9 +15,17 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 교사 데이터 전송 객체 (DTO)
+ * 
+ * 교사 관리 기능에서 사용되는 요청/응답 객체들을 포함합니다.
+ */
 public class TeacherDTO {
 
-    // 목록 및 상세 조회용
+    /**
+     * 교사 상세 정보 및 목록 조회용 응답
+     * - User 정보와 TeacherInfo 정보를 합쳐서 제공합니다.
+     */
     @Getter
     @Builder
     @NoArgsConstructor
@@ -67,7 +75,9 @@ public class TeacherDTO {
         }
     }
 
-    // 정보 수정 요청용
+    /**
+     * 교사 정보 수정 요청
+     */
     @Getter
     @Setter
     @ToString
@@ -81,7 +91,9 @@ public class TeacherDTO {
         private String statusName;
     }
 
-    // 정보 추가용
+    /**
+     * 교사 신규 등록 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -106,6 +118,9 @@ public class TeacherDTO {
         }
     }
 
+    /**
+     * 교사 검색 조건
+     */
     @Getter
     @Setter
     public static class TeacherSearchCondition {
@@ -114,6 +129,9 @@ public class TeacherDTO {
         private String status = TeacherStatus.EMPLOYED.name(); // 기본값: 재직
     }
 
+    /**
+     * CSV 파일 일괄 등록 요청
+     */
     @Getter
     @Setter
     public static class CsvImportRequest {

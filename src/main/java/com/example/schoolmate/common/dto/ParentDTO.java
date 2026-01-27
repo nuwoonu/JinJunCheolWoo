@@ -15,8 +15,16 @@ import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * 학부모 데이터 전송 객체 (DTO)
+ * 
+ * 학부모 관리 기능에서 사용되는 요청/응답 객체들을 포함합니다.
+ */
 public class ParentDTO {
 
+    /**
+     * 학부모 검색 조건
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -27,6 +35,9 @@ public class ParentDTO {
         private String status = ParentStatus.ACTIVE.name(); // 기본값: 연결됨
     }
 
+    /**
+     * 학부모 신규 등록 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -48,6 +59,9 @@ public class ParentDTO {
         }
     }
 
+    /**
+     * 학부모 등록 시 자녀 연동 정보
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -57,6 +71,9 @@ public class ParentDTO {
         private String relationship;
     }
 
+    /**
+     * 학부모 간편 등록 요청 (현재 미사용 가능성 있음)
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -68,6 +85,9 @@ public class ParentDTO {
         private boolean representative;
     }
 
+    /**
+     * 학부모 목록 조회용 요약 정보 응답
+     */
     @Getter
     public static class Summary {
         private Long id;
@@ -96,6 +116,9 @@ public class ParentDTO {
         }
     }
 
+    /**
+     * 학부모 정보 수정 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -109,6 +132,10 @@ public class ParentDTO {
         private String statusName;
     }
 
+    /**
+     * 학부모 상세 정보 응답
+     * - 자녀 목록 및 알림 이력을 포함합니다.
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -137,6 +164,9 @@ public class ParentDTO {
         }
     }
 
+    /**
+     * 학부모 상세 정보 내 자녀 정보
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -157,6 +187,9 @@ public class ParentDTO {
         }
     }
 
+    /**
+     * CSV 파일 일괄 등록 요청
+     */
     @Getter
     @Setter
     public static class CsvImportRequest {

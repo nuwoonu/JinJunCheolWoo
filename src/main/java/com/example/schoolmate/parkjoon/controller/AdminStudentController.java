@@ -27,6 +27,13 @@ import com.example.schoolmate.parkjoon.service.AdminStudentService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 학생 관리 컨트롤러
+ * 
+ * 학생 정보의 등록, 조회, 수정, 상태 변경을 처리합니다.
+ * - 학생 목록 검색 및 상세 조회
+ * - 신규 학생 등록(개별/CSV) 및 학적 이력(Assignment) 관리
+ */
 @Controller
 @RequestMapping("/parkjoon/admin/students")
 @RequiredArgsConstructor

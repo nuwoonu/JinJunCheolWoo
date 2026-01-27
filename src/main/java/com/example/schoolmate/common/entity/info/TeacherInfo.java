@@ -16,6 +16,12 @@ import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 교사 상세 정보 엔티티
+ * 
+ * 교원의 직무 및 인사 정보를 관리합니다.
+ * - 담당 과목, 소속 부서, 직책, 재직 상태
+ */
 @Entity
 @DiscriminatorValue("TEACHER")
 @Getter

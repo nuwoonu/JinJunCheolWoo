@@ -30,6 +30,13 @@ import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 교사 관리 컨트롤러
+ * 
+ * 교사 정보의 등록, 조회, 수정, 상태 변경을 처리합니다.
+ * - 교사 목록 검색 및 상세 조회
+ * - 신규 교사 등록(개별/CSV) 및 재직 상태 관리
+ */
 @Log4j2
 @Controller
 @RequestMapping("parkjoon/admin/teachers")

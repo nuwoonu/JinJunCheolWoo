@@ -12,6 +12,12 @@ import com.example.schoolmate.parkjoon.service.AdminNotificationService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 알림 관리 컨트롤러
+ * 
+ * 관리자 페이지에서 발생하는 알림 발송 요청을 처리합니다.
+ * - 개별 또는 그룹 알림 전송 API 제공
+ */
 @Controller
 @RequestMapping("/parkjoon/admin/notifications")
 @RequiredArgsConstructor

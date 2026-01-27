@@ -32,6 +32,13 @@ import com.example.schoolmate.parkjoon.service.AdminClassService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * 관리자 학급 관리 컨트롤러
+ * 
+ * 학급(Classroom)의 생성, 조회, 수정, 삭제 및 학생 배정 기능을 담당합니다.
+ * - 학년도/학년/반 기준 학급 목록 조회
+ * - 담임 교사 배정 및 학생 구성 관리, CSV 일괄 등록 지원
+ */
 @Controller
 @RequestMapping("/parkjoon/admin/classes")
 @RequiredArgsConstructor

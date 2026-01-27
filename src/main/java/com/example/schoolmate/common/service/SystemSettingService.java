@@ -10,6 +10,12 @@ import com.example.schoolmate.common.repository.SystemSettingRepository;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 시스템 전역 설정 서비스
+ * 
+ * 현재 학년도, 학기 등 시스템 전반에 영향을 미치는 기준 정보를 관리합니다.
+ * - DB에 저장된 설정값을 조회하거나 수정하며, 값이 없을 경우 기본값을 제공합니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class SystemSettingService {

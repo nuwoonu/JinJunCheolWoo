@@ -16,8 +16,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 교직원 데이터 전송 객체 (DTO)
+ * 
+ * 교직원 관리 기능에서 사용되는 요청/응답 객체들을 포함합니다.
+ */
 public class StaffDTO {
 
+    /**
+     * 교직원 검색 조건
+     */
     @Getter
     @Setter
     public static class StaffSearchCondition {
@@ -27,6 +35,9 @@ public class StaffDTO {
         private String employmentType;
     }
 
+    /**
+     * 교직원 신규 등록 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -56,6 +67,9 @@ public class StaffDTO {
         }
     }
 
+    /**
+     * 교직원 정보 수정 요청
+     */
     @Getter
     @Setter
     @NoArgsConstructor
@@ -73,6 +87,9 @@ public class StaffDTO {
         private LocalDate contractEndDate;
     }
 
+    /**
+     * 교직원 상세 정보 및 목록 조회용 응답
+     */
     @Getter
     @Builder
     @NoArgsConstructor
@@ -129,6 +146,9 @@ public class StaffDTO {
         }
     }
 
+    /**
+     * CSV 파일 일괄 등록 요청
+     */
     @Getter
     @Setter
     public static class CsvImportRequest {
