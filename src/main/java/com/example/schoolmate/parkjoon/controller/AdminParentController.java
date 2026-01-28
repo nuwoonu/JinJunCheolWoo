@@ -117,7 +117,7 @@ public class AdminParentController {
     // 학생 검색 API (AJAX)
     @GetMapping("/search-student")
     @ResponseBody
-    public ResponseEntity<List<StudentDTO.SummaryResponse>> searchStudent(@RequestParam(value = "keyword", required = true) String keyword) {
+    public ResponseEntity<List<StudentDTO.SummaryResponse>> searchStudent(@RequestParam("keyword") String keyword) {
         return ResponseEntity.ok(adminParentService.searchStudentsForLinking(keyword));
     }
 
@@ -130,23 +130,25 @@ public class AdminParentController {
 
     @PostMapping("/{parentId}/add-child")
     @ResponseBody
-    public ResponseEntity<String> addChild(@PathVariable Long parentId, @RequestParam(value = "studentUid", required = true) Long studentUid,
-            @RequestParam(value = "relationship", required = true) FamilyRelationship relationship) {
+    public ResponseEntity<String> addChild(@PathVariable Long parentId, @RequestParam("studentUid") Long studentUid,
+            @RequestParam("relationship") FamilyRelationship relationship) {
         adminParentService.addChild(parentId, studentUid, relationship);
         return ResponseEntity.ok("자녀가 추가되었습니다.");
     }
 
     @PostMapping("/{parentId}/update-child-relation")
     @ResponseBody
-    public ResponseEntity<String> updateChildRelation(@PathVariable Long parentId, @RequestParam(value = "studentUid", required = true) Long studentUid,
-            @RequestParam(value = "relationship", required = true) FamilyRelationship relationship) {
+    public ResponseEntity<String> updateChildRelation(@PathVariable Long parentId,
+            @RequestParam("studentUid") Long studentUid,
+            @RequestParam("relationship") FamilyRelationship relationship) {
         adminParentService.updateChildRelationship(parentId, studentUid, relationship);
         return ResponseEntity.ok("관계가 수정되었습니다.");
     }
 
     @PostMapping("/{parentId}/remove-child")
     @ResponseBody
-    public ResponseEntity<String> removeChild(@PathVariable Long parentId, @RequestParam(value = "studentUid", required = true) Long studentUid) {
+    public ResponseEntity<String> removeChild(@PathVariable Long parentId,
+            @RequestParam("studentUid") Long studentUid) {
         adminParentService.removeChild(parentId, studentUid);
         return ResponseEntity.ok("연동이 해제되었습니다.");
     }

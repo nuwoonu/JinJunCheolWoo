@@ -41,9 +41,9 @@ public class ClassController {
     }
 
     @PostMapping("/create")
-    public String createClass(@RequestParam int year,
-            @RequestParam int grade,
-            @RequestParam int classNum) {
+    public String createClass(@RequestParam("year") int year,
+            @RequestParam("grade") int grade,
+            @RequestParam("classNum") int classNum) {
 
         ClassDTO.CreateRequest request = new ClassDTO.CreateRequest();
         request.setYear(year);
@@ -55,8 +55,8 @@ public class ClassController {
     }
 
     @PostMapping("/assign")
-    public String assignTeacher(@RequestParam Long classroomId,
-            @RequestParam Long teacherUid) {
+    public String assignTeacher(@RequestParam("classroomId") Long classroomId,
+            @RequestParam("teacherUid") Long teacherUid) {
 
         ClassDTO.UpdateRequest request = new ClassDTO.UpdateRequest();
         request.setCid(classroomId);

@@ -146,7 +146,8 @@ public class AdminStudentController {
     }
 
     @PostMapping("/delete-assignment")
-    public String deleteAssignment(@RequestParam Long uid, @RequestParam int schoolYear, RedirectAttributes ra) {
+    public String deleteAssignment(@RequestParam("uid") Long uid,
+            @RequestParam("schoolYear") int schoolYear, RedirectAttributes ra) {
         String code = adminStudentService.deleteAssignment(uid, schoolYear);
         ra.addFlashAttribute("successMessage", schoolYear + "학년도 이력이 삭제되었습니다.");
         return "redirect:/parkjoon/admin/students/" + code + "#history";
@@ -185,7 +186,8 @@ public class AdminStudentController {
     // 학부모 검색 API
     @GetMapping("/search-parent")
     @ResponseBody
-    public ResponseEntity<Page<ParentDTO.Summary>> searchParent(@RequestParam String keyword, Pageable pageable) {
+    public ResponseEntity<Page<ParentDTO.Summary>> searchParent(@RequestParam("keyword") String keyword,
+            Pageable pageable) {
         ParentDTO.ParentSearchCondition cond = new ParentDTO.ParentSearchCondition();
         cond.setType("name");
         cond.setKeyword(keyword);
@@ -194,8 +196,8 @@ public class AdminStudentController {
 
     @PostMapping("/{code}/add-guardian")
     @ResponseBody
-    public ResponseEntity<String> addGuardian(@PathVariable String code, @RequestParam Long parentId,
-            @RequestParam FamilyRelationship relationship) {
+    public ResponseEntity<String> addGuardian(@PathVariable String code, @RequestParam("parentId") Long parentId,
+            @RequestParam("relationship") FamilyRelationship relationship) {
         adminStudentService.addGuardian(code, parentId, relationship);
         return ResponseEntity.ok("보호자가 추가되었습니다.");
     }
@@ -203,14 +205,15 @@ public class AdminStudentController {
     @PostMapping("/{code}/update-guardian-relation")
     @ResponseBody
     public ResponseEntity<String> updateGuardianRelation(@PathVariable String code,
-            @RequestParam Long parentId, @RequestParam FamilyRelationship relationship) {
+            @RequestParam("parentId") Long parentId,
+            @RequestParam("relationship") FamilyRelationship relationship) {
         adminStudentService.updateGuardianRelationship(code, parentId, relationship);
         return ResponseEntity.ok("관계가 수정되었습니다.");
     }
 
     @PostMapping("/{code}/remove-guardian")
     @ResponseBody
-    public ResponseEntity<String> removeGuardian(@PathVariable String code, @RequestParam Long parentId) {
+    public ResponseEntity<String> removeGuardian(@PathVariable String code, @RequestParam("parentId") Long parentId) {
         adminStudentService.removeGuardian(code, parentId);
         return ResponseEntity.ok("연동이 해제되었습니다.");
     }

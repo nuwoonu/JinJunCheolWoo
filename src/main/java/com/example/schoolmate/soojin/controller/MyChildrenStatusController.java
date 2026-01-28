@@ -15,12 +15,14 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
+import com.example.schoolmate.common.dto.dashboardinfo.SchoolCalendarDTO;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
+import com.example.schoolmate.soojin.service.CalendarService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +35,9 @@ public class MyChildrenStatusController {
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final SystemSettingService systemSettingService;
+    private final CalendarService calendarService;
 
+    // 학부모 - 자녀 대시보드
     @GetMapping("/status")
     public String myChildrenPage(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
         Long uid = authUserDTO.getCustomUserDTO().getUid();
@@ -52,52 +56,11 @@ public class MyChildrenStatusController {
         } else {
             model.addAttribute("children", new ArrayList<>());
         }
+        // 다가오는 일정
+        List<SchoolCalendarDTO> upcomingEvents = calendarService.getUpcomingEvents(5);
+        model.addAttribute("upcomingEvents", upcomingEvents);
 
         return "soojin/mychildren/status";
-    }
-
-    @GetMapping("/statusxx")
-    public String myChildrenPage2(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
-        Long uid = authUserDTO.getCustomUserDTO().getUid();
-
-        User parentUser = userRepository.findById(uid).orElse(null);
-        if (parentUser != null) {
-            ParentInfo parentInfo = parentUser.getInfo(ParentInfo.class);
-            if (parentInfo != null && parentInfo.getChildrenRelations() != null) {
-                List<ChildDTO> children = parentInfo.getChildrenRelations().stream()
-                        .map(relation -> convertToChildDTO(relation.getStudentInfo()))
-                        .collect(Collectors.toList());
-                model.addAttribute("children", children);
-            } else {
-                model.addAttribute("children", new ArrayList<>());
-            }
-        } else {
-            model.addAttribute("children", new ArrayList<>());
-        }
-
-        return "soojin/mychildren/statusxx";
-    }
-
-    @GetMapping("/statusmodify")
-    public String myChildrenPage3(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
-        Long uid = authUserDTO.getCustomUserDTO().getUid();
-
-        User parentUser = userRepository.findById(uid).orElse(null);
-        if (parentUser != null) {
-            ParentInfo parentInfo = parentUser.getInfo(ParentInfo.class);
-            if (parentInfo != null && parentInfo.getChildrenRelations() != null) {
-                List<ChildDTO> children = parentInfo.getChildrenRelations().stream()
-                        .map(relation -> convertToChildDTO(relation.getStudentInfo()))
-                        .collect(Collectors.toList());
-                model.addAttribute("children", children);
-            } else {
-                model.addAttribute("children", new ArrayList<>());
-            }
-        } else {
-            model.addAttribute("children", new ArrayList<>());
-        }
-
-        return "soojin/mychildren/statusmodify";
     }
 
     private ChildDTO convertToChildDTO(StudentInfo studentInfo) {
@@ -121,4 +84,5 @@ public class MyChildrenStatusController {
                 .profileImageUrl(imageUrl)
                 .build();
     }
+
 }

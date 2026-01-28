@@ -127,7 +127,7 @@ public class AdminClassController {
 
     @PostMapping("/{cid}/remove-student")
     @ResponseBody
-    public ResponseEntity<String> removeStudent(@PathVariable Long cid, @RequestParam(value = "studentUid", required = true) Long studentUid) {
+    public ResponseEntity<String> removeStudent(@PathVariable Long cid, @RequestParam("studentUid") Long studentUid) {
         adminClassService.removeStudent(cid, studentUid);
         return ResponseEntity.ok("배정이 해제되었습니다.");
     }
@@ -176,7 +176,7 @@ public class AdminClassController {
     }
 
     @PostMapping("/delete")
-    public String delete(@RequestParam(value = "cid", required = true) Long cid, RedirectAttributes ra) {
+    public String delete(@RequestParam("cid") Long cid, RedirectAttributes ra) {
         try {
             adminClassService.deleteClass(cid);
             ra.addFlashAttribute("successMessage", "학급이 영구 삭제되었습니다.");

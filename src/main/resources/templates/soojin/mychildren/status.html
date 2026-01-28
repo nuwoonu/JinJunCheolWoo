@@ -8,6 +8,45 @@
   <head>
     <title>자녀 현황</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <style>
+      /* 이벤트 타입별 색상 */
+      .event-EVENT { background-color: #0d6efd !important; color: #fff !important; }
+      .event-EXAM { background-color: #dc3545 !important; color: #fff !important; }
+      .event-HOLIDAY { background-color: #ffc107 !important; color: #000 !important; }
+      .event-VACATION { background-color: #198754 !important; color: #fff !important; }
+      .event-FIELD_TRIP { background-color: #0dcaf0 !important; color: #000 !important; }
+      .event-MEETING { background-color: #6610f2 !important; color: #fff !important; }
+      .event-BRIEFING { background-color: #d63384 !important; color: #fff !important; }
+      .event-OTHER { background-color: #6c757d !important; color: #fff !important; }
+
+      /* 미니 캘린더 스타일 */
+      #miniCalendar {
+        font-size: 11px;
+      }
+      #miniCalendar .fc-toolbar-title {
+        font-size: 14px !important;
+      }
+      #miniCalendar .fc-button {
+        padding: 2px 6px !important;
+        font-size: 11px !important;
+      }
+      #miniCalendar .fc-daygrid-day {
+        min-height: 28px !important;
+      }
+      #miniCalendar .fc-daygrid-day-number {
+        font-size: 11px;
+        padding: 2px 4px !important;
+      }
+      #miniCalendar .fc-event {
+        font-size: 9px !important;
+        padding: 1px 2px !important;
+      }
+      #miniCalendar .fc-col-header-cell-cushion {
+        font-size: 10px;
+        padding: 4px 0 !important;
+      }
+    </style>
   </head>
 
   <div layout:fragment="content">
@@ -43,7 +82,10 @@
               <span th:text="${child.grade}">1</span>학년 <span th:text="${child.classNum}">2</span>반
               <span th:text="${child.studentNumber}">3</span>번
             </p>
-            <span th:id="'badge-' + ${child.id}" class="badge bg-success-600 px-16 py-6 rounded-pill fs-13 mx-auto mb-24">
+            <span
+              th:id="'badge-' + ${child.id}"
+              class="badge bg-success-600 px-16 py-6 rounded-pill fs-13 mx-auto mb-24"
+            >
               출석
             </span>
 
@@ -137,7 +179,7 @@
                   <span class="fw-bold">7교시</span>
                   <span class="text-secondary-light ms-8">15:20-16:05</span>
                 </span>
-                <span class="fw-medium text-dark text-sm">자율</span>
+                <span class="fw-medium text-dark text-sm">자습</span>
               </div>
             </div>
           </div>
@@ -146,22 +188,47 @@
         <!-- 학교 일정 -->
         <div class="col-xl-4 col-md-12">
           <div class="card border-0 shadow-sm h-100 p-20" style="border-radius: 16px">
-            <h6 class="fw-bold mb-20 text-sm">
-              <i class="ri-calendar-event-line text-primary-600 me-2"></i>학교 일정
-            </h6>
-            <div class="d-flex align-items-center justify-content-between mb-16">
-              <div class="d-flex align-items-center gap-12">
-                <i class="ri-calendar-line text-secondary-light"></i>
-                <span class="text-sm">1/23(금) 겨울방학식</span>
-              </div>
-              <span class="badge bg-danger-main text-white px-12 py-4 rounded-pill">D-2</span>
+            <!-- 헤더 + 토글 버튼 -->
+            <div class="d-flex justify-content-between align-items-center mb-20">
+              <h6 class="fw-bold mb-0 text-sm">
+                <i class="ri-calendar-event-line text-primary-600 me-2"></i>학교 일정
+              </h6>
+              <button id="toggleCalendarBtn" class="btn btn-sm btn-outline-primary rounded-pill px-12 py-4">
+                <i class="ri-calendar-2-line"></i> 캘린더
+              </button>
             </div>
-            <div class="d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center gap-12">
-                <i class="ri-calendar-line text-secondary-light"></i>
-                <span class="text-sm">2/10(수) 개학식</span>
+
+            <!-- 목록 뷰 (기본) -->
+            <div id="eventListView">
+              <th:block th:if="${upcomingEvents != null and !upcomingEvents.empty}">
+                <div
+                  th:each="event, stat : ${upcomingEvents}"
+                  class="d-flex align-items-center justify-content-between"
+                  th:classappend="${!stat.last} ? 'mb-16' : ''"
+                >
+                  <div class="d-flex align-items-center gap-12">
+                    <i class="ri-calendar-line text-secondary-light"></i>
+                    <span class="text-sm" th:text="${event.dateRangeText + ' ' + event.title}">일정</span>
+                  </div>
+                  <span
+                    class="badge text-white px-12 py-4 rounded-pill"
+                    th:classappend="${event.dDay <= 3} ? 'bg-danger-main' : 'bg-primary-600'"
+                    th:text="${event.dDay == 0} ? 'D-DAY' : 'D-' + ${event.dDay}"
+                    >D-0</span
+                  >
+                </div>
+              </th:block>
+              <div
+                th:if="${upcomingEvents == null or upcomingEvents.empty}"
+                class="text-center text-secondary-light text-sm py-20"
+              >
+                예정된 일정이 없습니다.
               </div>
-              <span class="badge bg-danger-main text-white px-12 py-4 rounded-pill">D-14</span>
+            </div>
+
+            <!-- 캘린더 뷰 (숨김) -->
+            <div id="eventCalendarView" style="display: none">
+              <div id="miniCalendar"></div>
             </div>
           </div>
         </div>
@@ -172,9 +239,7 @@
         <!-- 가정통신문 -->
         <div class="col-xl-8">
           <div class="card border-0 shadow-sm p-20" style="border-radius: 16px">
-            <h6 class="fw-bold mb-20 text-sm">
-              <i class="ri-file-list-3-line text-primary-600 me-2"></i>가정통신문
-            </h6>
+            <h6 class="fw-bold mb-20 text-sm"><i class="ri-file-list-3-line text-primary-600 me-2"></i>가정통신문</h6>
             <div class="d-flex align-items-center justify-content-between py-12 border-bottom">
               <div class="d-flex align-items-center gap-12">
                 <i class="ri-file-text-line text-secondary-light"></i>
@@ -211,9 +276,7 @@
         <!-- 오늘의 급식 -->
         <div class="col-xl-4">
           <div class="card border-0 shadow-sm p-20 h-100" style="border-radius: 16px">
-            <h6 class="fw-bold mb-20 text-sm">
-              <i class="ri-restaurant-2-line text-primary-600 me-2"></i>오늘의 급식
-            </h6>
+            <h6 class="fw-bold mb-20 text-sm"><i class="ri-restaurant-2-line text-primary-600 me-2"></i>오늘의 급식</h6>
             <p class="text-sm mb-12">잡곡밥, 미역국, 제육볶음, 배추김치, 과일</p>
             <span class="badge bg-primary-100 text-primary-600 px-8 py-4 rounded-pill text-xs">칼로리: 645kcal</span>
           </div>
@@ -267,6 +330,59 @@
           .catch(() => {
             badge.innerText = "출석(입실)";
           });
+      }
+
+      // 토글 버튼 클릭 이벤트
+      document.getElementById("toggleCalendarBtn").addEventListener("click", function () {
+        const listView = document.getElementById("eventListView");
+        const calendarView = document.getElementById("eventCalendarView");
+        const btn = this;
+
+        if (listView.style.display !== "none") {
+          listView.style.display = "none";
+          calendarView.style.display = "block";
+          btn.innerHTML = '<i class="ri-list-check"></i> 목록';
+
+          // 캘린더 초기화 (최초 1회)
+          if (!window.miniCalendarInitialized) {
+            initMiniCalendar();
+            window.miniCalendarInitialized = true;
+          }
+        } else {
+          listView.style.display = "block";
+          calendarView.style.display = "none";
+          btn.innerHTML = '<i class="ri-calendar-2-line"></i> 캘린더';
+        }
+      });
+
+      // 미니 캘린더 초기화
+      function initMiniCalendar() {
+        new FullCalendar.Calendar(document.getElementById("miniCalendar"), {
+          initialView: "dayGridMonth",
+          locale: "ko",
+          height: "auto",
+          contentHeight: "auto",
+          aspectRatio: 1.2,
+          headerToolbar: { left: "prev", center: "title", right: "next" },
+          dayMaxEvents: 1,
+          fixedWeekCount: false,
+          events: function (info, success, failure) {
+            const date = new Date((info.start.getTime() + info.end.getTime()) / 2);
+            fetch("/soojin/api/events?year=" + date.getFullYear() + "&month=" + (date.getMonth() + 1))
+              .then((res) => res.json())
+              .then((data) =>
+                success(
+                  data.map((e) => ({
+                    title: e.title,
+                    start: e.startDate,
+                    end: e.endDate,
+                    className: "event-" + e.eventType,
+                  })),
+                ),
+              )
+              .catch((err) => failure(err));
+          },
+        }).render();
       }
     </script>
   </th:block>

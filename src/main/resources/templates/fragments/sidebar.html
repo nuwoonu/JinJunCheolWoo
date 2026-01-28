@@ -45,7 +45,7 @@
             >
             <!-- Admin은 표시 안함, 나머지는 학년-반 표시 -->
             <span
-              sec:authorize="!hasRole('ADMIN')"
+              sec:authorize="!hasAnyRole('ADMIN', 'PARENT')"
               class="text-secondary-light text-sm mb-0 d-block"
               th:text="${#authentication.principal.customUserDTO.grade} + '학년 ' + ${#authentication.principal.customUserDTO.classNum} + '반'"
             ></span>
