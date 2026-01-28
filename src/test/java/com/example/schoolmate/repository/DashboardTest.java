@@ -27,12 +27,12 @@ public class DashboardTest {
     void insertCalendarData() {
 
         SchoolCalendar event = SchoolCalendar.builder()
-                .title("행사1")
-                .startDate(LocalDate.of(2026, 1, 27))
-                .endDate(LocalDate.of(2026, 1, 28))
-                .eventType(EventType.EVENT)
+                .title("시험")
+                .startDate(LocalDate.of(2026, 1, 15))
+                .endDate(LocalDate.of(2026, 1, 16))
+                .eventType(EventType.EXAM)
                 .targetGrade(1)
-                .description("1학년 행사1")
+                .description("입학 시험")
                 .build();
 
         calendarRepository.save(event);
