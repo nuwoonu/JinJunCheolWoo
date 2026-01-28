@@ -13,8 +13,8 @@ import com.example.schoolmate.board.entity.Board;
 import com.example.schoolmate.board.entity.BoardType;
 
 @Repository
-public interface BoardRepository extends JpaRepository<Board, Long> {
 
+public interface BoardRepository extends JpaRepository<Board, Long> {
     // ========== 학교 공지 ==========
     // 학교 공지 목록 (삭제되지 않은 것만, 고정글 우선 + 최신순)
     @Query("SELECT b FROM Board b WHERE b.boardType = :type AND b.isDeleted = false " +

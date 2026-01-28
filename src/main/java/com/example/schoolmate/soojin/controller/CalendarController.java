@@ -32,20 +32,6 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     // 읽기 전용
-    // @GetMapping("/calendar/monthly")
-    // public String monthlyView(@RequestParam(defaultValue =
-    // "#{T(java.time.LocalDate).now().getYear()}") int year,
-    // @RequestParam(defaultValue =
-    // "#{T(java.time.LocalDate).now().getMonthValue()}") int month,
-    // @RequestParam(required = false) Integer grade,
-    // Model model) {
-    // List<SchoolCalendarDTO> events = calendarService.getMonthlyCalendar(year,
-    // month, grade);
-    // model.addAttribute("events", events);
-    // model.addAttribute("year", year);
-    // model.addAttribute("month", month);
-    // return "soojin/calendar/monthly";
-    // }
 
     @GetMapping("/calendar/monthly")
     public String monthlyView(
@@ -85,6 +71,7 @@ public class CalendarController {
 
         List<SchoolCalendarDTO> events = calendarService.getEventList(start, end, grade, eventType);
         model.addAttribute("events", events);
+        model.addAttribute("eventTypes", EventType.values());
         return "soojin/calendar/list";
     }
 
@@ -98,45 +85,48 @@ public class CalendarController {
         return calendarService.getMonthlyCalendar(year, month, grade);
     }
 
+    //
     // ✅ 관리 (관리자 전용) - 경로 수정해야함
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/add")
-    public String addEvent(Model model) {
-        model.addAttribute("eventTypes", EventType.values());
-        return "calendar/admin/add";
-    }
+    // @PreAuthorize("hasRole('ADMIN')")
+    // @GetMapping("/admin/add")
+    // public String addEvent(Model model) {
+    // model.addAttribute("eventTypes", EventType.values());
+    // return "calendar/admin/add";
+    // }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/add")
-    public String addEvent(@ModelAttribute SchoolCalendarDTO dto, RedirectAttributes rttr) {
-        calendarService.insertCalendar(dto);
-        rttr.addFlashAttribute("msg", "일정이 등록되었습니다.");
-        return "redirect:/soojin/list";
-    }
+    // @PreAuthorize("hasRole('ADMIN')")
+    // @PostMapping("/admin/add")
+    // public String addEvent(@ModelAttribute SchoolCalendarDTO dto,
+    // RedirectAttributes rttr) {
+    // calendarService.insertCalendar(dto);
+    // rttr.addFlashAttribute("msg", "일정이 등록되었습니다.");
+    // return "redirect:/soojin/list";
+    // }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/edit/{id}")
-    public String editEvent(@PathVariable Long id, Model model) {
-        SchoolCalendarDTO event = calendarService.getRow(id); // ← 기존 데이터 조회
-        model.addAttribute("event", event); // ← 화면에 전달
-        model.addAttribute("eventTypes", EventType.values());
-        return "calendar/admin/edit";
-    }
+    // @PreAuthorize("hasRole('ADMIN')")
+    // @GetMapping("/admin/edit/{id}")
+    // public String editEvent(@PathVariable Long id, Model model) {
+    // SchoolCalendarDTO event = calendarService.getRow(id); // ← 기존 데이터 조회
+    // model.addAttribute("event", event); // ← 화면에 전달
+    // model.addAttribute("eventTypes", EventType.values());
+    // return "calendar/admin/edit";
+    // }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/update")
-    public String updateEvent(@ModelAttribute SchoolCalendarDTO dto, RedirectAttributes rttr) {
-        calendarService.updateCalendar(dto);
-        rttr.addFlashAttribute("msg", "일정이 수정되었습니다.");
-        return "redirect:/soojin/list";
-    }
+    // @PreAuthorize("hasRole('ADMIN')")
+    // @PostMapping("/admin/update")
+    // public String updateEvent(@ModelAttribute SchoolCalendarDTO dto,
+    // RedirectAttributes rttr) {
+    // calendarService.updateCalendar(dto);
+    // rttr.addFlashAttribute("msg", "일정이 수정되었습니다.");
+    // return "redirect:/soojin/list";
+    // }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/delete/{id}")
-    public String deleteEvent(@PathVariable Long id, RedirectAttributes rttr) {
-        calendarService.deleteCalendar(id);
-        rttr.addFlashAttribute("msg", "일정이 삭제되었습니다.");
-        return "redirect:/soojin/list";
-    }
+    // @PreAuthorize("hasRole('ADMIN')")
+    // @PostMapping("/admin/delete/{id}")
+    // public String deleteEvent(@PathVariable Long id, RedirectAttributes rttr) {
+    // calendarService.deleteCalendar(id);
+    // rttr.addFlashAttribute("msg", "일정이 삭제되었습니다.");
+    // return "redirect:/soojin/list";
+    // }
 
 }

@@ -1,0 +1,70 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content" class="container" style="max-width: 900px">
+      <h2
+        class="mb-4"
+        th:text="${notice.id == null ? '📝 공지사항 작성' : '📝 공지사항 수정'}"
+      ></h2>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <form
+            th:action="${notice.id == null ? '/parkjoon/admin/notices/create' : '/parkjoon/admin/notices/' + notice.id + '/edit'}"
+            method="post"
+          >
+            <div class="mb-3 form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="isImportant"
+                name="isImportant"
+                th:checked="${notice.isImportant}"
+              />
+              <label
+                class="form-check-label fw-bold text-danger"
+                for="isImportant"
+                >중요 공지 (상단 고정)</label
+              >
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">제목</label>
+              <input
+                type="text"
+                name="title"
+                class="form-control"
+                th:value="${notice.title}"
+                required
+                placeholder="제목을 입력하세요"
+              />
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold">내용</label>
+              <textarea
+                name="content"
+                class="form-control"
+                rows="15"
+                th:text="${notice.content}"
+                required
+                placeholder="내용을 입력하세요"
+              ></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <a th:href="@{/parkjoon/admin/notices}" class="btn btn-secondary"
+                >취소</a
+              >
+              <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

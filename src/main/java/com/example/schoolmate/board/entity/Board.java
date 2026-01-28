@@ -39,9 +39,15 @@ public class Board extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 보드 타입
     @Enumerated(EnumType.STRING)
     @Column(name = "board_type", nullable = false)
     private BoardType boardType;
+
+    // 게시판 카테고리 (게시판 개별화)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private BoardCategory category;
 
     @Column(nullable = false)
     private String title;

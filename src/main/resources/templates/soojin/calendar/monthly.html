@@ -1,61 +1,77 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}">
-
-<head>
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
     <title>학사 일정 (월별)</title>
 
     <th:block layout:fragment="css">
-        <style>
-            .event-SCHOOL_EVENT { background-color: #0d6efd; }
-            .event-EXAM { background-color: #dc3545; }
-            .event-HOLIDAY { background-color: #ffc107; color: #000; }
-            .event-VACATION { background-color: #198754; }
-            .event-FIELD_TRIP { background-color: #0dcaf0; color: #000; }
-            .event-MEETING { background-color: #6610f2; }
-            .event-BRIEFING { background-color: #d63384; }
-            .event-OTHER { background-color: #6c757d; }
+      <style>
+        .event-SCHOOL_EVENT {
+          background-color: #0d6efd;
+        }
+        .event-EXAM {
+          background-color: #dc3545;
+        }
+        .event-HOLIDAY {
+          background-color: #ffc107;
+          color: #000;
+        }
+        .event-VACATION {
+          background-color: #198754;
+        }
+        .event-FIELD_TRIP {
+          background-color: #0dcaf0;
+          color: #000;
+        }
+        .event-MEETING {
+          background-color: #6610f2;
+        }
+        .event-BRIEFING {
+          background-color: #d63384;
+        }
+        .event-OTHER {
+          background-color: #6c757d;
+        }
 
-            #calendar { max-width: 1100px; margin: 0 auto; }
-            a { text-decoration: none; color: inherit; }
-        </style>
+        #calendar {
+          max-width: 1100px;
+          margin: 0 auto;
+        }
+        a {
+          text-decoration: none;
+          color: inherit;
+        }
+      </style>
     </th:block>
-</head>
+  </head>
 
-<body>
-<div layout:fragment="content">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
+  <body>
+    <div layout:fragment="content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>학사 일정</h2>
 
         <div>
-            <a class="btn btn-outline-primary me-2"
-               th:href="@{/soojin/calendar/list}">
-                목록 보기
-            </a>
+          <a class="btn btn-outline-primary me-2" th:href="@{/soojin/calendar/list}"> 목록 보기 </a>
 
-            <a sec:authorize="hasRole('ADMIN')"
-               th:href="@{/soojin/admin/add}"
-               class="btn btn-primary">
-                + 일정 등록
-            </a>
+          <a sec:authorize="hasRole('ADMIN')" th:href="@{/soojin/admin/add}" class="btn btn-primary"> + 일정 등록 </a>
         </div>
-    </div>
+      </div>
 
-    <div class="card shadow-sm">
+      <div class="card shadow-sm">
         <div class="card-body">
-            <div id="calendar"></div>
+          <div id="calendar"></div>
         </div>
+      </div>
     </div>
 
-</div>
+    <th:block layout:fragment="script">
+      <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-<th:block layout:fragment="script">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-
-    <script th:inline="javascript">
+      <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function () {
 
             var initialYear = [[${year ?: T(java.time.LocalDate).now().year}]];
@@ -109,8 +125,8 @@
 
             calendar.render();
         });
-    </script>
-</th:block>
-
-</body>
+      </script>
+    </th:block>
+  </body>
 </html>
+<!--  -->

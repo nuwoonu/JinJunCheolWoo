@@ -1,0 +1,68 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{parkjoon/admin/layouts/layout}"
+>
+  <body>
+    <div layout:fragment="content" class="container" style="max-width: 900px">
+      <div class="mb-3">
+        <a
+          th:href="@{/parkjoon/admin/notices}"
+          class="btn btn-outline-secondary btn-sm"
+        >
+          <i class="bi bi-arrow-left"></i> 목록으로
+        </a>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white p-4 border-bottom">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span th:if="${notice.isImportant}" class="badge bg-danger"
+              >중요</span
+            >
+            <h3 class="mb-0 fw-bold" th:text="${notice.title}">
+              공지사항 제목
+            </h3>
+          </div>
+          <div class="text-muted small d-flex gap-3">
+            <span
+              ><i class="bi bi-person"></i>
+              <span th:text="${notice.writerName}">작성자</span></span
+            >
+            <span
+              ><i class="bi bi-calendar"></i>
+              <span th:text="${notice.createdDate}">2024-01-01</span></span
+            >
+            <span
+              ><i class="bi bi-eye"></i>
+              <span th:text="${notice.viewCount}">0</span></span
+            >
+          </div>
+        </div>
+
+        <div class="card-body p-4" style="min-height: 300px">
+          <div style="white-space: pre-wrap" th:text="${notice.content}">
+            내용
+          </div>
+        </div>
+
+        <div class="card-footer bg-white p-3 text-end">
+          <a
+            th:href="@{/parkjoon/admin/notices/{id}/edit(id=${notice.id})}"
+            class="btn btn-outline-primary"
+            >수정</a
+          >
+          <form
+            th:action="@{/parkjoon/admin/notices/{id}/delete(id=${notice.id})}"
+            method="post"
+            class="d-inline"
+            onsubmit="return confirm('정말 삭제하시겠습니까?');"
+          >
+            <button type="submit" class="btn btn-outline-danger">삭제</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
