@@ -54,9 +54,11 @@ public class StudentResponseDTO {
     // Entity -> DTO 변환 생성자
     public StudentResponseDTO(StudentInfo student) {
         this.uid = student.getId();
-        this.studentNumber = student.getStudentNumber();
-        this.year = student.getClassroom().getYear();
-        this.classNum = student.getClassroom().getClassNum();
+        if (student.getCurrentAssignment() != null) {
+            this.studentNumber = Long.valueOf(student.getCurrentAssignment().getAttendanceNum());
+            this.year = student.getCurrentAssignment().getSchoolYear();
+            this.classNum = student.getCurrentAssignment().getClassNum();
+        }
         this.fullStudentNumber = student.getFullStudentNumber();
         this.studentCode = student.getCode();
         this.birthDate = student.getBirthDate();

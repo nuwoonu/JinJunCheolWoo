@@ -72,8 +72,7 @@ public class ProfileController {
         }
 
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
-        int currentYear = LocalDate.now().getYear();
-        StudentAssignment assignment = studentInfo != null ? studentInfo.getCurrentAssignment(currentYear) : null;
+        StudentAssignment assignment = studentInfo != null ? studentInfo.getCurrentAssignment() : null;
 
         return ChildDTO.builder()
                 .id(user.getUid())

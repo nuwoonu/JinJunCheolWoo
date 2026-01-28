@@ -5,8 +5,8 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 
 import lombok.AllArgsConstructor;
@@ -137,7 +137,7 @@ public class ClassDTO {
         private Long uid;
         private String name;
         private String code;
-        private Integer studentNum; // 번호
+        private Integer attendanceNum; // 출석 번호
         private String gender; // 성별 (주민번호 뒷자리 등으로 추론하거나 데이터가 있다면)
         private String status;
     }

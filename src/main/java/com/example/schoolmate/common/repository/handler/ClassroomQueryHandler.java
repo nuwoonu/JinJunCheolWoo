@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.QClassroom;
-import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
+import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;

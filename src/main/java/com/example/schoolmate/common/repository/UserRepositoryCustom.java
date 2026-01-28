@@ -45,4 +45,6 @@ public interface UserRepositoryCustom {
     long countStaffsByStatus(StaffStatus status);
 
     long countParentsByStatus(ParentStatus status);
+
+    int findMaxAttendanceNum(int year, int grade, int classNum);
 }

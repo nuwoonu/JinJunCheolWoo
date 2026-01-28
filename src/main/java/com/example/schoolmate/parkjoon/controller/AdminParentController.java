@@ -53,6 +53,7 @@ public class AdminParentController {
 
         model.addAttribute("parents", parents);
         model.addAttribute("condition", condition);
+        model.addAttribute("statuses", ParentStatus.values());
 
         return "parkjoon/admin/parents/main";
     }

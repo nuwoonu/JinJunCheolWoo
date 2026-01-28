@@ -43,7 +43,7 @@ public class StudentController {
 
     // 학번으로 학생 상세 조회
     @GetMapping("/details/number/{studentNumber}")
-    public String getStudentDetailsByNumber(@PathVariable Long studentNumber, Model model) {
+    public String getStudentDetailsByNumber(@PathVariable Integer studentNumber, Model model) {
         StudentResponseDTO student = studentService.getStudentByStudentNumber(studentNumber);
         model.addAttribute("student", student);
         return "student/student-details";

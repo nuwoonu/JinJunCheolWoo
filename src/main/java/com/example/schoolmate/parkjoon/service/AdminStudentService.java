@@ -15,15 +15,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.ParentInfo;
+import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.FamilyRelationRepository;
+import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.repository.ParentInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -46,6 +50,7 @@ public class AdminStudentService {
     private final UserRepository userRepository;
     private final ParentInfoRepository parentInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
+    private final ClassroomRepository classroomRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -57,6 +62,18 @@ public class AdminStudentService {
         // QueryHandler에서 연도/학년/반 필터를 제거한 searchStudents를 호출
         return userRepository.searchStudents(cond, pageable)
                 .map(StudentDTO.SummaryResponse::new); // DTO 내부에서 '가장 최근 소속'을 추출하도록 설계
+    }
+
+    /**
+     * 해당 학년도의 개설된 학급 목록 조회 (등록 폼 드롭다운용)
+     */
+    @Transactional(readOnly = true)
+    public List<ClassDTO.DetailResponse> getOpenClassrooms(int year) {
+        ClassDTO.SearchCondition cond = new ClassDTO.SearchCondition();
+        cond.setYear(year);
+        cond.setStatus(ClassroomStatus.ACTIVE.name());
+        return classroomRepository.search(cond, Pageable.unpaged())
+                .map(c -> ClassDTO.DetailResponse.from(c, 0)).getContent();
     }
 
     /**
@@ -107,15 +124,36 @@ public class AdminStudentService {
         user.getInfos().add(info);
 
         // 3. 학급 배정 정보(선택 사항) 처리
-        if (request.getGrade() != null) {
-            StudentAssignment assignment = new StudentAssignment();
-            assignment.setSchoolYear(request.getYear());
-            assignment.setGrade(request.getGrade());
-            assignment.setClassNum(request.getClassNum());
-            assignment.setStudentNum(request.getStudentNum());
+        if (request.getClassroomId() != null) {
+            // 학급 ID로 직접 배정 (UI 선택)
+            classroomRepository.findById(request.getClassroomId())
+                    .ifPresent(classroom -> {
+                        // 자동 번호 생성 (마지막 번호 + 1)
+                        int nextNum = userRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
+                                classroom.getClassNum()) + 1;
 
-            assignment.setStudentInfo(info);
-            info.getAssignments().add(assignment);
+                        StudentAssignment assignment = new StudentAssignment();
+                        assignment.setStudentInfo(info);
+                        assignment.setSchoolYear(classroom.getYear());
+                        assignment.setClassroom(classroom);
+                        assignment.setAttendanceNum(nextNum);
+
+                        info.getAssignments().add(assignment);
+                        info.setCurrentAssignment(assignment);
+                    });
+        } else if (request.getYear() != null && request.getGrade() != null && request.getClassNum() != null) {
+            // 기존 방식 또는 CSV 업로드 (학년/반 정보로 배정)
+            classroomRepository.findByYearAndGradeAndClassNum(
+                    request.getYear(), request.getGrade(), request.getClassNum())
+                    .ifPresent(classroom -> {
+                        StudentAssignment assignment = new StudentAssignment();
+                        assignment.setSchoolYear(request.getYear());
+                        assignment.setClassroom(classroom);
+                        assignment.setAttendanceNum(request.getAttendanceNum());
+                        assignment.setStudentInfo(info);
+                        info.getAssignments().add(assignment);
+                        info.setCurrentAssignment(assignment);
+                    });
         }
 
         // 4. 보호자 연동 처리
@@ -162,31 +200,6 @@ public class AdminStudentService {
     }
 
     /**
-     * 학적 이력 추가
-     */
-    public String createAssignment(StudentDTO.AssignmentRequest request) {
-        User user = userRepository.findById(request.getUid())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo info = user.getInfo(StudentInfo.class);
-
-        boolean exists = info.getAssignments().stream()
-                .anyMatch(a -> a.getSchoolYear() == request.getSchoolYear());
-        if (exists) {
-            throw new IllegalArgumentException("이미 해당 학년도의 배정 정보가 존재합니다.");
-        }
-
-        StudentAssignment assignment = new StudentAssignment();
-        assignment.setStudentInfo(info);
-        assignment.setSchoolYear(request.getSchoolYear());
-        assignment.setGrade(request.getGrade());
-        assignment.setClassNum(request.getClassNum());
-        assignment.setStudentNum(request.getStudentNum());
-        info.getAssignments().add(assignment);
-
-        return info.getCode();
-    }
-
-    /**
      * 학적 이력 수정
      */
     public String updateAssignment(StudentDTO.AssignmentRequest request) {
@@ -199,9 +212,22 @@ public class AdminStudentService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("수정할 배정 정보를 찾을 수 없습니다."));
 
-        assignment.setGrade(request.getGrade());
-        assignment.setClassNum(request.getClassNum());
-        assignment.setStudentNum(request.getStudentNum());
+        // 학급 정보 조회
+        if (request.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findById(request.getClassroomId())
+                    .orElseThrow(() -> new IllegalArgumentException("해당 학급을 찾을 수 없습니다."));
+
+            // 학급이 변경된 경우에만 처리 (같은 반이면 아무것도 안 함)
+            if (assignment.getClassroom() == null || !assignment.getClassroom().getCid().equals(classroom.getCid())) {
+                // 1. 새 학급에서의 번호 먼저 계산
+                int nextNum = userRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
+                        classroom.getClassNum()) + 1;
+
+                // 2. 학급 및 번호 변경
+                assignment.setClassroom(classroom);
+                assignment.setAttendanceNum(nextNum);
+            }
+        }
 
         return info.getCode();
     }
@@ -244,6 +270,10 @@ public class AdminStudentService {
 
         // 해당 학년도의 이력만 제거
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
+
+        if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getSchoolYear() == schoolYear) {
+            info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
+        }
 
         return info.getCode();
     }

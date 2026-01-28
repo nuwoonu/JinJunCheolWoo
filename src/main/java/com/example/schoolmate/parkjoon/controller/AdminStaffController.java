@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.common.dto.StaffDTO;
 import com.example.schoolmate.common.entity.info.constant.EmploymentType;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.parkjoon.service.AdminStaffService;
@@ -55,6 +56,8 @@ public class AdminStaffController {
         model.addAttribute("staffs", staffPage.getContent());
         model.addAttribute("page", staffPage);
         model.addAttribute("condition", condition);
+        model.addAttribute("statuses", StaffStatus.values());
+        model.addAttribute("employmentTypes", EmploymentType.values());
 
         return "parkjoon/admin/staffs/main";
     }
@@ -85,6 +88,7 @@ public class AdminStaffController {
         model.addAttribute("statusList", StaffStatus.values());
         model.addAttribute("employmentTypes", EmploymentType.values());
         model.addAttribute("departments", List.of("행정실", "시설관리실", "급식실", "전산실", "당직실", "기타"));
+        model.addAttribute("allRoles", UserRole.values()); // 권한 목록 추가
         return "parkjoon/admin/staffs/detail";
     }
 
@@ -120,5 +124,19 @@ public class AdminStaffController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/{uid}/add-role")
+    public String addRole(@PathVariable Long uid, @RequestParam("role") String role, RedirectAttributes ra) {
+        adminStaffService.addRole(uid, role);
+        ra.addFlashAttribute("successMessage", "권한이 추가되었습니다.");
+        return "redirect:/parkjoon/admin/staffs/" + uid + "#roles";
+    }
+
+    @PostMapping("/{uid}/remove-role")
+    public String removeRole(@PathVariable Long uid, @RequestParam("role") String role, RedirectAttributes ra) {
+        adminStaffService.removeRole(uid, role);
+        ra.addFlashAttribute("successMessage", "권한이 삭제되었습니다.");
+        return "redirect:/parkjoon/admin/staffs/" + uid + "#roles";
     }
 }

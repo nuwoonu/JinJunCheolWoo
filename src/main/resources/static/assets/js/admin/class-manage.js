@@ -26,6 +26,10 @@ function openStudentSearchModal() {
   document.getElementById("studentSearchResult").innerHTML =
     '<div class="text-center text-muted py-3">학생을 검색하세요.</div>';
 
+  // 랜덤 배정 입력 초기화
+  const randomInput = document.getElementById("randomCountInput");
+  if (randomInput) randomInput.value = "";
+
   if (studentSearchModal) studentSearchModal.show();
 }
 
@@ -89,8 +93,11 @@ function updateSelectedStudentsUI() {
 }
 
 function confirmAddStudents() {
-  if (selectedStudents.size === 0) {
-    alert("선택된 학생이 없습니다.");
+  const randomCountInput = document.getElementById("randomCountInput");
+  const randomCount = randomCountInput ? randomCountInput.value : 0;
+
+  if (selectedStudents.size === 0 && (!randomCount || randomCount <= 0)) {
+    alert("배정할 학생을 선택하거나 랜덤 인원 수를 입력해주세요.");
     return;
   }
 
@@ -102,17 +109,19 @@ function confirmAddStudents() {
   // FormData로 전송
   const formData = new FormData();
   formData.append("studentUids", uids);
+  formData.append("randomCount", randomCount);
 
   fetch(`/parkjoon/admin/classes/${cid}/add-students`, {
     method: "POST",
     headers: { [header]: token },
     body: formData,
-  }).then((res) => {
+  }).then(async (res) => {
+    const msg = await res.text();
     if (res.ok) {
-      alert("학생이 배정되었습니다.");
+      alert(msg);
       location.reload();
     } else {
-      alert("배정 실패");
+      alert("배정 실패: " + msg);
     }
   });
 }
@@ -216,4 +225,73 @@ function uploadClassCsv() {
     "CSV 파일을 통해 학급을 일괄 생성하시겠습니까?\n(형식: 학년도,학년,반,담임교사사번,학생학번목록)",
     "학급 일괄 생성이 완료되었습니다.",
   );
+}
+
+// --- 학생 이동 (전반) 로직 ---
+let transferModal = null;
+
+function openTransferModal(studentUid, studentName) {
+  const modalEl = document.getElementById("transferStudentModal");
+  if (!modalEl) return;
+
+  transferModal = new bootstrap.Modal(modalEl);
+
+  document.getElementById("transferStudentName").innerText = studentName;
+  document.getElementById("transferStudentUid").value = studentUid;
+
+  // 현재 학급 ID
+  const currentCid = document.getElementById("class-detail-container").dataset
+    .cid;
+  // 현재 학년도 (화면에서 추출하거나 API로 가져와야 함. 여기서는 API 호출 시 year 파라미터 필요)
+  // detail.html의 badge에서 year 추출 (임시)
+  const yearText = document.querySelector(".badge.bg-primary").innerText; // "2026학년도"
+  const year = parseInt(yearText.replace("학년도", ""));
+
+  const select = document.getElementById("targetClassSelect");
+  select.innerHTML = '<option value="">로딩 중...</option>';
+
+  fetch(`/parkjoon/admin/students/api/classrooms?year=${year}`)
+    .then((res) => res.json())
+    .then((data) => {
+      select.innerHTML = '<option value="">선택하세요</option>';
+      data.forEach((c) => {
+        // 현재 반 제외
+        if (c.cid != currentCid) {
+          select.add(new Option(`${c.grade}학년 ${c.classNum}반`, c.cid));
+        }
+      });
+    });
+
+  transferModal.show();
+}
+
+function confirmTransfer() {
+  const currentCid = document.getElementById("class-detail-container").dataset
+    .cid;
+  const targetCid = document.getElementById("targetClassSelect").value;
+  const studentUid = document.getElementById("transferStudentUid").value;
+
+  if (!targetCid) {
+    alert("이동할 학급을 선택해주세요.");
+    return;
+  }
+
+  const token = document.querySelector('meta[name="_csrf"]')?.content;
+  const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+  fetch(`/parkjoon/admin/classes/${currentCid}/transfer-student`, {
+    method: "POST",
+    headers: {
+      [header]: token,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: `targetCid=${targetCid}&studentUid=${studentUid}`,
+  }).then(async (res) => {
+    if (res.ok) {
+      alert("이동되었습니다.");
+      location.reload();
+    } else {
+      alert("이동 실패");
+    }
+  });
 }

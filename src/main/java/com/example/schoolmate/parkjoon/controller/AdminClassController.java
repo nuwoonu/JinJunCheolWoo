@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.ClassDTO;
-import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
+import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.parkjoon.service.AdminClassService;
@@ -60,6 +60,7 @@ public class AdminClassController {
         Page<ClassDTO.DetailResponse> classes = adminClassService.getClassList(condition, pageable);
         model.addAttribute("classes", classes);
         model.addAttribute("condition", condition);
+        model.addAttribute("statuses", ClassroomStatus.values());
         return "parkjoon/admin/classes/main";
     }
 
@@ -67,10 +68,11 @@ public class AdminClassController {
     public String createForm(Model model) {
         log.info("========== [AdminClassController] GET /create 진입 ==========");
         try {
-            model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
+            int currentYear = systemSettingService.getCurrentSchoolYear();
+            model.addAttribute("currentYear", currentYear);
 
-            log.info("교사 목록 조회 요청 시작");
-            List<ClassDTO.TeacherSelectResponse> teachers = adminClassService.getTeacherListForDropdown();
+            log.info("교사 목록 조회 요청 시작 (미배정 교사)");
+            List<ClassDTO.TeacherSelectResponse> teachers = adminClassService.getUnassignedTeachers(currentYear);
             log.info("교사 목록 조회 완료. 조회된 교사 수: {}", teachers != null ? teachers.size() : "null");
 
             model.addAttribute("teachers", teachers);
@@ -120,9 +122,11 @@ public class AdminClassController {
     @PostMapping("/{cid}/add-students")
     @ResponseBody
     public ResponseEntity<String> addStudents(@PathVariable Long cid,
-            @RequestParam("studentUids") java.util.List<Long> studentUids) {
-        adminClassService.addStudents(cid, studentUids);
-        return ResponseEntity.ok("학생이 배정되었습니다.");
+            @RequestParam(value = "studentUids", required = false) List<Long> studentUids,
+            @RequestParam(value = "randomCount", defaultValue = "0") int randomCount) {
+
+        String result = adminClassService.assignStudents(cid, studentUids, randomCount);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{cid}/remove-student")
@@ -138,6 +142,15 @@ public class AdminClassController {
             @RequestParam("studentUids") List<Long> studentUids) {
         adminClassService.removeStudents(cid, studentUids);
         return ResponseEntity.ok("선택한 학생들의 배정이 해제되었습니다.");
+    }
+
+    @PostMapping("/{cid}/transfer-student")
+    @ResponseBody
+    public ResponseEntity<String> transferStudent(@PathVariable Long cid,
+            @RequestParam("targetCid") Long targetCid,
+            @RequestParam("studentUid") Long studentUid) {
+        adminClassService.transferStudent(cid, targetCid, studentUid);
+        return ResponseEntity.ok("학생이 이동되었습니다.");
     }
 
     @PostMapping("/bulk-status")

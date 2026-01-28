@@ -28,7 +28,7 @@ public class StudentServiceImpl {
     @Transactional
     public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
         // 학번 중복 체크
-        if (studentRepository.findByStudentNumber(createDTO.getStudentNumber()).isPresent()) {
+        if (studentRepository.findByAttendanceNum(createDTO.getStudentNumber()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
         }
 
@@ -38,8 +38,8 @@ public class StudentServiceImpl {
 
         // Student 엔티티 생성 (Setter 방식)
         StudentInfo student = new StudentInfo();
-        student.setStudentNumber(createDTO.getStudentNumber());
-        student.setClassroom(classroom);
+        student.getCurrentAssignment().setAttendanceNum(createDTO.getStudentNumber());
+        student.getCurrentAssignment().setClassroom(classroom);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
@@ -55,8 +55,8 @@ public class StudentServiceImpl {
         return convertToResponseDTO(student);
     }
 
-    public StudentResponseDTO getStudentByStudentNumber(Long studentNumber) {
-        StudentInfo student = studentRepository.findByStudentNumber(studentNumber)
+    public StudentResponseDTO getStudentByStudentNumber(Integer studentNumber) {
+        StudentInfo student = studentRepository.findByAttendanceNum(studentNumber)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. 학번: " + studentNumber));
         return convertToResponseDTO(student);
     }
@@ -95,7 +95,7 @@ public class StudentServiceImpl {
             Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
                     .orElseThrow(
                             () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
-            student.setClassroom(classroom);
+            student.getCurrentAssignment().setClassroom(classroom);
         }
         if (updateDTO.getBirthDate() != null) {
             student.setBirthDate(updateDTO.getBirthDate());

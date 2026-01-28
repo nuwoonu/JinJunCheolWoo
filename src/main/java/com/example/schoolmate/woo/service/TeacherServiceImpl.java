@@ -15,6 +15,7 @@ import com.example.schoolmate.cheol.entity.Subject;
 import com.example.schoolmate.cheol.repository.GradeRepository;
 import com.example.schoolmate.cheol.repository.SubjectRepository;
 import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.repository.ClassroomRepository;
@@ -95,7 +96,7 @@ public class TeacherServiceImpl implements TeacherService {
         log.info("학생 등록: {}", createDTO.getStudentNumber());
 
         // 학번 중복 체크
-        if (studentRepository.findByStudentNumber(createDTO.getStudentNumber()).isPresent()) {
+        if (studentRepository.findByAttendanceNum(createDTO.getStudentNumber().intValue()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
         }
 
@@ -105,12 +106,20 @@ public class TeacherServiceImpl implements TeacherService {
 
         // Student 엔티티 생성
         StudentInfo student = new StudentInfo();
-        student.setStudentNumber(createDTO.getStudentNumber());
-        student.setClassroom(classroom);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
         student.setGender(createDTO.getGender());
+
+        // 학적 생성 및 설정
+        StudentAssignment assignment = StudentAssignment.builder()
+                .studentInfo(student)
+                .schoolYear(classroom.getYear())
+                .classroom(classroom)
+                .attendanceNum(createDTO.getStudentNumber().intValue())
+                .build();
+        student.getAssignments().add(assignment);
+        student.setCurrentAssignment(assignment);
 
         StudentInfo savedStudent = studentRepository.save(student);
         return new StudentResponseDTO(savedStudent);
@@ -141,7 +150,20 @@ public class TeacherServiceImpl implements TeacherService {
             Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
                     .orElseThrow(
                             () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
-            student.setClassroom(classroom);
+
+            // 현재 학적 업데이트 (또는 새 학적 추가 정책에 따라 다름, 여기서는 현재 학적 갱신으로 가정)
+            StudentAssignment current = student.getCurrentAssignment();
+            if (current != null) {
+                current.setSchoolYear(classroom.getYear());
+                current.setClassroom(classroom);
+            } else {
+                StudentAssignment newAssign = new StudentAssignment();
+                newAssign.setStudentInfo(student);
+                newAssign.setSchoolYear(classroom.getYear());
+                newAssign.setClassroom(classroom);
+                student.setCurrentAssignment(newAssign);
+                student.getAssignments().add(newAssign);
+            }
         }
         if (updateDTO.getBirthDate() != null) {
             student.setBirthDate(updateDTO.getBirthDate());
@@ -202,7 +224,7 @@ public class TeacherServiceImpl implements TeacherService {
                 .map(s -> ClassStudentDTO.StudentSimpleDTO.builder()
                         .studentId(s.getId())
                         .name(s.getUser() != null ? s.getUser().getName() : "이름없음")
-                        .studentNumber(s.getStudentNumber())
+                        .studentNumber(s.getCurrentAssignment().getAttendanceNum())
                         .phone(s.getPhone())
                         .email(s.getUser() != null ? s.getUser().getEmail() : null)
                         .build())

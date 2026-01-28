@@ -2,6 +2,7 @@ package com.example.schoolmate.common.dto;
 
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.user.User;
 import com.opencsv.bean.CsvBindByName;
 
@@ -14,6 +15,7 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 교사 데이터 전송 객체 (DTO)
@@ -45,11 +47,13 @@ public class TeacherDTO {
         private String position;
         @Builder.Default
         private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
+        private Set<UserRole> roles;
 
         public DetailResponse(User user) {
             this.uid = user.getUid();
             this.name = user.getName();
             this.email = user.getEmail();
+            this.roles = user.getRoles();
 
             // 1. User 엔티티의 편의 메서드를 사용하여 TeacherInfo 추출
             TeacherInfo ti = user.getInfo(TeacherInfo.class);

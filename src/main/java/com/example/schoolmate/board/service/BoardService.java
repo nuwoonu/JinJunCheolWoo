@@ -391,7 +391,8 @@ public class BoardService {
         if (classroomId == null)
             return false;
         return studentInfoRepository.findByUserUid(userId)
-                .map(info -> info.getClassroom() != null && info.getClassroom().getCid().equals(classroomId))
+                .map(info -> info.getCurrentAssignment().getClassroom() != null
+                        && info.getCurrentAssignment().getClassroom().getCid().equals(classroomId))
                 .orElse(false);
     }
 

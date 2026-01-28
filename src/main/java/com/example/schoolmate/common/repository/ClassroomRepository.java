@@ -26,8 +26,4 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long>, Cla
 
     // 학년도와 학년으로 학급 찾기
     List<Classroom> findByYearAndGrade(int year, int grade);
-
-    // 학급 학생들과 함께 조회 (Fetch Join)
-    @Query("SELECT c FROM Classroom c LEFT JOIN FETCH c.students WHERE c.cid = :cid")
-    Optional<Classroom> findByIdWithStudents(@Param("cid") Long cid);
 }

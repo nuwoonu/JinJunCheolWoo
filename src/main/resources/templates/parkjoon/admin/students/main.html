@@ -131,7 +131,7 @@
                 >
                   <option value="">전체 상태</option>
                   <option
-                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.StudentStatus).values()}"
+                    th:each="s : ${statuses}"
                     th:value="${s.name()}"
                     th:text="${s.description}"
                     th:selected="${condition.status == s.name()}"

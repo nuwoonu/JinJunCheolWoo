@@ -50,7 +50,7 @@ public class StudentRestController {
     // GET /api/students/student-number/{studentNumber}
     @GetMapping("/student-number/{studentNumber}")
     public ResponseEntity<StudentResponseDTO> getStudentByStudentNumber(
-            @PathVariable Long studentNumber) {
+            @PathVariable Integer studentNumber) {
         StudentResponseDTO response = studentService.getStudentByStudentNumber(studentNumber);
         return ResponseEntity.ok(response);
     }

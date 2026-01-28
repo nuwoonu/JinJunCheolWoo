@@ -8,6 +8,8 @@ import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.repository.ClassroomRepository;
+import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
@@ -34,6 +36,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ClassroomRepository classroomRepository;
 
     /**
      * 회원가입 - 새 엔티티 구조 (User + Info)
@@ -82,14 +85,18 @@ public class UserService {
         // 초기 학급 배정
         if (dto.getGrade() != null && dto.getClassNum() != null) {
             int currentYear = LocalDate.now().getYear();
-            StudentAssignment assignment = StudentAssignment.builder()
-                    .studentInfo(studentInfo)
-                    .schoolYear(currentYear)
-                    .grade(dto.getGrade())
-                    .classNum(dto.getClassNum())
-                    .studentNum(dto.getStudentNum())
-                    .build();
-            studentInfo.getAssignments().add(assignment);
+            Classroom classroom = classroomRepository
+                    .findByYearAndGradeAndClassNum(currentYear, dto.getGrade(), dto.getClassNum()).orElse(null);
+            if (classroom != null) {
+                StudentAssignment assignment = StudentAssignment.builder()
+                        .studentInfo(studentInfo)
+                        .schoolYear(currentYear)
+                        .classroom(classroom)
+                        .attendanceNum(dto.getStudentNum())
+                        .build();
+                studentInfo.getAssignments().add(assignment);
+                studentInfo.setCurrentAssignment(assignment);
+            }
         }
 
         user.getInfos().add(studentInfo);
@@ -212,12 +219,11 @@ public class UserService {
             builder.role(UserRole.STUDENT)
                     .studentIdentityNum(studentInfo.getCode());
 
-            int currentYear = LocalDate.now().getYear();
-            StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+            StudentAssignment assignment = studentInfo.getCurrentAssignment();
             if (assignment != null) {
                 builder.grade(assignment.getGrade())
                         .classNum(assignment.getClassNum())
-                        .studentNum(assignment.getStudentNum())
+                        .studentNum(assignment.getAttendanceNum())
                         .schoolYear(assignment.getSchoolYear());
             }
         }

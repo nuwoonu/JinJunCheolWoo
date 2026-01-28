@@ -3,10 +3,12 @@ package com.example.schoolmate.common.dto;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.example.schoolmate.common.entity.info.StaffInfo;
 import com.example.schoolmate.common.entity.info.constant.EmploymentType;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.user.User;
 import com.opencsv.bean.CsvBindByName;
 
@@ -115,11 +117,13 @@ public class StaffDTO {
 
         @Builder.Default
         private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
+        private Set<UserRole> roles;
 
         public DetailResponse(User user) {
             this.uid = user.getUid();
             this.name = user.getName();
             this.email = user.getEmail();
+            this.roles = user.getRoles();
 
             StaffInfo info = user.getInfo(StaffInfo.class);
             if (info != null) {

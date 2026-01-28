@@ -151,8 +151,7 @@ public class DashboardController {
         }
 
         // 현재 학년도 배정 정보
-        int currentYear = systemSettingService.getCurrentSchoolYear();
-        StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+        StudentAssignment assignment = studentInfo.getCurrentAssignment();
 
         return ChildDTO.builder()
                 .id(studentUser.getUid())

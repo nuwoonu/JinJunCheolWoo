@@ -52,9 +52,4 @@ public class AdminFacilityController {
         ra.addFlashAttribute("successMessage", "시설이 삭제되었습니다.");
         return "redirect:/parkjoon/admin/facilities/rooms";
     }
-
-    @GetMapping("/assets")
-    public String assets() {
-        return "parkjoon/admin/facilities/assets";
-    }
 }

@@ -169,4 +169,20 @@ public class AdminTeacherService {
                 info.setStatus(status);
         }
     }
+
+    public void addRole(Long uid, String roleName) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        user.getRoles().add(UserRole.valueOf(roleName));
+    }
+
+    public void removeRole(Long uid, String roleName) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        UserRole role = UserRole.valueOf(roleName);
+        if (role == UserRole.TEACHER) {
+            throw new IllegalArgumentException("기본 권한(교사)은 삭제할 수 없습니다.");
+        }
+        user.getRoles().remove(role);
+    }
 }

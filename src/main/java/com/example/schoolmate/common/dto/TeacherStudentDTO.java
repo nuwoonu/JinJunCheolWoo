@@ -104,12 +104,12 @@ public class TeacherStudentDTO {
                 }
 
                 // 해당 학년도의 학급 정보 추출
-                var assignment = si.getCurrentAssignment(ts.getSchoolYear());
+                var assignment = si.getCurrentAssignment(); // 현재 학적 사용 (또는 연도 비교 필요 시 로직 추가)
                 if (assignment != null) {
                     this.classInfo = String.format("%d-%d-%d",
                             assignment.getGrade(),
                             assignment.getClassNum(),
-                            assignment.getStudentNum());
+                            assignment.getAttendanceNum());
                 }
             }
         }

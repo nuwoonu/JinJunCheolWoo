@@ -123,92 +123,92 @@ public class UserDataTest {
     // }
     // }
 
-    @Test
-    @Transactional
-    @Rollback(false) // DB에 실제로 반영하기 위해 false 설정
-    void createAdminAccount() {
-        // 1. 이미 해당 이메일의 어드민이 있는지 확인 (중복 방지)
-        String adminEmail = "admin@school.com";
-        if (userRepository.findByEmail(adminEmail).isPresent()) {
-            System.out.println("이미 관리자 계정이 존재합니다.");
-            return;
-        }
+    // @Test
+    // @Transactional
+    // @Rollback(false) // DB에 실제로 반영하기 위해 false 설정
+    // void createAdminAccount() {
+    // // 1. 이미 해당 이메일의 어드민이 있는지 확인 (중복 방지)
+    // String adminEmail = "admin@school.com";
+    // if (userRepository.findByEmail(adminEmail).isPresent()) {
+    // System.out.println("이미 관리자 계정이 존재합니다.");
+    // return;
+    // }
 
-        // 2. 관리자 유저 엔티티 생성
-        User adminUser = User.builder()
-                .email(adminEmail)
-                .name("최고관리자")
-                // 비밀번호를 암호화하여 저장 (로그인 시 '1234' 입력)
-                .password(passwordEncoder.encode("1234"))
-                .roles(new HashSet<>(Set.of(UserRole.ADMIN)))
-                .build();
-        // 4. DB 저장
-        userRepository.save(adminUser);
+    // // 2. 관리자 유저 엔티티 생성
+    // User adminUser = User.builder()
+    // .email(adminEmail)
+    // .name("최고관리자")
+    // // 비밀번호를 암호화하여 저장 (로그인 시 '1234' 입력)
+    // .password(passwordEncoder.encode("1234"))
+    // .roles(new HashSet<>(Set.of(UserRole.ADMIN)))
+    // .build();
+    // // 4. DB 저장
+    // userRepository.save(adminUser);
 
-        System.out.println("관리자 계정 생성 완료: " + adminEmail);
-    }
+    // System.out.println("관리자 계정 생성 완료: " + adminEmail);
+    // }
 
-    @Test
-    @Transactional
-    @Rollback(false)
-    void createStudentAccount() {
-        String studentEmail = "student-test@school.com";
-        if (userRepository.findByEmail(studentEmail).isPresent()) {
-            System.out.println("이미 학생 계정이 존재합니다: " + studentEmail);
-            return;
-        }
+    // @Test
+    // @Transactional
+    // @Rollback(false)
+    // void createStudentAccount() {
+    // String studentEmail = "student-test@school.com";
+    // if (userRepository.findByEmail(studentEmail).isPresent()) {
+    // System.out.println("이미 학생 계정이 존재합니다: " + studentEmail);
+    // return;
+    // }
 
-        User studentUser = User.builder()
-                .email(studentEmail)
-                .name("테스트학생")
-                .password(passwordEncoder.encode("1234"))
-                .roles(new HashSet<>(Set.of(UserRole.STUDENT)))
-                .build();
+    // User studentUser = User.builder()
+    // .email(studentEmail)
+    // .name("테스트학생")
+    // .password(passwordEncoder.encode("1234"))
+    // .roles(new HashSet<>(Set.of(UserRole.STUDENT)))
+    // .build();
 
-        StudentInfo studentInfo = new StudentInfo();
-        studentInfo.setUser(studentUser);
-        studentInfo.setCode("ST-TEST-0001");
-        studentInfo.setStudentNumber(1L);
-        studentInfo.setBirthDate(LocalDate.of(2010, 5, 1));
-        studentInfo.setAddress("서울시 테스트구 테스트로 1");
-        studentInfo.setPhone("010-1234-5678");
-        studentInfo.setStatus(StudentStatus.ENROLLED);
+    // StudentInfo studentInfo = new StudentInfo();
+    // studentInfo.setUser(studentUser);
+    // studentInfo.setCode("ST-TEST-0001");
+    // studentInfo.setStudentNumber(1L);
+    // studentInfo.setBirthDate(LocalDate.of(2010, 5, 1));
+    // studentInfo.setAddress("서울시 테스트구 테스트로 1");
+    // studentInfo.setPhone("010-1234-5678");
+    // studentInfo.setStatus(StudentStatus.ENROLLED);
 
-        studentUser.getInfos().add(studentInfo);
-        userRepository.save(studentUser);
+    // studentUser.getInfos().add(studentInfo);
+    // userRepository.save(studentUser);
 
-        System.out.println("학생 계정 생성 완료: " + studentEmail);
-    }
+    // System.out.println("학생 계정 생성 완료: " + studentEmail);
+    // }
 
-    @Test
-    @Transactional
-    @Rollback(false)
-    void createParentAccount() {
-        String parentEmail = "parent1@test.com";
-        if (userRepository.findByEmail(parentEmail).isPresent()) {
-            System.out.println("이미 학부모 계정이 존재합니다: " + parentEmail);
-            return;
-        }
+    // @Test
+    // @Transactional
+    // @Rollback(false)
+    // void createParentAccount() {
+    // String parentEmail = "parent1@test.com";
+    // if (userRepository.findByEmail(parentEmail).isPresent()) {
+    // System.out.println("이미 학부모 계정이 존재합니다: " + parentEmail);
+    // return;
+    // }
 
-        User parentUser = User.builder()
-                .email(parentEmail)
-                .name("테스트학부모")
-                .phoneNumber("010-9999-0001")
-                .password(passwordEncoder.encode("1234"))
-                .roles(new HashSet<>(Set.of(UserRole.PARENT)))
-                .build();
+    // User parentUser = User.builder()
+    // .email(parentEmail)
+    // .name("테스트학부모")
+    // .phoneNumber("010-9999-0001")
+    // .password(passwordEncoder.encode("1234"))
+    // .roles(new HashSet<>(Set.of(UserRole.PARENT)))
+    // .build();
 
-        ParentInfo parentInfo = new ParentInfo();
-        parentInfo.setUser(parentUser);
-        parentInfo.setCode("P-TEST-0001");
-        parentInfo.setParentName(parentUser.getName());
-        parentInfo.setPhoneNumber(parentUser.getPhoneNumber());
-        parentInfo.setStatus(ParentStatus.ACTIVE);
+    // ParentInfo parentInfo = new ParentInfo();
+    // parentInfo.setUser(parentUser);
+    // parentInfo.setCode("P-TEST-0001");
+    // parentInfo.setParentName(parentUser.getName());
+    // parentInfo.setPhoneNumber(parentUser.getPhoneNumber());
+    // parentInfo.setStatus(ParentStatus.ACTIVE);
 
-        parentUser.getInfos().add(parentInfo);
-        userRepository.save(parentUser);
+    // parentUser.getInfos().add(parentInfo);
+    // userRepository.save(parentUser);
 
-        System.out.println("학부모 계정 생성 완료: " + parentEmail);
-    }
+    // System.out.println("학부모 계정 생성 완료: " + parentEmail);
+    // }
 
 }

@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.parkjoon.service.AdminParentService;
 import com.example.schoolmate.common.service.SystemSettingService;
@@ -56,6 +58,7 @@ public class AdminStudentController {
 
         model.addAttribute("students", students);
         model.addAttribute("condition", condition);
+        model.addAttribute("statuses", StudentStatus.values());
 
         return "parkjoon/admin/students/main";
     }
@@ -64,11 +67,13 @@ public class AdminStudentController {
     @GetMapping("/create")
     public String createForm(Model model) {
         StudentDTO.CreateRequest request = new StudentDTO.CreateRequest();
-        request.setYear(systemSettingService.getCurrentSchoolYear()); // 기본 학년도 설정
+        int currentYear = systemSettingService.getCurrentSchoolYear();
+        request.setYear(currentYear); // 기본 학년도 설정
 
         model.addAttribute("createRequest", request);
-        model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
+        model.addAttribute("currentYear", currentYear);
         model.addAttribute("relationships", FamilyRelationship.values());
+        model.addAttribute("classrooms", adminStudentService.getOpenClassrooms(currentYear));
         return "parkjoon/admin/students/create";
     }
 
@@ -114,21 +119,6 @@ public class AdminStudentController {
         // 수정 후 다시 해당 학생의 상세 페이지로 이동 (학번 기준)
         redirectAttributes.addFlashAttribute("successMessage", "기본 정보가 수정되었습니다.");
         return "redirect:/parkjoon/admin/students/" + request.getCode();
-    }
-
-    // 학적 이력 추가
-    @PostMapping("/assignment/create")
-    public String createAssignment(StudentDTO.AssignmentRequest request, RedirectAttributes redirectAttributes) {
-        try {
-            String code = adminStudentService.createAssignment(request);
-            redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 추가되었습니다.");
-            return "redirect:/parkjoon/admin/students/" + code + "#history";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "추가 실패: " + e.getMessage());
-            // 에러 발생 시 되돌아갈 학번 조회
-            StudentDTO.DetailResponse student = adminStudentService.getStudentDetail(request.getUid());
-            return "redirect:/parkjoon/admin/students/" + student.getCode() + "#history";
-        }
     }
 
     // 학적 이력 수정
@@ -216,5 +206,12 @@ public class AdminStudentController {
     public ResponseEntity<String> removeGuardian(@PathVariable String code, @RequestParam("parentId") Long parentId) {
         adminStudentService.removeGuardian(code, parentId);
         return ResponseEntity.ok("연동이 해제되었습니다.");
+    }
+
+    // 학급 목록 조회 API (수정 모달용)
+    @GetMapping("/api/classrooms")
+    @ResponseBody
+    public ResponseEntity<List<ClassDTO.DetailResponse>> getClassrooms(@RequestParam int year) {
+        return ResponseEntity.ok(adminStudentService.getOpenClassrooms(year));
     }
 }

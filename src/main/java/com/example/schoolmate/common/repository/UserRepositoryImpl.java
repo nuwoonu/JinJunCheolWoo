@@ -100,4 +100,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         return parentQueryHandler.countByStatus(status);
     }
 
+    @Override
+    public int findMaxAttendanceNum(int year, int grade, int classNum) {
+        return studentQueryHandler.findMaxAttendanceNum(year, grade, classNum);
+    }
+
 }

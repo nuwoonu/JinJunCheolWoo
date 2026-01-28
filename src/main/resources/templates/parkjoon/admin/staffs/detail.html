@@ -76,6 +76,14 @@
                       >알림 이력</a
                     >
                   </li>
+                  <li class="nav-item">
+                    <a
+                      class="nav-link fw-bold"
+                      data-bs-toggle="tab"
+                      href="#roles"
+                      >권한 관리</a
+                    >
+                  </li>
                 </ul>
               </div>
               <div class="card-body tab-content p-4">
@@ -262,6 +270,71 @@
                     </table>
                   </div>
                 </div>
+
+                <!-- 탭 3: 권한 관리 -->
+                <div class="tab-pane fade" id="roles">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <h6 class="fw-bold mb-0">부여된 시스템 권한</h6>
+                  </div>
+
+                  <div class="mb-4">
+                    <div class="d-flex flex-wrap gap-2">
+                      <span
+                        th:each="role : ${staff.roles}"
+                        class="badge bg-light text-dark border p-2 d-flex align-items-center"
+                      >
+                        <span th:text="${role.description}">교직원</span>
+                        <form
+                          th:if="${role.name() != 'STAFF'}"
+                          th:action="@{/parkjoon/admin/staffs/{uid}/remove-role(uid=${staff.uid})}"
+                          method="post"
+                          class="ms-2 m-0"
+                        >
+                          <input
+                            type="hidden"
+                            name="role"
+                            th:value="${role.name()}"
+                          />
+                          <button
+                            type="submit"
+                            class="btn-close"
+                            style="width: 0.5em; height: 0.5em"
+                            aria-label="Close"
+                          ></button>
+                        </form>
+                      </span>
+                    </div>
+                  </div>
+
+                  <hr />
+
+                  <h6 class="fw-bold mb-3">권한 추가</h6>
+                  <form
+                    th:action="@{/parkjoon/admin/staffs/{uid}/add-role(uid=${staff.uid})}"
+                    method="post"
+                    class="row g-2 align-items-center"
+                  >
+                    <div class="col-auto">
+                      <select name="role" class="form-select">
+                        <option
+                          th:each="r : ${allRoles}"
+                          th:if="${!staff.roles.contains(r) && r.name() != 'STUDENT' && r.name() != 'PARENT'}"
+                          th:value="${r.name()}"
+                          th:text="${r.description}"
+                        >
+                          시설 관리자
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-auto">
+                      <button type="submit" class="btn btn-primary">
+                        추가
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -269,6 +342,7 @@
       </div>
     </div>
     <th:block layout:fragment="script">
+      <script th:src="@{/assets/js/admin/staff-manage.js}"></script>
       <script>
         document.addEventListener("DOMContentLoaded", function () {
           const typeSelect = document.getElementById("employmentTypeSelect");

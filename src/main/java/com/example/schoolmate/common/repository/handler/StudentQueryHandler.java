@@ -12,6 +12,7 @@ import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.QStudentAssignment;
+import com.example.schoolmate.common.entity.QClassroom;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
@@ -42,9 +43,10 @@ public class StudentQueryHandler {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
 
-        JPAQuery<User> contentQuery = query
-                .selectFrom(user)
+        JPAQuery<User> contentQuery = query.selectFrom(user).distinct()
                 .leftJoin(info).on(info.user.eq(user)) // StudentInfo와 직접 조인
+                .leftJoin(info.currentAssignment, QStudentAssignment.studentAssignment)
+                .leftJoin(QStudentAssignment.studentAssignment.classroom, QClassroom.classroom)
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
@@ -58,7 +60,7 @@ public class StudentQueryHandler {
         List<User> content = contentQuery.fetch();
 
         JPAQuery<Long> countQuery = query
-                .select(user.count())
+                .select(user.countDistinct())
                 .from(user)
                 .leftJoin(info).on(info.user.eq(user))
                 .where(
@@ -74,7 +76,7 @@ public class StudentQueryHandler {
             return null;
         return info.status.eq(StudentStatus.valueOf(status));
     }
-  
+
     /**
      *
      * 
@@ -105,6 +107,7 @@ public class StudentQueryHandler {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom classroom = QClassroom.classroom;
 
         // StudentInfo를 기준으로 조회하여 User와 하위 정보를 한 번에 Fetch Join
         StudentInfo result = query
@@ -112,6 +115,7 @@ public class StudentQueryHandler {
                 .innerJoin(info.user, user).fetchJoin() // User Fetch Join
                 // 학적 이력 조인 (최신순 정렬을 위해 fetchJoin 유지)
                 .leftJoin(info.assignments, assign).fetchJoin()
+                .leftJoin(assign.classroom, classroom).fetchJoin() // Classroom 정보도 함께 로딩
                 .where(
                         info.code.eq(code),
                         user.roles.contains(UserRole.STUDENT))
@@ -138,13 +142,15 @@ public class StudentQueryHandler {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom classroom = QClassroom.classroom;
 
         return query.selectFrom(user)
                 .join(info).on(info.user.eq(user))
                 .join(info.assignments, assign)
-                .where(assign.schoolYear.eq(year)
-                        .and(assign.grade.eq(grade))
-                        .and(assign.classNum.eq(classNum)))
+                .join(assign.classroom, classroom)
+                .where(classroom.year.eq(year)
+                        .and(classroom.grade.eq(grade))
+                        .and(classroom.classNum.eq(classNum)))
                 .fetch();
     }
 
@@ -174,13 +180,15 @@ public class StudentQueryHandler {
     public long countByClassroom(int year, int grade, int classNum) {
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom classroom = QClassroom.classroom;
 
         Long count = query.select(info.count())
                 .from(info)
                 .join(info.assignments, assign)
-                .where(assign.schoolYear.eq(year)
-                        .and(assign.grade.eq(grade))
-                        .and(assign.classNum.eq(classNum)))
+                .join(assign.classroom, classroom)
+                .where(classroom.year.eq(year)
+                        .and(classroom.grade.eq(grade))
+                        .and(classroom.classNum.eq(classNum)))
                 .fetchOne();
         return count != null ? count : 0L;
     }
@@ -192,5 +200,19 @@ public class StudentQueryHandler {
                 .where(info.status.eq(status))
                 .fetchOne();
         return count != null ? count : 0L;
+    }
+
+    public int findMaxAttendanceNum(int year, int grade, int classNum) {
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom classroom = QClassroom.classroom;
+
+        Integer max = query.select(assign.attendanceNum.max())
+                .from(assign)
+                .join(assign.classroom, classroom)
+                .where(classroom.year.eq(year)
+                        .and(classroom.grade.eq(grade))
+                        .and(classroom.classNum.eq(classNum)))
+                .fetchOne();
+        return max != null ? max : 0;
     }
 }

@@ -66,8 +66,7 @@ public class MyChildrenController {
             imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
         }
 
-        int currentYear = LocalDate.now().getYear();
-        StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+        StudentAssignment assignment = studentInfo.getCurrentAssignment();
 
         return ChildDTO.builder()
                 .id(studentUser.getUid())

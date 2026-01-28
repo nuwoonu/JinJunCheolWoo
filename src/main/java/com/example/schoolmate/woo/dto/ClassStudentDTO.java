@@ -18,13 +18,13 @@ public class ClassStudentDTO {
 
     private Long classroomId;
 
-    private int year;       // 학년도
+    private int year; // 학년도
 
-    private int grade;      // 학년
+    private int grade; // 학년
 
-    private int classNum;   // 반
+    private int classNum; // 반
 
-    private String className;  // "2025학년도 3학년 2반"
+    private String className; // "2025학년도 3학년 2반"
 
     private int totalStudents;
 
@@ -43,7 +43,7 @@ public class ClassStudentDTO {
     public static class StudentSimpleDTO {
         private Long studentId;
         private String name;
-        private Long studentNumber;  // 번호
+        private Integer studentNumber; // 번호
         private String phone;
         private String email;
     }

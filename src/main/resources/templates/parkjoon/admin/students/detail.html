@@ -183,13 +183,6 @@
                     class="d-flex justify-content-between align-items-center mb-3"
                   >
                     <h6 class="fw-bold mb-0">학년도별 학급 배정 이력</h6>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-primary"
-                      onclick="openCreateAssignmentModal()"
-                    >
-                      <i class="bi bi-plus-lg"></i> 새 이력 추가
-                    </button>
                   </div>
                   <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -209,7 +202,7 @@
                             2026
                           </td>
                           <td
-                            th:text="${assign.grade + '학년 ' + assign.classNum + '반 ' + assign.studentNum + '번'}"
+                            th:text="${assign.grade + '학년 ' + assign.classNum + '반 ' + assign.attendanceNum + '번'}"
                           >
                             1-1-01
                           </td>
@@ -218,9 +211,9 @@
                               <button
                                 type="button"
                                 class="btn btn-sm btn-outline-secondary"
-                                th:onclick="openUpdateAssignmentModal([[${assign.schoolYear}]], [[${assign.grade}]], [[${assign.classNum}]], [[${assign.studentNum}]])"
+                                th:onclick="openUpdateAssignmentModal([[${assign.schoolYear}]], [[${assign.classroom.cid}]])"
                               >
-                                편집
+                                이동
                               </button>
                               <button
                                 type="button"
@@ -306,83 +299,6 @@
         </div>
       </div>
 
-      <!-- 1. 추가용 모달 (Create Modal) -->
-      <div
-        class="modal fade"
-        id="createAssignmentModal"
-        tabindex="-1"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <form
-            th:action="@{/parkjoon/admin/students/assignment/create}"
-            method="post"
-            class="modal-content"
-          >
-            <div class="modal-header">
-              <h5 class="modal-title">🎓 새 학급 배정 추가</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <input type="hidden" name="uid" th:value="${student.uid}" />
-              <div class="mb-3">
-                <label class="form-label fw-bold">학년도</label>
-                <input
-                  type="number"
-                  name="schoolYear"
-                  class="form-control"
-                  th:value="${currentYear}"
-                  required
-                />
-              </div>
-              <div class="row g-2">
-                <div class="col-4">
-                  <label class="form-label fw-bold">학년</label>
-                  <input
-                    type="number"
-                    name="grade"
-                    class="form-control"
-                    required
-                  />
-                </div>
-                <div class="col-4">
-                  <label class="form-label fw-bold">반</label>
-                  <input
-                    type="number"
-                    name="classNum"
-                    class="form-control"
-                    required
-                  />
-                </div>
-                <div class="col-4">
-                  <label class="form-label fw-bold">번호</label>
-                  <input
-                    type="number"
-                    name="studentNum"
-                    class="form-control"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                취소
-              </button>
-              <button type="submit" class="btn btn-primary">추가하기</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
       <!-- 2. 수정용 모달 (Update Modal) -->
       <div
         class="modal fade"
@@ -397,7 +313,7 @@
             class="modal-content"
           >
             <div class="modal-header">
-              <h5 class="modal-title">📝 학급 배정 수정</h5>
+              <h5 class="modal-title">🔄 학급 이동 (수정)</h5>
               <button
                 type="button"
                 class="btn-close"
@@ -417,37 +333,20 @@
                   readonly
                 />
               </div>
-              <div class="row g-2">
-                <div class="col-4">
-                  <label class="form-label fw-bold">학년</label>
-                  <input
-                    type="number"
-                    name="grade"
-                    id="updateGrade"
-                    class="form-control"
-                    required
-                  />
-                </div>
-                <div class="col-4">
-                  <label class="form-label fw-bold">반</label>
-                  <input
-                    type="number"
-                    name="classNum"
-                    id="updateClassNum"
-                    class="form-control"
-                    required
-                  />
-                </div>
-                <div class="col-4">
-                  <label class="form-label fw-bold">번호</label>
-                  <input
-                    type="number"
-                    name="studentNum"
-                    id="updateStudentNum"
-                    class="form-control"
-                    required
-                  />
-                </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">학급 선택</label>
+                <select
+                  name="classroomId"
+                  id="updateClassroomId"
+                  class="form-select"
+                  required
+                >
+                  <!-- JS로 로드됨 -->
+                </select>
+              </div>
+              <div class="form-text text-center text-primary">
+                <i class="bi bi-info-circle"></i> 학급 변경 시 번호는 자동
+                부여됩니다.
               </div>
             </div>
             <div class="modal-footer d-flex justify-content-between">
@@ -467,7 +366,7 @@
                 >
                   취소
                 </button>
-                <button type="submit" class="btn btn-primary">수정 저장</button>
+                <button type="submit" class="btn btn-primary">이동 저장</button>
               </div>
             </div>
           </form>

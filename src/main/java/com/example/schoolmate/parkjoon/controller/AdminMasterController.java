@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.cheol.dto.SubjectDTO;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.parkjoon.service.AdminSubjectService;
+import com.example.schoolmate.soojin.entity.constant.EventType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +31,8 @@ public class AdminMasterController {
     private final AdminSubjectService adminSubjectService;
 
     @GetMapping("/schedule")
-    public String schedule() {
+    public String schedule(Model model) {
+        model.addAttribute("eventTypes", EventType.values());
         return "parkjoon/admin/master/schedule";
     }
 

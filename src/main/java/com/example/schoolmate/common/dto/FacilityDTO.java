@@ -20,7 +20,7 @@ public class FacilityDTO {
         private String location;
         private Integer capacity;
         private String description;
-        private boolean isAvailable;
+        private boolean available;
     }
 
     @Getter
@@ -31,7 +31,7 @@ public class FacilityDTO {
         private String location;
         private Integer capacity;
         private String description;
-        private boolean isAvailable;
+        private boolean available;
 
         public static Response from(SchoolFacility entity) {
             return Response.builder()
@@ -40,7 +40,7 @@ public class FacilityDTO {
                     .location(entity.getLocation())
                     .capacity(entity.getCapacity())
                     .description(entity.getDescription())
-                    .isAvailable(entity.isAvailable())
+                    .available(entity.isAvailable())
                     .build();
         }
     }
