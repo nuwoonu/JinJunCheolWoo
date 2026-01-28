@@ -72,25 +72,40 @@ public class UserService {
         return savedUser.getUid();
     }
 
+    // [변경 전] dto에서 학번(studentIdentityNum 또는 studentNumber)을 가져옴
+    // 회원가입 폼에서 학번을 입력하지 않으면 null이 되어 DB 저장 시 에러 발생
+    // "Column 'code' cannot be null" 에러
+
     private void createStudentInfo(User user, CustomUserDTO dto) {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
-        studentInfo.setCode(dto.getStudentIdentityNum() != null
-                ? dto.getStudentIdentityNum()
-                : dto.getStudentNumber());
 
-        // 초기 학급 배정
-        if (dto.getGrade() != null && dto.getClassNum() != null) {
-            int currentYear = LocalDate.now().getYear();
-            StudentAssignment assignment = StudentAssignment.builder()
-                    .studentInfo(studentInfo)
-                    .schoolYear(currentYear)
-                    .grade(dto.getGrade())
-                    .classNum(dto.getClassNum())
-                    .studentNum(dto.getStudentNum())
-                    .build();
-            studentInfo.getAssignments().add(assignment);
+        // studentInfo.setCode(dto.getStudentIdentityNum() != null
+        // ? dto.getStudentIdentityNum()
+        // : dto.getStudentNumber());
+
+        // [변경 후] null이면 "TEMP_이메일앞부분" 형태의 임시값 설정
+        // 회원가입 시 학번 입력 없이도 가입 가능, 관리자가 나중에 실제 학번으로 수정
+        String code = dto.getStudentIdentityNum();
+        if (code == null || code.isEmpty()) {
+            code = "TEMP_" + user.getEmail().split("@")[0];
         }
+        studentInfo.setCode(code);
+
+        // ========== [사용하지 않는 코드] 초기 학급 배정 로직 (2025-01-28 woo) ==========
+        // 관리자 페이지에서 처리하도록 변경 바뀐 코드: 회원가입을 통해 입력되어 누락된 정보들을 학생,교사,학부모를 admin이 수정할 수
+        // 있도록변경.
+        // if (dto.getGrade() != null && dto.getClassNum() != null) {
+        // int currentYear = LocalDate.now().getYear();
+        // StudentAssignment assignment = StudentAssignment.builder()
+        // .studentInfo(studentInfo)
+        // .schoolYear(currentYear)
+        // .grade(dto.getGrade())
+        // .classNum(dto.getClassNum())
+        // .studentNum(dto.getStudentNum())
+        // .build();
+        // studentInfo.getAssignments().add(assignment);
+        // }
 
         user.getInfos().add(studentInfo);
     }
@@ -98,7 +113,20 @@ public class UserService {
     private void createTeacherInfo(User user, CustomUserDTO dto) {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
-        teacherInfo.setCode(dto.getEmployeeNumber());
+
+        // ========== [변경] code 설정 방식 수정 (2025-01-28 woo) ==========
+        // [기존 코드] dto에서 사번 가져옴 → null이면 에러 발생
+        // teacherInfo.setCode(dto.getEmployeeNumber());
+
+        // [변경 후] null이면 "TEMP_이메일앞부분" 임시값 설정
+        String code = dto.getEmployeeNumber();
+        if (code == null || code.isEmpty()) {
+            code = "TEMP_" + user.getEmail().split("@")[0];
+        }
+        teacherInfo.setCode(code);
+        // ================================================================
+
+        // 나머지는 null 허용 (관리자가 나중에 설정)
         teacherInfo.setSubject(dto.getSubject());
         teacherInfo.setDepartment(dto.getDepartment());
         teacherInfo.setPosition(dto.getPosition());
@@ -111,6 +139,12 @@ public class UserService {
         parentInfo.setUser(user);
         parentInfo.setParentName(dto.getName());
         parentInfo.setPhoneNumber(dto.getPhoneNumber());
+
+        // ========== [변경] code 설정 추가 (2025-01-28 woo) ==========
+        // null이면 "TEMP_이메일앞부분" 임시값 설정
+        String code = "TEMP_" + user.getEmail().split("@")[0];
+        parentInfo.setCode(code);
+        // ================================================================
 
         user.getInfos().add(parentInfo);
     }

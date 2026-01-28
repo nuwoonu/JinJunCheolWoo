@@ -98,6 +98,8 @@ public class AdminTeacherController {
             RedirectAttributes redirectAttributes) {
 
         adminTeacherService.updateTeacher(request);
+        // 수정 완료 메시지 추가 [01/28 woo]
+        redirectAttributes.addFlashAttribute("msg", "수정이 완료되었습니다.");
         return "redirect:/parkjoon/admin/teachers/" + request.getUid();
     }
 
