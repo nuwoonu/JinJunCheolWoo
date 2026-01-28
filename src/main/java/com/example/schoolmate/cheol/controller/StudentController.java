@@ -2,6 +2,7 @@ package com.example.schoolmate.cheol.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,16 +12,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.cheol.service.StudentServiceImpl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/student")
+@Log4j2
 public class StudentController {
 
     private final StudentServiceImpl studentService;
@@ -30,7 +34,18 @@ public class StudentController {
     public String getStudentList(Model model) {
         List<StudentResponseDTO> students = studentService.getAllStudents();
         model.addAttribute("students", students);
-        return "student/student-list";
+        log.info("학생 list 접속");
+        return "cheol/student-list";
+    }
+
+    // 로그인한 학생 본인의 상세 정보 페이지
+    @GetMapping("/myinfo")
+    public String getMyInfo(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
+        model.addAttribute("student", student);
+        log.info("학생 본인 정보 조회: {}", uid);
+        return "cheol/student-details";
     }
 
     // 학생 상세 페이지
@@ -99,7 +114,7 @@ public class StudentController {
         List<StudentResponseDTO> students = studentService.getStudentsByGrade(grade);
         model.addAttribute("students", students);
         model.addAttribute("grade", grade);
-        return "student/student-list";
+        return "cheol/student-list";
     }
 
     // 반별 학생 목록
@@ -108,7 +123,7 @@ public class StudentController {
         List<StudentResponseDTO> students = studentService.getStudentsByClassNum(classNum);
         model.addAttribute("students", students);
         model.addAttribute("classNum", classNum);
-        return "student/student-list";
+        return "cheol/student-list";
     }
 
     // 학년+반별 학생 목록
@@ -118,7 +133,7 @@ public class StudentController {
         model.addAttribute("students", students);
         model.addAttribute("grade", grade);
         model.addAttribute("classNum", classNum);
-        return "student/student-list";
+        return "cheol/student-list";
     }
 
     // 학생 카테고리 페이지

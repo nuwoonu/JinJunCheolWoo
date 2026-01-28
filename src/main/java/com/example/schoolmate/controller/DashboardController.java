@@ -26,6 +26,7 @@ import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.service.TeacherService;
 
@@ -79,8 +80,32 @@ public class DashboardController {
     }
 
     @GetMapping("/student/dashboard")
-    public String getStudentDashboard() {
-        return "dashboard/student";
+    public String getStudentDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+
+        // 1. 학생 User 조회
+        User studentUser = userRepository.findById(uid).orElse(null);
+        if (studentUser != null) {
+            StudentInfo studentInfo = studentUser.getInfo(StudentInfo.class);
+            if (studentInfo != null) {
+                // 2. DTO 변환
+                StudentResponseDTO studentDTO = new StudentResponseDTO(studentInfo);
+                model.addAttribute("student", studentDTO);
+
+                // 3. 프로필 이미지 조회
+                Profile profile = profileRepository.findByUser(studentUser).orElse(null);
+                if (profile != null && profile.getUuid() != null) {
+                    String imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
+                    model.addAttribute("profileImageUrl", imageUrl);
+                }
+            }
+        }
+
+        // 4. 공지사항
+        List<NoticeDTO> notices = noticeService.getRecentList(5);
+        model.addAttribute("notices", notices);
+
+        return "cheol/student-dashboard";
     }
 
     @GetMapping("/teacher/dashboard")

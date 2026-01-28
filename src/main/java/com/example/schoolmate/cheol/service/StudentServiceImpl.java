@@ -61,6 +61,13 @@ public class StudentServiceImpl {
         return convertToResponseDTO(student);
     }
 
+    // User의 UID로 학생 정보 조회 (로그인한 학생 본인 조회용)
+    public StudentResponseDTO getStudentByUserUid(Long userUid) {
+        StudentInfo student = studentRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("학생 정보를 찾을 수 없습니다. User UID: " + userUid));
+        return convertToResponseDTO(student);
+    }
+
     public List<StudentResponseDTO> getAllStudents() {
         return studentRepository.findAll().stream()
                 .map(this::convertToResponseDTO)

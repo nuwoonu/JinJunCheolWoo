@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>Student Dashboard</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div class="">
+          <h6 class="fw-semibold mb-0">학생</h6>
+          <p class="text-neutral-600 mt-4 mb-0">어서오세요, 학생</p>
+        </div>
+      </div>
+
+      <div class="mt-24">
+        <!-- My Info Section -->
+        <div class="row gy-4 mb-24">
+          <div class="col-12">
+            <div class="card h-100">
+              <div class="card-body p-0">
+                <div
+                  class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200"
+                >
+                  <h6 class="text-lg mb-0">내 정보</h6>
+                </div>
+                <div class="p-20">
+                  <!-- 학생 정보가 있을 때 -->
+                  <div th:if="${student != null}" class="d-flex flex-wrap gap-16">
+                    <div
+                      class="p-20 rounded"
+                      style="background-color: #e0f4f0; width: 300px"
+                    >
+                      <div class="d-flex align-items-center gap-16">
+                        <figure
+                          class="w-120-px h-120-px rounded-circle overflow-hidden mb-0 border border-width-4-px border-white"
+                        >
+                          <img
+                            th:src="${profileImageUrl != null ? profileImageUrl : '/images/default-profile.png'}"
+                            alt="Student Image"
+                            class="w-100 h-100 object-fit-cover"
+                          />
+                        </figure>
+                        <div>
+                          <h2 class="h6 text-primary-light mb-16 fw-semibold" th:text="${student.userName}"></h2>
+                          <p class="mb-0">
+                            학번: <span class="text-primary-600 fw-semibold" th:text="${student.fullStudentNumber}"></span>
+                          </p>
+                        </div>
+                      </div>
+                      <div class="d-flex flex-column gap-8 border-top border-neutral-300 mt-16 pt-16">
+                        <div class="d-flex gap-4">
+                          <span class="fw-semibold text-sm text-primary-light w-110-px">학년</span>
+                          <span class="fw-normal text-sm text-secondary-light"
+                            >: <span th:text="${student.year}"></span>학년</span
+                          >
+                        </div>
+                        <div class="d-flex gap-4">
+                          <span class="fw-semibold text-sm text-primary-light w-110-px">반</span>
+                          <span class="fw-normal text-sm text-secondary-light"
+                            >: <span th:text="${student.classNum}"></span>반</span
+                          >
+                        </div>
+                        <div class="d-flex gap-4">
+                          <span class="fw-semibold text-sm text-primary-light w-110-px">상태</span>
+                          <span class="fw-normal text-sm text-secondary-light"
+                            >: <span th:text="${student.status?.description}"></span></span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 학생 정보가 없을 때 -->
+                  <div th:if="${student == null}" class="text-center py-20">
+                    <p class="mb-0 text-secondary-light">학생 정보를 불러올 수 없습니다.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 공지사항 Section -->
+        <div class="row gy-4 mb-24">
+          <div class="col-12">
+            <div class="card h-100">
+              <div class="card-body p-0">
+                <div
+                  class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200"
+                >
+                  <h6 class="text-lg mb-0">공지사항</h6>
+                  <a href="/student/notice/list" class="text-primary-600 hover-text-primary-700">더보기</a>
+                </div>
+                <div class="p-20">
+                  <!-- 공지사항이 없을 때 -->
+                  <div th:if="${notices == null or notices.empty}" class="text-center py-20">
+                    <p class="mb-0 text-secondary-light">등록된 공지사항이 없습니다.</p>
+                  </div>
+                  <!-- 공지사항 목록 -->
+                  <div th:if="${notices != null and !notices.empty}">
+                    <ul class="list-unstyled mb-0">
+                      <li
+                        th:each="notice, stat : ${notices}"
+                        class="d-flex justify-content-between align-items-center py-12"
+                        th:classappend="${!stat.last} ? 'border-bottom border-neutral-200' : ''"
+                      >
+                        <a
+                          th:href="@{/student/notice/read(nno=${notice.nno})}"
+                          class="text-primary-light hover-text-primary-600 fw-medium text-truncate"
+                          style="max-width: 70%"
+                          th:text="${notice.title}"
+                        ></a>
+                        <span
+                          class="text-secondary-light text-sm"
+                          th:text="${#temporals.format(notice.createDate, 'yyyy-MM-dd')}"
+                        ></span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
