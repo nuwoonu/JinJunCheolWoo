@@ -3,14 +3,11 @@
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  // --- [1] 서버 메시지 알림 처리 ---
-  // HTML body의 data-error-message, data-success-message 속성을 읽음
-  const msgContainer = document.body;
-  const errorMsg = msgContainer.dataset.errorMessage;
-  const successMsg = msgContainer.dataset.successMessage;
-
-  if (errorMsg && errorMsg !== "null") alert(errorMsg);
-  if (successMsg && successMsg !== "null") alert(successMsg);
+  // ========== [삭제] 서버 메시지 알림 처리 중복 제거 (2026-01-29 woo) ==========
+  // 원인: admin-common.js와 student-manage.js 양쪽에서 동일한 alert 처리 코드가 있어
+  //       저장 시 alert가 2번 표시되는 문제 발생
+  // 해결: admin-common.js에서만 처리하도록 하고, 이 파일에서는 제거
+  // ============================================================================
 
   // --- [2] 미재학생 포함 스위치 제어 (목록 페이지) ---
   const inactiveSwitch = document.getElementById("includeInactiveSwitch");
