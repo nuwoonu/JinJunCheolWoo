@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="/css/style.css" />
     <!-- login page css -->
     <link rel="stylesheet" href="/css/login.css" />
+    <!-- Font Awesome  사용하기 위해 추가 [01/28woo]-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   </head>
 
   <body>
@@ -33,7 +35,8 @@
 
           <!-- Error Message -->
           <div th:if="${param.error}" class="error-message">
-            <i class="ri-error-warning-line"></i>
+            <!-- 폰트어썸 경고 아이콘으로 변경 01/28[woo] -->
+            <i class="fa-solid fa-triangle-exclamation"></i>
             <span>이메일 또는 비밀번호가 올바르지 않습니다.</span>
           </div>
 
@@ -63,7 +66,8 @@
                   required
                 />
                 <button type="button" class="password-toggle" onclick="togglePassword()">
-                  <i class="ri-eye-line" id="toggleIcon"></i>
+                  <!-- 폰트어썸 비밀번호 보이기 아이콘으로 변경 01/28 [woo] -->
+                  <i class="fa-solid fa-eye" id="toggleIcon"></i>
                 </button>
               </div>
             </div>
@@ -75,14 +79,11 @@
               </div>
               <a href="#" class="forgot-link">비밀번호 찾기</a>
             </div>
-
-            <button type="submit" class="btn-login">
-              <i class="ri-login-box-line"></i>
-              로그인
-            </button>
+            <!-- 로그인 버튼 -->
+            <button type="submit" class="btn-login">로그인</button>
           </form>
 
-          <!-- Divider -->
+          <!-- 나눔선 -->
           <div class="divider">
             <span>또는</span>
           </div>
@@ -136,12 +137,12 @@
 
         if (passwordInput.type === "password") {
           passwordInput.type = "text";
-          toggleIcon.classList.remove("ri-eye-line");
-          toggleIcon.classList.add("ri-eye-off-line");
+          toggleIcon.classList.remove("fa-eye"); // 변경
+          toggleIcon.classList.add("fa-eye-slash"); // 변경
         } else {
           passwordInput.type = "password";
-          toggleIcon.classList.remove("ri-eye-off-line");
-          toggleIcon.classList.add("ri-eye-line");
+          toggleIcon.classList.remove("fa-eye-slash"); // 변경
+          toggleIcon.classList.add("fa-eye"); // 변경
         }
       }
     </script>
