@@ -45,7 +45,7 @@
             >
             <!-- Admin은 표시 안함, 나머지는 학년-반 표시 -->
             <span
-              sec:authorize="!hasRole('ADMIN')"
+              sec:authorize="!hasAnyRole('ADMIN', 'PARENT')"
               class="text-secondary-light text-sm mb-0 d-block"
               th:text="${#authentication.principal.customUserDTO.grade} + '학년 ' + ${#authentication.principal.customUserDTO.classNum} + '반'"
             ></span>
@@ -176,7 +176,7 @@
             </a>
           </li>
           <li>
-            <a th:href="@{/parent/children/status}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               성적 조회
             </a>
@@ -385,6 +385,7 @@
       </li>
 
       <!-- ========= soojin, 학부모 사이드 수정 중 ========== -->
+      <!-- 현재 생성 안된 페이지는 주소 /dashboard -->
       <li class="dropdown" sec:authorize="hasAnyRole('PARENT', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-megaphone-line"></i>
@@ -392,31 +393,31 @@
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/board/parent-notice}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학교 공지
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               가정통신문
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학급 공지
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent-notice}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학교 갤러리
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/soojin/calendar/monthly}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학사 일정
             </a>
@@ -428,13 +429,19 @@
       <li class="dropdown" sec:authorize="hasAnyRole('PARENT', 'TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-edit-box-line"></i>
-          <span>학부모 게시판</span>
+          <span>게시판</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/board/parent-notice}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학부모 공지
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/dashboard}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학급 게시판
             </a>
           </li>
           <li>
@@ -452,13 +459,13 @@
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/board/parent-notice}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               상담 신청
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               1:1 채팅
             </a>
