@@ -141,4 +141,36 @@ public class StudentController {
     public String getStudentCategory() {
         return "student/student-category";
     }
+
+    // ============ Exam 관련 페이지 ============
+
+    // 시험 성적 조회 페이지
+    @GetMapping("/exam")
+    public String getExamPage(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
+        model.addAttribute("student", student);
+        log.info("학생 시험 성적 페이지 접속: {}", uid);
+        return "cheol/exam/exam";
+    }
+
+    // 시험 결과 페이지
+    @GetMapping("/exam/result")
+    public String getExamResultPage(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
+        model.addAttribute("student", student);
+        log.info("학생 시험 결과 페이지 접속: {}", uid);
+        return "cheol/exam/exam-result";
+    }
+
+    // 시험 일정 페이지
+    @GetMapping("/exam/schedule")
+    public String getExamSchedulePage(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
+        model.addAttribute("student", student);
+        log.info("학생 시험 일정 페이지 접속: {}", uid);
+        return "cheol/exam/exam-schedule";
+    }
 }

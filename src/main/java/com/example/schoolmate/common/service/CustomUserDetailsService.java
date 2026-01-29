@@ -66,6 +66,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 // StudentInfo가 있으면 학생 정보 추가
                 StudentInfo studentInfo = user.getInfo(StudentInfo.class);
                 if (studentInfo != null) {
+                        dto.setStudentInfoId(studentInfo.getId()); // StudentInfo의 PK
                         dto.setStudentIdentityNum(studentInfo.getCode());
                         dto.setStudentNumber(studentInfo.getCode()); // 하위 호환
 

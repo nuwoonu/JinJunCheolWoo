@@ -60,23 +60,23 @@ const renderAllGrades = (grades) => {
     const firstPerformance = grades.filter(g => g.semester === 'FIRST' && g.examType === 'PERFORMANCEASSESSMENT');
     renderGradeTable('firstSemesterPerformance', firstPerformance);
 
-    // 2학기 중간고사
-    const secondMidterm = grades.filter(g => g.semester === 'SECOND' && g.examType === 'MIDTERMTEST');
+    // 2학기 중간고사 (Semester.FALL)
+    const secondMidterm = grades.filter(g => g.semester === 'FALL' && g.examType === 'MIDTERMTEST');
     renderGradeTable('secondSemesterMidterm', secondMidterm);
 
     // 2학기 기말고사
-    const secondFinal = grades.filter(g => g.semester === 'SECOND' && g.examType === 'FINALTEST');
+    const secondFinal = grades.filter(g => g.semester === 'FALL' && g.examType === 'FINALTEST');
     renderGradeTable('secondSemesterFinal', secondFinal);
 
     // 2학기 수행평가
-    const secondPerformance = grades.filter(g => g.semester === 'SECOND' && g.examType === 'PERFORMANCEASSESSMENT');
+    const secondPerformance = grades.filter(g => g.semester === 'FALL' && g.examType === 'PERFORMANCEASSESSMENT');
     renderGradeTable('secondSemesterPerformance', secondPerformance);
 
     // 기존 테이블 ID도 지원 (호환성)
     const firstSemester = grades.filter(g => g.semester === 'FIRST');
     renderGradeTable('firstSemesterTable', firstSemester);
 
-    const secondSemester = grades.filter(g => g.semester === 'SECOND');
+    const secondSemester = grades.filter(g => g.semester === 'FALL');
     renderGradeTable('secondSemesterTable', secondSemester);
 };
 

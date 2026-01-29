@@ -20,7 +20,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class StudentResponseDTO {
 
-    private Long uid; // StudentInfo의 id
+    private Long id; // StudentInfo의 id
 
     private Long studentNumber;
 
@@ -53,7 +53,7 @@ public class StudentResponseDTO {
 
     // Entity -> DTO 변환 생성자
     public StudentResponseDTO(StudentInfo student) {
-        this.uid = student.getId();
+        this.id = student.getId();
         this.studentNumber = student.getStudentNumber();
 
         if (student.getClassroom() != null) {

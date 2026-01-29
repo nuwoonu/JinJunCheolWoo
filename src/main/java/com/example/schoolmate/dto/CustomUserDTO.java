@@ -35,6 +35,7 @@ public class CustomUserDTO {
     private Set<UserRole> roles = new HashSet<>();
 
     // Student 전용 필드
+    private Long studentInfoId; // StudentInfo 테이블의 id
     private String studentNumber; // 학번
     private String studentIdentityNum;
     private Integer grade; // 학년

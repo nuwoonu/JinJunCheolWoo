@@ -3347,8 +3347,9 @@
 
     <!-- main js -->
     <script src="/js/app.js"></script>
-    <script>
-      const studentId = "[[${student.uid}]]"; // 학생 ID 전달
+    <script th:inline="javascript">
+      const studentId = /*[[${student.id}]]*/ null; // 학생 ID 전달
+      console.log("studentId 값:", studentId);
     </script>
     <script th:src="@{/js/cheol/grade.js}"></script>
     <script>
