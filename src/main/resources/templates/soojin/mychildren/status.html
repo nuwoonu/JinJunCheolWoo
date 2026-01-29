@@ -11,14 +11,38 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <style>
       /* 이벤트 타입별 색상 */
-      .event-EVENT { background-color: #0d6efd !important; color: #fff !important; }
-      .event-EXAM { background-color: #dc3545 !important; color: #fff !important; }
-      .event-HOLIDAY { background-color: #ffc107 !important; color: #000 !important; }
-      .event-VACATION { background-color: #198754 !important; color: #fff !important; }
-      .event-FIELD_TRIP { background-color: #0dcaf0 !important; color: #000 !important; }
-      .event-MEETING { background-color: #6610f2 !important; color: #fff !important; }
-      .event-BRIEFING { background-color: #d63384 !important; color: #fff !important; }
-      .event-OTHER { background-color: #6c757d !important; color: #fff !important; }
+      .event-EVENT {
+        background-color: #0d6efd !important;
+        color: #fff !important;
+      }
+      .event-EXAM {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+      }
+      .event-HOLIDAY {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+      }
+      .event-VACATION {
+        background-color: #198754 !important;
+        color: #fff !important;
+      }
+      .event-FIELD_TRIP {
+        background-color: #0dcaf0 !important;
+        color: #000 !important;
+      }
+      .event-MEETING {
+        background-color: #6610f2 !important;
+        color: #fff !important;
+      }
+      .event-BRIEFING {
+        background-color: #d63384 !important;
+        color: #fff !important;
+      }
+      .event-OTHER {
+        background-color: #6c757d !important;
+        color: #fff !important;
+      }
 
       /* 미니 캘린더 스타일 */
       #miniCalendar {
@@ -276,7 +300,10 @@
         <!-- 오늘의 급식 -->
         <div class="col-xl-4">
           <div class="card border-0 shadow-sm p-20 h-100" style="border-radius: 16px">
-            <h6 class="fw-bold mb-20 text-sm"><i class="ri-restaurant-2-line text-primary-600 me-2"></i>오늘의 급식</h6>
+            <h6 class="fw-bold mb-20 text-sm">
+              <i class="fa-solid fa-utensils text-primary-600 me-2"></i>
+              오늘의 급식
+            </h6>
             <p class="text-sm mb-12">잡곡밥, 미역국, 제육볶음, 배추김치, 과일</p>
             <span class="badge bg-primary-100 text-primary-600 px-8 py-4 rounded-pill text-xs">칼로리: 645kcal</span>
           </div>

@@ -40,8 +40,8 @@ public class BoardController {
      */
     @GetMapping("/school-notice")
     public String schoolNoticeList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             Model model) {
 
         Pageable pageable = PageRequest.of(page, size);
@@ -86,8 +86,8 @@ public class BoardController {
     @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')")
     public String gradeBoardList(
             @PathVariable int grade,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             @AuthenticationPrincipal AuthUserDTO authUser,
             Model model) {
 
@@ -293,8 +293,8 @@ public class BoardController {
     @GetMapping("/parent-notice")
     @PreAuthorize("hasAnyRole('PARENT', 'TEACHER', 'ADMIN')")
     public String parentNoticeList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             Model model) {
 
         Pageable pageable = PageRequest.of(page, size);
@@ -315,8 +315,8 @@ public class BoardController {
     @PreAuthorize("hasAnyRole('PARENT', 'TEACHER', 'ADMIN')")
     public String parentNoticeByGradeList(
             @PathVariable int grade,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             Model model) {
 
         Pageable pageable = PageRequest.of(page, size);
@@ -349,8 +349,8 @@ public class BoardController {
     @GetMapping("/parent-notice/write")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public String parentNoticeWriteForm(
-            @RequestParam(required = false) Integer targetGrade,
-            @RequestParam(required = false) Long targetClassroomId,
+            @RequestParam(value = "targetGrade", required = false) Integer targetGrade,
+            @RequestParam(value = "targetClassroomId", required = false) Long targetClassroomId,
             Model model) {
 
         model.addAttribute("boardType", BoardType.PARENT_NOTICE);
@@ -369,8 +369,8 @@ public class BoardController {
     @GetMapping("/parent")
     @PreAuthorize("hasAnyRole('PARENT', 'TEACHER', 'ADMIN')")
     public String parentBoardList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             Model model) {
 
         Pageable pageable = PageRequest.of(page, size);
@@ -391,8 +391,8 @@ public class BoardController {
     @PreAuthorize("hasAnyRole('PARENT', 'TEACHER', 'ADMIN')")
     public String parentBoardByGradeList(
             @PathVariable int grade,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             Model model) {
 
         Pageable pageable = PageRequest.of(page, size);
@@ -425,8 +425,8 @@ public class BoardController {
     @GetMapping("/parent/write")
     @PreAuthorize("hasAnyRole('PARENT', 'ADMIN')")
     public String parentBoardWriteForm(
-            @RequestParam(required = false) Integer targetGrade,
-            @RequestParam(required = false) Long targetClassroomId,
+            @RequestParam(value = "targetGrade", required = false) Integer targetGrade,
+            @RequestParam(value = "targetClassroomId", required = false) Long targetClassroomId,
             Model model) {
 
         model.addAttribute("boardType", BoardType.PARENT_BOARD);

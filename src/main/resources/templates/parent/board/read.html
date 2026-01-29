@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang="ko"
   xmlns:th="http://www.thymeleaf.org"
@@ -51,10 +51,7 @@
           >
             목록
           </a>
-          <div
-            class="d-flex gap-2"
-            th:if="${dto.writerId} == ${#authentication.principal.customUserDTO.uid}"
-          >
+          <div class="d-flex gap-2" th:if="${dto.writerId} == ${#authentication.principal.customUserDTO.uid}">
             <a
               th:href="@{/parent/board/modify(bno=${dto.bno}, page=${pageRequestDTO.page}, size=${pageRequestDTO.size})}"
               class="btn btn-primary"

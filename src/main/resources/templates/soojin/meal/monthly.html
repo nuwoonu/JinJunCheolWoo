@@ -7,153 +7,164 @@
 >
   <head>
     <title>월별 급식</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-    <style>
-      /* 급식 종류별 색상 */
-      .fc-event.meal-BREAKFAST {
-        background-color: #ffc107;
-        border-color: #ffc107;
-        color: #000 !important;
-      }
-      .fc-event.meal-LUNCH {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: #fff !important;
-      }
-      .fc-event.meal-DINNER {
-        background-color: #198754;
-        border-color: #198754;
-        color: #fff !important;
-      }
 
-      /* 이벤트 내용이 길어질 경우 줄바꿈 처리 */
-      .fc-daygrid-event-harness {
-        white-space: normal !important;
-      }
-      .fc-event-title {
-        white-space: normal !important;
-        padding: 2px;
-        font-size: 0.8em;
-      }
-    </style>
+    <th:block layout:fragment="css">
+      <style>
+        /* 급식 종류별 색상 */
+        .fc-event.meal-BREAKFAST {
+          background-color: #ffc107;
+          border-color: #ffc107;
+          color: #000 !important;
+        }
+        .fc-event.meal-LUNCH {
+          background-color: #0d6efd;
+          border-color: #0d6efd;
+          color: #fff !important;
+        }
+        .fc-event.meal-DINNER {
+          background-color: #198754;
+          border-color: #198754;
+          color: #fff !important;
+        }
+
+        /* 이벤트 내용이 길어질 경우 줄바꿈 처리 */
+        .fc-daygrid-event-harness {
+          white-space: normal !important;
+        }
+        .fc-event-title {
+          white-space: normal !important;
+          padding: 2px;
+          font-size: 0.8em;
+        }
+        .fc-toolbar-title {
+          font-size: 1.5rem !important; /* 원하는 크기로 조절 */
+        }
+      </style>
+    </th:block>
   </head>
 
-  <div layout:fragment="content">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white p-20 border-bottom d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0"><i class="ri-restaurant-2-line me-8"></i>월별 급식표</h5>
-        <div>
-          <select id="mealTypeFilter" class="form-select form-select-sm" style="width: 120px">
-            <option value="">전체</option>
-            <option value="BREAKFAST">조식</option>
-            <option value="LUNCH">중식</option>
-            <option value="DINNER">석식</option>
-          </select>
+  <body>
+    <div layout:fragment="content">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white p-20 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-utensils me-8"></i>
+            </i>월별 급식표</h5>
+          <div>
+            <select id="mealTypeFilter" class="form-select form-select-sm" style="width: 120px">
+              <option value="">전체</option>
+              <option value="BREAKFAST">조식</option>
+              <option value="LUNCH">중식</option>
+              <option value="DINNER">석식</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body p-20">
+          <div id="mealCalendar"></div>
         </div>
       </div>
-      <div class="card-body p-20">
-        <div id="mealCalendar"></div>
-      </div>
     </div>
-  </div>
 
-  <th:block layout:fragment="script">
-    <script th:inline="javascript">
-      document.addEventListener("DOMContentLoaded", function () {
-        const calendarEl = document.getElementById("mealCalendar");
-        const year = /*[[${year}]]*/ new Date().getFullYear();
-        const month = /*[[${month}]]*/ new Date().getMonth() + 1;
-        const mealTypeFilter = document.getElementById("mealTypeFilter");
+    <th:block layout:fragment="script">
+      <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+      <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+          const calendarEl = document.getElementById("mealCalendar");
+          const year = new Date().getFullYear();
+          const month = new Date().getMonth() + 1;
+          const mealTypeFilter = document.getElementById("mealTypeFilter");
 
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: "dayGridMonth",
-          initialDate: `${year}-${String(month).padStart(2, "0")}-01`,
-          locale: "ko",
-          height: "auto",
-          contentHeight: "auto",
-          headerToolbar: {
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,listWeek",
-          },
-          events: function (fetchInfo, successCallback, failureCallback) {
-            const midDate = new Date(
-              fetchInfo.start.getTime() + (fetchInfo.end.getTime() - fetchInfo.start.getTime()) / 2,
-            );
-            const fetchYear = midDate.getFullYear();
-            const fetchMonth = midDate.getMonth() + 1;
-            const selectedMealType = mealTypeFilter.value;
+          const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "dayGridMonth",
+            initialDate: `${year}-${String(month).padStart(2, "0")}-01`,
+            locale: "ko",
+            height: "auto",
+            contentHeight: "auto",
+            headerToolbar: {
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,listWeek",
+            },
+            events: function (fetchInfo, successCallback, failureCallback) {
+              const midDate = new Date(
+                fetchInfo.start.getTime() + (fetchInfo.end.getTime() - fetchInfo.start.getTime()) / 2,
+              );
+              const fetchYear = midDate.getFullYear();
+              const fetchMonth = midDate.getMonth() + 1;
+              const selectedMealType = mealTypeFilter.value;
 
-            let apiUrl = `/soojin/api/meals?year=${fetchYear}&month=${fetchMonth}`;
-            if (selectedMealType) {
-              apiUrl += `&mealType=${selectedMealType}`;
-            }
+              let apiUrl = `/soojin/api/meals?year=${fetchYear}&month=${fetchMonth}`;
+              if (selectedMealType) {
+                apiUrl += `&mealType=${selectedMealType}`;
+              }
 
-            fetch(apiUrl)
-              .then((response) => response.json())
-              .then((data) => {
-                const events = data.map((meal) => {
-                  let mealTypeName = "";
-                  switch (meal.mealType) {
-                    case "BREAKFAST":
-                      mealTypeName = "[조식]";
-                      break;
-                    case "LUNCH":
-                      mealTypeName = "[중식]";
-                      break;
-                    case "DINNER":
-                      mealTypeName = "[석식]";
-                      break;
-                    default:
-                      mealTypeName = "";
-                  }
+              fetch(apiUrl)
+                .then((response) => response.json())
+                .then((data) => {
+                  const events = data.map((meal) => {
+                    let mealTypeName = "";
+                    switch (meal.mealType) {
+                      case "BREAKFAST":
+                        mealTypeName = "[조식]";
+                        break;
+                      case "LUNCH":
+                        mealTypeName = "[중식]";
+                        break;
+                      case "DINNER":
+                        mealTypeName = "[석식]";
+                        break;
+                      default:
+                        mealTypeName = "";
+                    }
 
-                  const shortMenu = meal.menu.length > 30 ? meal.menu.substring(0, 30) + "..." : meal.menu;
+                    const shortMenu = meal.menu.length > 30 ? meal.menu.substring(0, 30) + "..." : meal.menu;
 
-                  return {
-                    title: `${mealTypeName} ${shortMenu}`,
-                    start: meal.date,
-                    className: "meal-" + meal.mealType,
-                    extendedProps: {
-                      fullMenu: meal.menu,
-                      calories: meal.calories,
-                      mealType: meal.mealType,
-                    },
-                  };
+                    return {
+                      title: `${mealTypeName} ${shortMenu}`,
+                      start: meal.date,
+                      className: "meal-" + meal.mealType,
+                      extendedProps: {
+                        fullMenu: meal.menu,
+                        calories: meal.calories,
+                        mealType: meal.mealType,
+                      },
+                    };
+                  });
+                  successCallback(events);
+                })
+                .catch((error) => {
+                  console.error("급식 정보를 불러오는 중 오류가 발생했습니다:", error);
+                  failureCallback(error);
                 });
-                successCallback(events);
-              })
-              .catch((error) => {
-                console.error("급식 정보를 불러오는 중 오류가 발생했습니다:", error);
-                failureCallback(error);
-              });
-          },
-          eventClick: function (info) {
-            const props = info.event.extendedProps;
-            let mealTypeName = "";
-            switch (props.mealType) {
-              case "BREAKFAST":
-                mealTypeName = "조식";
-                break;
-              case "LUNCH":
-                mealTypeName = "중식";
-                break;
-              case "DINNER":
-                mealTypeName = "석식";
-                break;
-            }
-            alert(
-              `[${mealTypeName} 메뉴]\n\n` + `${props.fullMenu}\n\n` + `칼로리: ${props.calories || "정보 없음"} kcal`,
-            );
-          },
-        });
-        calendar.render();
+            },
+            eventClick: function (info) {
+              const props = info.event.extendedProps;
+              let mealTypeName = "";
+              switch (props.mealType) {
+                case "BREAKFAST":
+                  mealTypeName = "조식";
+                  break;
+                case "LUNCH":
+                  mealTypeName = "중식";
+                  break;
+                case "DINNER":
+                  mealTypeName = "석식";
+                  break;
+              }
+              alert(
+                `[${mealTypeName} 메뉴]\n\n` +
+                  `${props.fullMenu}\n\n` +
+                  `칼로리: ${props.calories || "정보 없음"} kcal`,
+              );
+            },
+          });
+          calendar.render();
 
-        mealTypeFilter.addEventListener("change", function () {
-          calendar.refetchEvents();
+          mealTypeFilter.addEventListener("change", function () {
+            calendar.refetchEvents();
+          });
         });
-      });
-    </script>
-  </th:block>
+      </script>
+    </th:block>
+  </body>
 </html>

@@ -51,24 +51,26 @@
           text-decoration: none;
           color: inherit;
         }
+
+        .fc-toolbar-title {
+          font-size: 1.5rem !important; /* 원하는 크기로 조절 */
+        }
       </style>
     </th:block>
   </head>
 
   <body>
     <div layout:fragment="content">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>학사 일정</h2>
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white p-20 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0"><i class="ri-calendar-2-line me-8"></i>학사 일정</h5>
+          <div>
+            <a class="btn btn-outline-primary me-2" th:href="@{/soojin/calendar/list}"> 목록 보기 </a>
 
-        <div>
-          <a class="btn btn-outline-primary me-2" th:href="@{/soojin/calendar/list}"> 목록 보기 </a>
-
-          <a sec:authorize="hasRole('ADMIN')" th:href="@{/soojin/admin/add}" class="btn btn-primary"> + 일정 등록 </a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/soojin/admin/add}" class="btn btn-primary"> + 일정 등록 </a>
+          </div>
         </div>
-      </div>
-
-      <div class="card shadow-sm">
-        <div class="card-body">
+        <div class="card-body p-20">
           <div id="calendar"></div>
         </div>
       </div>
@@ -76,60 +78,61 @@
 
     <th:block layout:fragment="script">
       <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-
       <script th:inline="javascript">
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener("DOMContentLoaded", function () {
+          const calendarEl = document.getElementById("calendar");
+          const initialYear = [[${year ?: T(java.time.LocalDate).now().year}]];
+          const initialMonth = [[${month ?: T(java.time.LocalDate).now().monthValue}]];
 
-            var initialYear = [[${year ?: T(java.time.LocalDate).now().year}]];
-            var initialMonth = [[${month ?: T(java.time.LocalDate).now().monthValue}]];
-            var initialDate = new Date(initialYear, initialMonth - 1, 1);
+          const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "dayGridMonth",
+            initialDate: `${initialYear}-${String(initialMonth).padStart(2, "0")}-01`,
+            locale: "ko",
+            height: "auto",
+            contentHeight: "auto",
+            headerToolbar: {
+              left: "prev,next today",
+              center: "title",
+              right: "",
+            },
+            events: function (fetchInfo, successCallback, failureCallback) {
+              const midDate = new Date(
+                fetchInfo.start.getTime() + (fetchInfo.end.getTime() - fetchInfo.start.getTime()) / 2,
+              );
+              const fetchYear = midDate.getFullYear();
+              const fetchMonth = midDate.getMonth() + 1;
 
-            var calendar = new FullCalendar.Calendar(
-                document.getElementById('calendar'), {
-                    initialView: 'dayGridMonth',
-                    locale: 'ko',
-                    initialDate: initialDate,
-
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: ''
+              fetch(`/soojin/api/events?year=${fetchYear}&month=${fetchMonth}`)
+                .then((response) => response.json())
+                .then((data) => {
+                  const events = data.map((e) => ({
+                    id: e.id,
+                    title: e.title,
+                    start: e.startDate,
+                    end: e.endDate,
+                    className: "event-" + e.eventType,
+                    extendedProps: {
+                      description: e.description,
                     },
-
-                    events: function (info, success, failure) {
-                        var date = new Date((info.start.getTime() + info.end.getTime()) / 2);
-                        var year = date.getFullYear();
-                        var month = date.getMonth() + 1;
-
-                        fetch(`/soojin/api/events?year=${year}&month=${month}`)
-                            .then(res => res.json())
-                            .then(data => {
-                                success(data.map(e => ({
-                                    id: e.id,
-                                    title: e.title,
-                                    start: e.startDate,
-                                    end: e.endDate,
-                                    className: 'event-' + e.eventType,
-                                    extendedProps: {
-                                        description: e.description
-                                    }
-                                })));
-                            })
-                            .catch(err => failure(err));
-                    },
-
-                    eventClick: function (info) {
-                        /*[# sec:authorize="hasRole('ADMIN')"]*/
-                        location.href = '/soojin/admin/edit/' + info.event.id;
-                        /*[/]*/
-
-                        /*[# sec:authorize="!hasRole('ADMIN')"]*/
-                        alert(info.event.title);
-                        /*[/]*/
-                    }
+                  }));
+                  successCallback(events);
+                })
+                .catch((error) => {
+                  console.error("일정 정보를 불러오는 중 오류가 발생했습니다:", error);
+                  failureCallback(error);
                 });
+            },
+            eventClick: function (info) {
+              /*[# sec:authorize="hasRole('ADMIN')"]*/
+              location.href = "/soojin/admin/edit/" + info.event.id;
+              /*[/]*/
 
-            calendar.render();
+              /*[# sec:authorize="!hasRole('ADMIN')"]*/
+              alert(info.event.title);
+              /*[/]*/
+            },
+          });
+          calendar.render();
         });
       </script>
     </th:block>
