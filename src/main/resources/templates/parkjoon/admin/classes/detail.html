@@ -189,7 +189,7 @@
                           </td>
                           <td class="fw-bold">
                             <a
-                              th:href="@{${urls.ADMIN_STUDENTS} + '/{code}'(code=${s.code})}"
+                              th:href="@{${urls.ADMIN_STUDENTS} + '/{uid}'(uid=${s.uid})}"
                               class="text-decoration-none text-dark"
                               th:text="${s.name}"
                               >홍길동</a
@@ -205,7 +205,7 @@
                           </td>
                           <td class="text-end pe-4">
                             <a
-                              th:href="@{${urls.ADMIN_STUDENTS} + '/{code}'(code=${s.code})}"
+                              th:href="@{${urls.ADMIN_STUDENTS} + '/{uid}'(uid=${s.uid})}"
                               class="btn btn-sm btn-outline-primary me-1"
                               >상세</a
                             >

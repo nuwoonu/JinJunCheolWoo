@@ -141,6 +141,31 @@ public class ClassService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ClassDTO.TeacherSelectResponse> getAvailableTeachers(int year, Long currentCid) {
+        // 1. 전체 재직 교사 조회
+        TeacherDTO.TeacherSearchCondition cond = new TeacherDTO.TeacherSearchCondition();
+        cond.setStatus("EMPLOYED");
+        List<User> allTeachers = teacherInfoRepository.search(cond, Pageable.unpaged()).getContent();
+
+        // 2. 해당 학년도에 이미 배정된 교사 조회
+        ClassDTO.SearchCondition classCond = new ClassDTO.SearchCondition();
+        classCond.setYear(year);
+        List<Classroom> classesInYear = classroomRepository.search(classCond, Pageable.unpaged()).getContent();
+
+        // 3. 다른 학급에 배정된 교사 UID 수집 (현재 학급 제외)
+        Set<Long> assignedTeacherUids = classesInYear.stream()
+                .filter(c -> c.getTeacher() != null && !c.getCid().equals(currentCid))
+                .map(c -> c.getTeacher().getUid())
+                .collect(Collectors.toSet());
+
+        // 4. 필터링 (미배정 교사 + 현재 학급 담임)
+        return allTeachers.stream()
+                .filter(t -> !assignedTeacherUids.contains(t.getUid()))
+                .map(ClassDTO.TeacherSelectResponse::from)
+                .collect(Collectors.toList());
+    }
+
     public Long createClass(ClassDTO.CreateRequest request) {
         log.info("[AdminClassService] createClass 호출됨");
         // 중복 확인

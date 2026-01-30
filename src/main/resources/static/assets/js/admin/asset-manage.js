@@ -8,7 +8,7 @@ function openCreateAssetModal() {
 
   document.getElementById("modalTitle").innerText = "기자재 등록";
   document.getElementById("assetForm").action =
-    "/parkjoon/admin/facilities/assets/create";
+    `${ADMIN_URLS.ADMIN_ASSETS}/create`;
   document.getElementById("assetForm").reset();
   document.getElementById("assetId").value = "";
   document.getElementById("assetStatus").value = "AVAILABLE"; // 기본값
@@ -22,7 +22,7 @@ function openUpdateAssetModal(asset) {
 
   document.getElementById("modalTitle").innerText = "기자재 수정";
   document.getElementById("assetForm").action =
-    "/parkjoon/admin/facilities/assets/update";
+    `${ADMIN_URLS.ADMIN_ASSETS}/update`;
 
   document.getElementById("assetId").value = asset.id;
   document.getElementById("assetName").value = asset.name;

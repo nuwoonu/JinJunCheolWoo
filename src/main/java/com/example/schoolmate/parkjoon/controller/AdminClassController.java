@@ -103,7 +103,8 @@ public class AdminClassController {
         ClassDTO.DetailResponse classroom = adminClassService.getClassDetail(cid);
         model.addAttribute("classroom", classroom);
 
-        List<ClassDTO.TeacherSelectResponse> teachers = adminClassService.getTeacherListForDropdown();
+        List<ClassDTO.TeacherSelectResponse> teachers = adminClassService.getAvailableTeachers(classroom.getYear(),
+                cid);
         model.addAttribute("teachers", teachers);
         model.addAttribute("statuses", ClassroomStatus.values());
 

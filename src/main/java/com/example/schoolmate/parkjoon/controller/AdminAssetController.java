@@ -49,20 +49,20 @@ public class AdminAssetController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "등록 실패: " + e.getMessage());
         }
-        return "redirect:/" + SchoolmateUrls.ADMIN_ASSETS;
+        return "redirect:" + SchoolmateUrls.ADMIN_ASSETS;
     }
 
     @PostMapping("/update")
     public String update(AssetDTO.Request request, RedirectAttributes ra) {
         adminAssetService.updateAsset(request);
         ra.addFlashAttribute("successMessage", "기자재 정보가 수정되었습니다.");
-        return "redirect:/" + SchoolmateUrls.ADMIN_ASSETS;
+        return "redirect:" + SchoolmateUrls.ADMIN_ASSETS;
     }
 
     @PostMapping("/delete")
     public String delete(@RequestParam("id") Long id, RedirectAttributes ra) {
         adminAssetService.deleteAsset(id);
         ra.addFlashAttribute("successMessage", "기자재가 삭제되었습니다.");
-        return "redirect:/" + SchoolmateUrls.ADMIN_ASSETS;
+        return "redirect:" + SchoolmateUrls.ADMIN_ASSETS;
     }
 }

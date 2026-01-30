@@ -63,7 +63,7 @@
       <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
           <form
-            th:action="@{${urls.ADMIN_FACILITIES} + '/assets'}"
+            th:action="@{${urls.ADMIN_ASSETS}}"
             method="get"
             class="d-flex justify-content-end"
           >
@@ -134,7 +134,7 @@
                       수정
                     </button>
                     <form
-                      th:action="@{${urls.ADMIN_FACILITIES} + '/assets/delete'}"
+                      th:action="@{${urls.ADMIN_ASSETS} + '/delete'}"
                       method="post"
                       class="d-inline"
                       onsubmit="return confirm('정말 삭제하시겠습니까?');"
@@ -169,7 +169,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{${urls.ADMIN_FACILITIES} + '/assets'(page=${assets.number - 1}, keyword=${keyword})}"
+                  th:href="@{${urls.ADMIN_ASSETS}(page=${assets.number - 1}, keyword=${keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -180,7 +180,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{${urls.ADMIN_FACILITIES} + '/assets'(page=${i}, keyword=${keyword})}"
+                  th:href="@{${urls.ADMIN_ASSETS}(page=${i}, keyword=${keyword})}"
                   th:text="${i + 1}"
                   >1</a
                 >
@@ -191,7 +191,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{${urls.ADMIN_FACILITIES} + '/assets'(page=${assets.number + 1}, keyword=${keyword})}"
+                  th:href="@{${urls.ADMIN_ASSETS}(page=${assets.number + 1}, keyword=${keyword})}"
                   >&raquo;</a
                 >
               </li>
