@@ -2,6 +2,7 @@ package com.example.schoolmate.cheol.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,16 +12,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.cheol.service.StudentServiceImpl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/student")
+@Log4j2
 public class StudentController {
 
     private final StudentServiceImpl studentService;
@@ -30,13 +34,26 @@ public class StudentController {
     public String getStudentList(Model model) {
         List<StudentResponseDTO> students = studentService.getAllStudents();
         model.addAttribute("students", students);
-        return "student/student-list";
+        log.info("학생 list 접속");
+
+        return "cheol/student-list";
+    }
+
+    // 로그인한 학생 본인의 상세 정보 페이지
+    @GetMapping("/myinfo")
+    public String getMyInfo(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+
+        Long uid = authUserDTO.getCustomUserDTO().getUid();
+        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
+        model.addAttribute("student", student);
+        log.info("학생 본인 정보 조회: {}", uid);
+        return "cheol/student-details";
     }
 
     // 학생 상세 페이지
-    @GetMapping("/details/{uid}")
-    public String getStudentDetails(@PathVariable Long uid, Model model) {
-        StudentResponseDTO student = studentService.getStudentByUid(uid);
+    @GetMapping("/details/{id}")
+    public String getStudentDetails(@PathVariable Long id, Model model) {
+        StudentResponseDTO student = studentService.getStudentById(id);
         model.addAttribute("student", student);
         return "student/student-details";
     }
@@ -64,25 +81,25 @@ public class StudentController {
     }
 
     // 학생 수정 폼 페이지
-    @GetMapping("/edit/{uid}")
-    public String getEditStudentForm(@PathVariable Long uid, Model model) {
-        StudentResponseDTO student = studentService.getStudentByUid(uid);
+    @GetMapping("/edit/{id}")
+    public String getEditStudentForm(@PathVariable Long id, Model model) {
+        StudentResponseDTO student = studentService.getStudentById(id);
         model.addAttribute("student", student);
         model.addAttribute("studentUpdateDTO", new StudentUpdateDTO());
-        return "student/edit-student";
+        return "cheol/edit-student";
     }
 
     // 학생 수정 처리
-    @PostMapping("/edit/{uid}")
-    public String updateStudent(@PathVariable Long uid, @ModelAttribute StudentUpdateDTO updateDTO) {
-        studentService.updateStudent(uid, updateDTO);
-        return "redirect:/student/details/" + uid;
+    @PostMapping("/edit/{id}")
+    public String updateStudent(@PathVariable Long id, @ModelAttribute StudentUpdateDTO updateDTO) {
+        studentService.updateStudent(id, updateDTO);
+        return "redirect:/student/myinfo";
     }
 
     // 학생 삭제 (소프트 삭제 - 자퇴 처리)
-    @PostMapping("/delete/{uid}")
-    public String deleteStudent(@PathVariable Long uid) {
-        studentService.deleteStudent(uid);
+    @PostMapping("/delete/{id}")
+    public String deleteStudent(@PathVariable Long id) {
+        studentService.deleteStudent(id);
         return "redirect:/student/list";
     }
 
@@ -99,7 +116,7 @@ public class StudentController {
         List<StudentResponseDTO> students = studentService.getStudentsByGrade(grade);
         model.addAttribute("students", students);
         model.addAttribute("grade", grade);
-        return "student/student-list";
+        return "cheol/student-list";
     }
 
     // 반별 학생 목록
@@ -108,7 +125,7 @@ public class StudentController {
         List<StudentResponseDTO> students = studentService.getStudentsByClassNum(classNum);
         model.addAttribute("students", students);
         model.addAttribute("classNum", classNum);
-        return "student/student-list";
+        return "cheol/student-list";
     }
 
     // 학년+반별 학생 목록
@@ -118,7 +135,7 @@ public class StudentController {
         model.addAttribute("students", students);
         model.addAttribute("grade", grade);
         model.addAttribute("classNum", classNum);
-        return "student/student-list";
+        return "cheol/student-list";
     }
 
     // 학생 카테고리 페이지
@@ -126,4 +143,5 @@ public class StudentController {
     public String getStudentCategory() {
         return "student/student-category";
     }
+
 }

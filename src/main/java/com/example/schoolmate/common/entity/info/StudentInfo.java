@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.common.entity.Classroom;
 
 import jakarta.persistence.CascadeType;
@@ -36,7 +37,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = { "assignments", "familyRelations" })
+@ToString(exclude = { "assignments", "familyRelations", "medicalDetails" })
 public class StudentInfo extends BaseInfo {
     @Column(nullable = true)
     private Long studentNumber; // 학번
@@ -44,6 +45,8 @@ public class StudentInfo extends BaseInfo {
     private LocalDate birthDate; // 생일
 
     private String address; // 주소
+
+    private String addressDetail; // 상세주소
 
     private String phone; // 연락처
 
@@ -103,4 +106,8 @@ public class StudentInfo extends BaseInfo {
         return assignments.stream()
                 .max(Comparator.comparingInt(StudentAssignment::getSchoolYear));
     }
+
+    // 의료기록
+    @OneToMany(mappedBy = "studentInfo")
+    private List<MedicalDetails> medicalDetails = new ArrayList<>();
 }

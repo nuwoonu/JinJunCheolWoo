@@ -40,9 +40,9 @@ public class StudentRestController {
 
     // 학생 정보 조회 (UID)
     // GET /api/students/{uid}
-    @GetMapping("/{uid}")
-    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long uid) {
-        StudentResponseDTO response = studentService.getStudentByUid(uid);
+    @GetMapping("/{id}")
+    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
+        StudentResponseDTO response = studentService.getStudentById(id);
         return ResponseEntity.ok(response);
     }
 

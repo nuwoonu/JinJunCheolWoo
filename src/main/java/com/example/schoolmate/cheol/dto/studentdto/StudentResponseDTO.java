@@ -2,7 +2,12 @@ package com.example.schoolmate.cheol.dto.studentdto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
+import com.example.schoolmate.cheol.entity.MedicalDetails;
+import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.Gender;
@@ -20,7 +25,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class StudentResponseDTO {
 
-    private Long uid; // StudentInfo의 id
+    private Long id; // StudentInfo의 id
 
     private Long studentNumber;
 
@@ -36,6 +41,8 @@ public class StudentResponseDTO {
 
     private String address;
 
+    private String addressDetail;
+
     private String phone;
 
     private Gender gender;
@@ -46,29 +53,95 @@ public class StudentResponseDTO {
 
     private LocalDateTime modifiedDate;
 
+    // medical
+    private String BloodGroup;
+    private Double Height;
+    private Double Weight;
+
     // User 정보 (연관된 경우)
     private Long userUid;
     private String userName;
     private String userEmail;
 
-    // Entity -> DTO 변환 생성자
-    public StudentResponseDTO(StudentInfo student) {
-        this.uid = student.getId();
-        this.studentNumber = student.getStudentNumber();
-        this.year = student.getClassroom().getYear();
-        this.classNum = student.getClassroom().getClassNum();
-        this.fullStudentNumber = student.getFullStudentNumber();
-        this.studentCode = student.getCode();
-        this.birthDate = student.getBirthDate();
-        this.address = student.getAddress();
-        this.phone = student.getPhone();
-        this.gender = student.getGender();
-        this.status = student.getStatus();
+    // 학부모/보호자 정보 리스트
+    @Builder.Default
+    private List<ParentGuardianInfo> guardians = new ArrayList<>();
+
+    // 학부모/보호자 정보 내부 클래스
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ParentGuardianInfo {
+        private Long id;
+        private String name;
+        private String phone;
+        private String email;
+        private String relationship; // "부", "모" 등
+        private String relationshipCode; // "FATHER", "MOTHER" 등
+        private boolean representative; // 주 보호자 여부
+
+        public static ParentGuardianInfo from(FamilyRelation relation) {
+            return ParentGuardianInfo.builder()
+                    .id(relation.getParentInfo().getId())
+                    .name(relation.getParentInfo().getParentName())
+                    .phone(relation.getParentInfo().getPhoneNumber())
+                    .email(relation.getParentInfo().getUser() != null
+                            ? relation.getParentInfo().getUser().getEmail()
+                            : null)
+                    .relationship(relation.getRelationship().getDescription())
+                    .relationshipCode(relation.getRelationship().name())
+                    .representative(relation.isRepresentative())
+                    .build();
+        }
+    }
+
+    // Entity -> DTO 변환 (정적 팩토리 메서드 + Builder)
+    public static StudentResponseDTO from(StudentInfo student) {
+        StudentResponseDTOBuilder builder = StudentResponseDTO.builder()
+                .id(student.getId())
+                .studentNumber(student.getStudentNumber())
+                .fullStudentNumber(student.getFullStudentNumber())
+                .studentCode(student.getCode())
+                .birthDate(student.getBirthDate())
+                .address(student.getAddress())
+                .addressDetail(student.getAddressDetail())
+                .phone(student.getPhone())
+                .gender(student.getGender())
+                .status(student.getStatus());
+
+        if (student.getClassroom() != null) {
+            builder.year(student.getClassroom().getYear())
+                    .classNum(student.getClassroom().getClassNum());
+        }
+        // 의료 정보 매핑 (가장 최근 기록)
+        if (student.getMedicalDetails() != null && !student.getMedicalDetails().isEmpty()) {
+            MedicalDetails medical = student.getMedicalDetails().stream()
+                    .max(Comparator.comparing(MedicalDetails::getCreateDate))
+                    .orElse(null);
+            if (medical != null) {
+                builder.BloodGroup(medical.getBloodGroup())
+                        .Height(medical.getHeight())
+                        .Weight(medical.getWeight());
+            }
+        }
 
         if (student.getUser() != null) {
-            this.userUid = student.getUser().getUid();
-            this.userName = student.getUser().getName();
-            this.userEmail = student.getUser().getEmail();
+            builder.userUid(student.getUser().getUid())
+                    .userName(student.getUser().getName())
+                    .userEmail(student.getUser().getEmail());
         }
+
+        // 학부모/보호자 정보 매핑
+        if (student.getFamilyRelations() != null && !student.getFamilyRelations().isEmpty()) {
+            List<ParentGuardianInfo> guardianList = student.getFamilyRelations().stream()
+                    .filter(r -> r.getParentInfo() != null)
+                    .map(ParentGuardianInfo::from)
+                    .toList();
+            builder.guardians(guardianList);
+        }
+
+        return builder.build();
     }
 }

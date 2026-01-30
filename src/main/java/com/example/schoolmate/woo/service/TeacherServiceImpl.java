@@ -113,20 +113,20 @@ public class TeacherServiceImpl implements TeacherService {
         student.setGender(createDTO.getGender());
 
         StudentInfo savedStudent = studentRepository.save(student);
-        return new StudentResponseDTO(savedStudent);
+        return StudentResponseDTO.from(savedStudent);
     }
 
     @Override
     public StudentResponseDTO getStudentById(Long studentId) {
         StudentInfo student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
-        return new StudentResponseDTO(student);
+        return StudentResponseDTO.from(student);
     }
 
     @Override
     public List<StudentResponseDTO> getAllStudents() {
         return studentRepository.findAll().stream()
-                .map(StudentResponseDTO::new)
+                .map(StudentResponseDTO::from)
                 .collect(Collectors.toList());
     }
 
@@ -156,7 +156,7 @@ public class TeacherServiceImpl implements TeacherService {
             student.setGender(updateDTO.getGender());
         }
 
-        return new StudentResponseDTO(student);
+        return StudentResponseDTO.from(student);
     }
 
     @Override
