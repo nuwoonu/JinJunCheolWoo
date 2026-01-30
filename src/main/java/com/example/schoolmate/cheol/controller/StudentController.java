@@ -35,12 +35,14 @@ public class StudentController {
         List<StudentResponseDTO> students = studentService.getAllStudents();
         model.addAttribute("students", students);
         log.info("학생 list 접속");
+
         return "cheol/student-list";
     }
 
     // 로그인한 학생 본인의 상세 정보 페이지
     @GetMapping("/myinfo")
     public String getMyInfo(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
+
         Long uid = authUserDTO.getCustomUserDTO().getUid();
         StudentResponseDTO student = studentService.getStudentByUserUid(uid);
         model.addAttribute("student", student);
@@ -49,9 +51,9 @@ public class StudentController {
     }
 
     // 학생 상세 페이지
-    @GetMapping("/details/{uid}")
-    public String getStudentDetails(@PathVariable Long uid, Model model) {
-        StudentResponseDTO student = studentService.getStudentByUid(uid);
+    @GetMapping("/details/{id}")
+    public String getStudentDetails(@PathVariable Long id, Model model) {
+        StudentResponseDTO student = studentService.getStudentById(id);
         model.addAttribute("student", student);
         return "student/student-details";
     }
@@ -79,25 +81,25 @@ public class StudentController {
     }
 
     // 학생 수정 폼 페이지
-    @GetMapping("/edit/{uid}")
-    public String getEditStudentForm(@PathVariable Long uid, Model model) {
-        StudentResponseDTO student = studentService.getStudentByUid(uid);
+    @GetMapping("/edit/{id}")
+    public String getEditStudentForm(@PathVariable Long id, Model model) {
+        StudentResponseDTO student = studentService.getStudentById(id);
         model.addAttribute("student", student);
         model.addAttribute("studentUpdateDTO", new StudentUpdateDTO());
-        return "student/edit-student";
+        return "cheol/edit-student";
     }
 
     // 학생 수정 처리
-    @PostMapping("/edit/{uid}")
-    public String updateStudent(@PathVariable Long uid, @ModelAttribute StudentUpdateDTO updateDTO) {
-        studentService.updateStudent(uid, updateDTO);
-        return "redirect:/student/details/" + uid;
+    @PostMapping("/edit/{id}")
+    public String updateStudent(@PathVariable Long id, @ModelAttribute StudentUpdateDTO updateDTO) {
+        studentService.updateStudent(id, updateDTO);
+        return "redirect:/student/myinfo";
     }
 
     // 학생 삭제 (소프트 삭제 - 자퇴 처리)
-    @PostMapping("/delete/{uid}")
-    public String deleteStudent(@PathVariable Long uid) {
-        studentService.deleteStudent(uid);
+    @PostMapping("/delete/{id}")
+    public String deleteStudent(@PathVariable Long id) {
+        studentService.deleteStudent(id);
         return "redirect:/student/list";
     }
 
@@ -142,35 +144,4 @@ public class StudentController {
         return "student/student-category";
     }
 
-    // ============ Exam 관련 페이지 ============
-
-    // 시험 성적 조회 페이지
-    @GetMapping("/exam")
-    public String getExamPage(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
-        Long uid = authUserDTO.getCustomUserDTO().getUid();
-        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
-        model.addAttribute("student", student);
-        log.info("학생 시험 성적 페이지 접속: {}", uid);
-        return "cheol/exam/exam";
-    }
-
-    // 시험 결과 페이지
-    @GetMapping("/exam/result")
-    public String getExamResultPage(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
-        Long uid = authUserDTO.getCustomUserDTO().getUid();
-        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
-        model.addAttribute("student", student);
-        log.info("학생 시험 결과 페이지 접속: {}", uid);
-        return "cheol/exam/exam-result";
-    }
-
-    // 시험 일정 페이지
-    @GetMapping("/exam/schedule")
-    public String getExamSchedulePage(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
-        Long uid = authUserDTO.getCustomUserDTO().getUid();
-        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
-        model.addAttribute("student", student);
-        log.info("학생 시험 일정 페이지 접속: {}", uid);
-        return "cheol/exam/exam-schedule";
-    }
 }

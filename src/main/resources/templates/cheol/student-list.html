@@ -55,7 +55,7 @@
                 </td>
               </tr>
               <tr th:each="s : ${students}">
-                <td th:text="${s.uid}">1</td>
+                <td th:text="${s.id}">1</td>
                 <td>
                   <span class="text-primary-600 fw-medium" th:text="${s.studentCode}">20241001</span>
                 </td>
@@ -75,15 +75,15 @@
                 </td>
                 <td sec:authorize="hasRole('ADMIN')">
                   <div class="d-flex gap-2">
-                    <a th:href="@{/student/details/{uid}(uid=${s.uid})}"
+                    <a th:href="@{/student/details/{id}(id=${s.id})}"
                        class="btn btn-sm btn-outline-info">
                       <i class="ri-eye-line"></i>
                     </a>
-                    <a th:href="@{/student/edit/{uid}(uid=${s.uid})}"
+                    <a th:href="@{/student/edit/{id}(id=${s.id})}"
                        class="btn btn-sm btn-outline-primary">
                       <i class="ri-edit-2-line"></i>
                     </a>
-                    <form th:action="@{/student/delete/{uid}(uid=${s.uid})}" method="post"
+                    <form th:action="@{/student/delete/{id}(id=${s.id})}" method="post"
                           onsubmit="return confirm('정말 삭제하시겠습니까?');">
                       <button type="submit" class="btn btn-sm btn-outline-danger">
                         <i class="ri-delete-bin-line"></i>

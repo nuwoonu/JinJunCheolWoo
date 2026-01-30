@@ -89,7 +89,7 @@ public class DashboardController {
             StudentInfo studentInfo = studentUser.getInfo(StudentInfo.class);
             if (studentInfo != null) {
                 // 2. DTO 변환
-                StudentResponseDTO studentDTO = new StudentResponseDTO(studentInfo);
+                StudentResponseDTO studentDTO = StudentResponseDTO.from(studentInfo);
                 model.addAttribute("student", studentDTO);
 
                 // 3. 프로필 이미지 조회

@@ -49,9 +49,9 @@ public class StudentServiceImpl {
         return convertToResponseDTO(savedStudent);
     }
 
-    public StudentResponseDTO getStudentByUid(Long uid) {
-        StudentInfo student = studentRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+    public StudentResponseDTO getStudentById(Long id) {
+        StudentInfo student = studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + id));
         return convertToResponseDTO(student);
     }
 
@@ -93,9 +93,9 @@ public class StudentServiceImpl {
     }
 
     @Transactional
-    public StudentResponseDTO updateStudent(Long uid, StudentUpdateDTO updateDTO) {
-        StudentInfo student = studentRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+    public StudentResponseDTO updateStudent(Long id, StudentUpdateDTO updateDTO) {
+        StudentInfo student = studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + id));
 
         // 업데이트 가능한 필드만 변경 (Dirty Checking 활용)
         if (updateDTO.getClassroomId() != null) {
@@ -103,6 +103,9 @@ public class StudentServiceImpl {
                     .orElseThrow(
                             () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
             student.setClassroom(classroom);
+        }
+        if (updateDTO.getId() != null) {
+            student.setId(updateDTO.getId());
         }
         if (updateDTO.getBirthDate() != null) {
             student.setBirthDate(updateDTO.getBirthDate());
@@ -122,9 +125,9 @@ public class StudentServiceImpl {
     }
 
     @Transactional
-    public void deleteStudent(Long uid) {
-        StudentInfo student = studentRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+    public void deleteStudent(Long id) {
+        StudentInfo student = studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + id));
 
         // 소프트 삭제 - Dirty Checking 활용
         student.setStatus(StudentStatus.DROPOUT);
@@ -138,10 +141,9 @@ public class StudentServiceImpl {
         studentRepository.deleteById(uid);
     }
 
-    // entity to dto
+    // entity to dto (정적 팩토리 메서드 사용)
     private StudentResponseDTO convertToResponseDTO(StudentInfo student) {
-        return new StudentResponseDTO(student);
-
+        return StudentResponseDTO.from(student);
     }
 
 }

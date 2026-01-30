@@ -28,8 +28,10 @@ import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.user.constant.Gender;
 import com.example.schoolmate.cheol.entity.Grade;
+import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.cheol.entity.Subject;
 import com.example.schoolmate.cheol.repository.GradeRepository;
+import com.example.schoolmate.cheol.repository.MedicalDetailsRepository;
 import com.example.schoolmate.cheol.repository.SubjectRepository;
 import com.example.schoolmate.common.repository.StudentInfoRepository;
 import com.example.schoolmate.common.entity.user.constant.Semester;
@@ -51,6 +53,8 @@ public class UserDataTest {
     private SubjectRepository subjectRepository;
     @Autowired
     private StudentInfoRepository studentInfoRepository;
+    @Autowired
+    private MedicalDetailsRepository medicalDetailsRepository;
 
     // @Test
     // @Transactional
@@ -384,4 +388,39 @@ public class UserDataTest {
         System.out.println("========================================");
     }
 
+    @Test
+    @Transactional
+    @Rollback(false)
+    void createMedicalStudent() {
+        Long studentId = 1L;
+
+        // 1. 학생 조회
+        StudentInfo student = studentInfoRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
+
+        System.out.println("========================================");
+        System.out.println("학생 정보: " + student.getCode());
+
+        // 2. 상세 주소 추가
+        student.setAddressDetail("솔데스크아파트 101동 202호");
+        studentInfoRepository.save(student);
+        System.out.println("상세 주소 추가 완료: " + student.getAddressDetail());
+
+        // 3. 의료 정보 생성 및 저장
+        MedicalDetails medicalDetails = MedicalDetails.builder()
+                .BloodGroup("A+")
+                .Height(175.5)
+                .Weight(68.0)
+                .studentInfo(student)
+                .build();
+
+        medicalDetailsRepository.save(medicalDetails);
+
+        System.out.println("========================================");
+        System.out.println("의료 정보 생성 완료!");
+        System.out.println("혈액형: " + medicalDetails.getBloodGroup());
+        System.out.println("키: " + medicalDetails.getHeight() + "cm");
+        System.out.println("체중: " + medicalDetails.getWeight() + "kg");
+        System.out.println("========================================");
+    }
 }

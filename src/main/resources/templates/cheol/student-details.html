@@ -524,7 +524,7 @@
                       class="w-100 h-100 object-fit-cover"
                     />
                   </figure>
-                  <h2 class="h6 text-primary-light mb-16 fw-semibold">Seth Hallam</h2>
+                  <h2 class="h6 text-primary-light mb-16 fw-semibold">[[${student.userName}]]</h2>
                   <p class="mb-0">Admission No: <span class="text-primary-600 fw-semibold">AD1256589</span></p>
                   <p class="mb-0">Admission No: <span class="text-primary-light fw-semibold">10</span></p>
                   <div class="mt-32 d-flex gap-16 w-100">
@@ -540,13 +540,13 @@
                       Suspend
                     </button>
                     <a
-                      href="edit-student.html"
+                      th:href="@{/student/edit/{id}(id=${student.id})}"
                       class="btn btn-primary-600 border fw-medium border-primary-600 text-md d-flex justify-content-center align-items-center gap-8 flex-grow-1 px-12 py-8 radius-8"
                     >
                       <span class="d-flex text-lg">
                         <i class="ri-edit-line"></i>
                       </span>
-                      Edit
+                      수정
                     </a>
                   </div>
                 </div>
@@ -556,44 +556,64 @@
                 <div class="flex-grow-1">
                   <div class="pb-16 border-bottom d-flex align-items-center justify-content-between gap-20">
                     <h3 class="h6 text-primary-light text-lg mb-0 fw-semibold">Personal Info</h3>
-                    <span class="bg-success-100 text-success-600 px-16 py-4 radius-4 fw-medium text-sm">Active</span>
+                    <span
+                      th:classappend="${student.status?.name() == 'ENROLLED' ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600'}"
+                      class="px-16 py-4 radius-4 fw-medium text-sm"
+                      th:text="${student.status?.description ?: '-'}"
+                      >Active</span
+                    >
                   </div>
                   <div class="mt-16 d-flex flex-column gap-8">
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Class</span>
-                      <span class="fw-normal text-sm text-secondary-light">: 1 (A), 2(A), 3(A)</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">학번</span>
+                      <span class="fw-normal text-sm text-secondary-light"
+                        >: <span th:text="${student.fullStudentNumber ?: '-'}"></span
+                      ></span>
                     </div>
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Section</span>
-                      <span class="fw-normal text-sm text-secondary-light">: A</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">학년</span>
+                      <span class="fw-normal text-sm text-secondary-light"
+                        >: <span th:text="${student.year}"></span>학년</span
+                      >
                     </div>
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Roll No</span>
-                      <span class="fw-normal text-sm text-secondary-light">: 10</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">반</span>
+                      <span class="fw-normal text-sm text-secondary-light"
+                        >: <span th:text="${student.classNum}"></span>반</span
+                      >
                     </div>
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Gender</span>
-                      <span class="fw-normal text-sm text-secondary-light">: Male</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">성별</span>
+                      <span class="fw-normal text-sm text-secondary-light"
+                        >: <span th:text="${student.gender?.gender ?: '-'}"></span
+                      ></span>
                     </div>
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Date Of Birth</span>
-                      <span class="fw-normal text-sm text-secondary-light">: 10 Nov 2006</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">생년월일</span>
+                      <span class="fw-normal text-sm text-secondary-light"
+                        >:
+                        <span
+                          th:text="${student.birthDate != null ? #temporals.format(student.birthDate, 'yyyy-MM-dd') : '-'}"
+                        ></span
+                      ></span>
                     </div>
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Category</span>
-                      <span class="fw-normal text-sm text-secondary-light">: General</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">주소</span>
+                      <span class="fw-normal text-sm text-secondary-light"
+                        >: <span th:text="${student.address ?: '-'}"></span
+                      ></span>
                     </div>
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Academic Year</span>
-                      <span class="fw-normal text-sm text-secondary-light">: Jun 2025/2026</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">연락처</span>
+                      <span class="fw-normal text-sm text-primary-600"
+                        >: <span th:text="${student.phone ?: '-'}"></span
+                      ></span>
                     </div>
                     <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Phone Number</span>
-                      <span class="fw-normal text-sm text-primary-600">: 789678456</span>
-                    </div>
-                    <div class="d-flex gap-4">
-                      <span class="fw-semibold text-sm text-primary-light w-110-px">Email</span>
-                      <span class="fw-normal text-sm text-primary-600">: set@example.com</span>
+                      <span class="fw-semibold text-sm text-primary-light w-110-px">이메일</span>
+                      <span class="fw-normal text-sm text-primary-600"
+                        >: <span th:text="${student.userEmail ?: '-'}"></span
+                      ></span>
                     </div>
                   </div>
                 </div>
@@ -685,7 +705,7 @@
                   <span class="d-flex tab-icon line-height-1 text-md">
                     <i class="ri-file-edit-line"></i>
                   </span>
-                  exam
+                  성적
                 </button>
               </li>
               <li class="nav-item" role="presentation">
@@ -722,99 +742,44 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Parent Guardian Detail</h6>
+                        <h6 class="text-lg fw-semibold mb-0">보호자 정보</h6>
                       </div>
                       <div class="card-body p-0">
-                        <div class="bg-hover-neutral-50 p-20">
+                        <!-- 보호자가 없는 경우 -->
+                        <div th:if="${student.guardians == null or student.guardians.empty}" class="p-20 text-center">
+                          <p class="text-secondary-light mb-0">등록된 보호자 정보가 없습니다.</p>
+                        </div>
+                        <!-- 보호자 목록 반복 -->
+                        <div th:each="guardian : ${student.guardians}" class="bg-hover-neutral-50 p-20 border-bottom">
                           <div class="row g-4">
-                            <div class="col-sm-4">
+                            <div class="col-sm-3">
                               <div class="d-flex align-items-center gap-12">
-                                <figure class="w-48-px h-48-px rounded-circle overflow-hidden mb-0">
+                                <figure
+                                  class="w-48-px h-48-px rounded-circle overflow-hidden mb-0 bg-neutral-200 d-flex align-items-center justify-content-center"
+                                >
                                   <img
                                     src="/images/thumbs/guardian-img1.png"
                                     alt="Guardian Image"
                                     class="flex-shrink-0 w-100 h-100 object-fit-cover"
                                   />
                                 </figure>
-                                <div class="">
-                                  <h6 class="text-md mb-2 fw-medium flex-grow-1">Robert Fox</h6>
-                                  <span class="">Father</span>
+                                <div>
+                                  <h6 class="text-md mb-2 fw-medium flex-grow-1">이름</h6>
+                                  <span th:text="${guardian.name ?: '-'}"></span>
                                 </div>
                               </div>
                             </div>
-                            <div class="col-sm-4">
-                              <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Phone</h6>
-                                <span class="">+19854 65642</span>
-                              </div>
+                            <div class="col-sm-3">
+                              <h6 class="text-md mb-2 fw-medium flex-grow-1">관계</h6>
+                              <span th:text="${guardian.relationship ?: '-'}"></span>
                             </div>
-                            <div class="col-sm-4">
-                              <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Email</h6>
-                                <span class="">father@example.com</span>
-                              </div>
+                            <div class="col-sm-3">
+                              <h6 class="text-md mb-2 fw-medium flex-grow-1">연락처</h6>
+                              <span th:text="${guardian.phone ?: '-'}"></span>
                             </div>
-                          </div>
-                        </div>
-                        <div class="bg-hover-neutral-50 p-20">
-                          <div class="row g-4">
-                            <div class="col-sm-4">
-                              <div class="d-flex align-items-center gap-12">
-                                <figure class="w-48-px h-48-px rounded-circle overflow-hidden mb-0">
-                                  <img
-                                    src="/images/thumbs/guardian-img2.png"
-                                    alt="Guardian Image"
-                                    class="flex-shrink-0 w-100 h-100 object-fit-cover"
-                                  />
-                                </figure>
-                                <div class="">
-                                  <h6 class="text-md mb-2 fw-medium flex-grow-1">Brooklyn Simmons</h6>
-                                  <span class="">Mother</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="col-sm-4">
-                              <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Phone</h6>
-                                <span class="">+19854 65642</span>
-                              </div>
-                            </div>
-                            <div class="col-sm-4">
-                              <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Email</h6>
-                                <span class="">mother@example.com</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="bg-hover-neutral-50 p-20">
-                          <div class="row g-4">
-                            <div class="col-sm-4">
-                              <div class="d-flex align-items-center gap-12">
-                                <figure class="w-48-px h-48-px rounded-circle overflow-hidden mb-0">
-                                  <img
-                                    src="/images/thumbs/guardian-img1.png"
-                                    alt="Guardian Image"
-                                    class="flex-shrink-0 w-100 h-100 object-fit-cover"
-                                  />
-                                </figure>
-                                <div class="">
-                                  <h6 class="text-md mb-2 fw-medium flex-grow-1">Robert Fox</h6>
-                                  <span class="">Guardian (Father)</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="col-sm-4">
-                              <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Phone</h6>
-                                <span class="">+19854 65642</span>
-                              </div>
-                            </div>
-                            <div class="col-sm-4">
-                              <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Email</h6>
-                                <span class="">father@example.com</span>
-                              </div>
+                            <div class="col-sm-3">
+                              <h6 class="text-md mb-2 fw-medium flex-grow-1">이메일</h6>
+                              <span th:text="${guardian.email ?: '-'}"></span>
                             </div>
                           </div>
                         </div>
@@ -853,15 +818,15 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Address</h6>
+                        <h6 class="text-lg fw-semibold mb-0">상세주소</h6>
                       </div>
                       <div class="card-body p-0">
                         <div class="p-20">
                           <div class="row gy-4">
                             <div class="col-sm-12">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Current Address</h6>
-                                <span class="">8502 Preston Rd. Inglewood, Maine 98380</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">현재 주소</h6>
+                                <span class="" th:text="${student.addressDetail ?: '-'}"></span>
                               </div>
                             </div>
                             <div class="col-sm-12">
