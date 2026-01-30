@@ -82,7 +82,10 @@ public class SecurityConfig {
                                 .oauth2Login(oauth2 -> oauth2
                                                 .loginPage("/login")
                                                 .userInfoEndpoint(userInfo -> userInfo
-                                                                .userService(customOAuth2UserService))
+                                                                .userService(customOAuth2UserService)) // customOAuthUser.Service.loadUser()
+                                                                                                       // : 사용자 정보 응답을
+                                                                                                       // 받은걸로 우리 DB에
+                                                                                                       // 저장/조회 한다.
                                                 .successHandler(oAuth2LoginSuccessHandler))
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")

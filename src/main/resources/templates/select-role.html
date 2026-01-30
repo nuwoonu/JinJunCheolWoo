@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   소셜 로그인 후 역할 선택 페이지 (01/29[woo])
-  - 카카오/구글 등 소셜 로그인 최초 가입 시 역할 선택
+  - 카카오/구글 등 소셜 로그인 최초 가입 시 역할 선택하는 html
 -->
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
@@ -137,7 +137,7 @@
                 <i class="fa-solid fa-chalkboard-user"></i>
               </div>
               <div class="role-title">교사</div>
-              <div class="role-desc">학급 관리, 성적 입력, 출결 관리를 할 수 있습니다.</div>
+              <div class="role-desc">학급 관리, 성적 입력및 수정, 출결 및 게시판 관리를 할 수 있습니다.</div>
             </div>
 
             <!-- 학부모 카드 -->
@@ -149,9 +149,7 @@
               <div class="role-desc">자녀의 학교 생활, 성적, 알림을 확인할 수 있습니다.</div>
             </div>
 
-            <button type="submit" class="btn-submit" id="submitBtn" disabled>
-              선택 완료
-            </button>
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>선택 완료</button>
           </form>
         </div>
       </div>
@@ -163,18 +161,18 @@
       // 역할 선택 처리 (01/29[woo])
       function selectRole(role, element) {
         // 모든 카드에서 selected 클래스 제거
-        document.querySelectorAll('.role-card').forEach(card => {
-          card.classList.remove('selected');
+        document.querySelectorAll(".role-card").forEach((card) => {
+          card.classList.remove("selected");
         });
 
         // 선택된 카드에 selected 클래스 추가
-        element.classList.add('selected');
+        element.classList.add("selected");
 
         // hidden input에 선택된 역할 설정
-        document.getElementById('selectedRole').value = role;
+        document.getElementById("selectedRole").value = role;
 
         // 제출 버튼 활성화
-        document.getElementById('submitBtn').disabled = false;
+        document.getElementById("submitBtn").disabled = false;
       }
     </script>
   </body>
