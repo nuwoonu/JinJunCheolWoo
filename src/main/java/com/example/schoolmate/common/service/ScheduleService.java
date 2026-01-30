@@ -1,4 +1,4 @@
-package com.example.schoolmate.parkjoon.service;
+package com.example.schoolmate.common.service;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class AdminScheduleService {
+public class ScheduleService {
 
     private final SchoolCalendarRepository schoolCalendarRepository;
 

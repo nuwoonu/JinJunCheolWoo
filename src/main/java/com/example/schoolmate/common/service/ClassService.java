@@ -1,4 +1,4 @@
-package com.example.schoolmate.parkjoon.service;
+package com.example.schoolmate.common.service;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -43,7 +43,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Transactional
 @Log4j2
-public class AdminClassService {
+public class ClassService {
 
     private final ClassroomRepository classroomRepository;
     private final UserRepository userRepository;
@@ -478,5 +478,37 @@ public class AdminClassService {
         }
 
         classroomRepository.delete(classroom);
+    }
+
+    // 우님 작업물
+    @Transactional(readOnly = true)
+    public List<ClassDTO.DetailResponse> getClassList() {
+        return classroomRepository.findAll().stream()
+                .map(c -> ClassDTO.DetailResponse.from(c, 0)) // 학생 수는 목록에서 0으로 처리하거나 별도 조회
+                .collect(Collectors.toList());
+    }
+
+    // 우님 작업물
+    @Transactional(readOnly = true)
+    public List<ClassDTO.TeacherSelectResponse> getTeacherList() {
+        TeacherDTO.TeacherSearchCondition cond = new TeacherDTO.TeacherSearchCondition();
+        cond.setStatus("EMPLOYED");
+        return userRepository.searchTeachers(cond, Pageable.unpaged()).stream()
+                .map(ClassDTO.TeacherSelectResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    // 우님 작업물
+    public void assignTeacher(ClassDTO.UpdateRequest request) {
+        Classroom classroom = classroomRepository.findById(request.getCid())
+                .orElseThrow(() -> new IllegalArgumentException("학급 정보를 찾을 수 없습니다."));
+
+        if (request.getTeacherUid() != null) {
+            User teacher = userRepository.findById(request.getTeacherUid())
+                    .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
+            classroom.setTeacher(teacher);
+        } else {
+            classroom.setTeacher(null);
+        }
     }
 }

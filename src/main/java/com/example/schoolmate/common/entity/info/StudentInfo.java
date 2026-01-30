@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
-import com.example.schoolmate.common.entity.Classroom;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

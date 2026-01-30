@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
-import com.example.schoolmate.parkjoon.service.AdminStudentService;
+import com.example.schoolmate.common.service.StudentService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize("hasRole('ADMIN')")
 public class StudentManageController {
 
-    private final AdminStudentService adminStudentService;
+    private final StudentService adminStudentService;
 
     @GetMapping
     public String studentManagement(
@@ -46,7 +46,7 @@ public class StudentManageController {
         model.addAttribute("condition", condition);
         model.addAttribute("statusList", StudentStatus.values());
 
-        return "student/student-list";  // [woo 수정] 기존 템플릿 사용
+        return "student/student-list"; // [woo 수정] 기존 템플릿 사용
     }
 
     @PostMapping("/create")

@@ -1,4 +1,4 @@
-package com.example.schoolmate.service;
+package com.example.schoolmate.common.service;
 
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;

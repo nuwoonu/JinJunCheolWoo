@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.board.dto.NoticeDTO;
 import com.example.schoolmate.board.dto.PageRequestDTO;
 import com.example.schoolmate.board.dto.PageResultDTO;
-import com.example.schoolmate.board.service.NoticeService;
+import com.example.schoolmate.common.service.NoticeService;
 import com.example.schoolmate.dto.AuthUserDTO;
 
 import jakarta.validation.Valid;
@@ -55,9 +55,9 @@ public class ParentNoticeController {
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public String postCreate(@Valid NoticeDTO dto,
-                            BindingResult result,
-                            @AuthenticationPrincipal AuthUserDTO authUser,
-                            RedirectAttributes rttr) {
+            BindingResult result,
+            @AuthenticationPrincipal AuthUserDTO authUser,
+            RedirectAttributes rttr) {
         log.info("공지 등록 요청: {}", dto);
 
         if (result.hasErrors()) {
@@ -100,9 +100,9 @@ public class ParentNoticeController {
     @PostMapping("/modify")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public String postModify(NoticeDTO dto,
-                            PageRequestDTO pageRequestDTO,
-                            @AuthenticationPrincipal AuthUserDTO authUser,
-                            RedirectAttributes rttr) {
+            PageRequestDTO pageRequestDTO,
+            @AuthenticationPrincipal AuthUserDTO authUser,
+            RedirectAttributes rttr) {
         log.info("공지 수정 요청: {}", dto);
 
         noticeService.update(dto);
@@ -118,8 +118,8 @@ public class ParentNoticeController {
     @PostMapping("/remove")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public String postRemove(NoticeDTO dto,
-                            PageRequestDTO pageRequestDTO,
-                            RedirectAttributes rttr) {
+            PageRequestDTO pageRequestDTO,
+            RedirectAttributes rttr) {
         log.info("공지 삭제 요청: {}", dto.getNno());
 
         noticeService.delete(dto.getNno());

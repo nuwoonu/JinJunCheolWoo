@@ -1,4 +1,4 @@
-package com.example.schoolmate.parkjoon.service;
+package com.example.schoolmate.common.service;
 
 import java.io.Reader;
 import java.io.InputStreamReader;
@@ -41,7 +41,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Transactional
 @Log4j2
-public class AdminStaffService {
+public class StaffService {
 
     private final UserRepository userRepository;
     private final StaffInfoRepository staffInfoRepository;

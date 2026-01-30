@@ -1,9 +1,10 @@
 package com.example.schoolmate.controller;
 
+import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
-import com.example.schoolmate.service.UserService;
+
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -206,12 +207,11 @@ public class UserController {
             CustomUserDTO user = authUser.getCustomUserDTO();
 
             return String.format(
-                "Email: %s, Name: %s, Role: %s, Authorities: %s",
-                user.getEmail(),
-                user.getName(),
-                user.getRole(),
-                authentication.getAuthorities()
-            );
+                    "Email: %s, Name: %s, Role: %s, Authorities: %s",
+                    user.getEmail(),
+                    user.getName(),
+                    user.getRole(),
+                    authentication.getAuthorities());
         }
 
         return "Principal: " + principal.toString();

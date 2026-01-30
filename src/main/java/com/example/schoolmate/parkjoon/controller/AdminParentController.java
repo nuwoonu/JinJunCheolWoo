@@ -21,8 +21,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.ParentStatus;
+import com.example.schoolmate.common.service.ParentService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminParentService;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminParentController {
 
-    private final AdminParentService adminParentService;
+    private final ParentService adminParentService;
 
     @GetMapping
     public String list(ParentDTO.ParentSearchCondition condition,

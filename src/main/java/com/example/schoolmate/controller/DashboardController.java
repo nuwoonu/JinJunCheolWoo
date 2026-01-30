@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.schoolmate.board.dto.NoticeDTO;
 import com.example.schoolmate.board.dto.ParentBoardDTO;
-import com.example.schoolmate.board.service.NoticeService;
+import com.example.schoolmate.common.service.NoticeService;
 import com.example.schoolmate.board.service.ParentBoardService;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.info.ParentInfo;
@@ -23,10 +23,10 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
+import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
-import com.example.schoolmate.woo.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

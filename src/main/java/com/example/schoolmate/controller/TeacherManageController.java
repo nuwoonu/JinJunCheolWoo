@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
-import com.example.schoolmate.parkjoon.service.AdminTeacherService;
+import com.example.schoolmate.common.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize("hasRole('ADMIN')")
 public class TeacherManageController {
 
-    private final AdminTeacherService adminTeacherService;
+    private final TeacherService adminTeacherService;
 
     @GetMapping
     public String teacherManagement(
@@ -47,7 +47,7 @@ public class TeacherManageController {
         model.addAttribute("departments", List.of("교무부", "학생부", "연구부", "정보부", "행정실"));
         model.addAttribute("positions", List.of("평교사", "부장", "교감", "교장"));
 
-        return "teacher/teacher-list";  // [woo 수정] 기존 템플릿 사용
+        return "teacher/teacher-list"; // [woo 수정] 기존 템플릿 사용
     }
 
     @PostMapping("/create")

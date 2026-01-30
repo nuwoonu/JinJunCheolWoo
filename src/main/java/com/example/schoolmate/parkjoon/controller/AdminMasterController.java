@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.cheol.dto.SubjectDTO;
+import com.example.schoolmate.common.service.SubjectService;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminSubjectService;
 import com.example.schoolmate.soojin.entity.constant.EventType;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminMasterController {
 
     private final SystemSettingService systemSettingService;
-    private final AdminSubjectService adminSubjectService;
+    private final SubjectService adminSubjectService;
 
     @GetMapping("/schedule")
     public String schedule(Model model) {

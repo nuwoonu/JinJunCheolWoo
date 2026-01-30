@@ -25,7 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminClassService;
+import com.example.schoolmate.common.service.ClassService;
 import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class AdminClassController {
 
-    private final AdminClassService adminClassService;
+    private final ClassService adminClassService;
     private final SystemSettingService systemSettingService;
 
     @GetMapping

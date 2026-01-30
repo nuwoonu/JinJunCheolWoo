@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.FacilityDTO;
+import com.example.schoolmate.common.service.FacilityService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminFacilityService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminFacilityController {
 
-    private final AdminFacilityService adminFacilityService;
+    private final FacilityService adminFacilityService;
 
     @GetMapping("/rooms")
     public String rooms(Model model) {

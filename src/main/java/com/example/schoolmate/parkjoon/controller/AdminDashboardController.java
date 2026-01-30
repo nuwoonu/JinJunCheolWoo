@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.schoolmate.common.dto.DashboardDTO;
+import com.example.schoolmate.common.service.DashboardService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminDashboardService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminDashboardController {
 
-    private final AdminDashboardService adminDashboardService;
+    private final DashboardService adminDashboardService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {

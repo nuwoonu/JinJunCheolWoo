@@ -3,7 +3,6 @@ package com.example.schoolmate.common.dto;
 import java.time.LocalDate;
 
 import com.example.schoolmate.soojin.entity.SchoolCalendar;
-import com.example.schoolmate.soojin.entity.constant.EventType;
 
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvDate;

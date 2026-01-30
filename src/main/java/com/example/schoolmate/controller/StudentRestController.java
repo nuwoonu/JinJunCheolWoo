@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
-import com.example.schoolmate.cheol.service.StudentServiceImpl;
+import com.example.schoolmate.common.service.StudentService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StudentRestController {
 
-    private final StudentServiceImpl studentService;
+    private final StudentService studentService;
 
     // 학생 등록
     // POST /api/students

@@ -3,8 +3,8 @@ package com.example.schoolmate.parkjoon.controller;
 import java.security.Principal;
 
 import com.example.schoolmate.common.dto.NoticeDTO;
+import com.example.schoolmate.common.service.NoticeService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminNoticeService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,7 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class AdminNoticeBoardController {
 
-    private final AdminNoticeService adminNoticeService;
+    private final NoticeService adminNoticeService;
 
     @GetMapping
     public String list(@RequestParam(value = "keyword", required = false) String keyword,

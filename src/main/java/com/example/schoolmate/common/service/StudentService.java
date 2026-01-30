@@ -1,4 +1,4 @@
-package com.example.schoolmate.parkjoon.service;
+package com.example.schoolmate.common.service;
 
 import java.io.Reader;
 import java.io.InputStreamReader;
@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
@@ -29,6 +33,7 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.repository.ParentInfoRepository;
+import com.example.schoolmate.common.repository.StudentInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
@@ -46,9 +51,10 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Transactional
 @Log4j2
-public class AdminStudentService {
+public class StudentService {
     private final UserRepository userRepository;
     private final ParentInfoRepository parentInfoRepository;
+    private final StudentInfoRepository studentInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final ClassroomRepository classroomRepository;
     private final PasswordEncoder passwordEncoder;
@@ -338,5 +344,140 @@ public class AdminStudentService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("연동된 보호자가 아닙니다."));
         relation.setRelationship(relationship);
+    }
+
+    // 승철님 작업물
+    @Transactional
+    public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
+        // 학번 중복 체크
+        if (studentInfoRepository.findByAttendanceNum(createDTO.getStudentNumber()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
+        }
+
+        // Classroom 조회
+        Classroom classroom = classroomRepository.findById(createDTO.getClassroomId())
+                .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
+
+        // Student 엔티티 생성 (Setter 방식)
+        StudentInfo student = new StudentInfo();
+        // 주의: StudentInfo의 currentAssignment가 초기화되어 있지 않다면 NPE 발생 가능성 있음 (기존 코드 유지)
+        if (student.getCurrentAssignment() == null) {
+            StudentAssignment assignment = new StudentAssignment();
+            student.setCurrentAssignment(assignment);
+            student.getAssignments().add(assignment);
+        }
+        student.getCurrentAssignment().setAttendanceNum(createDTO.getStudentNumber());
+        student.getCurrentAssignment().setClassroom(classroom);
+        student.setBirthDate(createDTO.getBirthDate());
+        student.setAddress(createDTO.getAddress());
+        student.setPhone(createDTO.getPhone());
+        student.setGender(createDTO.getGender());
+
+        StudentInfo savedStudent = studentInfoRepository.save(student);
+        return convertToResponseDTO(savedStudent);
+    }
+
+    // 승철님 작업물
+    @Transactional(readOnly = true)
+    public StudentResponseDTO getStudentByUid(Long uid) {
+        StudentInfo student = studentInfoRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+        return convertToResponseDTO(student);
+    }
+
+    // 승철님 작업물
+    @Transactional(readOnly = true)
+    public StudentResponseDTO getStudentByStudentNumber(Integer studentNumber) {
+        StudentInfo student = studentInfoRepository.findByAttendanceNum(studentNumber)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. 학번: " + studentNumber));
+        return convertToResponseDTO(student);
+    }
+
+    // 승철님 작업물
+    @Transactional(readOnly = true)
+    public List<StudentResponseDTO> getAllStudents() {
+        return studentInfoRepository.findAll().stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // 승철님 작업물
+    @Transactional(readOnly = true)
+    public List<StudentResponseDTO> getStudentsByGrade(int grade) {
+        return studentInfoRepository.findByClassroomGrade(grade).stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // 승철님 작업물
+    @Transactional(readOnly = true)
+    public List<StudentResponseDTO> getStudentsByClassNum(int classNum) {
+        return studentInfoRepository.findByClassroomClassNum(classNum).stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // 승철님 작업물
+    @Transactional(readOnly = true)
+    public List<StudentResponseDTO> getStudentsByGradeAndClass(int grade, int classNum) {
+        return studentInfoRepository.findByClassroomGradeAndClassroomClassNum(grade, classNum).stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // 승철님 작업물
+    @Transactional
+    public StudentResponseDTO updateStudent(Long uid, StudentUpdateDTO updateDTO) {
+        StudentInfo student = studentInfoRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+
+        // 업데이트 가능한 필드만 변경 (Dirty Checking 활용)
+        if (updateDTO.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
+            if (student.getCurrentAssignment() != null) {
+                student.getCurrentAssignment().setClassroom(classroom);
+            }
+        }
+        if (updateDTO.getBirthDate() != null) {
+            student.setBirthDate(updateDTO.getBirthDate());
+        }
+        if (updateDTO.getAddress() != null) {
+            student.setAddress(updateDTO.getAddress());
+        }
+        if (updateDTO.getPhone() != null) {
+            student.setPhone(updateDTO.getPhone());
+        }
+        if (updateDTO.getGender() != null) {
+            student.setGender(updateDTO.getGender());
+        }
+
+        // @Transactional로 인해 변경 감지되어 자동 저장됨
+        return convertToResponseDTO(student);
+    }
+
+    // 승철님 작업물
+    @Transactional
+    public void deleteStudent(Long uid) {
+        StudentInfo student = studentInfoRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+
+        // 소프트 삭제 - Dirty Checking 활용
+        student.setStatus(StudentStatus.DROPOUT);
+    }
+
+    // 승철님 작업물
+    @Transactional
+    public void permanentDeleteStudent(Long uid) {
+        if (!studentInfoRepository.existsById(uid)) {
+            throw new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid);
+        }
+        studentInfoRepository.deleteById(uid);
+    }
+
+    // 승철님 작업물
+    private StudentResponseDTO convertToResponseDTO(StudentInfo student) {
+        return new StudentResponseDTO(student);
     }
 }

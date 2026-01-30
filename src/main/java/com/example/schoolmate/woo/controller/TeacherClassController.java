@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
-import com.example.schoolmate.woo.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 

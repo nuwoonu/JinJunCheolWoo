@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.schoolmate.common.dto.NotificationDTO;
+import com.example.schoolmate.common.service.NotificationService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminNotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminNotificationController {
 
-    private final AdminNotificationService adminNotificationService;
+    private final NotificationService adminNotificationService;
 
     @PostMapping("/send")
     @ResponseBody

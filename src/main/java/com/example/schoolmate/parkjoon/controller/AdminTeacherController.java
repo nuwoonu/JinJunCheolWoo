@@ -20,11 +20,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminTeacherService;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.common.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminTeacherController {
 
-    private final AdminTeacherService adminTeacherService;
+    private final TeacherService adminTeacherService;
     private final UserRepository userRepository;
 
     @GetMapping

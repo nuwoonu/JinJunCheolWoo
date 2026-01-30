@@ -1,4 +1,4 @@
-package com.example.schoolmate.parkjoon.service;
+package com.example.schoolmate.common.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class AdminFacilityService {
+public class FacilityService {
 
     private final SchoolFacilityRepository facilityRepository;
 

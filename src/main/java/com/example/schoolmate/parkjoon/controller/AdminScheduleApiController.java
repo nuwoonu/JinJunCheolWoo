@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.common.dto.SchoolCalendarDTO;
+import com.example.schoolmate.common.service.ScheduleService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminScheduleService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminScheduleApiController {
 
-    private final AdminScheduleService adminScheduleService;
+    private final ScheduleService adminScheduleService;
 
     @GetMapping
     public ResponseEntity<List<SchoolCalendarDTO.Response>> getEvents(

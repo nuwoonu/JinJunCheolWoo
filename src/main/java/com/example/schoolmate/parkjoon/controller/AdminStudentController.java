@@ -24,8 +24,8 @@ import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminParentService;
-import com.example.schoolmate.parkjoon.service.AdminStudentService;
+import com.example.schoolmate.common.service.ParentService;
+import com.example.schoolmate.common.service.StudentService;
 import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
@@ -42,8 +42,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminStudentController {
 
-    private final AdminStudentService adminStudentService;
-    private final AdminParentService adminParentService; // 학부모 검색용
+    private final StudentService adminStudentService;
+    private final ParentService adminParentService; // 학부모 검색용
     private final SystemSettingService systemSettingService;
 
     // 1. 목록 페이지

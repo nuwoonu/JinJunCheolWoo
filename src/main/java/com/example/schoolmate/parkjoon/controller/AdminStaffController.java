@@ -25,8 +25,8 @@ import com.example.schoolmate.common.entity.info.constant.EmploymentType;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.service.StaffService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminStaffService;
 import com.example.schoolmate.common.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminStaffController {
 
-    private final AdminStaffService adminStaffService;
+    private final StaffService adminStaffService;
     private final UserRepository userRepository;
 
     @GetMapping

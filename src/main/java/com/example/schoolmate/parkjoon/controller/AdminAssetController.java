@@ -13,8 +13,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.AssetDTO;
 import com.example.schoolmate.common.entity.constant.AssetStatus;
+import com.example.schoolmate.common.service.AssetService;
 import com.example.schoolmate.config.SchoolmateUrls;
-import com.example.schoolmate.parkjoon.service.AdminAssetService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminAssetController {
 
-    private final AdminAssetService adminAssetService;
+    private final AssetService adminAssetService;
 
     @GetMapping
     public String list(@RequestParam(value = "keyword", required = false) String keyword,

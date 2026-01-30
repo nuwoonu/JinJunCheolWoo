@@ -1,4 +1,4 @@
-package com.example.schoolmate.parkjoon.service;
+package com.example.schoolmate.common.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class AdminAssetService {
+public class AssetService {
 
     private final SchoolAssetRepository assetRepository;
 
