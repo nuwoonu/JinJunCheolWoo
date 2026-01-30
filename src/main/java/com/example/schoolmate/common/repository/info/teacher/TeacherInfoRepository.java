@@ -1,4 +1,4 @@
-package com.example.schoolmate.common.repository;
+package com.example.schoolmate.common.repository.info.teacher;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 
-public interface TeacherInfoRepository extends JpaRepository<TeacherInfo, Long> {
+public interface TeacherInfoRepository extends JpaRepository<TeacherInfo, Long>, TeacherInfoRepositoryCustom {
     List<TeacherInfo> findBySubject(String subject);
 
     boolean existsByCode(String code);

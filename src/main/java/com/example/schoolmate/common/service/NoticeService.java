@@ -5,11 +5,11 @@ import com.example.schoolmate.common.entity.SchoolNotice;
 import com.example.schoolmate.common.entity.user.User;
 
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.repository.SchoolNoticeRepository;
+import com.example.schoolmate.common.repository.notice.SchoolNoticeRepository;
 import com.example.schoolmate.board.dto.PageRequestDTO;
 import com.example.schoolmate.board.dto.PageResultDTO;
 import com.example.schoolmate.board.entity.Notice;
-import com.example.schoolmate.board.repository.NoticeRepository;
+import com.example.schoolmate.common.repository.notice.NoticeRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -86,7 +86,7 @@ public class NoticeService {
     }
 
     // cheol 구현 기능
-    public Long insert(com.example.schoolmate.board.dto.NoticeDTO dto) {
+    public Long insert(NoticeDTO.BoardNotice dto) {
         log.info("공지 등록: {}", dto);
 
         User writer = userRepository.findById(dto.getWriterId())
@@ -108,7 +108,7 @@ public class NoticeService {
     }
 
     // cheol 구현 기능
-    public void update(com.example.schoolmate.board.dto.NoticeDTO dto) {
+    public void update(NoticeDTO.BoardNotice dto) {
         log.info("공지 수정: {}", dto);
 
         Notice notice = noticeRepository.findById(dto.getNno())
@@ -120,7 +120,7 @@ public class NoticeService {
 
     // cheol 구현 기능
     @Transactional(readOnly = true)
-    public com.example.schoolmate.board.dto.NoticeDTO getRow(Long nno) {
+    public NoticeDTO.BoardNotice getRow(Long nno) {
         log.info("공지 조회: {}", nno);
 
         Object result = noticeRepository.getNoticeByNno(nno);
@@ -131,7 +131,7 @@ public class NoticeService {
 
     // cheol 구현 기능
     @Transactional(readOnly = true)
-    public PageResultDTO<com.example.schoolmate.board.dto.NoticeDTO> getList(PageRequestDTO requestDTO) {
+    public PageResultDTO<NoticeDTO.BoardNotice> getList(PageRequestDTO requestDTO) {
         log.info("공지 목록 조회: {}", requestDTO);
 
         Pageable pageable = PageRequest.of(
@@ -149,13 +149,13 @@ public class NoticeService {
             result = noticeRepository.getListWithWriter(pageable);
         }
 
-        Function<Object[], com.example.schoolmate.board.dto.NoticeDTO> f = en -> entityToDto((Notice) en[0],
+        Function<Object[], NoticeDTO.BoardNotice> f = en -> entityToDto((Notice) en[0],
                 (User) en[1]);
 
-        List<com.example.schoolmate.board.dto.NoticeDTO> dtoList = result.stream().map(f).collect(Collectors.toList());
+        List<NoticeDTO.BoardNotice> dtoList = result.stream().map(f).collect(Collectors.toList());
         long totalCount = result.getTotalElements();
 
-        return PageResultDTO.<com.example.schoolmate.board.dto.NoticeDTO>withAll()
+        return PageResultDTO.<NoticeDTO.BoardNotice>withAll()
                 .dtoList(dtoList)
                 .pageRequestDTO(requestDTO)
                 .totalCount(totalCount)
@@ -164,7 +164,7 @@ public class NoticeService {
 
     // cheol 구현 기능
     @Transactional(readOnly = true)
-    public List<com.example.schoolmate.board.dto.NoticeDTO> getRecentList(int size) {
+    public List<NoticeDTO.BoardNotice> getRecentList(int size) {
         log.info("최근 공지 {} 건 조회", size);
 
         Pageable pageable = PageRequest.of(0, size, Sort.by("nno").descending());
@@ -176,8 +176,8 @@ public class NoticeService {
     }
 
     // cheol 구현 기능
-    private com.example.schoolmate.board.dto.NoticeDTO entityToDto(Notice notice, User writer) {
-        return com.example.schoolmate.board.dto.NoticeDTO.builder()
+    private NoticeDTO.BoardNotice entityToDto(Notice notice, User writer) {
+        return NoticeDTO.BoardNotice.builder()
                 .nno(notice.getNno())
                 .title(notice.getTitle())
                 .content(notice.getContent())

@@ -10,7 +10,7 @@ import com.example.schoolmate.cheol.dto.GradeDTO;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.repository.GradeRepository;
 import com.example.schoolmate.common.entity.user.constant.Year;
-import com.example.schoolmate.common.repository.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

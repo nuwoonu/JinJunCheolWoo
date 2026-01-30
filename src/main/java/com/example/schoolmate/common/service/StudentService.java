@@ -30,11 +30,11 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.FamilyRelationRepository;
-import com.example.schoolmate.common.repository.ClassroomRepository;
-import com.example.schoolmate.common.repository.ParentInfoRepository;
-import com.example.schoolmate.common.repository.StudentInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
+import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -66,7 +66,7 @@ public class StudentService {
     public Page<StudentDTO.SummaryResponse> getStudentSummaryList(StudentDTO.StudentSearchCondition cond,
             Pageable pageable) {
         // QueryHandler에서 연도/학년/반 필터를 제거한 searchStudents를 호출
-        return userRepository.searchStudents(cond, pageable)
+        return studentInfoRepository.search(cond, pageable)
                 .map(StudentDTO.SummaryResponse::new); // DTO 내부에서 '가장 최근 소속'을 추출하도록 설계
     }
 
@@ -95,7 +95,7 @@ public class StudentService {
     @Transactional(readOnly = true)
     public StudentDTO.DetailResponse getStudentDetailByCode(String code) {
         // 1. 학번으로 유저 조회 (학생 권한 확인 포함)
-        User user = userRepository.findDetailByCode(code)
+        User user = studentInfoRepository.findDetailByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("해당 학번의 학생을 찾을 수 없습니다: " + code));
 
         // 2. DTO 변환 후 반환
@@ -135,7 +135,8 @@ public class StudentService {
             classroomRepository.findById(request.getClassroomId())
                     .ifPresent(classroom -> {
                         // 자동 번호 생성 (마지막 번호 + 1)
-                        int nextNum = userRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
+                        int nextNum = studentInfoRepository.findMaxAttendanceNum(classroom.getYear(),
+                                classroom.getGrade(),
                                 classroom.getClassNum()) + 1;
 
                         StudentAssignment assignment = new StudentAssignment();
@@ -226,7 +227,7 @@ public class StudentService {
             // 학급이 변경된 경우에만 처리 (같은 반이면 아무것도 안 함)
             if (assignment.getClassroom() == null || !assignment.getClassroom().getCid().equals(classroom.getCid())) {
                 // 1. 새 학급에서의 번호 먼저 계산
-                int nextNum = userRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
+                int nextNum = studentInfoRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
                         classroom.getClassNum()) + 1;
 
                 // 2. 학급 및 번호 변경
@@ -255,7 +256,7 @@ public class StudentService {
                 if (userRepository.existsByEmail(csvReq.getEmail())) {
                     throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
                 }
-                if (userRepository.existsStudentByCode(csvReq.getCode())) {
+                if (studentInfoRepository.existsByCode(csvReq.getCode())) {
                     throw new IllegalArgumentException("이미 존재하는 학번입니다: " + csvReq.getCode());
                 }
 
@@ -302,7 +303,7 @@ public class StudentService {
      * 보호자 추가 (기존 학생)
      */
     public void addGuardian(String code, Long parentId, FamilyRelationship relationship) {
-        User user = userRepository.findDetailByCode(code)
+        User user = studentInfoRepository.findDetailByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
 
@@ -335,7 +336,7 @@ public class StudentService {
      * 보호자 관계 수정
      */
     public void updateGuardianRelationship(String code, Long parentId, FamilyRelationship relationship) {
-        User user = userRepository.findDetailByCode(code)
+        User user = studentInfoRepository.findDetailByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
 

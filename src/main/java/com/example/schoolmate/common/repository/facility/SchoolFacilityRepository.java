@@ -1,4 +1,4 @@
-package com.example.schoolmate.common.repository;
+package com.example.schoolmate.common.repository.facility;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

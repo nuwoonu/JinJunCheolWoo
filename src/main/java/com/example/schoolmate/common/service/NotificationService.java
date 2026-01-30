@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.schoolmate.common.dto.NotificationDTO;
 import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.repository.NotificationRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.notice.NotificationRepository;
 
 import lombok.RequiredArgsConstructor;
 

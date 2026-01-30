@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.schoolmate.common.entity.SystemSetting;
-import com.example.schoolmate.common.repository.SystemSettingRepository;
+import com.example.schoolmate.common.repository.setting.SystemSettingRepository;
 
 import lombok.RequiredArgsConstructor;
 

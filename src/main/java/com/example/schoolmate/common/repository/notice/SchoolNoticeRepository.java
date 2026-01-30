@@ -1,4 +1,4 @@
-package com.example.schoolmate.common.repository;
+package com.example.schoolmate.common.repository.notice;
 
 import com.example.schoolmate.common.entity.SchoolNotice;
 import org.springframework.data.domain.Page;

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.schoolmate.common.dto.AssetDTO;
 import com.example.schoolmate.common.entity.SchoolAsset;
 import com.example.schoolmate.common.entity.constant.AssetStatus;
-import com.example.schoolmate.common.repository.SchoolAssetRepository;
+import com.example.schoolmate.common.repository.facility.SchoolAssetRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -15,10 +15,10 @@ import com.example.schoolmate.board.repository.BoardRepository;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.ClassroomRepository;
-import com.example.schoolmate.common.repository.StudentInfoRepository;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.common.entity.Classroom;
 

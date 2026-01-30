@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.schoolmate.common.dto.FacilityDTO;
 import com.example.schoolmate.common.entity.SchoolFacility;
-import com.example.schoolmate.common.repository.SchoolFacilityRepository;
+import com.example.schoolmate.common.repository.facility.SchoolFacilityRepository;
 
 import lombok.RequiredArgsConstructor;
 

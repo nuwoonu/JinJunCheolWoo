@@ -25,9 +25,11 @@ import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.repository.ClassroomHistoryRepository;
-import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.classroom.ClassroomHistoryRepository;
+import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -47,13 +49,15 @@ public class ClassService {
 
     private final ClassroomRepository classroomRepository;
     private final UserRepository userRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
     private final ClassroomHistoryRepository classroomHistoryRepository;
 
     @Transactional(readOnly = true)
     public Page<ClassDTO.DetailResponse> getClassList(ClassDTO.SearchCondition cond, Pageable pageable) {
         return classroomRepository.search(cond, pageable)
                 .map(c -> {
-                    long count = userRepository.countByClassroom(c.getYear(), c.getGrade(), c.getClassNum());
+                    long count = studentInfoRepository.countByClassroom(c.getYear(), c.getGrade(), c.getClassNum());
                     return ClassDTO.DetailResponse.from(c, (int) count);
                 });
     }
@@ -66,7 +70,7 @@ public class ClassService {
         // 해당 학급(학년도, 학년, 반)에 배정된 학생 조회
         // StudentAssignmentRepository 등을 통해 조회하거나 UserRepositoryCustom 사용
         // 여기서는 로직 설명을 위해 의사 코드로 작성 (실제 구현 시 Repository 메서드 필요)
-        List<User> students = userRepository.findStudentsByAssignment(
+        List<User> students = studentInfoRepository.findStudentsByAssignment(
                 classroom.getYear(), classroom.getGrade(), classroom.getClassNum());
 
         ClassDTO.DetailResponse response = ClassDTO.DetailResponse.from(classroom, students.size());
@@ -102,7 +106,7 @@ public class ClassService {
         cond.setStatus("EMPLOYED");
 
         try {
-            List<ClassDTO.TeacherSelectResponse> list = userRepository.searchTeachers(cond, Pageable.unpaged())
+            List<ClassDTO.TeacherSelectResponse> list = teacherInfoRepository.search(cond, Pageable.unpaged())
                     .stream().map(ClassDTO.TeacherSelectResponse::from)
                     .collect(Collectors.toList());
             log.info("[AdminClassService] 교사 목록 변환 완료. 리스트 크기: {}", list.size());
@@ -118,7 +122,7 @@ public class ClassService {
         // 1. 전체 재직 교사 조회
         TeacherDTO.TeacherSearchCondition cond = new TeacherDTO.TeacherSearchCondition();
         cond.setStatus("EMPLOYED");
-        List<User> allTeachers = userRepository.searchTeachers(cond, Pageable.unpaged()).getContent();
+        List<User> allTeachers = teacherInfoRepository.search(cond, Pageable.unpaged()).getContent();
 
         // 2. 해당 학년도에 이미 배정된 교사 조회
         ClassDTO.SearchCondition classCond = new ClassDTO.SearchCondition();
@@ -217,7 +221,7 @@ public class ClassService {
         List<User> users = userRepository.findAllById(studentUids);
 
         // 현재 학급의 가장 마지막 번호 조회 (자동 번호 부여용)
-        int maxNum = userRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
+        int maxNum = studentInfoRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
                 classroom.getClassNum());
         int nextNum = maxNum + 1;
 
@@ -274,7 +278,7 @@ public class ClassService {
         Classroom classroom = classroomRepository.findById(cid)
                 .orElseThrow(() -> new IllegalArgumentException("학급 정보를 찾을 수 없습니다."));
 
-        List<User> randomStudents = userRepository.findUnassignedStudents(classroom.getYear(), count);
+        List<User> randomStudents = studentInfoRepository.findUnassignedStudents(classroom.getYear(), count);
         if (randomStudents.isEmpty()) {
             return 0;
         }
@@ -340,7 +344,7 @@ public class ClassService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 학급에 학생이 배정되어 있지 않습니다."));
 
         // 1. 새 학급에서의 번호 먼저 계산 (이동 전 상태에서 조회해야 정확함)
-        int nextNum = userRepository.findMaxAttendanceNum(targetClassroom.getYear(), targetClassroom.getGrade(),
+        int nextNum = studentInfoRepository.findMaxAttendanceNum(targetClassroom.getYear(), targetClassroom.getGrade(),
                 targetClassroom.getClassNum()) + 1;
 
         // 2. 학급 및 번호 변경
@@ -390,7 +394,7 @@ public class ClassService {
 
                 // 2. 담임 교사 배정
                 if (req.getTeacherCode() != null && !req.getTeacherCode().isBlank()) {
-                    User teacher = userRepository.findTeacherByCode(req.getTeacherCode())
+                    User teacher = teacherInfoRepository.findTeacherByCode(req.getTeacherCode())
                             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 교사 사번: " + req.getTeacherCode()));
                     classroom.setTeacher(teacher);
                 }
@@ -403,7 +407,7 @@ public class ClassService {
                         if (trimmedCode.isEmpty())
                             continue;
 
-                        User student = userRepository.findDetailByCode(trimmedCode).orElse(null);
+                        User student = studentInfoRepository.findDetailByCode(trimmedCode).orElse(null);
                         if (student != null) {
                             addStudents(classroom.getCid(), List.of(student.getUid()));
                         } else {
@@ -471,7 +475,7 @@ public class ClassService {
         }
 
         // 2. 학생 배정 확인
-        long studentCount = userRepository.countByClassroom(classroom.getYear(), classroom.getGrade(),
+        long studentCount = studentInfoRepository.countByClassroom(classroom.getYear(), classroom.getGrade(),
                 classroom.getClassNum());
         if (studentCount > 0) {
             throw new IllegalStateException("학생이 배정된 학급은 삭제할 수 없습니다. 먼저 학생들을 제외하세요.");
@@ -493,7 +497,7 @@ public class ClassService {
     public List<ClassDTO.TeacherSelectResponse> getTeacherList() {
         TeacherDTO.TeacherSearchCondition cond = new TeacherDTO.TeacherSearchCondition();
         cond.setStatus("EMPLOYED");
-        return userRepository.searchTeachers(cond, Pageable.unpaged()).stream()
+        return teacherInfoRepository.search(cond, Pageable.unpaged()).stream()
                 .map(ClassDTO.TeacherSelectResponse::from)
                 .collect(Collectors.toList());
     }

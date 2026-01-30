@@ -34,11 +34,11 @@ import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.ClassroomRepository;
-import com.example.schoolmate.common.repository.NotificationRepository;
-import com.example.schoolmate.common.repository.StudentInfoRepository;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.common.repository.notice.NotificationRepository;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.woo.dto.teacherdto.TeacherResponseDTO;
@@ -64,7 +64,7 @@ public class TeacherService {
     private final SubjectRepository subjectRepository;
 
     public Page<TeacherDTO.DetailResponse> getTeacherList(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
-        Page<User> userPage = userRepository.searchTeachers(cond, pageable);
+        Page<User> userPage = teacherInfoRepository.search(cond, pageable);
         return userPage.map(TeacherDTO.DetailResponse::new);
     }
 

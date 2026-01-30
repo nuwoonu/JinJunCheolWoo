@@ -22,9 +22,9 @@ import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.NotificationRepository;
-import com.example.schoolmate.common.repository.StaffInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
+import com.example.schoolmate.common.repository.notice.NotificationRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class StaffService {
 
     @Transactional(readOnly = true)
     public Page<StaffDTO.DetailResponse> getStaffList(StaffDTO.StaffSearchCondition cond, Pageable pageable) {
-        return userRepository.searchStaffs(cond, pageable).map(StaffDTO.DetailResponse::new);
+        return staffInfoRepository.search(cond, pageable).map(StaffDTO.DetailResponse::new);
     }
 
     @Transactional(readOnly = true)

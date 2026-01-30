@@ -1,11 +1,10 @@
-package com.example.schoolmate.common.repository.handler;
+package com.example.schoolmate.common.repository.classroom;
 
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.stereotype.Component;
 
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.Classroom;
@@ -18,12 +17,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
 @RequiredArgsConstructor
-public class ClassroomQueryHandler {
-
+public class ClassroomRepositoryImpl implements ClassroomRepositoryCustom {
     private final JPAQueryFactory query;
 
+    @Override
     public Page<Classroom> search(ClassDTO.SearchCondition cond, Pageable pageable) {
         QClassroom classroom = QClassroom.classroom;
         QUser teacher = QUser.user;

@@ -1,4 +1,4 @@
-package com.example.schoolmate.common.repository;
+package com.example.schoolmate.common.repository.info;
 
 import java.util.List;
 import java.util.Optional;

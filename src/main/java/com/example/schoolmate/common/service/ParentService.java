@@ -26,9 +26,10 @@ import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.NotificationRepository;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.repository.ParentInfoRepository;
+import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.notice.NotificationRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ import lombok.extern.log4j.Log4j2;
 public class ParentService {
 
     private final UserRepository userRepository;
+    private final StudentInfoRepository studentInfoRepository;
     private final ParentInfoRepository parentInfoRepository;
     private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
@@ -56,7 +58,7 @@ public class ParentService {
      * 학부모 목록 조회 (검색 포함)
      */
     public Page<ParentDTO.Summary> getParentList(ParentDTO.ParentSearchCondition cond, Pageable pageable) {
-        return userRepository.searchParents(cond, pageable)
+        return parentInfoRepository.search(cond, pageable)
                 .map(ParentDTO.Summary::new);
     }
 
@@ -173,7 +175,7 @@ public class ParentService {
         StudentDTO.StudentSearchCondition cond = new StudentDTO.StudentSearchCondition();
         cond.setKeyword(keyword);
         cond.setType("name"); // 이름으로 검색
-        return userRepository.searchStudents(cond, Pageable.ofSize(20)).map(StudentDTO.SummaryResponse::new)
+        return studentInfoRepository.search(cond, Pageable.ofSize(20)).map(StudentDTO.SummaryResponse::new)
                 .getContent();
     }
 

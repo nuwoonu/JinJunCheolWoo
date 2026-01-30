@@ -8,7 +8,10 @@ import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
-import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
+import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,14 +26,17 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class DashboardService {
 
-    private final UserRepository userRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
+    private final ParentInfoRepository parentInfoRepository;
 
     public DashboardDTO getDashboardStats() {
         return DashboardDTO.builder()
-                .totalStudents(userRepository.countStudentsByStatus(StudentStatus.ENROLLED))
-                .totalTeachers(userRepository.countTeachersByStatus(TeacherStatus.EMPLOYED))
-                .totalStaffs(userRepository.countStaffsByStatus(StaffStatus.EMPLOYED))
-                .pendingParents(userRepository.countParentsByStatus(ParentStatus.PENDING))
+                .totalStudents(studentInfoRepository.countByStatus(StudentStatus.ENROLLED))
+                .totalTeachers(teacherInfoRepository.countByStatus(TeacherStatus.EMPLOYED))
+                .totalStaffs(staffInfoRepository.countByStatus(StaffStatus.EMPLOYED))
+                .pendingParents(parentInfoRepository.countByStatus(ParentStatus.PENDING))
                 .pendingReservations(0) // 추후 시설 예약 기능 구현 시 연동
                 .build();
     }

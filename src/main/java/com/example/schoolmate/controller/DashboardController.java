@@ -9,7 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.example.schoolmate.board.dto.NoticeDTO;
+import com.example.schoolmate.common.dto.NoticeDTO;
 import com.example.schoolmate.board.dto.ParentBoardDTO;
 import com.example.schoolmate.common.service.NoticeService;
 import com.example.schoolmate.board.service.ParentBoardService;
@@ -20,8 +20,8 @@ import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
@@ -124,7 +124,7 @@ public class DashboardController {
         }
 
         // 공지사항 최근 5개
-        List<NoticeDTO> notices = noticeService.getRecentList(5);
+        List<NoticeDTO.BoardNotice> notices = noticeService.getRecentList(5);
         model.addAttribute("notices", notices);
 
         // 게시판 최근 5개

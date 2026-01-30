@@ -1,18 +1,17 @@
-package com.example.schoolmate.common.repository.handler;
+package com.example.schoolmate.common.repository.info.parent;
 
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.stereotype.Component;
 
 import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.QFamilyRelation;
 import com.example.schoolmate.common.entity.info.QParentInfo;
-import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -20,21 +19,19 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
 @RequiredArgsConstructor
-public class ParentQueryHandler {
+public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
 
     private final JPAQueryFactory query;
 
+    @Override
     public Page<ParentInfo> search(ParentDTO.ParentSearchCondition cond, Pageable pageable) {
         QParentInfo parent = QParentInfo.parentInfo;
         QUser user = QUser.user;
         QFamilyRelation relation = QFamilyRelation.familyRelation;
         QStudentInfo student = QStudentInfo.studentInfo;
-        QUser studentUser = new QUser("studentUser"); // 자녀의 User Alias
+        QUser studentUser = new QUser("studentUser");
 
-        // 1. 검색 조건에 맞는 Parent ID 조회 (페이징 적용)
-        // OneToMany 관계(자녀) 조인 시 데이터 뻥튀기 방지를 위해 ID만 먼저 조회
         JPAQuery<Long> idsQuery = query
                 .select(parent.id)
                 .from(parent)
@@ -53,7 +50,6 @@ public class ParentQueryHandler {
 
         List<Long> ids = idsQuery.fetch();
 
-        // 2. 조회된 ID로 Entity Fetch Join (N+1 방지)
         List<ParentInfo> content = query
                 .selectFrom(parent)
                 .distinct()
@@ -65,7 +61,6 @@ public class ParentQueryHandler {
                 .orderBy(parent.id.desc())
                 .fetch();
 
-        // 3. Count Query
         JPAQuery<Long> countQuery = query
                 .select(parent.countDistinct())
                 .from(parent)
@@ -99,6 +94,7 @@ public class ParentQueryHandler {
         };
     }
 
+    @Override
     public long countByStatus(ParentStatus status) {
         QParentInfo parent = QParentInfo.parentInfo;
         Long count = query.select(parent.count())
