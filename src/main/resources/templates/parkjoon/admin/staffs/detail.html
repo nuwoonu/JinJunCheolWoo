@@ -9,7 +9,7 @@
       <div class="container-fluid py-4">
         <div class="mb-4">
           <a
-            th:href="@{/parkjoon/admin/staffs}"
+            th:href="@{${urls.ADMIN_STAFFS}}"
             class="btn btn-outline-secondary btn-sm"
           >
             <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
@@ -90,7 +90,7 @@
                 <!-- 탭 1: 기본 정보 수정 -->
                 <div class="tab-pane fade show active" id="basic">
                   <form
-                    th:action="@{/parkjoon/admin/staffs/update}"
+                    th:action="@{${urls.ADMIN_STAFFS} + '/update'}"
                     method="post"
                   >
                     <input type="hidden" name="uid" th:value="${staff.uid}" />
@@ -288,7 +288,7 @@
                         <span th:text="${role.description}">교직원</span>
                         <form
                           th:if="${role.name() != 'STAFF'}"
-                          th:action="@{/parkjoon/admin/staffs/{uid}/remove-role(uid=${staff.uid})}"
+                          th:action="@{${urls.ADMIN_STAFFS} + '/{uid}/remove-role'(uid=${staff.uid})}"
                           method="post"
                           class="ms-2 m-0"
                         >
@@ -312,7 +312,7 @@
 
                   <h6 class="fw-bold mb-3">권한 추가</h6>
                   <form
-                    th:action="@{/parkjoon/admin/staffs/{uid}/add-role(uid=${staff.uid})}"
+                    th:action="@{${urls.ADMIN_STAFFS} + '/{uid}/add-role'(uid=${staff.uid})}"
                     method="post"
                     class="row g-2 align-items-center"
                   >

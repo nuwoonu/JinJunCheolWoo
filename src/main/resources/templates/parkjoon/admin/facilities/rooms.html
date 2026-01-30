@@ -55,7 +55,7 @@
                       수정
                     </button>
                     <form
-                      th:action="@{/parkjoon/admin/facilities/rooms/delete}"
+                      th:action="@{${urls.ADMIN_FACILITIES} + '/rooms/delete'}"
                       method="post"
                       class="d-inline"
                       onsubmit="return confirm('정말 삭제하시겠습니까?');"

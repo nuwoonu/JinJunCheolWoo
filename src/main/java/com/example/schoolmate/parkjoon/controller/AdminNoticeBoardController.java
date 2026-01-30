@@ -3,11 +3,12 @@ package com.example.schoolmate.parkjoon.controller;
 import java.security.Principal;
 
 import com.example.schoolmate.common.dto.NoticeDTO;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.parkjoon.service.AdminNoticeService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/parkjoon/admin/notices")
+@RequestMapping(SchoolmateUrls.ADMIN_NOTICES)
 @RequiredArgsConstructor
 public class AdminNoticeBoardController {
 
@@ -32,13 +33,13 @@ public class AdminNoticeBoardController {
         Page<NoticeDTO.Response> notices = adminNoticeService.getNoticeList(keyword, pageable);
         model.addAttribute("notices", notices);
         model.addAttribute("keyword", keyword);
-        return "parkjoon/admin/notices/main";
+        return SchoolmateUrls.ADMIN_NOTICES + "/main";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("notice", new NoticeDTO.Request());
-        return "parkjoon/admin/notices/form";
+        return SchoolmateUrls.ADMIN_NOTICES + "/form";
     }
 
     @PostMapping("/create")
@@ -47,7 +48,7 @@ public class AdminNoticeBoardController {
             RedirectAttributes ra) {
         adminNoticeService.createNotice(request, principal.getName());
         ra.addFlashAttribute("successMessage", "공지사항이 등록되었습니다.");
-        return "redirect:/parkjoon/admin/notices";
+        return "redirect:" + SchoolmateUrls.ADMIN_NOTICES;
     }
 
     @GetMapping("/{id}")
@@ -55,14 +56,14 @@ public class AdminNoticeBoardController {
         adminNoticeService.increaseViewCount(id);
         NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
-        return "parkjoon/admin/notices/detail";
+        return SchoolmateUrls.ADMIN_NOTICES + "/detail";
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
-        return "parkjoon/admin/notices/form";
+        return SchoolmateUrls.ADMIN_NOTICES + "/form";
     }
 
     @PostMapping("/{id}/edit")
@@ -70,13 +71,13 @@ public class AdminNoticeBoardController {
         request.setId(id);
         adminNoticeService.updateNotice(request);
         ra.addFlashAttribute("successMessage", "공지사항이 수정되었습니다.");
-        return "redirect:/parkjoon/admin/notices/" + id;
+        return "redirect:" + SchoolmateUrls.ADMIN_NOTICES + "/" + id;
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         adminNoticeService.deleteNotice(id);
         ra.addFlashAttribute("successMessage", "공지사항이 삭제되었습니다.");
-        return "redirect:/parkjoon/admin/notices";
+        return "redirect:" + SchoolmateUrls.ADMIN_NOTICES;
     }
 }

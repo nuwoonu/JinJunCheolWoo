@@ -39,7 +39,7 @@ function searchStudents() {
 
   // 기존 API 재사용 (학부모 관리에서 쓰던 것과 동일)
   fetch(
-    `/parkjoon/admin/parents/search-student?keyword=${encodeURIComponent(keyword)}`,
+    `${ADMIN_URLS.ADMIN_PARENTS}/search-student?keyword=${encodeURIComponent(keyword)}`,
   )
     .then((res) => res.json())
     .then((data) => {
@@ -111,7 +111,7 @@ function confirmAddStudents() {
   formData.append("studentUids", uids);
   formData.append("randomCount", randomCount);
 
-  fetch(`/parkjoon/admin/classes/${cid}/add-students`, {
+  fetch(`${ADMIN_URLS.ADMIN_CLASSES}/${cid}/add-students`, {
     method: "POST",
     headers: { [header]: token },
     body: formData,
@@ -132,7 +132,7 @@ function removeStudent(uid) {
   const token = document.querySelector('meta[name="_csrf"]')?.content;
   const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-  fetch(`/parkjoon/admin/classes/${cid}/remove-student?studentUid=${uid}`, {
+  fetch(`${ADMIN_URLS.ADMIN_CLASSES}/${cid}/remove-student?studentUid=${uid}`, {
     method: "POST",
     headers: { [header]: token },
   }).then((res) => (res.ok ? location.reload() : alert("제외 실패")));
@@ -165,7 +165,7 @@ function removeSelectedStudents() {
   const formData = new FormData();
   formData.append("studentUids", uids);
 
-  fetch(`/parkjoon/admin/classes/${cid}/remove-students`, {
+  fetch(`${ADMIN_URLS.ADMIN_CLASSES}/${cid}/remove-students`, {
     method: "POST",
     headers: { [header]: token },
     body: formData,
@@ -208,7 +208,7 @@ function addStudentToCreateUI(student) {
  */
 function updateStatusBulk(statusName, statusLabel) {
   performBulkStatusUpdate(
-    "/parkjoon/admin/classes/bulk-status",
+    `${ADMIN_URLS.ADMIN_CLASSES}/bulk-status`,
     statusName,
     statusLabel,
     ".class-checkbox",
@@ -221,7 +221,7 @@ function updateStatusBulk(statusName, statusLabel) {
  */
 function uploadClassCsv() {
   uploadCsv(
-    "/parkjoon/admin/classes/import-csv",
+    `${ADMIN_URLS.ADMIN_CLASSES}/import-csv`,
     "CSV 파일을 통해 학급을 일괄 생성하시겠습니까?\n(형식: 학년도,학년,반,담임교사사번,학생학번목록)",
     "학급 일괄 생성이 완료되었습니다.",
   );
@@ -250,7 +250,7 @@ function openTransferModal(studentUid, studentName) {
   const select = document.getElementById("targetClassSelect");
   select.innerHTML = '<option value="">로딩 중...</option>';
 
-  fetch(`/parkjoon/admin/students/api/classrooms?year=${year}`)
+  fetch(`${ADMIN_URLS.ADMIN_STUDENTS}/api/classrooms?year=${year}`)
     .then((res) => res.json())
     .then((data) => {
       select.innerHTML = '<option value="">선택하세요</option>';
@@ -279,7 +279,7 @@ function confirmTransfer() {
   const token = document.querySelector('meta[name="_csrf"]')?.content;
   const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-  fetch(`/parkjoon/admin/classes/${currentCid}/transfer-student`, {
+  fetch(`${ADMIN_URLS.ADMIN_CLASSES}/${currentCid}/transfer-student`, {
     method: "POST",
     headers: {
       [header]: token,

@@ -23,9 +23,10 @@ import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.parkjoon.service.AdminParentService;
-import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.parkjoon.service.AdminStudentService;
+import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,7 +38,7 @@ import lombok.RequiredArgsConstructor;
  * - 신규 학생 등록(개별/CSV) 및 학적 이력(Assignment) 관리
  */
 @Controller
-@RequestMapping("/parkjoon/admin/students")
+@RequestMapping(SchoolmateUrls.ADMIN_STUDENTS)
 @RequiredArgsConstructor
 public class AdminStudentController {
 
@@ -60,7 +61,7 @@ public class AdminStudentController {
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", StudentStatus.values());
 
-        return "parkjoon/admin/students/main";
+        return SchoolmateUrls.ADMIN_STUDENTS + "/main";
     }
 
     // 2. 등록 페이지 이동
@@ -74,7 +75,7 @@ public class AdminStudentController {
         model.addAttribute("currentYear", currentYear);
         model.addAttribute("relationships", FamilyRelationship.values());
         model.addAttribute("classrooms", adminStudentService.getOpenClassrooms(currentYear));
-        return "parkjoon/admin/students/create";
+        return SchoolmateUrls.ADMIN_STUDENTS + "/create";
     }
 
     // 3. 상세 페이지 이동
@@ -87,11 +88,11 @@ public class AdminStudentController {
             model.addAttribute("student", student);
             model.addAttribute("relationships", FamilyRelationship.values());
             model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
-            return "parkjoon/admin/students/detail";
+            return SchoolmateUrls.ADMIN_STUDENTS + "/detail";
         } catch (IllegalArgumentException e) {
             // 존재하지 않는 학번일 경우 메시지를 담아 리다이렉트
             redirectAttributes.addFlashAttribute("errorMessage", "해당 학번의 학생이 존재하지 않습니다.");
-            return "redirect:/parkjoon/admin/students";
+            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS;
         }
     }
 
@@ -103,11 +104,11 @@ public class AdminStudentController {
             String code = adminStudentService.createStudent(request);
 
             // 상세 페이지로 이동
-            return "redirect:/parkjoon/admin/students/" + code;
+            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + code;
         } catch (Exception e) {
             // 중복 학번 등 예외 발생 시 에러 메시지와 함께 작성 폼으로 유지
             redirectAttributes.addFlashAttribute("errorMessage", "등록 중 오류가 발생했습니다: " + e.getMessage());
-            return "redirect:/parkjoon/admin/students/create";
+            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/create";
         }
     }
 
@@ -118,7 +119,7 @@ public class AdminStudentController {
 
         // 수정 후 다시 해당 학생의 상세 페이지로 이동 (학번 기준)
         redirectAttributes.addFlashAttribute("successMessage", "기본 정보가 수정되었습니다.");
-        return "redirect:/parkjoon/admin/students/" + request.getCode();
+        return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + request.getCode();
     }
 
     // 학적 이력 수정
@@ -127,11 +128,11 @@ public class AdminStudentController {
         try {
             String code = adminStudentService.updateAssignment(request);
             redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 수정되었습니다.");
-            return "redirect:/parkjoon/admin/students/" + code + "#history";
+            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + code + "#history";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "수정 실패: " + e.getMessage());
             StudentDTO.DetailResponse student = adminStudentService.getStudentDetail(request.getUid());
-            return "redirect:/parkjoon/admin/students/" + student.getCode() + "#history";
+            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + student.getCode() + "#history";
         }
     }
 
@@ -140,7 +141,7 @@ public class AdminStudentController {
             @RequestParam("schoolYear") int schoolYear, RedirectAttributes ra) {
         String code = adminStudentService.deleteAssignment(uid, schoolYear);
         ra.addFlashAttribute("successMessage", schoolYear + "학년도 이력이 삭제되었습니다.");
-        return "redirect:/parkjoon/admin/students/" + code + "#history";
+        return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + code + "#history";
     }
 
     @PostMapping("/import-csv")

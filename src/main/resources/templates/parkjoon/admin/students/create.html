@@ -12,7 +12,7 @@
   >
     <div class="d-flex align-items-center mb-4">
       <a
-        th:href="@{/parkjoon/admin/students}"
+        th:href="@{${urls.ADMIN_STUDENTS}}"
         class="btn btn-link text-dark p-0 me-3"
         ><i class="bi bi-arrow-left fs-3"></i
       ></a>
@@ -20,7 +20,7 @@
     </div>
 
     <form
-      th:action="@{/parkjoon/admin/students/create}"
+      th:action="@{${urls.ADMIN_STUDENTS} + '/create'}"
       method="post"
       class="card shadow-sm"
     >

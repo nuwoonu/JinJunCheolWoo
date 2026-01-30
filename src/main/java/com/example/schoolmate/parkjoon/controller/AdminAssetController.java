@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.AssetDTO;
 import com.example.schoolmate.common.entity.constant.AssetStatus;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.parkjoon.service.AdminAssetService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
  * 노트북, 태블릿 등 학교 비품의 재고와 상태를 관리합니다.
  */
 @Controller
-@RequestMapping("/parkjoon/admin/facilities/assets")
+@RequestMapping(SchoolmateUrls.ADMIN_ASSETS)
 @RequiredArgsConstructor
 public class AdminAssetController {
 
@@ -37,7 +38,7 @@ public class AdminAssetController {
         model.addAttribute("summaries", adminAssetService.getAssetSummaries());
         model.addAttribute("statuses", AssetStatus.values());
         model.addAttribute("keyword", keyword);
-        return "parkjoon/admin/facilities/assets";
+        return SchoolmateUrls.ADMIN_ASSETS;
     }
 
     @PostMapping("/create")
@@ -48,20 +49,20 @@ public class AdminAssetController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "등록 실패: " + e.getMessage());
         }
-        return "redirect:/parkjoon/admin/facilities/assets";
+        return "redirect:/" + SchoolmateUrls.ADMIN_ASSETS;
     }
 
     @PostMapping("/update")
     public String update(AssetDTO.Request request, RedirectAttributes ra) {
         adminAssetService.updateAsset(request);
         ra.addFlashAttribute("successMessage", "기자재 정보가 수정되었습니다.");
-        return "redirect:/parkjoon/admin/facilities/assets";
+        return "redirect:/" + SchoolmateUrls.ADMIN_ASSETS;
     }
 
     @PostMapping("/delete")
     public String delete(@RequestParam("id") Long id, RedirectAttributes ra) {
         adminAssetService.deleteAsset(id);
         ra.addFlashAttribute("successMessage", "기자재가 삭제되었습니다.");
-        return "redirect:/parkjoon/admin/facilities/assets";
+        return "redirect:/" + SchoolmateUrls.ADMIN_ASSETS;
     }
 }

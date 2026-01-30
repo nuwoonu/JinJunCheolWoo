@@ -13,7 +13,7 @@
       >
         <div class="mb-4">
           <a
-            th:href="@{/parkjoon/admin/classes}"
+            th:href="@{${urls.ADMIN_CLASSES}}"
             class="btn btn-outline-secondary btn-sm"
           >
             <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
@@ -79,7 +79,7 @@
                     <i class="bi bi-pencil-square me-1"></i> 학급 정보 수정
                   </button>
                   <form
-                    th:action="@{/parkjoon/admin/classes/delete}"
+                    th:action="@{${urls.ADMIN_CLASSES} + '/delete'}"
                     method="post"
                     onsubmit="
                       return confirm(
@@ -150,7 +150,7 @@
                       </button>
                       <button
                         class="btn btn-sm btn-success"
-                        th:onclick="|location.href='@{/parkjoon/admin/classes/{cid}/roster-csv(cid=${classroom.cid})}'|"
+                        th:onclick="|location.href='@{${urls.ADMIN_CLASSES}/{cid}/roster-csv(cid=${classroom.cid})}'|"
                       >
                         <i class="bi bi-download"></i> 명렬표 다운로드
                       </button>
@@ -189,7 +189,7 @@
                           </td>
                           <td class="fw-bold">
                             <a
-                              th:href="@{/parkjoon/admin/students/{code}(code=${s.code})}"
+                              th:href="@{${urls.ADMIN_STUDENTS} + '/{code}'(code=${s.code})}"
                               class="text-decoration-none text-dark"
                               th:text="${s.name}"
                               >홍길동</a
@@ -205,7 +205,7 @@
                           </td>
                           <td class="text-end pe-4">
                             <a
-                              th:href="@{/parkjoon/admin/students/{code}(code=${s.code})}"
+                              th:href="@{${urls.ADMIN_STUDENTS} + '/{code}'(code=${s.code})}"
                               class="btn btn-sm btn-outline-primary me-1"
                               >상세</a
                             >
@@ -389,7 +389,7 @@
       <div class="modal fade" id="editClassModal" tabindex="-1">
         <div class="modal-dialog">
           <form
-            th:action="@{/parkjoon/admin/classes/update}"
+            th:action="@{${urls.ADMIN_CLASSES} + '/update'}"
             method="post"
             class="modal-content"
           >

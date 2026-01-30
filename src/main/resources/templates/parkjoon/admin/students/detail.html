@@ -13,7 +13,7 @@
       >
         <div class="mb-4">
           <a
-            th:href="@{/parkjoon/admin/students}"
+            th:href="@{${urls.ADMIN_STUDENTS}}"
             class="btn btn-outline-secondary btn-sm"
           >
             <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
@@ -92,7 +92,7 @@
               <div class="card-body tab-content p-4">
                 <div class="tab-pane fade show active" id="basic">
                   <form
-                    th:action="@{/parkjoon/admin/students/update-basic}"
+                    th:action="@{${urls.ADMIN_STUDENTS} + '/update-basic'}"
                     method="post"
                   >
                     <input type="hidden" name="uid" th:value="${student.uid}" />
@@ -308,7 +308,7 @@
       >
         <div class="modal-dialog">
           <form
-            th:action="@{/parkjoon/admin/students/assignment/update}"
+            th:action="@{${urls.ADMIN_STUDENTS} + '/assignment/update'}"
             method="post"
             class="modal-content"
           >
@@ -375,7 +375,7 @@
 
       <form
         id="deleteAssignmentForm"
-        th:action="@{/parkjoon/admin/students/delete-assignment}"
+        th:action="@{${urls.ADMIN_STUDENTS} + '/delete-assignment'}"
         method="post"
         style="display: none"
       >

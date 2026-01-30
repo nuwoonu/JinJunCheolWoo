@@ -93,7 +93,7 @@
           </button>
           <!-- 학부모 등록 버튼 -->
           <a
-            th:href="@{/parkjoon/admin/parents/create}"
+            th:href="@{${urls.ADMIN_PARENTS} + '/create'}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
           >
             <i class="bi bi-person-plus-fill"></i> 학부모 등록
@@ -111,7 +111,7 @@
             <div class="col-auto">
               <form
                 id="searchForm"
-                th:action="@{/parkjoon/admin/parents}"
+                th:action="@{${urls.ADMIN_PARENTS}}"
                 method="get"
                 class="input-group input-group-sm"
               >
@@ -171,7 +171,7 @@
                   <i class="bi bi-search"></i> 검색
                 </button>
                 <a
-                  th:href="@{/parkjoon/admin/parents}"
+                  th:href="@{${urls.ADMIN_PARENTS}}"
                   class="btn btn-outline-secondary"
                   >초기화</a
                 >
@@ -250,7 +250,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/parents/{id}(id=${p.id})}"
+                      th:href="@{${urls.ADMIN_PARENTS} + '/{id}'(id=${p.id})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
                       상세보기
@@ -280,7 +280,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/parents(page=${parents.number}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{${urls.ADMIN_PARENTS}(page=${parents.number}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -292,7 +292,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/parents(page=${i + 1}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{${urls.ADMIN_PARENTS}(page=${i + 1}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >1</a
                 >
               </li>
@@ -302,7 +302,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/parents(page=${parents.number + 2}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{${urls.ADMIN_PARENTS}(page=${parents.number + 2}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&raquo;</a
                 >
               </li>

@@ -4,6 +4,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.schoolmate.config.SchoolmateUrls;
+
 /**
  * 관리자 감사 로그 컨트롤러
  * 
@@ -11,16 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * - 사용자 접속 기록 및 데이터 변경 이력 조회 화면 연결
  */
 @Controller
-@RequestMapping("/parkjoon/admin/audit")
+@RequestMapping(SchoolmateUrls.ADMIN_AUDIT)
 public class AdminAuditController {
 
     @GetMapping("/access")
     public String accessLogs() {
-        return "parkjoon/admin/audit/access";
+        return SchoolmateUrls.ADMIN_AUDIT + "/access";
     }
 
     @GetMapping("/changes")
     public String changeLogs() {
-        return "parkjoon/admin/audit/changes";
+        return SchoolmateUrls.ADMIN_AUDIT + "/changes";
     }
 }

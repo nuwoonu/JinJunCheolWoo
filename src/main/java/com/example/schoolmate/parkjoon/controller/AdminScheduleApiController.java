@@ -18,12 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.common.dto.SchoolCalendarDTO;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.parkjoon.service.AdminScheduleService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/parkjoon/admin/api/schedule")
+@RequestMapping(SchoolmateUrls.ADMIN_API_SCHEDULE)
 @RequiredArgsConstructor
 public class AdminScheduleApiController {
 

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.FacilityDTO;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.parkjoon.service.AdminFacilityService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  * - 시설 및 자산 목록 조회 화면 연결
  */
 @Controller
-@RequestMapping("/parkjoon/admin/facilities")
+@RequestMapping(SchoolmateUrls.ADMIN_FACILITIES)
 @RequiredArgsConstructor
 public class AdminFacilityController {
 
@@ -29,27 +30,27 @@ public class AdminFacilityController {
     @GetMapping("/rooms")
     public String rooms(Model model) {
         model.addAttribute("facilities", adminFacilityService.getAllFacilities());
-        return "parkjoon/admin/facilities/rooms";
+        return SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
     }
 
     @PostMapping("/rooms/create")
     public String createRoom(FacilityDTO.Request request, RedirectAttributes ra) {
         adminFacilityService.createFacility(request);
         ra.addFlashAttribute("successMessage", "시설이 등록되었습니다.");
-        return "redirect:/parkjoon/admin/facilities/rooms";
+        return "redirect:" + SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
     }
 
     @PostMapping("/rooms/update")
     public String updateRoom(FacilityDTO.Request request, RedirectAttributes ra) {
         adminFacilityService.updateFacility(request);
         ra.addFlashAttribute("successMessage", "시설 정보가 수정되었습니다.");
-        return "redirect:/parkjoon/admin/facilities/rooms";
+        return "redirect:" + SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
     }
 
     @PostMapping("/rooms/delete")
     public String deleteRoom(@RequestParam("id") Long id, RedirectAttributes ra) {
         adminFacilityService.deleteFacility(id);
         ra.addFlashAttribute("successMessage", "시설이 삭제되었습니다.");
-        return "redirect:/parkjoon/admin/facilities/rooms";
+        return "redirect:" + SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
     }
 }

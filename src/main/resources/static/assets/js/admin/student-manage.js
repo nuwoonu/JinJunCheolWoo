@@ -61,7 +61,7 @@ function openUpdateAssignmentModal(year, classroomId) {
   const select = document.getElementById("updateClassroomId");
   select.innerHTML = '<option value="">로딩 중...</option>';
 
-  fetch(`/parkjoon/admin/students/api/classrooms?year=${year}`)
+  fetch(`${ADMIN_URLS.ADMIN_STUDENTS}/api/classrooms?year=${year}`)
     .then((res) => res.json())
     .then((data) => {
       select.innerHTML = "";
@@ -135,7 +135,7 @@ function uploadStudentCsv() {
   const overlay = document.getElementById("loadingOverlay");
   overlay?.classList.replace("d-none", "d-flex");
 
-  fetch("/parkjoon/admin/students/import-csv", {
+  fetch(`${ADMIN_URLS.ADMIN_STUDENTS}/import-csv`, {
     method: "POST",
     headers: { [header]: token },
     body: formData,
@@ -179,7 +179,7 @@ function searchParents() {
   }
 
   fetch(
-    `/parkjoon/admin/students/search-parent?keyword=${encodeURIComponent(keyword)}`,
+    `${ADMIN_URLS.ADMIN_STUDENTS}/search-parent?keyword=${encodeURIComponent(keyword)}`,
   )
     .then((res) => res.json())
     .then((data) => {
@@ -275,10 +275,10 @@ function confirmGuardianRelationDetail() {
   let successMsg = "";
 
   if (actionType === "ADD") {
-    url = `/parkjoon/admin/students/${studentCode}/add-guardian`;
+    url = `${ADMIN_URLS.ADMIN_STUDENTS}/${studentCode}/add-guardian`;
     successMsg = "보호자가 추가되었습니다.";
   } else {
-    url = `/parkjoon/admin/students/${studentCode}/update-guardian-relation`;
+    url = `${ADMIN_URLS.ADMIN_STUDENTS}/${studentCode}/update-guardian-relation`;
     successMsg = "관계가 수정되었습니다.";
   }
 
@@ -318,7 +318,7 @@ function removeGuardian(parentId) {
   const formData = new FormData();
   formData.append("parentId", parentId);
 
-  fetch(`/parkjoon/admin/students/${studentCode}/remove-guardian`, {
+  fetch(`${ADMIN_URLS.ADMIN_STUDENTS}/${studentCode}/remove-guardian`, {
     method: "POST",
     headers: { [header]: token },
     body: formData,

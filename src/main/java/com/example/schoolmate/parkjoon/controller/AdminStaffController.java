@@ -24,9 +24,10 @@ import com.example.schoolmate.common.dto.StaffDTO;
 import com.example.schoolmate.common.entity.info.constant.EmploymentType;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.parkjoon.service.AdminStaffService;
+import com.example.schoolmate.common.entity.user.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +39,7 @@ import lombok.RequiredArgsConstructor;
  * - 신규 교직원 등록 및 상세 정보 관리
  */
 @Controller
-@RequestMapping("/parkjoon/admin/staffs")
+@RequestMapping(SchoolmateUrls.ADMIN_STAFFS)
 @RequiredArgsConstructor
 public class AdminStaffController {
 
@@ -59,14 +60,14 @@ public class AdminStaffController {
         model.addAttribute("statuses", StaffStatus.values());
         model.addAttribute("employmentTypes", EmploymentType.values());
 
-        return "parkjoon/admin/staffs/main";
+        return SchoolmateUrls.ADMIN_STAFFS + "/main";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("departments", List.of("행정실", "시설관리실", "급식실", "전산실", "당직실", "기타"));
         model.addAttribute("employmentTypes", EmploymentType.values());
-        return "parkjoon/admin/staffs/create";
+        return SchoolmateUrls.ADMIN_STAFFS + "/create";
     }
 
     @PostMapping("/create")
@@ -74,10 +75,10 @@ public class AdminStaffController {
         try {
             adminStaffService.createStaff(request);
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-            return "redirect:/parkjoon/admin/staffs/" + user.getUid();
+            return "redirect:" + SchoolmateUrls.ADMIN_STAFFS + "/" + user.getUid();
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "등록 실패: " + e.getMessage());
-            return "redirect:/parkjoon/admin/staffs/create";
+            return "redirect:" + SchoolmateUrls.ADMIN_STAFFS + "/create";
         }
     }
 
@@ -89,7 +90,7 @@ public class AdminStaffController {
         model.addAttribute("employmentTypes", EmploymentType.values());
         model.addAttribute("departments", List.of("행정실", "시설관리실", "급식실", "전산실", "당직실", "기타"));
         model.addAttribute("allRoles", UserRole.values()); // 권한 목록 추가
-        return "parkjoon/admin/staffs/detail";
+        return SchoolmateUrls.ADMIN_STAFFS + "/detail";
     }
 
     @PostMapping("/update")
@@ -100,7 +101,7 @@ public class AdminStaffController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "수정 실패: " + e.getMessage());
         }
-        return "redirect:/parkjoon/admin/staffs/" + request.getUid();
+        return "redirect:" + SchoolmateUrls.ADMIN_STAFFS + "/" + request.getUid();
     }
 
     @PostMapping("/import-csv")
@@ -130,13 +131,13 @@ public class AdminStaffController {
     public String addRole(@PathVariable Long uid, @RequestParam("role") String role, RedirectAttributes ra) {
         adminStaffService.addRole(uid, role);
         ra.addFlashAttribute("successMessage", "권한이 추가되었습니다.");
-        return "redirect:/parkjoon/admin/staffs/" + uid + "#roles";
+        return "redirect:" + SchoolmateUrls.ADMIN_STAFFS + "/" + uid + "#roles";
     }
 
     @PostMapping("/{uid}/remove-role")
     public String removeRole(@PathVariable Long uid, @RequestParam("role") String role, RedirectAttributes ra) {
         adminStaffService.removeRole(uid, role);
         ra.addFlashAttribute("successMessage", "권한이 삭제되었습니다.");
-        return "redirect:/parkjoon/admin/staffs/" + uid + "#roles";
+        return "redirect:" + SchoolmateUrls.ADMIN_STAFFS + "/" + uid + "#roles";
     }
 }

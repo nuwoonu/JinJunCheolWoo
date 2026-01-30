@@ -21,7 +21,7 @@ function openEditModal(teacher) {
 // 2. 삭제 확인 창
 function confirmDelete(uid) {
   if (confirm("정말로 이 계정을 삭제하시겠습니까?")) {
-    location.href = `/parkjoon/admin/teachers/delete/${uid}`;
+    location.href = `${ADMIN_URLS.ADMIN_TEACHERS}/delete/${uid}`;
   }
 }
 
@@ -96,7 +96,7 @@ function uploadCsvFile() {
   overlay.classList.remove("d-none");
   overlay.classList.add("d-flex"); // Bootstrap d-flex로 중앙 정렬 유지
 
-  fetch("/parkjoon/admin/teachers/import-csv", {
+  fetch(`${ADMIN_URLS.ADMIN_TEACHERS}/import-csv`, {
     method: "POST",
     headers: {
       [header]: token,

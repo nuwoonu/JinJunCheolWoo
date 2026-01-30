@@ -10,7 +10,7 @@
 
       <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-5">
-          <form th:action="@{/parkjoon/admin/master/settings}" method="post">
+          <form th:action="@{${urls.ADMIN_MASTER} + '/settings'}" method="post">
             <div class="row mb-4">
               <div class="col-md-6">
                 <label class="form-label fw-bold">현재 학년도</label>

@@ -103,7 +103,7 @@
             <i class="bi bi-file-earmark-spreadsheet"></i> CSV 일괄 등록
           </button>
           <a
-            th:href="@{/parkjoon/admin/students/create}"
+            th:href="@{${urls.ADMIN_STUDENTS} + '/create'}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
           >
             <i class="bi bi-person-plus-fill"></i> 신규 학생 등록
@@ -120,7 +120,7 @@
             <div class="col-auto d-flex align-items-center gap-3">
               <form
                 id="searchForm"
-                th:action="@{/parkjoon/admin/students}"
+                th:action="@{${urls.ADMIN_STUDENTS}}"
                 method="get"
                 class="input-group input-group-sm"
               >
@@ -175,7 +175,7 @@
                   <i class="bi bi-search"></i> 검색
                 </button>
                 <a
-                  th:href="@{/parkjoon/admin/students}"
+                  th:href="@{${urls.ADMIN_STUDENTS}}"
                   class="btn btn-outline-secondary"
                   >초기화</a
                 >
@@ -218,7 +218,7 @@
                   </td>
                   <td>
                     <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.code})}"
+                      th:href="@{${urls.ADMIN_STUDENTS} + '/{id}'(id=${s.code})}"
                       class="fw-bold text-decoration-none text-dark"
                       th:text="${s.name}"
                       >학생명</a
@@ -240,7 +240,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/students/{id}(id=${s.code})}"
+                      th:href="@{${urls.ADMIN_STUDENTS} + '/{id}'(id=${s.code})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
                       상세보기
@@ -269,7 +269,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{${urls.ADMIN_STUDENTS}(page=${students.number}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -281,7 +281,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/students(page=${i + 1}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{${urls.ADMIN_STUDENTS}(page=${i + 1}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >1</a
                 >
               </li>
@@ -291,7 +291,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/students(page=${students.number + 2}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
+                  th:href="@{${urls.ADMIN_STUDENTS}(page=${students.number + 2}, status=${condition?.status}, type=${condition?.type}, keyword=${condition?.keyword})}"
                   >&raquo;</a
                 >
               </li>

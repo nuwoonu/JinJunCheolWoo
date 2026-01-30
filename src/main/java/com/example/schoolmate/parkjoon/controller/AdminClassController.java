@@ -1,7 +1,6 @@
 package com.example.schoolmate.parkjoon.controller;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -25,9 +24,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
-import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.service.SystemSettingService;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.parkjoon.service.AdminClassService;
+import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -40,13 +39,12 @@ import lombok.extern.log4j.Log4j2;
  * - 담임 교사 배정 및 학생 구성 관리, CSV 일괄 등록 지원
  */
 @Controller
-@RequestMapping("/parkjoon/admin/classes")
+@RequestMapping(SchoolmateUrls.ADMIN_CLASSES)
 @RequiredArgsConstructor
 @Log4j2
 public class AdminClassController {
 
     private final AdminClassService adminClassService;
-    private final UserRepository userRepository;
     private final SystemSettingService systemSettingService;
 
     @GetMapping
@@ -61,7 +59,7 @@ public class AdminClassController {
         model.addAttribute("classes", classes);
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", ClassroomStatus.values());
-        return "parkjoon/admin/classes/main";
+        return SchoolmateUrls.ADMIN_CLASSES + "/main";
     }
 
     @GetMapping("/create")
@@ -76,7 +74,7 @@ public class AdminClassController {
             log.info("교사 목록 조회 완료. 조회된 교사 수: {}", teachers != null ? teachers.size() : "null");
 
             model.addAttribute("teachers", teachers);
-            return "parkjoon/admin/classes/create";
+            return SchoolmateUrls.ADMIN_CLASSES;
         } catch (Exception e) {
             log.error("[AdminClassController] GET /create 처리 중 치명적 에러 발생", e);
             throw e; // 에러 페이지로 전파
@@ -92,11 +90,11 @@ public class AdminClassController {
         try {
             Long cid = adminClassService.createClass(request);
             log.info("학급 생성 성공. CID: {}", cid);
-            return "redirect:/parkjoon/admin/classes/" + cid;
+            return "redirect:" + SchoolmateUrls.ADMIN_CLASSES + "/" + cid;
         } catch (Exception e) {
             log.error("[AdminClassController] 학급 생성 중 에러 발생", e);
             ra.addFlashAttribute("errorMessage", "학급 생성 실패: " + e.getMessage());
-            return "redirect:/parkjoon/admin/classes/create";
+            return "redirect:" + SchoolmateUrls.ADMIN_CLASSES + "/create";
         }
     }
 
@@ -109,14 +107,14 @@ public class AdminClassController {
         model.addAttribute("teachers", teachers);
         model.addAttribute("statuses", ClassroomStatus.values());
 
-        return "parkjoon/admin/classes/detail";
+        return SchoolmateUrls.ADMIN_CLASSES + "/detail";
     }
 
     @PostMapping("/update")
     public String update(ClassDTO.UpdateRequest request, RedirectAttributes ra) {
         adminClassService.updateClass(request);
         ra.addFlashAttribute("successMessage", "학급 정보가 수정되었습니다.");
-        return "redirect:/parkjoon/admin/classes/" + request.getCid();
+        return "redirect:" + SchoolmateUrls.ADMIN_CLASSES + "/" + request.getCid();
     }
 
     @PostMapping("/{cid}/add-students")
@@ -193,10 +191,10 @@ public class AdminClassController {
         try {
             adminClassService.deleteClass(cid);
             ra.addFlashAttribute("successMessage", "학급이 영구 삭제되었습니다.");
-            return "redirect:/parkjoon/admin/classes";
+            return "redirect:" + SchoolmateUrls.ADMIN_CLASSES;
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "삭제 실패: " + e.getMessage());
-            return "redirect:/parkjoon/admin/classes/" + cid;
+            return "redirect:" + SchoolmateUrls.ADMIN_CLASSES + "/" + cid;
         }
     }
 }

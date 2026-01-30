@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     locale: "ko",
     editable: true, // 드래그 수정 가능
     selectable: true, // 날짜 선택 가능
-    events: "/parkjoon/admin/api/schedule", // 이벤트 소스 (GET)
+    events: ADMIN_URLS.ADMIN_API_SCHEDULE, // 이벤트 소스 (GET)
 
     // 날짜 클릭 시 등록 모달
     select: function (info) {
@@ -101,8 +101,8 @@ function saveEvent() {
 
   const method = id ? "PUT" : "POST";
   const url = id
-    ? `/parkjoon/admin/api/schedule/${id}`
-    : "/parkjoon/admin/api/schedule";
+    ? `${ADMIN_URLS.ADMIN_API_SCHEDULE}/${id}`
+    : ADMIN_URLS.ADMIN_API_SCHEDULE;
 
   const token = document.querySelector('meta[name="_csrf"]').content;
   const header = document.querySelector('meta[name="_csrf_header"]').content;
@@ -130,7 +130,7 @@ function deleteEvent() {
   const token = document.querySelector('meta[name="_csrf"]').content;
   const header = document.querySelector('meta[name="_csrf_header"]').content;
 
-  fetch(`/parkjoon/admin/api/schedule/${id}`, {
+  fetch(`${ADMIN_URLS.ADMIN_API_SCHEDULE}/${id}`, {
     method: "DELETE",
     headers: { [header]: token },
   }).then((res) => {
@@ -173,7 +173,7 @@ function uploadScheduleCsv() {
     return;
   }
 
-  fetch("/parkjoon/admin/api/schedule/import-csv", {
+  fetch(`${ADMIN_URLS.ADMIN_API_SCHEDULE}/import-csv`, {
     method: "POST",
     headers: {
       [header]: token,

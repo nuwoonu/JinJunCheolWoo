@@ -19,8 +19,6 @@ import com.example.schoolmate.dto.CustomUserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import java.time.LocalDate;
-
 @Service
 @RequiredArgsConstructor
 @Log4j2
