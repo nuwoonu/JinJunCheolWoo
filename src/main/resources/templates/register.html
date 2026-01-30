@@ -33,37 +33,27 @@
             <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style="max-width: 200px" />
           </div>
 
-          <h1 class="register-title">계정을 만들어 시작하기</h1>
+          <h2 class="register-title">계정을 만들어 시작하기</h2>
 
           <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
           <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
 
-          <!-- 소셜 로그인 버튼 영역 -->
+          <!-- 소셜 로그인 버튼 영역 (OAuth2 연동 추가 01/29[woo]) -->
           <div id="socialButtons">
-            <!-- 카카오 소셜 로그인 (미구현) -->
-            <button type="button" class="btn-kakao">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 3C6.477 3 2 6.463 2 10.691c0 2.718 1.805 5.104 4.516 6.441-.199.748-.72 2.712-.825 3.131-.129.516.189.508.398.37.164-.109 2.612-1.773 3.674-2.492.717.099 1.455.151 2.237.151 5.523 0 10-3.463 10-7.691S17.523 3 12 3z"
-                />
-              </svg>
-              카카오톡으로 계속하기
+            <!-- 이메일 가입 폼 토글 버튼 -->
+            <button type="button" class="btn-social" onclick="showEmailForm()">
+              <i class="fa-regular fa-envelope" style="font-size: 20px"></i>
+              이메일 주소로 계속하기
             </button>
 
             <!-- Divider -->
             <div class="divider">
               <span>다른 방법으로 가입하기</span>
             </div>
-
             <!-- 소셜버튼 -->
             <div class="social-buttons">
-              <!-- 이메일 가입 폼 토글 버튼 -->
-              <button type="button" class="btn-social" onclick="showEmailForm()">
-                <i class="fa-regular fa-envelope" style="font-size: 20px"></i>
-                이메일 주소로 계속하기
-              </button>
-              <!-- Google 소셜 로그인 (미구현) -->
-              <button type="button" class="btn-social">
+              <!-- 구글 OAuth2 로그인 -->
+              <a th:href="@{/oauth2/authorization/google}" class="btn-social">
                 <svg width="20" height="20" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
@@ -83,7 +73,16 @@
                   />
                 </svg>
                 Google로 계속하기
-              </button>
+              </a>
+              <!-- 카카오 OAuth2 로그인 -->
+              <a th:href="@{/oauth2/authorization/kakao}" class="btn-kakao">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 3C6.477 3 2 6.463 2 10.691c0 2.718 1.805 5.104 4.516 6.441-.199.748-.72 2.712-.825 3.131-.129.516.189.508.398.37.164-.109 2.612-1.773 3.674-2.492.717.099 1.455.151 2.237.151 5.523 0 10-3.463 10-7.691S17.523 3 12 3z"
+                  />
+                </svg>
+                카카오톡으로 계속하기
+              </a>
             </div>
           </div>
           <!-- 소셜 버튼 끝 -->

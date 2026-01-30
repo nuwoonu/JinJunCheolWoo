@@ -40,13 +40,15 @@
             class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
           />
           <span class="profile-dropdown__contents">
-            <span class="h6 mb-0 text-md d-block text-primary-light" th:text="${#authentication.principal.username}"
-              >User</span
-            >
-            <!-- Admin은 표시 안함, 나머지는 학년-반 표시 -->
+            <!-- 사용자 이름 표시 - OAuth2/일반 로그인 통합 (01/29[woo]) -->
+            <span class="h6 mb-0 text-md d-block text-primary-light"
+              th:text="${#authentication.name}">User</span>
+            <!-- Admin, Parent, Guest 제외 - 학년-반 표시 (일반 로그인만) (01/30[woo]) -->
+            <!-- OAuth2 로그인(DefaultOAuth2User)은 customUserDTO 없음 - instanceof 체크로 분기 -->
             <span
-              sec:authorize="!hasAnyRole('ADMIN', 'PARENT')"
+              sec:authorize="hasAnyRole('STUDENT', 'TEACHER')"
               class="text-secondary-light text-sm mb-0 d-block"
+              th:if="${#authentication.principal instanceof T(com.example.schoolmate.dto.AuthUserDTO) and #authentication.principal.customUserDTO?.grade != null}"
               th:text="${#authentication.principal.customUserDTO.grade} + '학년 ' + ${#authentication.principal.customUserDTO.classNum} + '반'"
             ></span>
           </span>
@@ -200,7 +202,8 @@
         </ul>
       </li>
 
-      <!-- Parent - TEACHER, ADMIN만 조회 가능 -->
+      <!-- [2025.01 수정] Parent - TEACHER, ADMIN만 조회 가능 -->
+      <!-- 링크: /parent/list → /teacher/parent/list 로 변경 (TeacherViewController 사용) -->
       <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-user-heart-line"></i>
@@ -208,7 +211,7 @@
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/parent/list}">
+            <a th:href="@{/teacher/parent/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학부모 목록
             </a>

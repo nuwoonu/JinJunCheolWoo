@@ -48,6 +48,10 @@ public class User extends BaseEntity {
     private String password;
     private String name;
     private String phoneNumber;
+
+    // OAuth2 소셜 로그인 필드 추가 (01/29[woo])
+    private String provider;      // 소셜 로그인 제공자 (kakao, google 등)
+    private String providerId;    // 소셜 로그인 제공자의 고유 ID
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "uid"))
     @Enumerated(EnumType.STRING)

@@ -3,9 +3,12 @@ package com.example.schoolmate.controller;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,20 +59,23 @@ public class DashboardController {
         return "/dashboard/index";
     }
 
+    // OAuth2 사용자 호환 - Authentication 객체로 처리 (01/30[woo])
     @GetMapping("/dashboard")
-    public String getDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO) {
-        if (authUserDTO == null) {
+    public String getDashboard(Authentication authentication) {
+        if (authentication == null) {
             return "redirect:/login";
         }
 
-        String role = authUserDTO.getCustomUserDTO().getRole().name();
+        // 권한에서 역할 추출
+        String authority = authentication.getAuthorities().iterator().next().getAuthority();
+        String role = authority.replace("ROLE_", "");
 
         return switch (role) {
             case "ADMIN" -> "redirect:/admin/dashboard";
             case "STUDENT" -> "redirect:/student/dashboard";
             case "TEACHER" -> "redirect:/teacher/dashboard";
             case "PARENT" -> "redirect:/parent/dashboard";
-            default -> "redirect:/admin/dashboard";
+            default -> "redirect:/login";
         };
     }
 
@@ -83,9 +89,17 @@ public class DashboardController {
         return "dashboard/student";
     }
 
+    // OAuth2 사용자 호환 - Authentication 객체로 처리 (01/30[woo])
     @GetMapping("/teacher/dashboard")
-    public String getTeacherDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
-        Long uid = authUserDTO.getCustomUserDTO().getUid();
+    public String getTeacherDashboard(Authentication authentication, Model model) {
+        Long uid = getUidFromAuthentication(authentication);
+
+        // OAuth2 사용자는 TeacherInfo가 없으므로 classInfo를 null로 설정
+        if (uid == null) {
+            model.addAttribute("classInfo", null);
+            return "dashboard/teacher";
+        }
+
         int currentYear = systemSettingService.getCurrentSchoolYear();
 
         // 교사 정보 조회 후 학급 정보 가져오기
@@ -105,9 +119,22 @@ public class DashboardController {
         return "dashboard/teacher";
     }
 
+    // OAuth2 사용자 호환 - Authentication 객체로 처리 (01/30[woo])
     @GetMapping("/parent/dashboard")
-    public String getParentDashboard(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
-        Long uid = authUserDTO.getCustomUserDTO().getUid();
+    public String getParentDashboard(Authentication authentication, Model model) {
+        Long uid = getUidFromAuthentication(authentication);
+
+        // OAuth2 사용자는 자녀 정보가 없으므로 빈 리스트로 설정
+        if (uid == null) {
+            model.addAttribute("children", new ArrayList<>());
+            // 공지사항 최근 5개
+            List<NoticeDTO> notices = noticeService.getRecentList(5);
+            model.addAttribute("notices", notices);
+            // 게시판 최근 5개
+            List<ParentBoardDTO> boards = parentBoardService.getRecentList(5);
+            model.addAttribute("boards", boards);
+            return "parent/dashboard";
+        }
 
         // 자녀 목록 (새 구조: User → ParentInfo → FamilyRelation → StudentInfo)
         User parentUser = userRepository.findById(uid).orElse(null);
@@ -135,6 +162,67 @@ public class DashboardController {
 
         return "parent/dashboard";
 
+    }
+
+    /**
+     * Authentication 객체에서 사용자 UID 추출 (01/30[woo])
+     * - 일반 로그인(AuthUserDTO): customUserDTO에서 uid 추출
+     * - OAuth2 로그인(OAuth2User): provider/providerId로 DB에서 조회
+     */
+    private Long getUidFromAuthentication(Authentication authentication) {
+        if (authentication == null) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        // 일반 로그인 사용자
+        if (principal instanceof AuthUserDTO authUserDTO) {
+            return authUserDTO.getCustomUserDTO().getUid();
+        }
+
+        // OAuth2 로그인 사용자
+        if (principal instanceof OAuth2User oAuth2User) {
+            Map<String, Object> attributes = oAuth2User.getAttributes();
+            String providerId = extractProviderId(attributes);
+            String provider = getProvider(attributes);
+
+            if (providerId != null && provider != null) {
+                return userRepository.findByProviderAndProviderId(provider, providerId)
+                        .map(User::getUid)
+                        .orElse(null);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * OAuth2 attributes에서 providerId 추출 (01/30[woo])
+     */
+    private String extractProviderId(Map<String, Object> attributes) {
+        // 카카오
+        if (attributes.containsKey("id")) {
+            return String.valueOf(attributes.get("id"));
+        }
+        // 구글
+        if (attributes.containsKey("sub")) {
+            return (String) attributes.get("sub");
+        }
+        return null;
+    }
+
+    /**
+     * OAuth2 attributes에서 provider 추출 (01/30[woo])
+     */
+    private String getProvider(Map<String, Object> attributes) {
+        if (attributes.containsKey("kakao_account")) {
+            return "kakao";
+        }
+        if (attributes.containsKey("sub")) {
+            return "google";
+        }
+        return null;
     }
 
     /**

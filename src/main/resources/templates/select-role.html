@@ -1,0 +1,181 @@
+<!doctype html>
+<!--
+  소셜 로그인 후 역할 선택 페이지 (01/29[woo])
+  - 카카오/구글 등 소셜 로그인 최초 가입 시 역할 선택
+-->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Schoolmate - 역할 선택" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schoolmate - 역할 선택</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <!-- BootStrap css -->
+    <link rel="stylesheet" href="/css/lib/bootstrap.min.css" />
+    <!-- remix icon font css -->
+    <link rel="stylesheet" href="/css/remixicon.css" />
+    <!-- main css -->
+    <link rel="stylesheet" href="/css/style.css" />
+    <!-- register page css (스타일 재사용) -->
+    <link rel="stylesheet" href="/css/register.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+      /* 역할 선택 카드 스타일 (01/29[woo]) */
+      .role-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #fff;
+      }
+      .role-card:hover {
+        border-color: var(--primary-500);
+        box-shadow: 0 4px 12px rgba(37, 161, 148, 0.15);
+      }
+      .role-card.selected {
+        border-color: var(--primary-500);
+        background: linear-gradient(135deg, rgba(37, 161, 148, 0.05), rgba(37, 161, 148, 0.1));
+      }
+      .role-card .role-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+        color: var(--primary-500);
+      }
+      .role-card .role-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+      }
+      .role-card .role-desc {
+        font-size: 14px;
+        color: #666;
+      }
+      .welcome-text {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      .welcome-text h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 8px;
+      }
+      .welcome-text p {
+        color: #666;
+        font-size: 14px;
+      }
+      .btn-submit {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 20px;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 24px;
+      }
+      .btn-submit:hover {
+        box-shadow: 0 4px 15px rgba(37, 161, 148, 0.4);
+        transform: translateY(-2px);
+      }
+      .btn-submit:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="d-flex">
+      <!-- Left Side - Logo -->
+      <div class="register-left d-none d-lg-flex">
+        <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+      </div>
+
+      <!-- Right Side - Role Selection -->
+      <div class="register-right">
+        <div class="register-form">
+          <!-- Mobile Logo -->
+          <div class="d-lg-none text-center mb-4">
+            <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style="max-width: 200px" />
+          </div>
+
+          <!-- Welcome Message -->
+          <div class="welcome-text">
+            <h1>환영합니다! 👋</h1>
+            <p>사용자 유형을 선택해주세요.</p>
+          </div>
+
+          <!-- Error Message -->
+          <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+          <!-- Role Selection Form -->
+          <form th:action="@{/select-role}" method="post" id="roleForm">
+            <input type="hidden" name="role" id="selectedRole" value="" />
+
+            <!-- 학생 카드 -->
+            <div class="role-card" onclick="selectRole('STUDENT', this)">
+              <div class="role-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+              </div>
+              <div class="role-title">학생</div>
+              <div class="role-desc">수업 시간표, 성적, 출결 현황을 확인할 수 있습니다.</div>
+            </div>
+
+            <!-- 교사 카드 -->
+            <div class="role-card" onclick="selectRole('TEACHER', this)">
+              <div class="role-icon">
+                <i class="fa-solid fa-chalkboard-user"></i>
+              </div>
+              <div class="role-title">교사</div>
+              <div class="role-desc">학급 관리, 성적 입력, 출결 관리를 할 수 있습니다.</div>
+            </div>
+
+            <!-- 학부모 카드 -->
+            <div class="role-card" onclick="selectRole('PARENT', this)">
+              <div class="role-icon">
+                <i class="fa-solid fa-people-roof"></i>
+              </div>
+              <div class="role-title">학부모</div>
+              <div class="role-desc">자녀의 학교 생활, 성적, 알림을 확인할 수 있습니다.</div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>
+              선택 완료
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap js -->
+    <script src="/js/lib/bootstrap.bundle.min.js"></script>
+    <script>
+      // 역할 선택 처리 (01/29[woo])
+      function selectRole(role, element) {
+        // 모든 카드에서 selected 클래스 제거
+        document.querySelectorAll('.role-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+
+        // 선택된 카드에 selected 클래스 추가
+        element.classList.add('selected');
+
+        // hidden input에 선택된 역할 설정
+        document.getElementById('selectedRole').value = role;
+
+        // 제출 버튼 활성화
+        document.getElementById('submitBtn').disabled = false;
+      }
+    </script>
+  </body>
+</html>

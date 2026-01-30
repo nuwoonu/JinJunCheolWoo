@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
+import com.example.schoolmate.parkjoon.service.AdminParentService;
 import com.example.schoolmate.parkjoon.service.AdminTeacherService;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.service.TeacherService;
@@ -31,6 +34,7 @@ import lombok.extern.log4j.Log4j2;
  * 교사 전용 뷰 컨트롤러
  * - 나의 학급 관련 페이지 렌더링
  * - 선생님 목록 조회
+ * - 학부모 목록 조회 (2025.01 추가)
  */
 @Controller
 @RequestMapping("/teacher")
@@ -41,6 +45,7 @@ public class TeacherViewController {
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
     private final AdminTeacherService adminTeacherService;
+    private final AdminParentService adminParentService;
 
     /**
      * 선생님 목록 페이지 (TEACHER, ADMIN 모두 접근 가능)
@@ -102,6 +107,29 @@ public class TeacherViewController {
         }
 
         return "teacher/myclass/students";
+    }
+
+    /**
+     * [2025.01 추가] 학부모 목록 페이지 (교사용)
+     * - 선생님 목록(/teacher/list)과 동일한 패턴으로 구현
+     * - AdminParentService.getParentList() 재사용
+     * - 사이드바: 학부모 > 학부모 목록
+     */
+    @GetMapping("/parent/list")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public String parentList(
+            @ModelAttribute ParentDTO.ParentSearchCondition condition,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            Model model) {
+
+        Page<ParentDTO.Summary> parentPage = adminParentService.getParentList(condition, pageable);
+
+        model.addAttribute("parents", parentPage.getContent());
+        model.addAttribute("page", parentPage);
+        model.addAttribute("condition", condition);
+        model.addAttribute("statusList", ParentStatus.values());
+
+        return "teacher/parent-list";
     }
 
     /**

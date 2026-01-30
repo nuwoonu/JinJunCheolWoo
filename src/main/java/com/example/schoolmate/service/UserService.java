@@ -5,9 +5,15 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.ParentInfo;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
+import com.example.schoolmate.common.repository.ParentInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.repository.StudentInfoRepository;
+import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
@@ -33,6 +39,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final ParentInfoRepository parentInfoRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -79,18 +88,20 @@ public class UserService {
     private void createStudentInfo(User user, CustomUserDTO dto) {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
+        studentInfo.setStatus(StudentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
 
         // studentInfo.setCode(dto.getStudentIdentityNum() != null
         // ? dto.getStudentIdentityNum()
         // : dto.getStudentNumber());
 
-        // [변경 후] null이면 "TEMP_이메일앞부분" 형태의 임시값 설정
-        // 회원가입 시 학번 입력 없이도 가입 가능, 관리자가 나중에 실제 학번으로 수정
+        // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
+        // 학번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
         String code = dto.getStudentIdentityNum();
         if (code == null || code.isEmpty()) {
-            code = "TEMP_" + user.getEmail().split("@")[0];
+            code = java.util.UUID.randomUUID().toString();
         }
         studentInfo.setCode(code);
+        // ================================================================
 
         // ========== [사용하지 않는 코드] 초기 학급 배정 로직 (2025-01-28 woo) ==========
         // 관리자 페이지에서 처리하도록 변경 바뀐 코드: 회원가입을 통해 입력되어 누락된 정보들을 학생,교사,학부모를 admin이 수정할 수
@@ -113,15 +124,13 @@ public class UserService {
     private void createTeacherInfo(User user, CustomUserDTO dto) {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
+        teacherInfo.setStatus(TeacherStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
 
-        // ========== [변경] code 설정 방식 수정 (2025-01-28 woo) ==========
-        // [기존 코드] dto에서 사번 가져옴 → null이면 에러 발생
-        // teacherInfo.setCode(dto.getEmployeeNumber());
-
-        // [변경 후] null이면 "TEMP_이메일앞부분" 임시값 설정
+        // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
+        // 사번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
         String code = dto.getEmployeeNumber();
         if (code == null || code.isEmpty()) {
-            code = "TEMP_" + user.getEmail().split("@")[0];
+            code = java.util.UUID.randomUUID().toString();
         }
         teacherInfo.setCode(code);
         // ================================================================
@@ -139,10 +148,14 @@ public class UserService {
         parentInfo.setUser(user);
         parentInfo.setParentName(dto.getName());
         parentInfo.setPhoneNumber(dto.getPhoneNumber());
+        parentInfo.setStatus(ParentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
 
-        // ========== [변경] code 설정 추가 (2025-01-28 woo) ==========
-        // null이면 "TEMP_이메일앞부분" 임시값 설정
+        // ========== [변경] 중복 code 체크 추가 (2025-01-29 woo) ==========
+        // 동일한 이메일 아이디로 가입 시 중복 에러 방지
         String code = "TEMP_" + user.getEmail().split("@")[0];
+        if (parentInfoRepository.existsByCode(code)) {
+            throw new IllegalStateException("이미 사용 중인 아이디입니다. 다른 이메일로 가입해주세요.");
+        }
         parentInfo.setCode(code);
         // ================================================================
 

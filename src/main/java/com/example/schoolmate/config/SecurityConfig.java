@@ -2,6 +2,8 @@ package com.example.schoolmate.config;
 
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.CustomLoginSuccessHandler;
+import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
+import com.example.schoolmate.service.CustomOAuth2UserService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,16 +23,25 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 public class SecurityConfig {
 
         private final CustomLoginSuccessHandler customLoginSuccessHandler;
+        // OAuth2 소셜 로그인 관련 의존성 추가 (01/29[woo])
+        private final CustomOAuth2UserService customOAuth2UserService;
+        private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-        public SecurityConfig(CustomLoginSuccessHandler customLoginSuccessHandler) {
+        public SecurityConfig(CustomLoginSuccessHandler customLoginSuccessHandler,
+                        CustomOAuth2UserService customOAuth2UserService,
+                        OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
                 this.customLoginSuccessHandler = customLoginSuccessHandler;
+                this.customOAuth2UserService = customOAuth2UserService;
+                this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         }
 
         @Bean
         SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http.authorizeHttpRequests(authorize -> authorize
                                 // 로고 클릭시 각 롤에 맞게 메인페이지 보내기 위해 /home 권한설정.
-                                .requestMatchers("/", "/main", "/home", "/login", "/register", "/user/register")
+                                // OAuth2 로그인 관련 URL 추가 (01/29[woo])
+                                .requestMatchers("/", "/main", "/home", "/login", "/register", "/user/register",
+                                                "/select-role", "/oauth2/**", "/login/oauth2/**")
                                 .permitAll()
 
                                 // images 불러사용 하기 위해 추가 [woo]
@@ -67,6 +78,12 @@ public class SecurityConfig {
                                                 .usernameParameter("email") // email 필드를 username으로 사용
                                                 .passwordParameter("password") // password 필드명 명시
                                                 .successHandler(customLoginSuccessHandler))
+                                // OAuth2 소셜 로그인 설정 추가 (01/29[woo])
+                                .oauth2Login(oauth2 -> oauth2
+                                                .loginPage("/login")
+                                                .userInfoEndpoint(userInfo -> userInfo
+                                                                .userService(customOAuth2UserService))
+                                                .successHandler(oAuth2LoginSuccessHandler))
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/login?logout").permitAll())

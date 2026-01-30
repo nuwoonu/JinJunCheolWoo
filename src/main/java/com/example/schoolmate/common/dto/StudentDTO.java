@@ -34,7 +34,7 @@ public class StudentDTO {
     public static class StudentSearchCondition {
         private String type;
         private String keyword;
-        private String status = StudentStatus.ENROLLED.name(); // 기본값: 재학
+        private String status; // 기본값: 전체 (null이면 필터 없음) [woo]
     }
 
     /**

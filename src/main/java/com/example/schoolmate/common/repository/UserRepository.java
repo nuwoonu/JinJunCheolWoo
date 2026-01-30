@@ -15,4 +15,8 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    // OAuth2 소셜 로그인용 조회 메서드 추가 (01/29[woo])
+    @EntityGraph(attributePaths = {"infos", "roles"})
+    Optional<User> findByProviderAndProviderId(String provider, String providerId);
 }
