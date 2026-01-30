@@ -262,8 +262,8 @@ function openEditRelationModal(parentId, parentName, currentRelationCode) {
 
 // 관계 설정 저장 (상세 페이지)
 function confirmGuardianRelationDetail() {
-  const studentCode = document.getElementById("student-detail-container")
-    .dataset.studentIdNum;
+  const studentUid = document.getElementById("student-detail-container").dataset
+    .studentUid;
   const parentId = document.getElementById("relationTargetId").value;
   const relation = document.getElementById("relationSelect").value;
   const actionType = document.getElementById("relationActionType").value;
@@ -275,10 +275,10 @@ function confirmGuardianRelationDetail() {
   let successMsg = "";
 
   if (actionType === "ADD") {
-    url = `${ADMIN_URLS.ADMIN_STUDENTS}/${studentCode}/add-guardian`;
+    url = `${ADMIN_URLS.ADMIN_STUDENTS}/${studentUid}/add-guardian`;
     successMsg = "보호자가 추가되었습니다.";
   } else {
-    url = `${ADMIN_URLS.ADMIN_STUDENTS}/${studentCode}/update-guardian-relation`;
+    url = `${ADMIN_URLS.ADMIN_STUDENTS}/${studentUid}/update-guardian-relation`;
     successMsg = "관계가 수정되었습니다.";
   }
 
@@ -310,15 +310,15 @@ function confirmGuardianRelationDetail() {
 function removeGuardian(parentId) {
   if (!confirm("정말 연동을 해제하시겠습니까?")) return;
 
-  const studentCode = document.getElementById("student-detail-container")
-    .dataset.studentIdNum;
+  const studentUid = document.getElementById("student-detail-container").dataset
+    .studentUid;
   const token = document.querySelector('meta[name="_csrf"]').content;
   const header = document.querySelector('meta[name="_csrf_header"]').content;
 
   const formData = new FormData();
   formData.append("parentId", parentId);
 
-  fetch(`${ADMIN_URLS.ADMIN_STUDENTS}/${studentCode}/remove-guardian`, {
+  fetch(`${ADMIN_URLS.ADMIN_STUDENTS}/${studentUid}/remove-guardian`, {
     method: "POST",
     headers: { [header]: token },
     body: formData,

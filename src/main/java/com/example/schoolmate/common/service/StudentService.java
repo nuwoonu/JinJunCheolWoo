@@ -89,21 +89,11 @@ public class StudentService {
     public StudentDTO.DetailResponse getStudentDetail(Long uid) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다. UID: " + uid));
-        return new StudentDTO.DetailResponse(user);
-    }
-
-    @Transactional(readOnly = true)
-    public StudentDTO.DetailResponse getStudentDetailByCode(String code) {
-        // 1. 학번으로 유저 조회 (학생 권한 확인 포함)
-        User user = studentInfoRepository.findDetailByCode(code)
-                .orElseThrow(() -> new IllegalArgumentException("해당 학번의 학생을 찾을 수 없습니다: " + code));
-
-        // 2. DTO 변환 후 반환
         StudentDTO.DetailResponse response = new StudentDTO.DetailResponse(user);
 
-        // 3. 보호자 목록 조회
+        // 보호자 목록 조회 (UID 기반)
         List<FamilyRelation> relations = familyRelationRepository
-                .findByStudentInfo_Code(code);
+                .findByStudentInfo_User_Uid(uid);
         response.setGuardians(relations.stream().map(StudentDTO.LinkedGuardian::new).toList());
 
         return response;
@@ -113,7 +103,7 @@ public class StudentService {
      * 3. 학생 신규 등록 (계정 생성)
      * 인적 사항 위주로 계정을 생성합니다. 학급 정보는 선택 사항입니다.
      */
-    public String createStudent(StudentDTO.CreateRequest request) {
+    public Long createStudent(StudentDTO.CreateRequest request) {
         // 1. 유저 및 권한 설정
         User user = User.builder()
                 .name(request.getName())
@@ -181,8 +171,8 @@ public class StudentService {
         // 4. 저장 및 학번 반환
         userRepository.save(user);
 
-        // 저장된 info에서 학번을 꺼내 반환 (request에 있는 것을 써도 되지만, 저장된 상태를 보장하기 위함)
-        return info.getCode();
+        // 저장된 User UID 반환
+        return user.getUid();
     }
 
     /**
@@ -209,7 +199,7 @@ public class StudentService {
     /**
      * 학적 이력 수정
      */
-    public String updateAssignment(StudentDTO.AssignmentRequest request) {
+    public Long updateAssignment(StudentDTO.AssignmentRequest request) {
         User user = userRepository.findById(request.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo info = user.getInfo(StudentInfo.class);
@@ -236,7 +226,7 @@ public class StudentService {
             }
         }
 
-        return info.getCode();
+        return user.getUid();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -270,7 +260,7 @@ public class StudentService {
         }
     }
 
-    public String deleteAssignment(Long uid, int schoolYear) {
+    public Long deleteAssignment(Long uid, int schoolYear) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo info = user.getInfo(StudentInfo.class);
@@ -282,7 +272,7 @@ public class StudentService {
             info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
         }
 
-        return info.getCode();
+        return user.getUid();
     }
 
     /**
@@ -302,8 +292,8 @@ public class StudentService {
     /**
      * 보호자 추가 (기존 학생)
      */
-    public void addGuardian(String code, Long parentId, FamilyRelationship relationship) {
-        User user = studentInfoRepository.findDetailByCode(code)
+    public void addGuardian(Long uid, Long parentId, FamilyRelationship relationship) {
+        User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
 
@@ -325,18 +315,22 @@ public class StudentService {
     /**
      * 보호자 연동 해제
      */
-    public void removeGuardian(String code, Long parentId) {
+    public void removeGuardian(Long uid, Long parentId) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+
         ParentInfo parentInfo = parentInfoRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
         parentInfo.getChildrenRelations()
-                .removeIf(r -> r.getStudentInfo().getCode().equals(code));
+                .removeIf(r -> r.getStudentInfo().getId().equals(studentInfo.getId()));
     }
 
     /**
      * 보호자 관계 수정
      */
-    public void updateGuardianRelationship(String code, Long parentId, FamilyRelationship relationship) {
-        User user = studentInfoRepository.findDetailByCode(code)
+    public void updateGuardianRelationship(Long uid, Long parentId, FamilyRelationship relationship) {
+        User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
 

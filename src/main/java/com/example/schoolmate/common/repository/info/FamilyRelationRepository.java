@@ -6,4 +6,6 @@ import com.example.schoolmate.common.entity.info.FamilyRelation;
 
 public interface FamilyRelationRepository extends JpaRepository<FamilyRelation, Long> {
     List<FamilyRelation> findByStudentInfo_Code(String code);
+
+    List<FamilyRelation> findByStudentInfo_User_Uid(Long uid);
 }

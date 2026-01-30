@@ -218,7 +218,7 @@
                   </td>
                   <td>
                     <a
-                      th:href="@{${urls.ADMIN_STUDENTS} + '/{id}'(id=${s.code})}"
+                      th:href="@{${urls.ADMIN_STUDENTS} + '/{id}'(id=${s.uid})}"
                       class="fw-bold text-decoration-none text-dark"
                       th:text="${s.name}"
                       >학생명</a
@@ -240,7 +240,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{${urls.ADMIN_STUDENTS} + '/{id}'(id=${s.code})}"
+                      th:href="@{${urls.ADMIN_STUDENTS} + '/{id}'(id=${s.uid})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
                       상세보기
