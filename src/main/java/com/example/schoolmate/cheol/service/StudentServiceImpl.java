@@ -97,6 +97,16 @@ public class StudentServiceImpl {
         StudentInfo student = studentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + id));
 
+        // User 정보 업데이트 (name, email)
+        if (student.getUser() != null) {
+            if (updateDTO.getName() != null && !updateDTO.getName().isBlank()) {
+                student.getUser().setName(updateDTO.getName());
+            }
+            if (updateDTO.getEmail() != null && !updateDTO.getEmail().isBlank()) {
+                student.getUser().setEmail(updateDTO.getEmail());
+            }
+        }
+
         // 업데이트 가능한 필드만 변경 (Dirty Checking 활용)
         if (updateDTO.getClassroomId() != null) {
             Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
@@ -104,16 +114,13 @@ public class StudentServiceImpl {
                             () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
             student.setClassroom(classroom);
         }
-        if (updateDTO.getId() != null) {
-            student.setId(updateDTO.getId());
-        }
         if (updateDTO.getBirthDate() != null) {
             student.setBirthDate(updateDTO.getBirthDate());
         }
-        if (updateDTO.getAddress() != null) {
+        if (updateDTO.getAddress() != null && !updateDTO.getAddress().isBlank()) {
             student.setAddress(updateDTO.getAddress());
         }
-        if (updateDTO.getPhone() != null) {
+        if (updateDTO.getPhone() != null && !updateDTO.getPhone().isBlank()) {
             student.setPhone(updateDTO.getPhone());
         }
         if (updateDTO.getGender() != null) {

@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.user.constant.AchievementsGrade;
 import com.example.schoolmate.common.entity.user.constant.Gender;
 
 import lombok.AllArgsConstructor;
@@ -47,6 +49,12 @@ public class StudentResponseDTO {
 
     private Gender gender;
 
+    // 기초 생활 기록
+    private String basicHabits;
+
+    // 특이사항
+    private String specialNotes;
+
     private StudentStatus status;
 
     private LocalDateTime createdDate;
@@ -66,6 +74,10 @@ public class StudentResponseDTO {
     // 학부모/보호자 정보 리스트
     @Builder.Default
     private List<ParentGuardianInfo> guardians = new ArrayList<>();
+
+    // 수상 정보 리스트
+    @Builder.Default
+    private List<AwardInfo> awards = new ArrayList<>();
 
     // 학부모/보호자 정보 내부 클래스
     @Getter
@@ -97,6 +109,30 @@ public class StudentResponseDTO {
         }
     }
 
+    // 수상 정보 내부 클래스
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AwardInfo {
+        private Long id;
+        private String name; // 수상명
+        private AchievementsGrade achievementsGrade; // 등급
+        private LocalDate day; // 수상연월일
+        private String organization; // 수상기관
+
+        public static AwardInfo from(AwardsAndHonors award) {
+            return AwardInfo.builder()
+                    .id(award.getId())
+                    .name(award.getName())
+                    .achievementsGrade(award.getAchievementsGrade())
+                    .day(award.getDay())
+                    .organization(award.getAwardingOrganization())
+                    .build();
+        }
+    }
+
     // Entity -> DTO 변환 (정적 팩토리 메서드 + Builder)
     public static StudentResponseDTO from(StudentInfo student) {
         StudentResponseDTOBuilder builder = StudentResponseDTO.builder()
@@ -109,10 +145,12 @@ public class StudentResponseDTO {
                 .addressDetail(student.getAddressDetail())
                 .phone(student.getPhone())
                 .gender(student.getGender())
+                .basicHabits(student.getBasicHabits())
+                .specialNotes(student.getSpecialNotes())
                 .status(student.getStatus());
 
         if (student.getClassroom() != null) {
-            builder.year(student.getClassroom().getYear())
+            builder.year(student.getClassroom().getGrade())
                     .classNum(student.getClassroom().getClassNum());
         }
         // 의료 정보 매핑 (가장 최근 기록)
@@ -127,6 +165,14 @@ public class StudentResponseDTO {
             }
         }
 
+        // 수상 정보 매핑 (전체 리스트, 최신순 정렬)
+        if (student.getAwardsAndHonors() != null && !student.getAwardsAndHonors().isEmpty()) {
+            List<AwardInfo> awardList = student.getAwardsAndHonors().stream()
+                    .sorted(Comparator.comparing(AwardsAndHonors::getDay).reversed())
+                    .map(AwardInfo::from)
+                    .toList();
+            builder.awards(awardList);
+        }
         if (student.getUser() != null) {
             builder.userUid(student.getUser().getUid())
                     .userName(student.getUser().getName())

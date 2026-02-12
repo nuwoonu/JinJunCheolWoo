@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,13 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ClassroomRepository;
 import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.common.entity.user.constant.AchievementsGrade;
 import com.example.schoolmate.common.entity.user.constant.Gender;
+import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.cheol.entity.Subject;
+import com.example.schoolmate.cheol.repository.AwardsAndHonorsRepository;
 import com.example.schoolmate.cheol.repository.GradeRepository;
 import com.example.schoolmate.cheol.repository.MedicalDetailsRepository;
 import com.example.schoolmate.cheol.repository.SubjectRepository;
@@ -55,6 +59,8 @@ public class UserDataTest {
     private StudentInfoRepository studentInfoRepository;
     @Autowired
     private MedicalDetailsRepository medicalDetailsRepository;
+    @Autowired
+    private AwardsAndHonorsRepository awardsAndHonorsRepository;
 
     // @Test
     // @Transactional
@@ -423,4 +429,28 @@ public class UserDataTest {
         System.out.println("체중: " + medicalDetails.getWeight() + "kg");
         System.out.println("========================================");
     }
+
+    @Test
+    @Transactional
+    @Rollback(false)
+    void createAwardStudent() {
+        Long studentId = 1L;
+
+        // 1. 학생 조회
+        StudentInfo student = studentInfoRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
+        IntStream.rangeClosed(1, 5).forEach(i -> {
+            AwardsAndHonors award = AwardsAndHonors.builder()
+                    .name("교내 수상 " + i)
+                    .AwardingOrganization("스쿨메이트")
+                    .achievementsGrade(AchievementsGrade.GOLD)
+                    .day(LocalDate.parse("2013-05-11"))
+                    .studentInfo(student)
+                    .build();
+            awardsAndHonorsRepository.save(award);
+
+        });
+
+    }
+
 }

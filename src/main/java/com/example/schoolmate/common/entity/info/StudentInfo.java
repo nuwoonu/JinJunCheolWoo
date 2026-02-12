@@ -8,6 +8,8 @@ import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.cheol.entity.AwardsAndHonors;
+import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.common.entity.Classroom;
 
@@ -37,7 +39,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = { "assignments", "familyRelations", "medicalDetails" })
+@ToString(exclude = { "assignments", "familyRelations", "medicalDetails", "awardsAndHonors", "grades" })
 public class StudentInfo extends BaseInfo {
     @Column(nullable = true)
     private Long studentNumber; // 학번
@@ -110,4 +112,12 @@ public class StudentInfo extends BaseInfo {
     // 의료기록
     @OneToMany(mappedBy = "studentInfo")
     private List<MedicalDetails> medicalDetails = new ArrayList<>();
+
+    // 수상이력
+    @OneToMany(mappedBy = "studentInfo")
+    private List<AwardsAndHonors> awardsAndHonors = new ArrayList<>();
+
+    // 성적
+    @OneToMany(mappedBy = "student")
+    private List<Grade> grades = new ArrayList<>();
 }

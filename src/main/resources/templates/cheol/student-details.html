@@ -555,7 +555,7 @@
                 </div>
                 <div class="flex-grow-1">
                   <div class="pb-16 border-bottom d-flex align-items-center justify-content-between gap-20">
-                    <h3 class="h6 text-primary-light text-lg mb-0 fw-semibold">Personal Info</h3>
+                    <h3 class="h6 text-primary-light text-lg mb-0 fw-semibold">개인정보</h3>
                     <span
                       th:classappend="${student.status?.name() == 'ENROLLED' ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600'}"
                       class="px-16 py-4 radius-4 fw-medium text-sm"
@@ -671,7 +671,7 @@
                   <span class="d-flex tab-icon line-height-1 text-md">
                     <i class="ri-login-box-line"></i>
                   </span>
-                  Leave
+                  수상경력
                 </button>
               </li>
               <li class="nav-item" role="presentation">
@@ -878,27 +878,27 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Medical Details</h6>
+                        <h6 class="text-lg fw-semibold mb-0">의료 기록</h6>
                       </div>
                       <div class="card-body p-0">
                         <div class="p-20">
                           <div class="row gy-4">
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Blood Group</h6>
-                                <span class="">O+</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">혈액형</h6>
+                                <span class="" th:text="${student.BloodGroup ?: '-'}"></span>
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Height</h6>
-                                <span class="">5.2</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">신장(cm)</h6>
+                                <span class="" th:text="${student.Height ?: '-'}"></span>
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Weight</h6>
-                                <span class="">60kg</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">체중(kg)</h6>
+                                <span class="" th:text="${student.Weight ?: '-'}"></span>
                               </div>
                             </div>
                           </div>
@@ -973,16 +973,16 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Description</h6>
+                        <h6 class="text-lg fw-semibold mb-0">행동 특성 및 종합의견</h6>
                       </div>
                       <div class="card-body p-0">
-                        <div class="p-20">
-                          <p class="text-secondary-light">
-                            Known for their punctuality and positive attitude, [he/she/they] consistently demonstrates a
-                            strong commitment to academic excellence and co-curricular participation. [He/She/They]
-                            maintains good behavior, shows respect toward teachers and peers, and actively engages in
-                            classroom discussions and group activities.
-                          </p>
+                        <div class="mb-3 ms-3 mt-3">
+                          <h6 class="text-md mb-2 ml-3 fw-medium flex-grow-1">기초 생활 기록</h6>
+                          <span class="" th:text="${student.basicHabits ?: '-'}"></span>
+                        </div>
+                        <div class="mb-3 ms-3">
+                          <h6 class="text-md mb-2 ml-3 fw-medium flex-grow-1">특이사항</h6>
+                          <span class="" th:text="${student.specialNotes ?: '-'}"></span>
                         </div>
                       </div>
                     </div>
@@ -1733,7 +1733,7 @@
               </div>
               <!-- Attendance tab end -->
 
-              <!-- leaves tab start -->
+              <!-- awards tab start -->
               <div
                 class="tab-pane fade"
                 id="pills-leave"
@@ -1745,293 +1745,48 @@
                   <div
                     class="card-header border-bottom bg-base py-10 px-20 d-flex align-items-center justify-content-between"
                   >
-                    <h6 class="text-lg fw-semibold mb-0">Leave</h6>
-                    <button
-                      type="button"
-                      class="apply-leave-btn btn btn-primary-600 d-flex align-items-center gap-6 py-8 text-sm"
-                    >
-                      <span class="d-flex text-sm">
-                        <i class="ri-calendar-close-line"></i>
-                      </span>
-                      Apply Leave
-                    </button>
+                    <h6 class="text-lg fw-semibold mb-0">수상 경력</h6>
                   </div>
-                  <div class="card-body p-0 dataTable-wrapper">
-                    <div class="d-flex flex-wrap align-items-center gap-24 justify-content-between px-20 py-12">
-                      <div class="d-flex flex-wrap align-items-center gap-16">
-                        <form class="navbar-search dt-search m-0">
-                          <input
-                            type="text"
-                            class="dt-input bg-transparent radius-4"
-                            aria-controls="dataTable"
-                            name="search"
-                            placeholder="Search..."
-                          />
-                          <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
-                        </form>
-                        <div class="">
-                          <select class="form-control form-select">
-                            <option value="Year 2025/2026">Year 2025/2026</option>
-                            <option value="Year 2026/2027">Year 2026/2027</option>
-                            <option value="Year 2027/2028">Year 2027/2028</option>
-                            <option value="Year 2028/2029">Year 2028/2029</option>
-                          </select>
-                        </div>
-                        <div class="dropdown">
-                          <button
-                            type="button"
-                            class="px-12 py-5-px border border-neutral-300 radius-8 d-flex align-items-center gap-20"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                          >
-                            <span class="d-flex align-items-center gap-1 text-secondary-light text-sm">
-                              <i class="ri-file-upload-line text-md line-height-1"></i>
-                              Export
-                            </span>
-                            <span class="">
-                              <i class="ri-arrow-down-s-line"></i>
-                            </span>
-                          </button>
-                          <ul class="dropdown-menu p-12 border bg-base shadow">
-                            <li>
-                              <button
-                                type="button"
-                                class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalView"
-                              >
-                                <i class="ri-file-3-line"></i>
-                                PDF
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                type="button"
-                                class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModalEdit"
-                              >
-                                <i class="ri-file-excel-line"></i>
-                                Excel
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div class="d-flex align-items-center gap-8 text-secondary-light">
-                        <span class=""> Rows per page: </span>
-                        <div class="dt-length">
-                          <select
-                            name="dataTable_length"
-                            aria-controls="dataTable"
-                            class="dt-input form-control form-select"
-                          >
-                            <option value="5">5</option>
-                            <option value="10" selected>10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <table
-                      class="table bordered-table mb-0 table-heading-dark-mode w-100 data-table"
-                      id="dataTable"
-                      data-page-length="10"
-                    >
+                  <div class="card-body p-0">
+                    <table class="table bordered-table mb-0 table-heading-dark-mode w-100">
                       <thead>
                         <tr>
-                          <th scope="col">
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> S.L </label>
-                            </div>
-                          </th>
-                          <th scope="col">Leave Type</th>
-                          <th scope="col">Date</th>
-                          <th scope="col">Duration</th>
-                          <th scope="col">Apply Date</th>
-                          <th scope="col">Status</th>
+                          <th scope="col">번호</th>
+                          <th scope="col">수상명</th>
+                          <th scope="col">등급</th>
+                          <th scope="col">수상일</th>
+                          <th scope="col">수상기관</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 01 </label>
-                            </div>
-                          </td>
-                          <td>Medical Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>1</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-success-100 text-success-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Approved</span
-                            >
+                        <tr th:if="${student.awards == null or student.awards.empty}">
+                          <td colspan="5" class="text-center py-20 text-secondary-light">
+                            등록된 수상 경력이 없습니다.
                           </td>
                         </tr>
-                        <tr>
+                        <tr th:each="award, stat : ${student.awards}">
+                          <td th:text="${stat.index + 1}"></td>
+                          <td th:text="${award.name}"></td>
                           <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 02 </label>
-                            </div>
-                          </td>
-                          <td>Special Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>3</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-warning-100 text-warning-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Pending</span
+                            <span
+                              class="px-16 py-4 radius-4 fw-medium text-sm"
+                              th:classappend="${award.achievementsGrade.name() == 'GOLD'} ? 'bg-warning-200 text-warning-600' : 
+                      (${award.achievementsGrade.name() == 'SILVER'} ? 'bg-neutral-200 text-neutral-600' : 
+                      (${award.achievementsGrade.name() == 'BRONZE'} ? 'bg-warning-100 text-warning-700' : 
+                      'bg-success-100 text-success-600'))"
+                              th:text="${award.achievementsGrade.achievementsGrade}"
                             >
+                            </span>
                           </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 03 </label>
-                            </div>
-                          </td>
-                          <td>Medical Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>5</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-success-100 text-success-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Approved</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 04 </label>
-                            </div>
-                          </td>
-                          <td>Casual Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>6</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-warning-100 text-warning-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Pending</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 05 </label>
-                            </div>
-                          </td>
-                          <td>Medical Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>1</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-success-100 text-success-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Approved</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 06 </label>
-                            </div>
-                          </td>
-                          <td>Special Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>2</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-danger-100 text-danger-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Rejected</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 07 </label>
-                            </div>
-                          </td>
-                          <td>Medical Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>5</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-success-100 text-success-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Approved</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 08 </label>
-                            </div>
-                          </td>
-                          <td>Casual Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>6</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-danger-100 text-danger-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Rejected</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 09 </label>
-                            </div>
-                          </td>
-                          <td>Medical Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>1</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-success-100 text-success-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Approved</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="form-check style-check d-flex align-items-center">
-                              <input class="form-check-input" type="checkbox" />
-                              <label class="form-check-label"> 10 </label>
-                            </div>
-                          </td>
-                          <td>Special Leave</td>
-                          <td>07 May 2025 - 08 may 2025</td>
-                          <td>2</td>
-                          <td>07 May 2025</td>
-                          <td>
-                            <span class="bg-danger-100 text-danger-600 px-20 py-4 radius-4 fw-medium text-sm"
-                              >Rejected</span
-                            >
-                          </td>
+                          <td th:text="${#temporals.format(award.day, 'yyyy-MM-dd')}"></td>
+                          <td th:text="${award.organization}"></td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
               </div>
-              <!-- leaves tab start -->
+              <!-- awards tab end -->
 
               <!-- Fees tab start -->
               <div class="tab-pane fade" id="pills-fees" role="tabpanel" aria-labelledby="pills-fees-tab" tabindex="0">
@@ -2543,326 +2298,177 @@
               <!-- Exam tab start -->
               <div class="tab-pane fade" id="pills-exam" role="tabpanel" aria-labelledby="pills-exam-tab" tabindex="0">
                 <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
-                  <div
-                    class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
-                  >
-                    <h6 class="text-lg fw-semibold mb-0">Exam</h6>
+                  <div class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                    <h6 class="text-lg fw-semibold mb-0">성적</h6>
                   </div>
                   <div class="card-body p-20 d-flex flex-column gap-20">
-                    <div class="border radius-8 overflow-hidden">
-                      <button
-                        type="button"
-                        class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
-                      >
-                        firstSemesterMidterm
-                        <span class="arrow-icon text-lg d-flex line-height-1">
-                          <i class="ri-arrow-down-s-line"></i>
-                        </span>
+
+                    <!-- 1학년 성적 -->
+                    <div class="border radius-8 overflow-hidden" id="firstYearGrades">
+                      <button type="button" class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50">
+                        1학년 성적
+                        <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
                       </button>
-                      <div class="custom-accordion-content table-bottom-info-none">
-                        <table
-                          class="table bordered-table mb-0 table-heading-dark-mode w-100 data-table"
-                          id="firstSemesterMidterm"
-                          data-page-length="10"
-                        >
-                          <thead>
-                            <tr>
-                              <th scope="col" class="text-start">Subject</th>
-                              <th scope="col" class="text-start">Max Marks</th>
-                              <th scope="col" class="text-start">Min Marks</th>
-                              <th scope="col" class="text-start">Marks Obtained</th>
-                              <th scope="col" class="text-start">Grade</th>
-                              <th scope="col" class="text-start">Result</th>
-                            </tr>
-                          </thead>
-                          <tbody></tbody>
-                          <tfoot>
-                            <tr>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Rank: 30
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total: 600
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              ></td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total Obtain Marks: 398
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Grande: A
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Results: Pass
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
+                      <div class="custom-accordion-content p-16 d-flex flex-column gap-16">
+                        <!-- 1학년 1학기 중간고사 -->
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                            1학기 중간고사
+                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                          </button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_firstSemesterMidterm">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <!-- 1학년 1학기 기말고사 -->
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                            1학기 기말고사
+                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                          </button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_firstSemesterFinal">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <!-- 1학년 2학기 중간고사 -->
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                            2학기 중간고사
+                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                          </button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_secondSemesterMidterm">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <!-- 1학년 2학기 기말고사 -->
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                            2학기 기말고사
+                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                          </button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_secondSemesterFinal">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="border radius-8 overflow-hidden">
-                      <button
-                        type="button"
-                        class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
-                      >
-                        secondSemesterTable
-                        <span class="arrow-icon text-lg d-flex line-height-1">
-                          <i class="ri-arrow-down-s-line"></i>
-                        </span>
+                    <!-- 2학년 성적 -->
+                    <div class="border radius-8 overflow-hidden" id="secondYearGrades">
+                      <button type="button" class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50">
+                        2학년 성적
+                        <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
                       </button>
-                      <div class="custom-accordion-content table-bottom-info-none">
-                        <table
-                          class="table bordered-table mb-0 table-heading-dark-mode w-100 data-table"
-                          id="monthlyTestJun"
-                          data-page-length="10"
-                        >
-                          <thead>
-                            <tr>
-                              <th scope="col" class="text-start">Subject</th>
-                              <th scope="col" class="text-start">Max Marks</th>
-                              <th scope="col" class="text-start">Min Marks</th>
-                              <th scope="col" class="text-start">Marks Obtained</th>
-                              <th scope="col" class="text-start">Grade</th>
-                              <th scope="col" class="text-start">Result</th>
-                            </tr>
-                          </thead>
-                          <tbody></tbody>
-                          <tfoot>
-                            <tr>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Rank: 30
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total: 600
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              ></td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total Obtain Marks: 398
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Grande: A
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Results: Pass
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
+                      <div class="custom-accordion-content p-16 d-flex flex-column gap-16">
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_firstSemesterMidterm">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_firstSemesterFinal">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_secondSemesterMidterm">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_secondSemesterFinal">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="border radius-8 overflow-hidden">
-                      <button
-                        type="button"
-                        class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
-                      >
-                        Weekly Test(Jun-2025)
-                        <span class="arrow-icon text-lg d-flex line-height-1">
-                          <i class="ri-arrow-down-s-line"></i>
-                        </span>
+                    <!-- 3학년 성적 -->
+                    <div class="border radius-8 overflow-hidden" id="thirdYearGrades">
+                      <button type="button" class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50">
+                        3학년 성적
+                        <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
                       </button>
-                      <div class="custom-accordion-content table-bottom-info-none">
-                        <table
-                          class="table bordered-table mb-0 table-heading-dark-mode w-100 data-table"
-                          id="weeklyTestJun"
-                          data-page-length="10"
-                        >
-                          <thead>
-                            <tr>
-                              <th scope="col" class="text-start">Subject</th>
-                              <th scope="col" class="text-start">Max Marks</th>
-                              <th scope="col" class="text-start">Min Marks</th>
-                              <th scope="col" class="text-start">Marks Obtained</th>
-                              <th scope="col" class="text-start">Grade</th>
-                              <th scope="col" class="text-start">Result</th>
-                            </tr>
-                          </thead>
-                          <tbody></tbody>
-                          <tfoot>
-                            <tr>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Rank: 30
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total: 600
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              ></td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total Obtain Marks: 398
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Grande: A
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Results: Pass
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
+                      <div class="custom-accordion-content p-16 d-flex flex-column gap-16">
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_firstSemesterMidterm">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_firstSemesterFinal">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_secondSemesterMidterm">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="border radius-8 overflow-hidden">
+                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <div class="custom-accordion-content table-bottom-info-none">
+                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_secondSemesterFinal">
+                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                              <tbody></tbody>
+                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                            </table>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="border radius-8 overflow-hidden">
-                      <button
-                        type="button"
-                        class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
-                      >
-                        Weekly Test(May-2025)
-                        <span class="arrow-icon text-lg d-flex line-height-1">
-                          <i class="ri-arrow-down-s-line"></i>
-                        </span>
-                      </button>
-                      <div class="custom-accordion-content table-bottom-info-none">
-                        <table
-                          class="table bordered-table mb-0 table-heading-dark-mode w-100 data-table"
-                          id="weeklyTestMay"
-                          data-page-length="10"
-                        >
-                          <thead>
-                            <tr>
-                              <th scope="col" class="text-start">Subject</th>
-                              <th scope="col" class="text-start">Max Marks</th>
-                              <th scope="col" class="text-start">Min Marks</th>
-                              <th scope="col" class="text-start">Marks Obtained</th>
-                              <th scope="col" class="text-start">Grade</th>
-                              <th scope="col" class="text-start">Result</th>
-                            </tr>
-                          </thead>
-                          <tbody></tbody>
-                          <tfoot>
-                            <tr>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Rank: 30
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total: 600
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              ></td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total Obtain Marks: 398
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Grande: A
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Results: Pass
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                    </div>
-
-                    <div class="border radius-8 overflow-hidden">
-                      <button
-                        type="button"
-                        class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
-                      >
-                        weeklyTestMay
-                        <span class="arrow-icon text-lg d-flex line-height-1">
-                          <i class="ri-arrow-down-s-line"></i>
-                        </span>
-                      </button>
-                      <div class="custom-accordion-content table-bottom-info-none">
-                        <table
-                          class="table bordered-table mb-0 table-heading-dark-mode w-100 data-table"
-                          id="monthlyTestMay"
-                          data-page-length="10"
-                        >
-                          <thead>
-                            <tr>
-                              <th scope="col" class="text-start">Subject</th>
-                              <th scope="col" class="text-start">Max Marks</th>
-                              <th scope="col" class="text-start">Min Marks</th>
-                              <th scope="col" class="text-start">Marks Obtained</th>
-                              <th scope="col" class="text-start">Grade</th>
-                              <th scope="col" class="text-start">Result</th>
-                            </tr>
-                          </thead>
-                          <tbody></tbody>
-                          <tfoot>
-                            <tr>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Rank: 30
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total: 600
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              ></td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Total Obtain Marks: 398
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Grande: A
-                              </td>
-                              <td
-                                class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
-                              >
-                                Results: Pass
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
