@@ -87,6 +87,7 @@
               <thead class="table-light">
                 <tr>
                   <th class="ps-4">관리번호</th>
+                  <th>사진</th>
                   <th>기자재명</th>
                   <th>분류</th>
                   <th>보관장소</th>
@@ -99,6 +100,23 @@
                 <tr th:each="asset : ${assets.content}">
                   <td class="ps-4 text-secondary" th:text="${asset.code}">
                     NB-001
+                  </td>
+                  <td>
+                    <!-- 이미지가 있으면 표시, 없으면 아이콘 표시 (백엔드 imageUrl 필드 추가 필요) -->
+                    <img
+                      th:if="${asset.imageUrl}"
+                      th:src="${asset.imageUrl}"
+                      alt="기자재 사진"
+                      class="rounded"
+                      style="width: 40px; height: 40px; object-fit: cover"
+                    />
+                    <div
+                      th:unless="${asset.imageUrl}"
+                      class="bg-light rounded d-flex align-items-center justify-content-center text-secondary"
+                      style="width: 40px; height: 40px"
+                    >
+                      <i class="bi bi-camera"></i>
+                    </div>
                   </td>
                   <td class="fw-bold" th:text="${asset.name}">삼성 노트북</td>
                   <td th:text="${asset.category}">노트북</td>
@@ -203,7 +221,12 @@
       <!-- 기자재 등록/수정 모달 -->
       <div class="modal fade" id="assetModal" tabindex="-1">
         <div class="modal-dialog">
-          <form id="assetForm" method="post" class="modal-content">
+          <form
+            id="assetForm"
+            method="post"
+            class="modal-content"
+            enctype="multipart/form-data"
+          >
             <input
               type="hidden"
               th:name="${_csrf.parameterName}"
@@ -243,16 +266,47 @@
                 </div>
               </div>
 
+              <!-- 이미지 업로드 추가 -->
+              <div class="mb-3">
+                <label class="form-label fw-bold">기자재 사진</label>
+                <input
+                  type="file"
+                  name="imageFile"
+                  id="assetImage"
+                  class="form-control"
+                  accept="image/*"
+                />
+                <div id="currentImageArea" class="mt-2 d-none">
+                  <p class="small text-muted mb-1">현재 등록된 사진:</p>
+                  <img
+                    id="imagePreview"
+                    src=""
+                    alt="Preview"
+                    class="rounded border"
+                    style="width: 100px; height: 100px; object-fit: cover"
+                  />
+                </div>
+              </div>
+
               <div class="row g-2 mb-3">
                 <div class="col-6">
                   <label class="form-label fw-bold">분류</label>
                   <input
                     type="text"
                     name="category"
+                    list="categoryOptions"
                     id="assetCategory"
                     class="form-control"
                     placeholder="예: 노트북"
                   />
+                  <!-- 카테고리 추천 목록 (Datalist) -->
+                  <datalist id="categoryOptions">
+                    <option value="노트북"></option>
+                    <option value="태블릿"></option>
+                    <option value="카메라"></option>
+                    <option value="마이크"></option>
+                    <option value="빔프로젝터"></option>
+                  </datalist>
                 </div>
                 <div class="col-6">
                   <label class="form-label fw-bold">보관장소</label>

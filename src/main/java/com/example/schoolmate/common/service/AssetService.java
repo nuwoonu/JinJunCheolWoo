@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class AssetService {
 
     private final SchoolAssetRepository assetRepository;
+    private final FileService fileService;
 
     @Transactional(readOnly = true)
     public Page<AssetDTO.Response> getAssetList(String keyword, Pageable pageable) {
@@ -66,6 +67,8 @@ public class AssetService {
             throw new IllegalArgumentException("이미 존재하는 관리 번호입니다: " + request.getCode());
         }
 
+        String imageFilename = fileService.upload(request.getImageFile(), "assets");
+
         SchoolAsset asset = SchoolAsset.builder()
                 .name(request.getName())
                 .code(request.getCode())
@@ -74,6 +77,7 @@ public class AssetService {
                 .status(AssetStatus.AVAILABLE) // 기본값
                 .purchaseDate(request.getPurchaseDate())
                 .description(request.getDescription())
+                .imageFilename(imageFilename)
                 .build();
 
         if (request.getStatus() != null) {
@@ -93,12 +97,27 @@ public class AssetService {
         asset.setLocation(request.getLocation());
         asset.setPurchaseDate(request.getPurchaseDate());
         asset.setDescription(request.getDescription());
+
+        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+            if (asset.getImageFilename() != null) {
+                fileService.delete(asset.getImageFilename(), "assets");
+            }
+            String imageFilename = fileService.upload(request.getImageFile(), "assets");
+            asset.setImageFilename(imageFilename);
+        }
+
         if (request.getStatus() != null) {
             asset.setStatus(AssetStatus.valueOf(request.getStatus()));
         }
     }
 
     public void deleteAsset(Long id) {
-        assetRepository.deleteById(id);
+        SchoolAsset asset = assetRepository.findById(id).orElse(null);
+        if (asset != null) {
+            if (asset.getImageFilename() != null) {
+                fileService.delete(asset.getImageFilename(), "assets");
+            }
+            assetRepository.delete(asset);
+        }
     }
 }

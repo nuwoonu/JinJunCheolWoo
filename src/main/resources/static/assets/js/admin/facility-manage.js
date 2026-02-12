@@ -12,6 +12,11 @@ function openCreateModal() {
   document.getElementById("roomForm").reset();
   document.getElementById("roomId").value = ""; // ID 초기화
 
+  // 이미지 미리보기 초기화
+  document.getElementById("roomImage").value = "";
+  document.getElementById("currentImageArea").classList.add("d-none");
+  document.getElementById("imagePreview").src = "";
+
   modal.show();
 }
 
@@ -28,5 +33,16 @@ function openUpdateModal(room) {
   document.getElementById("roomCapacity").value = room.capacity;
   document.getElementById("roomDesc").value = room.description;
   document.getElementById("roomAvailable").checked = room.available;
+
+  // 이미지 미리보기 설정 (room.imageUrl이 있다고 가정)
+  const previewArea = document.getElementById("currentImageArea");
+  const previewImg = document.getElementById("imagePreview");
+  if (room.imageUrl) {
+    previewImg.src = room.imageUrl;
+    previewArea.classList.remove("d-none");
+  } else {
+    previewArea.classList.add("d-none");
+  }
+
   modal.show();
 }

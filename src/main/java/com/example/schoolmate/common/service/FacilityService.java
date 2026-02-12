@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class FacilityService {
 
     private final SchoolFacilityRepository facilityRepository;
+    private final FileService fileService;
 
     @Transactional(readOnly = true)
     public List<FacilityDTO.Response> getAllFacilities() {
@@ -27,12 +28,15 @@ public class FacilityService {
     }
 
     public void createFacility(FacilityDTO.Request request) {
+        String imageFilename = fileService.upload(request.getImageFile(), "facilities");
+
         SchoolFacility facility = SchoolFacility.builder()
                 .name(request.getName())
                 .location(request.getLocation())
                 .capacity(request.getCapacity())
                 .description(request.getDescription())
                 .isAvailable(true)
+                .imageFilename(imageFilename)
                 .build();
         facilityRepository.save(facility);
     }
@@ -46,9 +50,23 @@ public class FacilityService {
         facility.setCapacity(request.getCapacity());
         facility.setDescription(request.getDescription());
         facility.setAvailable(request.isAvailable());
+
+        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+            if (facility.getImageFilename() != null) {
+                fileService.delete(facility.getImageFilename(), "facilities");
+            }
+            String imageFilename = fileService.upload(request.getImageFile(), "facilities");
+            facility.setImageFilename(imageFilename);
+        }
     }
 
     public void deleteFacility(Long id) {
-        facilityRepository.deleteById(id);
+        SchoolFacility facility = facilityRepository.findById(id).orElse(null);
+        if (facility != null) {
+            if (facility.getImageFilename() != null) {
+                fileService.delete(facility.getImageFilename(), "facilities");
+            }
+            facilityRepository.delete(facility);
+        }
     }
 }

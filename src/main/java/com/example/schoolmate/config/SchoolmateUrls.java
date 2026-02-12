@@ -19,4 +19,8 @@ public class SchoolmateUrls {
     public static final String ADMIN_MASTER = ADMIN_ROOT + "/master";
     public static final String ADMIN_AUDIT = ADMIN_ROOT + "/audit";
     public static final String ADMIN_API_SCHEDULE = ADMIN_ROOT + "/api/schedule";
+
+    // 이미지 업로드 경로 (Web Access URL)
+    public static final String UPLOAD_PATH_ASSETS = "/uploads/assets/";
+    public static final String UPLOAD_PATH_FACILITIES = "/uploads/facilities/";
 }

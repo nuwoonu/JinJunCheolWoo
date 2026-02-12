@@ -32,4 +32,6 @@ public class SchoolAsset extends BaseEntity {
     private LocalDate purchaseDate; // 구입일
 
     private String description; // 설명
+
+    private String imageFilename; // 이미지 파일명 (경로 제외)
 }
