@@ -43,7 +43,7 @@ public class StudentController {
     public String getMyInfo(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
 
         Long uid = authUserDTO.getCustomUserDTO().getUid();
-        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
+        StudentResponseDTO student = studentService.getStudentByUid(uid);
         model.addAttribute("student", student);
         log.info("학생 본인 정보 조회: {}", uid);
         return "cheol/student-details";
@@ -52,7 +52,7 @@ public class StudentController {
     // 학생 상세 페이지
     @GetMapping("/details/{id}")
     public String getStudentDetails(@PathVariable Long id, Model model) {
-        StudentResponseDTO student = studentService.getStudentById(id);
+        StudentResponseDTO student = studentService.getStudentByUid(id);
         model.addAttribute("student", student);
         return "student/student-details";
     }
@@ -82,7 +82,7 @@ public class StudentController {
     // 학생 수정 폼 페이지
     @GetMapping("/edit/{id}")
     public String getEditStudentForm(@PathVariable Long id, Model model) {
-        StudentResponseDTO student = studentService.getStudentById(id);
+        StudentResponseDTO student = studentService.getStudentByUid(id);
         model.addAttribute("student", student);
         model.addAttribute("studentUpdateDTO", new StudentUpdateDTO());
         return "cheol/edit-student";

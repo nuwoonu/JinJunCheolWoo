@@ -473,6 +473,6 @@ public class StudentService {
 
     // 승철님 작업물
     private StudentResponseDTO convertToResponseDTO(StudentInfo student) {
-        return new StudentResponseDTO(student);
+        return StudentResponseDTO.from(student);
     }
 }

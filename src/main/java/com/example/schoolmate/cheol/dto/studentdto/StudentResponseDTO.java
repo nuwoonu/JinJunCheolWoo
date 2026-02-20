@@ -137,7 +137,7 @@ public class StudentResponseDTO {
     public static StudentResponseDTO from(StudentInfo student) {
         StudentResponseDTOBuilder builder = StudentResponseDTO.builder()
                 .id(student.getId())
-                .studentNumber(student.getStudentNumber())
+                .studentNumber(student.getLatestAssignment().get().getId())
                 .fullStudentNumber(student.getFullStudentNumber())
                 .studentCode(student.getCode())
                 .birthDate(student.getBirthDate())
@@ -149,9 +149,9 @@ public class StudentResponseDTO {
                 .specialNotes(student.getSpecialNotes())
                 .status(student.getStatus());
 
-        if (student.getClassroom() != null) {
-            builder.year(student.getClassroom().getGrade())
-                    .classNum(student.getClassroom().getClassNum());
+        if (student.getLatestAssignment().get().getClassroom() != null) {
+            builder.year(student.getLatestAssignment().get().getClassroom().getGrade())
+                    .classNum(student.getLatestAssignment().get().getClassroom().getClassNum());
         }
         // 의료 정보 매핑 (가장 최근 기록)
         if (student.getMedicalDetails() != null && !student.getMedicalDetails().isEmpty()) {

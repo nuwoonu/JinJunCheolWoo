@@ -42,7 +42,7 @@ public class StudentRestController {
     // GET /api/students/{uid}
     @GetMapping("/{id}")
     public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
-        StudentResponseDTO response = studentService.getStudentById(id);
+        StudentResponseDTO response = studentService.getStudentByUid(id);
         return ResponseEntity.ok(response);
     }
 

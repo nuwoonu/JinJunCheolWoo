@@ -93,14 +93,15 @@ public class DashboardController {
                 // 3. 프로필 이미지 조회
                 Profile profile = profileRepository.findByUser(studentUser).orElse(null);
                 if (profile != null && profile.getUuid() != null) {
-                    String imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
+                    String imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_"
+                            + profile.getImgName();
                     model.addAttribute("profileImageUrl", imageUrl);
                 }
             }
         }
 
         // 4. 공지사항
-        List<NoticeDTO> notices = noticeService.getRecentList(5);
+        List<NoticeDTO.BoardNotice> notices = noticeService.getRecentList(5);
         model.addAttribute("notices", notices);
 
         return "cheol/student-dashboard";
