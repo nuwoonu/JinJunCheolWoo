@@ -12,7 +12,7 @@
   >
     <div class="d-flex align-items-center mb-4">
       <a
-        th:href="@{/parkjoon/admin/students}"
+        th:href="@{${urls.ADMIN_STUDENTS}}"
         class="btn btn-link text-dark p-0 me-3"
         ><i class="bi bi-arrow-left fs-3"></i
       ></a>
@@ -20,7 +20,7 @@
     </div>
 
     <form
-      th:action="@{/parkjoon/admin/students/create}"
+      th:action="@{${urls.ADMIN_STUDENTS} + '/create'}"
       method="post"
       class="card shadow-sm"
     >
@@ -79,38 +79,21 @@
         <h5 class="mb-4 text-primary fw-bold">
           <i class="bi bi-journal-check me-2"></i>최초 학급 배정 (선택)
         </h5>
-        <div class="row g-3">
-          <div class="col-md-3">
-            <label class="form-label">학년도</label>
-            <input
-              type="number"
-              name="year"
-              class="form-control"
-              th:value="${currentYear}"
-            />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">학년</label>
-            <input
-              type="number"
-              name="grade"
-              class="form-control"
-              min="1"
-              max="6"
-            />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">반</label>
-            <input type="number" name="classNum" class="form-control" min="1" />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">번호</label>
-            <input
-              type="number"
-              name="studentNum"
-              class="form-control"
-              min="1"
-            />
+        <div class="row g-3 mb-5">
+          <div class="col-md-12">
+            <label class="form-label fw-bold">학급 선택</label>
+            <select name="classroomId" class="form-select">
+              <option value="">배정 안함 (미배정)</option>
+              <option
+                th:each="cls : ${classrooms}"
+                th:value="${cls.cid}"
+                th:text="|${cls.year}학년도 ${cls.grade}학년 ${cls.classNum}반|"
+              ></option>
+            </select>
+            <div class="form-text">
+              현재 학년도에 개설된 학급 목록입니다. 선택 시 출석 번호는 해당
+              학급의 마지막 번호 다음으로 자동 부여됩니다.
+            </div>
           </div>
         </div>
 

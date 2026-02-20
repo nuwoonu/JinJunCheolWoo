@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.schoolmate.board.dto.NoticeDTO;
+import com.example.schoolmate.common.dto.NoticeDTO;
 import com.example.schoolmate.board.dto.PageRequestDTO;
 import com.example.schoolmate.board.dto.PageResultDTO;
-import com.example.schoolmate.board.service.NoticeService;
+import com.example.schoolmate.common.service.NoticeService;
 import com.example.schoolmate.dto.AuthUserDTO;
 
 import jakarta.validation.Valid;
@@ -35,7 +35,7 @@ public class ParentNoticeController {
     public String getList(PageRequestDTO pageRequestDTO, Model model) {
         log.info("학부모 공지 목록 요청: {}", pageRequestDTO);
 
-        PageResultDTO<NoticeDTO> result = noticeService.getList(pageRequestDTO);
+        PageResultDTO<NoticeDTO.BoardNotice> result = noticeService.getList(pageRequestDTO);
         model.addAttribute("result", result);
         model.addAttribute("pageRequestDTO", pageRequestDTO);
 
@@ -54,10 +54,10 @@ public class ParentNoticeController {
     // 공지 등록 (TEACHER, ADMIN만)
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
-    public String postCreate(@Valid NoticeDTO dto,
-                            BindingResult result,
-                            @AuthenticationPrincipal AuthUserDTO authUser,
-                            RedirectAttributes rttr) {
+    public String postCreate(@Valid NoticeDTO.BoardNotice dto,
+            BindingResult result,
+            @AuthenticationPrincipal AuthUserDTO authUser,
+            RedirectAttributes rttr) {
         log.info("공지 등록 요청: {}", dto);
 
         if (result.hasErrors()) {
@@ -76,7 +76,7 @@ public class ParentNoticeController {
     public String getRead(@RequestParam("nno") Long nno, Model model, PageRequestDTO pageRequestDTO) {
         log.info("공지 조회 요청: {}", nno);
 
-        NoticeDTO dto = noticeService.getRow(nno);
+        NoticeDTO.BoardNotice dto = noticeService.getRow(nno);
         model.addAttribute("dto", dto);
         model.addAttribute("pageRequestDTO", pageRequestDTO);
 
@@ -89,7 +89,7 @@ public class ParentNoticeController {
     public String getModify(@RequestParam("nno") Long nno, Model model, PageRequestDTO pageRequestDTO) {
         log.info("공지 수정 폼 요청: {}", nno);
 
-        NoticeDTO dto = noticeService.getRow(nno);
+        NoticeDTO.BoardNotice dto = noticeService.getRow(nno);
         model.addAttribute("dto", dto);
         model.addAttribute("pageRequestDTO", pageRequestDTO);
 
@@ -99,10 +99,10 @@ public class ParentNoticeController {
     // 공지 수정 (TEACHER, ADMIN만)
     @PostMapping("/modify")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
-    public String postModify(NoticeDTO dto,
-                            PageRequestDTO pageRequestDTO,
-                            @AuthenticationPrincipal AuthUserDTO authUser,
-                            RedirectAttributes rttr) {
+    public String postModify(NoticeDTO.BoardNotice dto,
+            PageRequestDTO pageRequestDTO,
+            @AuthenticationPrincipal AuthUserDTO authUser,
+            RedirectAttributes rttr) {
         log.info("공지 수정 요청: {}", dto);
 
         noticeService.update(dto);
@@ -117,9 +117,9 @@ public class ParentNoticeController {
     // 공지 삭제 (TEACHER, ADMIN만)
     @PostMapping("/remove")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
-    public String postRemove(NoticeDTO dto,
-                            PageRequestDTO pageRequestDTO,
-                            RedirectAttributes rttr) {
+    public String postRemove(NoticeDTO.BoardNotice dto,
+            PageRequestDTO pageRequestDTO,
+            RedirectAttributes rttr) {
         log.info("공지 삭제 요청: {}", dto.getNno());
 
         noticeService.delete(dto.getNno());

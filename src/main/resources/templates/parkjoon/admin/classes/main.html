@@ -53,7 +53,7 @@
             </li>
           </ul>
           <a
-            th:href="@{/parkjoon/admin/classes/create}"
+            th:href="@{${urls.ADMIN_CLASSES} + '/create'}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
           >
             <i class="bi bi-plus-circle"></i> 신규 학급 생성
@@ -69,7 +69,7 @@
             </div>
             <div class="col-auto">
               <form
-                th:action="@{/parkjoon/admin/classes}"
+                th:action="@{${urls.ADMIN_CLASSES}}"
                 method="get"
                 class="d-flex gap-2"
               >
@@ -80,7 +80,7 @@
                 >
                   <option value="">전체 상태</option>
                   <option
-                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.ClassroomStatus).values()}"
+                    th:each="s : ${statuses}"
                     th:value="${s.name()}"
                     th:text="${s.description}"
                     th:selected="${condition.status == s.name()}"
@@ -149,7 +149,7 @@
                   <td class="ps-4" th:text="${cls.year}">2026</td>
                   <td class="fw-bold">
                     <a
-                      th:href="@{/parkjoon/admin/classes/{id}(id=${cls.cid})}"
+                      th:href="@{${urls.ADMIN_CLASSES} + '/{id}'(id=${cls.cid})}"
                       class="text-decoration-none text-dark"
                     >
                       <span th:text="${cls.grade}">1</span>학년
@@ -180,7 +180,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/classes/{id}(id=${cls.cid})}"
+                      th:href="@{${urls.ADMIN_CLASSES} + '/{id}'(id=${cls.cid})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                       >상세보기</a
                     >
@@ -209,7 +209,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/classes(page=${classes.number}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
+                  th:href="@{${urls.ADMIN_CLASSES}(page=${classes.number}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
                   >&laquo;</a
                 >
               </li>
@@ -221,7 +221,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/classes(page=${i + 1}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
+                  th:href="@{${urls.ADMIN_CLASSES}(page=${i + 1}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
                   >1</a
                 >
               </li>
@@ -231,7 +231,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/classes(page=${classes.number + 2}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
+                  th:href="@{${urls.ADMIN_CLASSES}(page=${classes.number + 2}, year=${condition.year}, grade=${condition.grade}, status=${condition.status})}"
                   >&raquo;</a
                 >
               </li>

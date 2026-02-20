@@ -13,7 +13,7 @@
       >
         <div class="mb-4">
           <a
-            th:href="@{/parkjoon/admin/parents}"
+            th:href="@{${urls.ADMIN_PARENTS}}"
             class="btn btn-outline-secondary btn-sm"
           >
             <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
@@ -95,7 +95,7 @@
                 <!-- 탭 1: 기본 정보 수정 -->
                 <div class="tab-pane fade show active" id="basic">
                   <form
-                    th:action="@{/parkjoon/admin/parents/update}"
+                    th:action="@{${urls.ADMIN_PARENTS} + '/update'}"
                     method="post"
                   >
                     <input type="hidden" name="id" th:value="${parent.id}" />
@@ -192,7 +192,7 @@
                         <tr th:each="child : ${parent.children}">
                           <td class="fw-bold">
                             <a
-                              th:href="@{/parkjoon/admin/students/{id}(id=${child.code})}"
+                              th:href="@{${urls.ADMIN_STUDENTS} + '/{id}'(id=${child.code})}"
                               class="text-decoration-none text-dark"
                               th:text="${child.name}"
                               >김학생</a

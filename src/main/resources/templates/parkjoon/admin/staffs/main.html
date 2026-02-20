@@ -67,7 +67,7 @@
           </button>
 
           <a
-            th:href="@{/parkjoon/admin/staffs/create}"
+            th:href="@{${urls.ADMIN_STAFFS} + '/create'}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
           >
             <i class="bi bi-person-plus-fill"></i> 신규 등록
@@ -84,7 +84,7 @@
             <div class="col-auto d-flex align-items-center gap-3">
               <form
                 id="searchForm"
-                th:action="@{/parkjoon/admin/staffs}"
+                th:action="@{${urls.ADMIN_STAFFS}}"
                 method="get"
                 class="input-group input-group-sm"
               >
@@ -95,7 +95,7 @@
                 >
                   <option value="">전체 상태</option>
                   <option
-                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.StaffStatus).values()}"
+                    th:each="s : ${statuses}"
                     th:value="${s.name()}"
                     th:text="${s.description}"
                     th:selected="${condition.status == s.name()}"
@@ -109,7 +109,7 @@
                 >
                   <option value="">전체 고용형태</option>
                   <option
-                    th:each="e : ${T(com.example.schoolmate.common.entity.info.constant.EmploymentType).values()}"
+                    th:each="e : ${employmentTypes}"
                     th:value="${e.name()}"
                     th:text="${e.description}"
                     th:selected="${condition.employmentType == e.name()}"
@@ -170,7 +170,7 @@
                   <i class="bi bi-search"></i> 검색
                 </button>
                 <a
-                  th:href="@{/parkjoon/admin/staffs}"
+                  th:href="@{${urls.ADMIN_STAFFS}}"
                   class="btn btn-outline-secondary"
                   >초기화</a
                 >
@@ -215,7 +215,7 @@
                   </td>
                   <td>
                     <a
-                      th:href="@{/parkjoon/admin/staffs/{id}(id=${s.uid})}"
+                      th:href="@{${urls.ADMIN_STAFFS} + '/{id}'(id=${s.uid})}"
                       class="fw-bold text-decoration-none text-dark"
                       th:text="${s.name}"
                       >홍길동</a
@@ -240,7 +240,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/staffs/{id}(id=${s.uid})}"
+                      th:href="@{${urls.ADMIN_STAFFS} + '/{id}'(id=${s.uid})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                       >상세보기</a
                     >
@@ -266,7 +266,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/staffs(page=${page.number}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{${urls.ADMIN_STAFFS}(page=${page.number}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -278,7 +278,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/staffs(page=${i + 1}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{${urls.ADMIN_STAFFS}(page=${i + 1}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
                   >1</a
                 >
               </li>
@@ -288,7 +288,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/staffs(page=${page.number + 2}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{${urls.ADMIN_STAFFS}(page=${page.number + 2}, status=${condition.status}, employmentType=${condition.employmentType}, type=${condition.type}, keyword=${condition.keyword})}"
                   >&raquo;</a
                 >
               </li>

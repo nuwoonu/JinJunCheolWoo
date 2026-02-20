@@ -21,8 +21,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.ParentStatus;
+import com.example.schoolmate.common.service.ParentService;
+import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
-import com.example.schoolmate.parkjoon.service.AdminParentService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,11 +35,11 @@ import lombok.RequiredArgsConstructor;
  * - 자녀 추가/해제 및 관계 설정 기능
  */
 @Controller
-@RequestMapping("/parkjoon/admin/parents")
+@RequestMapping(SchoolmateUrls.ADMIN_PARENTS)
 @RequiredArgsConstructor
 public class AdminParentController {
 
-    private final AdminParentService adminParentService;
+    private final ParentService adminParentService;
 
     @GetMapping
     public String list(ParentDTO.ParentSearchCondition condition,
@@ -53,15 +54,16 @@ public class AdminParentController {
 
         model.addAttribute("parents", parents);
         model.addAttribute("condition", condition);
+        model.addAttribute("statuses", ParentStatus.values());
 
-        return "parkjoon/admin/parents/main";
+        return SchoolmateUrls.ADMIN_PARENTS + "/main";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("createRequest", new ParentDTO.CreateRequest());
         model.addAttribute("relationships", FamilyRelationship.values());
-        return "parkjoon/admin/parents/create";
+        return SchoolmateUrls.ADMIN_PARENTS + "/create";
     }
 
     @PostMapping("/create")
@@ -69,10 +71,10 @@ public class AdminParentController {
         try {
             adminParentService.createParent(request);
             ra.addFlashAttribute("successMessage", "학부모 계정이 생성되었습니다.");
-            return "redirect:/parkjoon/admin/parents";
+            return "redirect:" + SchoolmateUrls.ADMIN_PARENTS;
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "등록 실패: " + e.getMessage());
-            return "redirect:/parkjoon/admin/parents/create";
+            return "redirect:" + SchoolmateUrls.ADMIN_PARENTS + "/create";
         }
     }
 
@@ -111,7 +113,7 @@ public class AdminParentController {
         model.addAttribute("parent", parent);
         model.addAttribute("statuses", ParentStatus.values());
         model.addAttribute("relationships", FamilyRelationship.values());
-        return "parkjoon/admin/parents/detail";
+        return SchoolmateUrls.ADMIN_PARENTS + "/detail";
     }
 
     // 학생 검색 API (AJAX)
@@ -125,7 +127,7 @@ public class AdminParentController {
     public String update(ParentDTO.UpdateRequest request, RedirectAttributes ra) {
         adminParentService.updateParent(request);
         ra.addFlashAttribute("successMessage", "정보가 수정되었습니다.");
-        return "redirect:/parkjoon/admin/parents/" + request.getId();
+        return "redirect:" + SchoolmateUrls.ADMIN_PARENTS + "/" + request.getId();
     }
 
     @PostMapping("/{parentId}/add-child")

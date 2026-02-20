@@ -1,5 +1,6 @@
 package com.example.schoolmate.common.entity.info.assignment;
 
+import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,17 +28,26 @@ public class StudentAssignment {
     private StudentInfo studentInfo;
 
     private int schoolYear; // 학년도 (예: 2025, 2026)
-    private Integer grade; // 학년
-    private Integer classNum; // 반
-    private Integer studentNum; // 번호 (출석번호)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "classroom_id")
+    private Classroom classroom; // 소속 학급
+
+    private Integer attendanceNum; // 번호 (출석번호)
 
     @Builder
-    public StudentAssignment(StudentInfo studentInfo, int schoolYear, Integer grade, Integer classNum,
-            Integer studentNum) {
+    public StudentAssignment(StudentInfo studentInfo, int schoolYear, Classroom classroom, Integer attendanceNum) {
         this.studentInfo = studentInfo;
         this.schoolYear = schoolYear;
-        this.grade = grade;
-        this.classNum = classNum;
-        this.studentNum = studentNum;
+        this.classroom = classroom;
+        this.attendanceNum = attendanceNum;
+    }
+
+    public Integer getGrade() {
+        return classroom != null ? classroom.getGrade() : null;
+    }
+
+    public Integer getClassNum() {
+        return classroom != null ? classroom.getClassNum() : null;
     }
 }

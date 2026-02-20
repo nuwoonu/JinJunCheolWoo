@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.schoolmate.common.dto.NotificationDTO;
-import com.example.schoolmate.parkjoon.service.AdminNotificationService;
+import com.example.schoolmate.common.service.NotificationService;
+import com.example.schoolmate.config.SchoolmateUrls;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,11 +20,11 @@ import lombok.RequiredArgsConstructor;
  * - 개별 또는 그룹 알림 전송 API 제공
  */
 @Controller
-@RequestMapping("/parkjoon/admin/notifications")
+@RequestMapping(SchoolmateUrls.ADMIN_NOTIFICATIONS)
 @RequiredArgsConstructor
 public class AdminNotificationController {
 
-    private final AdminNotificationService adminNotificationService;
+    private final NotificationService adminNotificationService;
 
     @PostMapping("/send")
     @ResponseBody

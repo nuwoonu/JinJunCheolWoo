@@ -11,7 +11,6 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
-import com.example.schoolmate.common.entity.Classroom;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,8 +19,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,11 +39,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = { "assignments", "familyRelations", "medicalDetails", "awardsAndHonors", "grades" })
+@ToString(exclude = { "assignments", "familyRelations", "currentAssignment" })
 public class StudentInfo extends BaseInfo {
-    @Column(nullable = true)
-    private Long studentNumber; // 학번
-
     private LocalDate birthDate; // 생일
 
     private String address; // 주소
@@ -52,15 +49,20 @@ public class StudentInfo extends BaseInfo {
 
     private String phone; // 연락처
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Classroom classroom;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "current_assignment_id")
+    private StudentAssignment currentAssignment;
 
     // 전체 학번 생성 메서드 (표시용)
     public String getFullStudentNumber() {
-        if (classroom == null || studentNumber == null) {
+        if (currentAssignment == null || currentAssignment.getClassroom() == null) {
             return "-";
         }
-        return String.format("%d-%d-%02d", classroom.getYear(), classroom.getClassNum(), studentNumber);
+        return String.format("%d-%d-%02d",
+                currentAssignment.getSchoolYear(),
+                currentAssignment.getGrade(),
+                currentAssignment.getClassNum(),
+                currentAssignment.getAttendanceNum());
         // 예: "1-3-05" (1학년 3반 5번)
     }
 
@@ -90,16 +92,6 @@ public class StudentInfo extends BaseInfo {
     // 특이사항
     @Column(columnDefinition = "TEXT")
     private String specialNotes;
-
-    /**
-     * 현재 학년도 소속 정보 가져오기 헬퍼 메서드
-     */
-    public StudentAssignment getCurrentAssignment(int currentYear) {
-        return assignments.stream()
-                .filter(a -> a.getSchoolYear() == currentYear)
-                .findFirst()
-                .orElse(null);
-    }
 
     /**
      * 가장 최근 학적 이력 가져오기

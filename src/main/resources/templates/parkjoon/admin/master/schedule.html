@@ -82,7 +82,7 @@
                   <label class="form-label fw-bold">유형</label>
                   <select id="eventType" class="form-select">
                     <option
-                      th:each="type : ${T(com.example.schoolmate.soojin.entity.constant.EventType).values()}"
+                      th:each="type : ${eventTypes}"
                       th:value="${type.name()}"
                       th:text="${type.description}"
                     ></option>

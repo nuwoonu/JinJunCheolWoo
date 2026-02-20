@@ -19,8 +19,6 @@ import com.example.schoolmate.dto.CustomUserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import java.time.LocalDate;
-
 @Service
 @RequiredArgsConstructor
 @Log4j2
@@ -70,13 +68,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                         dto.setStudentIdentityNum(studentInfo.getCode());
                         dto.setStudentNumber(studentInfo.getCode()); // 하위 호환
 
-                        int currentYear = LocalDate.now().getYear();
-                        StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+                        StudentAssignment assignment = studentInfo.getCurrentAssignment();
                         if (assignment != null) {
                                 dto.setSchoolYear(assignment.getSchoolYear());
                                 dto.setGrade(assignment.getGrade());
                                 dto.setClassNum(assignment.getClassNum());
-                                dto.setStudentNum(assignment.getStudentNum());
+                                dto.setStudentNum(assignment.getAttendanceNum());
                         }
                 }
 

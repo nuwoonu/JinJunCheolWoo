@@ -1,6 +1,5 @@
 package com.example.schoolmate.controller;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,9 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.example.schoolmate.board.dto.NoticeDTO;
+import com.example.schoolmate.common.dto.NoticeDTO;
 import com.example.schoolmate.board.dto.ParentBoardDTO;
-import com.example.schoolmate.board.service.NoticeService;
+import com.example.schoolmate.common.service.NoticeService;
 import com.example.schoolmate.board.service.ParentBoardService;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.info.ParentInfo;
@@ -21,18 +20,17 @@ import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
+import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
-import com.example.schoolmate.woo.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -151,7 +149,7 @@ public class DashboardController {
         }
 
         // 공지사항 최근 5개
-        List<NoticeDTO> notices = noticeService.getRecentList(5);
+        List<NoticeDTO.BoardNotice> notices = noticeService.getRecentList(5);
         model.addAttribute("notices", notices);
 
         // 게시판 최근 5개
@@ -176,8 +174,7 @@ public class DashboardController {
         }
 
         // 현재 학년도 배정 정보
-        int currentYear = systemSettingService.getCurrentSchoolYear();
-        StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+        StudentAssignment assignment = studentInfo.getCurrentAssignment();
 
         return ChildDTO.builder()
                 .id(studentUser.getUid())

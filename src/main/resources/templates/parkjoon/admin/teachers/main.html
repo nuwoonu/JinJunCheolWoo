@@ -68,7 +68,7 @@
           </button>
 
           <a
-            th:href="@{/parkjoon/admin/teachers/create}"
+            th:href="@{${urls.ADMIN_TEACHERS} + '/create'}"
             class="btn btn-primary radius-8 px-20 py-11 d-flex align-items-center gap-2"
           >
             <i class="bi bi-person-plus-fill"></i> 신규 교사 등록
@@ -86,7 +86,7 @@
             <div class="col-auto d-flex align-items-center gap-3">
               <form
                 id="searchForm"
-                th:action="@{/parkjoon/admin/teachers}"
+                th:action="@{${urls.ADMIN_TEACHERS}}"
                 method="get"
                 class="input-group input-group-sm"
               >
@@ -97,7 +97,7 @@
                 >
                   <option value="">전체 상태</option>
                   <option
-                    th:each="s : ${T(com.example.schoolmate.common.entity.info.constant.TeacherStatus).values()}"
+                    th:each="s : ${statuses}"
                     th:value="${s.name()}"
                     th:text="${s.description}"
                     th:selected="${condition.status == s.name()}"
@@ -152,7 +152,7 @@
                   <i class="bi bi-search"></i> 검색
                 </button>
                 <a
-                  th:href="@{/parkjoon/admin/teachers}"
+                  th:href="@{${urls.ADMIN_TEACHERS}}"
                   class="btn btn-outline-secondary"
                   >초기화</a
                 >
@@ -197,7 +197,7 @@
                   <td>
                     <div class="d-flex align-items-center">
                       <a
-                        th:href="@{/parkjoon/admin/teachers/{id}(id=${t.uid})}"
+                        th:href="@{${urls.ADMIN_TEACHERS} + '/{id}'(id=${t.uid})}"
                         class="fw-bold text-decoration-none text-dark"
                         th:text="${t.name}"
                         >이교사</a
@@ -237,7 +237,7 @@
                   </td>
                   <td class="text-end pe-4">
                     <a
-                      th:href="@{/parkjoon/admin/teachers/{id}(id=${t.uid})}"
+                      th:href="@{${urls.ADMIN_TEACHERS} + '/{id}'(id=${t.uid})}"
                       class="btn btn-sm btn-outline-primary radius-8 px-3"
                     >
                       상세보기
@@ -263,7 +263,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/teachers(page=${page.number}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{${urls.ADMIN_TEACHERS}(page=${page.number}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
                   >&laquo;</a
                 >
               </li>
@@ -276,7 +276,7 @@
                 <a
                   class="page-link"
                   th:text="${i + 1}"
-                  th:href="@{/parkjoon/admin/teachers(page=${i + 1}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{${urls.ADMIN_TEACHERS}(page=${i + 1}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
                   >1</a
                 >
               </li>
@@ -287,7 +287,7 @@
               >
                 <a
                   class="page-link"
-                  th:href="@{/parkjoon/admin/teachers(page=${page.number + 2}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
+                  th:href="@{${urls.ADMIN_TEACHERS}(page=${page.number + 2}, status=${condition.status}, type=${condition.type}, keyword=${condition.keyword})}"
                   >&raquo;</a
                 >
               </li>

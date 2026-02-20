@@ -4,39 +4,24 @@
 
 // 1. 정보 수정 모달 오픈 및 데이터 바인딩
 function openEditModal(teacher) {
-  // 폼 요소 가져오기
-  const form = document.querySelector("#editTeacherModal form");
-
-  // 데이터 바인딩 (ID 기반)
-  // 안전하게 요소가 있는지 확인 후 값 할당 (선택적)
-  // 코드 더러워서 수정 예정
-  if (document.getElementById("edit-uid"))
-    document.getElementById("edit-uid").value = teacher.uid;
-  if (document.getElementById("edit-name"))
-    document.getElementById("edit-name").value = teacher.name;
-  if (document.getElementById("edit-email"))
-    document.getElementById("edit-email").value = teacher.email;
-  if (document.getElementById("edit-subject"))
-    document.getElementById("edit-subject").value = teacher.subject;
-  if (document.getElementById("edit-department"))
-    document.getElementById("edit-department").value = teacher.department;
-  if (document.getElementById("edit-position"))
-    document.getElementById("edit-position").value = teacher.position;
-  if (document.getElementById("edit-status"))
-    document.getElementById("edit-status").value = teacher.statusName;
-
-  // 부트스트랩 모달 띄우기
   const modalEl = document.getElementById("editTeacherModal");
-  if (modalEl) {
-    const editModal = new bootstrap.Modal(modalEl);
-    editModal.show();
-  }
+  if (!modalEl) return;
+
+  // 모달 내부의 모든 input/select 요소를 찾아서 teacher의 필드와 매칭
+  modalEl.querySelectorAll("[name]").forEach((el) => {
+    const key = el.getAttribute("name");
+    if (teacher[key] !== undefined) {
+      el.value = teacher[key];
+    }
+  });
+
+  new bootstrap.Modal(modalEl).show();
 }
 
 // 2. 삭제 확인 창
 function confirmDelete(uid) {
   if (confirm("정말로 이 계정을 삭제하시겠습니까?")) {
-    location.href = `/parkjoon/admin/teachers/delete/${uid}`;
+    location.href = `${ADMIN_URLS.ADMIN_TEACHERS}/delete/${uid}`;
   }
 }
 
@@ -73,6 +58,24 @@ document.addEventListener("DOMContentLoaded", function () {
       searchForm.submit();
     });
   }
+
+  // --- [C] 탭 상태 유지 로직 ---
+  const hash = window.location.hash;
+  if (hash) {
+    const triggerEl = document.querySelector(`.nav-link[href="${hash}"]`);
+    if (triggerEl) {
+      bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+    }
+  }
+  const tabLinks = document.querySelectorAll('a[data-bs-toggle="tab"]');
+  tabLinks.forEach((tab) => {
+    tab.addEventListener("shown.bs.tab", function (event) {
+      const href = event.target.getAttribute("href");
+      if (href) {
+        history.replaceState(null, null, href);
+      }
+    });
+  });
 });
 
 function uploadCsvFile() {
@@ -93,7 +96,7 @@ function uploadCsvFile() {
   overlay.classList.remove("d-none");
   overlay.classList.add("d-flex"); // Bootstrap d-flex로 중앙 정렬 유지
 
-  fetch("/parkjoon/admin/teachers/import-csv", {
+  fetch(`${ADMIN_URLS.ADMIN_TEACHERS}/import-csv`, {
     method: "POST",
     headers: {
       [header]: token,

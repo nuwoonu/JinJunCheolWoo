@@ -10,13 +10,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
-import com.example.schoolmate.cheol.service.StudentServiceImpl;
+import com.example.schoolmate.common.service.StudentService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -27,7 +26,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class StudentController {
 
-    private final StudentServiceImpl studentService;
+    private final StudentService studentService;
 
     // 학생 목록 페이지
     @GetMapping("/list")
@@ -60,7 +59,7 @@ public class StudentController {
 
     // 학번으로 학생 상세 조회
     @GetMapping("/details/number/{studentNumber}")
-    public String getStudentDetailsByNumber(@PathVariable Long studentNumber, Model model) {
+    public String getStudentDetailsByNumber(@PathVariable Integer studentNumber, Model model) {
         StudentResponseDTO student = studentService.getStudentByStudentNumber(studentNumber);
         model.addAttribute("student", student);
         return "student/student-details";
