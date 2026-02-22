@@ -74,7 +74,8 @@
               class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2"
             >
               <div>
-                <h6 class="text-lg text-primary-light fw-semibold mb-1" th:text="${#authentication.name}">
+                <h6 class="text-lg text-primary-light fw-semibold mb-1"
+                  th:text="${#authentication.principal instanceof T(com.example.schoolmate.dto.AuthUserDTO) ? #authentication.principal.customUserDTO.name : #authentication.name}">
                   User
                 </h6>
                 <span

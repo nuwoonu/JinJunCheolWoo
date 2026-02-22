@@ -41,7 +41,8 @@
           />
           <span class="profile-dropdown__contents">
             <!-- 사용자 이름 표시 - OAuth2/일반 로그인 통합 (01/29[woo]) -->
-            <span class="h6 mb-0 text-md d-block text-primary-light" th:text="${#authentication.name}">User</span>
+            <span class="h6 mb-0 text-md d-block text-primary-light"
+              th:text="${#authentication.principal instanceof T(com.example.schoolmate.dto.AuthUserDTO) ? #authentication.principal.customUserDTO.name : #authentication.name}">User</span>
             <!-- Admin, Parent, Guest 제외 - 학년-반 표시 (일반 로그인만) (01/30[woo]) -->
             <!-- OAuth2 로그인(DefaultOAuth2User)은 customUserDTO 없음 - instanceof 체크로 분기 -->
             <span
