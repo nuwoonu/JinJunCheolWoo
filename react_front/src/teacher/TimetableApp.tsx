@@ -130,8 +130,8 @@ export default function TimetableApp() {
                   style={{
                     ...styles.th,
                     ...styles.dayHeader,
-                    background: isTodayDay(day.key) ? '#1d4ed8' : '#4f46e5',
-                    borderBottom: isTodayDay(day.key) ? '3px solid #93c5fd' : '3px solid transparent',
+                    background: isTodayDay(day.key) ? '#04B4FF' : '#25A194',
+                    borderBottom: isTodayDay(day.key) ? '3px solid #BAE6FD' : '3px solid transparent',
                   }}
                 >
                   <span style={{ fontSize: 16, fontWeight: 700 }}>{day.shortLabel}</span>
@@ -149,7 +149,7 @@ export default function TimetableApp() {
                 <tr key={period} style={{ borderBottom: '1px solid #e5e7eb' }}>
                   {/* 교시 셀 */}
                   <td style={styles.periodCell}>
-                    <span style={{ color: '#4f46e5', fontWeight: 700, fontSize: 13 }}>
+                    <span style={{ color: '#25A194', fontWeight: 700, fontSize: 13 }}>
                       {period}교시
                     </span>
                   </td>
@@ -164,7 +164,7 @@ export default function TimetableApp() {
                         key={day.key}
                         style={{
                           ...styles.cell,
-                          background: isTodayDay(day.key) ? '#f0f4ff' : 'white',
+                          background: isTodayDay(day.key) ? '#F0F9FF' : 'white',
                           borderRight: '1px solid #e5e7eb',
                         }}
                       >
@@ -220,7 +220,7 @@ export default function TimetableApp() {
       <div style={styles.legend}>
         <span style={{ color: '#9ca3af', fontSize: 12 }}>
           ✏ 수정 &nbsp;|&nbsp; 🗑 삭제 &nbsp;|&nbsp;
-          <span style={{ background: '#e0e7ff', color: '#4338ca', padding: '2px 8px', borderRadius: 4, fontSize: 11 }}>
+          <span style={{ background: '#F0F9FF', color: '#04B4FF', padding: '2px 8px', borderRadius: 4, fontSize: 11 }}>
             오늘 열 강조 표시
           </span>
         </span>
@@ -238,7 +238,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   spinner: {
     width: 36, height: 36, border: '3px solid #e5e7eb',
-    borderTop: '3px solid #4f46e5', borderRadius: '50%',
+    borderTop: '3px solid #25A194', borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
   alert: {
@@ -254,7 +254,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'white', borderRadius: 12, border: '1px solid #e5e7eb',
   },
   addBtn: {
-    display: 'inline-block', background: '#4f46e5', color: 'white',
+    display: 'inline-block', background: '#25A194', color: 'white',
     padding: '8px 20px', borderRadius: 8, textDecoration: 'none',
     fontSize: 14, fontWeight: 600,
   },
@@ -301,7 +301,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   editBtn: {
     width: 24, height: 24, borderRadius: 4,
-    background: '#e0e7ff', border: 'none', cursor: 'pointer',
+    background: '#E6F7F5', border: 'none', cursor: 'pointer',
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
     fontSize: 12, textDecoration: 'none',
   },

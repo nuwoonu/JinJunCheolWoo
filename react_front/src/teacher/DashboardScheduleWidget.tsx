@@ -31,7 +31,8 @@ const DAY_OPTIONS: { value: DayKey; label: string }[] = [
   { value: 'FRIDAY',    label: '금요일' },
 ]
 
-const BORDER_COLORS = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#0ea5e9']
+// Schoolmate 브랜드 팔레트 (primary, info, warning, success, lilac)
+const BORDER_COLORS = ['#25A194', '#04B4FF', '#FF7A2C', '#45B369', '#8252E9']
 
 // ── 유틸 ─────────────────────────────────────────────────────────────────────
 
@@ -482,7 +483,7 @@ const css: Record<string, React.CSSProperties> = {
     maxHeight: 460,
   },
   addBtn: {
-    background: '#4f46e5',
+    background: '#25A194',
     color: 'white',
     border: 'none',
     borderRadius: 6,
@@ -507,7 +508,7 @@ const css: Record<string, React.CSSProperties> = {
     width: 32,
     height: 32,
     border: '3px solid #e5e7eb',
-    borderTop: '3px solid #4f46e5',
+    borderTop: '3px solid #25A194',
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
@@ -550,7 +551,7 @@ const css: Record<string, React.CSSProperties> = {
     width: 28,
     height: 28,
     borderRadius: 6,
-    background: '#e0e7ff',
+    background: '#E6F7F5',
     border: 'none',
     cursor: 'pointer',
     fontSize: 13,
@@ -664,7 +665,7 @@ const css: Record<string, React.CSSProperties> = {
     fontSize: 14,
   },
   saveBtn: {
-    background: '#4f46e5',
+    background: '#25A194',
     color: 'white',
     border: 'none',
     borderRadius: 6,
