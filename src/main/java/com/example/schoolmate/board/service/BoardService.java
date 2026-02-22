@@ -68,7 +68,7 @@ public class BoardService {
      * 교직원 게시판 목록
      */
     public Page<BoardResponseDTO> getTeacherBoard(Pageable pageable) {
-        return boardRepository.findTeacherBoard(pageable)
+        return boardRepository.findTeacherBoard(BoardType.TEACHER_BOARD, pageable)
                 .map(BoardResponseDTO::fromEntityForList);
     }
 

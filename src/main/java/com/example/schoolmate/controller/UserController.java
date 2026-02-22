@@ -84,21 +84,24 @@ public class UserController {
     }
 
     /**
-     * 프로필 페이지
+     * 프로필 페이지 - 역할에 따라 해당 details 페이지로 리다이렉트
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
-    public String getProfile(Model model) {
+    public String getProfile() {
         log.info("프로필 페이지 요청");
 
-        // 현재 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AuthUserDTO authUser = (AuthUserDTO) authentication.getPrincipal();
+        CustomUserDTO userDTO = authUser.getCustomUserDTO();
 
-        CustomUserDTO userDTO = userService.getUserDTOByEmail(authUser.getUsername());
-        model.addAttribute("user", userDTO);
-
-        return "/user/profile";
+        return switch (userDTO.getRole()) {
+            case STUDENT -> "redirect:/student/details/" + userDTO.getUid();
+            case PARENT -> "redirect:/parent/details";
+            case TEACHER -> "redirect:/teacher/list"; // TODO: teacher-details 페이지 생성 필요
+            case ADMIN -> "redirect:/dashboard";
+            default -> "redirect:/dashboard";
+        };
     }
 
     /**

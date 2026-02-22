@@ -64,9 +64,9 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // ========== 교직원 게시판 ==========
     // 교직원 게시판 (전체)
-    @Query("SELECT b FROM Board b WHERE b.boardType = 'TEACHER_BOARD' " +
+    @Query("SELECT b FROM Board b WHERE b.boardType = :type " +
            "AND b.isDeleted = false ORDER BY b.isPinned DESC, b.createDate DESC")
-    Page<Board> findTeacherBoard(Pageable pageable);
+    Page<Board> findTeacherBoard(@Param("type") BoardType type, Pageable pageable);
 
     // ========== 검색 ==========
     // 제목으로 검색

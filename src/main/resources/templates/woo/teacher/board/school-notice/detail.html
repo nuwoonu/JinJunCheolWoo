@@ -82,27 +82,71 @@
           </a>
         </div>
       </div>
+
+      <!-- [woo] 수정 모달 -->
+      <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">게시물 수정</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-16">
+                <label class="form-label fw-semibold">제목</label>
+                <input type="text" id="editTitle" class="form-control" th:value="${board.title}">
+              </div>
+              <div class="mb-16">
+                <label class="form-label fw-semibold">내용</label>
+                <textarea id="editContent" class="form-control" rows="12" th:text="${board.content}"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+              <button type="button" class="btn btn-primary-600" onclick="submitEdit()">저장</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <th:block layout:fragment="css">
     </th:block>
 
     <th:block layout:fragment="script">
-      <script th:inline="none">
+      <script th:inline="javascript">
+        const boardId = [[${board.id}]];
+
+        // [woo] 수정 모달 열기
         function editBoard() {
-          // 수정 페이지로 이동 또는 모달 열기
-          alert('수정 기능은 추후 구현 예정입니다.');
+          new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
+
+        // [woo] 수정 내용 PUT /api/board/{id} 로 전송
+        function submitEdit() {
+          const title = document.getElementById('editTitle').value.trim();
+          const content = document.getElementById('editContent').value.trim();
+          if (!title) { alert('제목을 입력해주세요.'); return; }
+          if (!content) { alert('내용을 입력해주세요.'); return; }
+
+          fetch('/api/board/' + boardId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content })
+          })
+          .then(response => {
+            if (response.ok) { location.reload(); }
+            else { return response.text().then(text => { throw new Error(text); }); }
+          })
+          .catch(error => { alert('수정 실패: ' + error.message); });
         }
 
         function deleteBoard() {
           if (!confirm('정말 삭제하시겠습니까?')) return;
 
-          const boardId = [[${board.id}]];
           fetch('/api/board/' + boardId, {
             method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
           })
           .then(response => {
             if (response.ok) {
@@ -112,9 +156,7 @@
               return response.text().then(text => { throw new Error(text); });
             }
           })
-          .catch(error => {
-            alert('삭제 실패: ' + error.message);
-          });
+          .catch(error => { alert('삭제 실패: ' + error.message); });
         }
       </script>
     </th:block>

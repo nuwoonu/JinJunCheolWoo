@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -88,10 +88,10 @@ public class BoardController {
             @PathVariable int grade,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal AuthUserDTO authUser,
+            Authentication authentication,
             Model model) {
 
-        CustomUserDTO userDTO = authUser.getCustomUserDTO();
+        CustomUserDTO userDTO = getCustomUserDTO(authentication);
 
         // 열람 권한 체크
         if (!boardService.canRead(BoardType.GRADE_BOARD, userDTO, grade, null)) {
@@ -119,10 +119,10 @@ public class BoardController {
     public String gradeBoardDetail(
             @PathVariable int grade,
             @PathVariable Long id,
-            @AuthenticationPrincipal AuthUserDTO authUser,
+            Authentication authentication,
             Model model) {
 
-        CustomUserDTO userDTO = authUser.getCustomUserDTO();
+        CustomUserDTO userDTO = getCustomUserDTO(authentication);
 
         if (!boardService.canRead(BoardType.GRADE_BOARD, userDTO, grade, null)) {
             return "error/403";
@@ -161,7 +161,7 @@ public class BoardController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long classroomId,
-            @AuthenticationPrincipal AuthUserDTO authUser,
+            Authentication authentication,
             Model model) {
 
         // classroomId가 없으면 조회 필요 (추후 구현)
@@ -170,7 +170,7 @@ public class BoardController {
             return "error/404";
         }
 
-        CustomUserDTO userDTO = authUser.getCustomUserDTO();
+        CustomUserDTO userDTO = getCustomUserDTO(authentication);
 
         if (!boardService.canRead(BoardType.CLASS_BOARD, userDTO, grade, classroomId)) {
             model.addAttribute("error", "해당 학급 게시판 열람 권한이 없습니다.");
@@ -201,10 +201,10 @@ public class BoardController {
             @PathVariable int classNum,
             @PathVariable Long id,
             @RequestParam(required = false) Long classroomId,
-            @AuthenticationPrincipal AuthUserDTO authUser,
+            Authentication authentication,
             Model model) {
 
-        CustomUserDTO userDTO = authUser.getCustomUserDTO();
+        CustomUserDTO userDTO = getCustomUserDTO(authentication);
 
         if (!boardService.canRead(BoardType.CLASS_BOARD, userDTO, grade, classroomId)) {
             return "error/403";
@@ -435,5 +435,18 @@ public class BoardController {
         model.addAttribute("targetClassroomId", targetClassroomId);
 
         return "woo/teacher/board/parent-board/write";
+    }
+
+    // ========== 헬퍼 ==========
+
+    private CustomUserDTO getCustomUserDTO(Authentication authentication) {
+        if (authentication == null) {
+            throw new IllegalStateException("인증 정보가 없습니다.");
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof AuthUserDTO authUserDTO) {
+            return authUserDTO.getCustomUserDTO();
+        }
+        throw new IllegalStateException("지원하지 않는 인증 방식입니다.");
     }
 }

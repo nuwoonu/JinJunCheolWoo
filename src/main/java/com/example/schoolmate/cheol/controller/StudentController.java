@@ -15,6 +15,7 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.cheol.service.StudentServiceImpl;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,8 @@ public class StudentController {
     public String getStudentList(Model model) {
         List<StudentResponseDTO> students = studentService.getAllStudents();
         model.addAttribute("students", students);
+        // [woo] 수정 사이드바의 상태 선택 드롭다운용
+        model.addAttribute("statusList", StudentStatus.values());
         return "student/student-list";
     }
 

@@ -7,7 +7,7 @@
   layout:decorate="~{layouts/layout}"
 >
   <head>
-    <title>Teacher Dashboard</title>
+    <title>교사 Dashboard</title>
   </head>
   <body>
     <div layout:fragment="content">
@@ -23,44 +23,6 @@
         <div class="mt-24">
             <div class="row gy-4">
 
-                <!-- 나의 학급 현황 카드 Start -->
-                <div class="col-12">
-                    <div class="card radius-12 h-100">
-                        <div class="card-header d-flex align-items-center justify-content-between py-16 px-20 border-bottom">
-                            <h6 class="text-lg mb-0">
-                                <iconify-icon icon="mdi:google-classroom" class="me-8 text-primary-600"></iconify-icon>
-                                나의 학급
-                            </h6>
-                            <a th:href="@{/teacher/myclass/students}" class="btn btn-sm btn-outline-primary-600">
-                                학생 관리
-                                <iconify-icon icon="mdi:arrow-right" class="ms-4"></iconify-icon>
-                            </a>
-                        </div>
-                        <div class="card-body p-20" th:if="${classInfo != null}">
-                            <div class="d-flex align-items-center gap-16 mb-20">
-                                <div class="w-56-px h-56-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center">
-                                    <iconify-icon icon="mdi:school" class="text-primary-600 text-2xl"></iconify-icon>
-                                </div>
-                                <div>
-                                    <h5 class="mb-4" th:text="${classInfo.grade} + '학년 ' + ${classInfo.classNum} + '반'">3학년 2반</h5>
-                                    <span class="text-secondary-light text-sm" th:text="${classInfo.year} + '학년도'">2026학년도</span>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-12 border-top">
-                                <span class="text-secondary-light">
-                                    <iconify-icon icon="mdi:account-group" class="me-4"></iconify-icon>
-                                    총 학생 수
-                                </span>
-                                <span class="fw-semibold text-lg" th:text="${classInfo.totalStudents} + '명'">30명</span>
-                            </div>
-                        </div>
-                        <div class="card-body p-20 text-center" th:if="${classInfo == null}">
-                            <iconify-icon icon="mdi:alert-circle-outline" class="text-warning-600 text-4xl mb-12"></iconify-icon>
-                            <p class="text-secondary-light mb-0">담당 학급이 없습니다</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- 나의 학급 현황 카드 End -->
 
                 <!-- Notice Board start -->
                 <div class="col-xxl-4 col-lg-6">
@@ -68,7 +30,7 @@
                         <div class="card-body p-0">
                             <div
                                 class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
-                                <h6 class="text-lg mb-0">Notice Board</h6>
+                                <h6 class="text-lg mb-0">알림 보드</h6>
                                 <div class="dropdown">
                                     <button type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <iconify-icon icon="entypo:dots-three-vertical"
@@ -122,7 +84,7 @@
                                         <img src="/images/thumbs/notice-board-img2.png" alt="Thumbnail"
                                             class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
                                         <div class="">
-                                            <h6 class="mb-4 text-lg">Kathryn Murphy</h6>
+                                            <h6 class="mb-4 text-lg">테스트</h6>
                                             <p class="text-secondary-light text-sm mb-0">Lorem Ipsum is simply dummy
                                                 text of the
                                                 printing and typesett ing industry Lorem Ipsum is simply dummy text of
@@ -146,7 +108,7 @@
                                         <img src="/images/thumbs/notice-board-img2.png" alt="Thumbnail"
                                             class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
                                         <div class="">
-                                            <h6 class="mb-4 text-lg">John Doe</h6>
+                                            <h6 class="mb-4 text-lg">테스트</h6>
                                             <p class="text-secondary-light text-sm mb-0">Lorem ipsum dolor sit amet
                                                 consectetur
                                                 adipisicing elit. Laborum voluptas corporis qui dolore est odit officia
@@ -161,105 +123,12 @@
                 </div>
                 <!-- Notice Board End -->
 
-                <!-- Upcoming Events start -->
+                <!-- [woo] 오늘의 수업 일정 - React Island (add/edit/delete 모달 포함) -->
                 <div class="col-xxl-4 col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body p-0">
-                            <div
-                                class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
-                                <h6 class="text-lg mb-0">Upcoming Events</h6>
-                            </div>
-                            <div class="ps-20 pt-20 pb-20">
-                                <div class="pe-20 d-flex flex-column gap-20 overflow-y-auto max-h-460-px scroll-sm">
-                                    <div class="d-flex align-items-center justify-content-between gap-16">
-                                        <div class="ps-10 border-start-width-3-px border-purple-600">
-                                            <div class="d-flex align-items-end gap-6">
-                                                <h6 class="text-lg fw-normal mb-0">09:00 - 09:45</h6>
-                                                <span class="text-xs text-secondary-light line-height-1 mb-2">AM</span>
-                                            </div>
-                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Marketing Strategy Kickoff
-                                            </p>
-                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
-                                                    href="javascript:void(0)"
-                                                    class="text-primary-600 hover-underline">Robert Fox</a></p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0)"
-                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center justify-content-between gap-16">
-                                        <div class="ps-10 border-start-width-3-px border-warning-600">
-                                            <div class="d-flex align-items-end gap-6">
-                                                <h6 class="text-lg fw-normal mb-0">11:15 - 12:00</h6>
-                                                <span class="text-xs text-secondary-light line-height-1 mb-2">AM</span>
-                                            </div>
-                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Product Design Brainstorm
-                                            </p>
-                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
-                                                    href="javascript:void(0)"
-                                                    class="text-primary-600 hover-underline">Leslie Alexander</a></p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0)"
-                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center justify-content-between gap-16">
-                                        <div class="ps-10 border-start-width-3-px border-blue-600">
-                                            <div class="d-flex align-items-end gap-6">
-                                                <h6 class="text-lg fw-normal mb-0">02:00 - 03:00</h6>
-                                                <span class="text-xs text-secondary-light line-height-1 mb-2">PM</span>
-                                            </div>
-                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Client Feedback Review</p>
-                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
-                                                    href="javascript:void(0)"
-                                                    class="text-primary-600 hover-underline">Courtney Henry</a></p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0)"
-                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center justify-content-between gap-16">
-                                        <div class="ps-10 border-start-width-3-px border-success-600">
-                                            <div class="d-flex align-items-end gap-6">
-                                                <h6 class="text-lg fw-normal mb-0">04:15 - 05:00</h6>
-                                                <span class="text-xs text-secondary-light line-height-1 mb-2">PM</span>
-                                            </div>
-                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Sprint Planning &amp; Task
-                                                Allocation</p>
-                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
-                                                    href="javascript:void(0)"
-                                                    class="text-primary-600 hover-underline">Eleanor Pena</a></p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0)"
-                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center justify-content-between gap-16">
-                                        <div class="ps-10 border-start-width-3-px border-primary-600">
-                                            <div class="d-flex align-items-end gap-6">
-                                                <h6 class="text-lg fw-normal mb-0">01:15 - 02:00</h6>
-                                                <span class="text-xs text-secondary-light line-height-1 mb-2">PM</span>
-                                            </div>
-                                            <p class="text-secondary-light mt-4 mb-2 text-sm">Client Feedback Review</p>
-                                            <p class="text-xs text-secondary-light mb-0">Lead by <a
-                                                    href="javascript:void(0)"
-                                                    class="text-primary-600 hover-underline">John</a></p>
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0)"
-                                                class="py-6 px-16 radius-4 bg-neutral-100 text-secondary-light fw-semibold bg-hover-primary-600 hover-text-white">View</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="dashboard-schedule-root"></div>
+                    <script type="module" th:src="@{/js/react/teacher/dashboard.js}"></script>
                 </div>
-                <!-- Upcoming Events End -->
+                <!-- 오늘의 수업 일정 End -->
 
                 <!-- Calendar start -->
                 <div class="col-xxl-4 col-lg-6">

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>수업 일정 관리</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 class="fw-semibold mb-0">수업 일정 관리</h6>
+          <p class="text-neutral-600 mt-4 mb-0">나의 주간 수업 시간표를 관리합니다</p>
+        </div>
+      </div>
+
+      <!-- 수정/삭제 후 리다이렉트 시 flash 메시지 (Thymeleaf redirectAttributes) -->
+      <div th:if="${message}" class="alert alert-success alert-dismissible fade show mb-20" role="alert">
+        <span th:text="${message}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-20" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
+      <!-- [woo] React 시간표 마운트 포인트 -->
+      <div id="schedule-root">
+        <!-- React 번들 로딩 전 스켈레톤 -->
+        <div class="card radius-12">
+          <div class="card-body text-center py-40">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">불러오는 중...</span>
+            </div>
+            <p class="text-secondary-light mt-12 mb-0">시간표를 불러오는 중입니다...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- [woo] React ES 모듈 번들 로드 (npm run build 후 생성됨) -->
+    <th:block layout:fragment="script">
+      <script type="module" th:src="@{/js/react/teacher/schedule.js}"></script>
+    </th:block>
+  </body>
+</html>

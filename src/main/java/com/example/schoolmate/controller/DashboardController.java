@@ -1,6 +1,5 @@
 package com.example.schoolmate.controller;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -102,16 +101,16 @@ public class DashboardController {
 
         int currentYear = systemSettingService.getCurrentSchoolYear();
 
-        // 교사 정보 조회 후 학급 정보 가져오기
+        // 교사 정보 조회 후 학급 정보 & 오늘의 일정 가져오기
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
         if (teacherInfo != null) {
             try {
                 ClassStudentDTO classInfo = teacherService.getMyClassStudents(teacherInfo.getId(), currentYear);
                 model.addAttribute("classInfo", classInfo);
             } catch (Exception e) {
-                // 담당 학급이 없는 경우
                 model.addAttribute("classInfo", null);
             }
+            // [woo] 수업 일정은 React 위젯(GET /api/teacher/schedule/today)이 직접 로딩
         } else {
             model.addAttribute("classInfo", null);
         }

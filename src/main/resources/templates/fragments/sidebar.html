@@ -11,8 +11,8 @@
     <div class="sidebar-logo d-flex align-items-center justify-content-between">
       <a th:href="@{/dashboard}" class="">
         <img th:src="@{/images/schoolmateLogo.png}" alt="홈" class="light-logo" width="173" height="40" />
-        <img src="/images/logo-light.png" alt="site logo" class="dark-logo" />
-        <img src="/images/logo-icon.png" alt="site logo" class="logo-icon" />
+        <img th:src="@{/images/schoolmateLogo.png}" alt="홈" class="dark-logo" width="173" height="40" />
+        <img th:src="@{/images/schoolmateLogo.png}" alt="홈" class="logo-icon" />
       </a>
       <button
         type="button"
@@ -41,8 +41,7 @@
           />
           <span class="profile-dropdown__contents">
             <!-- 사용자 이름 표시 - OAuth2/일반 로그인 통합 (01/29[woo]) -->
-            <span class="h6 mb-0 text-md d-block text-primary-light"
-              th:text="${#authentication.name}">User</span>
+            <span class="h6 mb-0 text-md d-block text-primary-light" th:text="${#authentication.name}">User</span>
             <!-- Admin, Parent, Guest 제외 - 학년-반 표시 (일반 로그인만) (01/30[woo]) -->
             <!-- OAuth2 로그인(DefaultOAuth2User)은 customUserDTO 없음 - instanceof 체크로 분기 -->
             <span
@@ -60,20 +59,11 @@
       <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
         <li>
           <a
-            th:href="@{/profile}"
+            th:href="@{/user/profile}"
             class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
           >
             <i class="ri-user-3-line"></i>
-            My Profile
-          </a>
-        </li>
-        <li>
-          <a
-            th:href="@{/settings}"
-            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-          >
-            <i class="ri-settings-3-line"></i>
-            Setting
+            나의 프로필
           </a>
         </li>
         <li>
@@ -128,6 +118,14 @@
             </a>
           </li>
         </ul>
+      </li>
+
+      <!-- 수업 일정 - TEACHER만 -->
+      <li sec:authorize="hasRole('TEACHER')">
+        <a th:href="@{/teacher/schedule}">
+          <i class="ri-calendar-schedule-line"></i>
+          <span>수업 일정</span>
+        </a>
       </li>
 
       <!-- Students - TEACHER, ADMIN, STUDENT만 (학부모 제외) -->
@@ -248,12 +246,12 @@
               학년 게시판
             </a>
           </li>
-          <li sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
+          <!-- <li sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
             <a th:href="@{/board/class/1/1}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               우리 반 게시판
             </a>
-          </li>
+          </li> -->
           <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
             <a th:href="@{/board/teacher}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
@@ -426,7 +424,7 @@
       <li class="dropdown" sec:authorize="hasAnyRole('PARENT', 'TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-edit-box-line"></i>
-          <span>게시판</span>
+          <span>학부모 게시판</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
