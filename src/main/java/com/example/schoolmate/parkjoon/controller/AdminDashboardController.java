@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.schoolmate.common.dto.DashboardDTO;
-import com.example.schoolmate.parkjoon.service.AdminDashboardService;
+import com.example.schoolmate.common.service.DashboardService;
+import com.example.schoolmate.config.SchoolmateUrls;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,16 +18,16 @@ import lombok.RequiredArgsConstructor;
  * - 전체 학생, 교사, 직원 수 및 승인 대기 학부모 수 조회
  */
 @Controller
-@RequestMapping("/parkjoon/admin")
+@RequestMapping(SchoolmateUrls.ADMIN_ROOT)
 @RequiredArgsConstructor
 public class AdminDashboardController {
 
-    private final AdminDashboardService adminDashboardService;
+    private final DashboardService adminDashboardService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         DashboardDTO stats = adminDashboardService.getDashboardStats();
         model.addAttribute("stats", stats);
-        return "parkjoon/admin/main";
+        return SchoolmateUrls.ADMIN_ROOT + "/main";
     }
 }

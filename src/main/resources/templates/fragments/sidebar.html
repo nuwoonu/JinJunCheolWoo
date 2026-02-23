@@ -118,6 +118,12 @@
               학생 관리
             </a>
           </li>
+          <li>
+            <a th:href="@{/student/add}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생 추가
+            </a>
+          </li>
         </ul>
       </li>
 
@@ -136,7 +142,7 @@
           <span>학생</span>
         </a>
         <ul class="sidebar-submenu">
-          <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+          <li sec:authorize="hasRole('ADMIN')">
             <a th:href="@{/student/add}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학생 추가
@@ -146,6 +152,12 @@
             <a th:href="@{/student/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학생 리스트
+            </a>
+          </li>
+          <li sec:authorize="hasRole('STUDENT')">
+            <a th:href="@{/student/myinfo}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생세부사항
             </a>
           </li>
           <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">

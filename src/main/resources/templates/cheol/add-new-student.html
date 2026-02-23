@@ -1,0 +1,141 @@
+<!doctype html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>학생 추가</title>
+  </head>
+
+  <div layout:fragment="content">
+    <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div>
+        <h1 class="fw-semibold mb-4 h6 text-primary-light">학생 추가</h1>
+        <div>
+          <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">Dashboard</a>
+          <span class="text-secondary-light"> / </span>
+          <a th:href="@{/student/list}" class="text-secondary-light hover-text-primary hover-underline">학생</a>
+          <span class="text-secondary-light"> / 학생 추가</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div th:if="${error}" class="alert alert-danger mb-3" role="alert" th:text="${error}"></div>
+    <!-- 성공 메시지 -->
+    <div th:if="${msg}" class="alert alert-success mb-3" role="alert" th:text="${msg}"></div>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-4">새 학생 등록</h5>
+        <form th:action="@{/student/add}" th:object="${studentDTO}" method="post">
+          <!-- 기본 정보 -->
+          <div class="row gy-3 mb-4">
+            <div class="col-md-3">
+              <label for="academicYear" class="form-label">Academic Year <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="academicYear" th:value="${currentYear}" readonly />
+            </div>
+            <div class="col-md-3">
+              <label for="grade" class="form-label">학년 <span class="text-danger">*</span></label>
+              <!-- 담임 교사: 자동 세팅 (읽기 전용) -->
+              <th:block th:if="${isTeacher}">
+                <input type="text" class="form-control" id="grade" th:value="*{grade} + '학년'" readonly />
+                <input type="hidden" th:field="*{grade}" />
+              </th:block>
+              <!-- 관리자: 드롭다운 선택 -->
+              <select th:unless="${isTeacher}" id="grade" th:field="*{grade}" class="form-control form-select">
+                <option value="" disabled>학년 선택</option>
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
+              </select>
+              <div class="text-danger small" th:if="${#fields.hasErrors('grade')}" th:errors="*{grade}"></div>
+            </div>
+            <div class="col-md-3">
+              <label for="classNum" class="form-label">반 <span class="text-danger">*</span></label>
+              <!-- 담임 교사: 자동 세팅 (읽기 전용) -->
+              <th:block th:if="${isTeacher}">
+                <input type="text" class="form-control" id="classNum" th:value="*{classNum} + '반'" readonly />
+                <input type="hidden" th:field="*{classNum}" />
+              </th:block>
+              <!-- 관리자: 드롭다운 선택 -->
+              <select th:unless="${isTeacher}" id="classNum" th:field="*{classNum}" class="form-control form-select">
+                <option value="" disabled>반 선택</option>
+                <option value="1">1반</option>
+                <option value="2">2반</option>
+                <option value="3">3반</option>
+                <option value="4">4반</option>
+                <option value="5">5반</option>
+                <option value="6">6반</option>
+                <option value="7">7반</option>
+                <option value="8">8반</option>
+                <option value="9">9반</option>
+                <option value="10">10반</option>
+              </select>
+              <div class="text-danger small" th:if="${#fields.hasErrors('classNum')}" th:errors="*{classNum}"></div>
+            </div>
+            <div class="col-md-3">
+              <label for="studentNumber" class="form-label">번호 <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="studentNumber"
+                th:field="*{studentNumber}"
+                placeholder="번호를 입력하세요"
+              />
+              <div
+                class="text-danger small"
+                th:if="${#fields.hasErrors('studentNumber')}"
+                th:errors="*{studentNumber}"
+              ></div>
+            </div>
+          </div>
+
+          <!-- 개인 정보 -->
+          <div class="row gy-3 mb-4">
+            <div class="col-md-6">
+              <label for="name" class="form-label">이름 <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="이름을 입력하세요" />
+              <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+            </div>
+          </div>
+
+          <!-- 로그인 정보 -->
+          <h6 class="fw-semibold mb-3 mt-4 border-top pt-4">로그인 정보</h6>
+          <div class="row gy-3 mb-4">
+            <div class="col-md-6">
+              <label for="email" class="form-label">이메일 <span class="text-danger">*</span></label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                th:field="*{email}"
+                placeholder="이메일을 입력하세요"
+              />
+              <div class="text-danger small" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
+            <div class="col-md-6">
+              <label for="password" class="form-label">비밀번호 <span class="text-danger">*</span></label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                th:field="*{password}"
+                placeholder="비밀번호를 입력하세요"
+              />
+              <div class="text-danger small" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">등록</button>
+            <a th:href="@{/student/list}" class="btn btn-secondary">취소</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</html>

@@ -19,6 +19,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class StudentUpdateDTO {
 
+    private Long id;
+
     private String name;
 
     @Email(message = "올바른 이메일 형식이 아닙니다.")

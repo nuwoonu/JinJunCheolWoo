@@ -5,16 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.example.schoolmate.board.dto.NoticeDTO;
+import com.example.schoolmate.common.dto.NoticeDTO;
 import com.example.schoolmate.board.dto.ParentBoardDTO;
-import com.example.schoolmate.board.service.NoticeService;
+import com.example.schoolmate.common.service.NoticeService;
 import com.example.schoolmate.board.service.ParentBoardService;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.info.ParentInfo;
@@ -23,17 +22,17 @@ import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
+import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
+import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
-import com.example.schoolmate.woo.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -83,9 +82,37 @@ public class DashboardController {
         return "dashboard/admin";
     }
 
+    // OAuth2 사용자 호환 - Authentication 객체로 처리
     @GetMapping("/student/dashboard")
-    public String getStudentDashboard() {
-        return "dashboard/student";
+    public String getStudentDashboard(Authentication authentication, Model model) {
+        Long uid = getUidFromAuthentication(authentication);
+
+        if (uid != null) {
+            // 1. 학생 User 조회
+            User studentUser = userRepository.findById(uid).orElse(null);
+            if (studentUser != null) {
+                StudentInfo studentInfo = studentUser.getInfo(StudentInfo.class);
+                if (studentInfo != null) {
+                    // 2. DTO 변환
+                    StudentResponseDTO studentDTO = StudentResponseDTO.from(studentInfo);
+                    model.addAttribute("student", studentDTO);
+
+                    // 3. 프로필 이미지 조회
+                    Profile profile = profileRepository.findByUser(studentUser).orElse(null);
+                    if (profile != null && profile.getUuid() != null) {
+                        String imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_"
+                                + profile.getImgName();
+                        model.addAttribute("profileImageUrl", imageUrl);
+                    }
+                }
+            }
+        }
+
+        // 4. 공지사항
+        List<NoticeDTO.BoardNotice> notices = noticeService.getRecentList(5);
+        model.addAttribute("notices", notices);
+
+        return "cheol/student-dashboard";
     }
 
     // OAuth2 사용자 호환 - Authentication 객체로 처리 (01/30[woo])
@@ -93,17 +120,26 @@ public class DashboardController {
     public String getTeacherDashboard(Authentication authentication, Model model) {
         Long uid = getUidFromAuthentication(authentication);
 
-        // OAuth2 사용자는 TeacherInfo가 없으므로 classInfo를 null로 설정
+        // 공지사항 (항상 조회)
+        model.addAttribute("notices", noticeService.getRecentList(5));
+
         if (uid == null) {
             model.addAttribute("classInfo", null);
+            model.addAttribute("teacherName", "선생님");
+            model.addAttribute("teacherSubject", "");
             return "dashboard/teacher";
         }
 
+        // 교사 이름
+        User teacher = userRepository.findById(uid).orElse(null);
+        model.addAttribute("teacherName", teacher != null && teacher.getName() != null ? teacher.getName() : "선생님");
+
         int currentYear = systemSettingService.getCurrentSchoolYear();
 
-        // 교사 정보 조회 후 학급 정보 & 오늘의 일정 가져오기
+        // 교사 정보 조회 후 학급 정보 & 과목 정보 가져오기
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
         if (teacherInfo != null) {
+            model.addAttribute("teacherSubject", teacherInfo.getSubject() != null ? teacherInfo.getSubject() : "");
             try {
                 ClassStudentDTO classInfo = teacherService.getMyClassStudents(teacherInfo.getId(), currentYear);
                 model.addAttribute("classInfo", classInfo);
@@ -112,6 +148,7 @@ public class DashboardController {
             }
             // [woo] 수업 일정은 React 위젯(GET /api/teacher/schedule/today)이 직접 로딩
         } else {
+            model.addAttribute("teacherSubject", "");
             model.addAttribute("classInfo", null);
         }
 
@@ -127,7 +164,7 @@ public class DashboardController {
         if (uid == null) {
             model.addAttribute("children", new ArrayList<>());
             // 공지사항 최근 5개
-            List<NoticeDTO> notices = noticeService.getRecentList(5);
+            List<NoticeDTO.BoardNotice> notices = noticeService.getRecentList(5);
             model.addAttribute("notices", notices);
             // 게시판 최근 5개
             List<ParentBoardDTO> boards = parentBoardService.getRecentList(5);
@@ -152,7 +189,7 @@ public class DashboardController {
         }
 
         // 공지사항 최근 5개
-        List<NoticeDTO> notices = noticeService.getRecentList(5);
+        List<NoticeDTO.BoardNotice> notices = noticeService.getRecentList(5);
         model.addAttribute("notices", notices);
 
         // 게시판 최근 5개
@@ -238,8 +275,7 @@ public class DashboardController {
         }
 
         // 현재 학년도 배정 정보
-        int currentYear = systemSettingService.getCurrentSchoolYear();
-        StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+        StudentAssignment assignment = studentInfo.getCurrentAssignment();
 
         return ChildDTO.builder()
                 .id(studentUser.getUid())

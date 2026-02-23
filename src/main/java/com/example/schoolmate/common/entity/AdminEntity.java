@@ -1,7 +1,6 @@
 package com.example.schoolmate.common.entity;
 
 import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AdminEntity {  // extends User 제거
+public class AdminEntity { // extends User 제거
     private String department;
     private String employeeNumber;
 

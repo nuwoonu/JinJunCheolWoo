@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
  */
 function uploadParentCsv() {
   uploadCsv(
-    "/parkjoon/admin/parents/import-csv",
+    `${ADMIN_URLS.ADMIN_PARENTS}/import-csv`,
     "CSV 파일을 통해 학부모를 일괄 등록하시겠습니까?\n(형식: 이름,이메일,비밀번호,연락처)",
     "일괄 등록이 완료되었습니다.",
   );
@@ -33,7 +33,7 @@ function uploadParentCsv() {
  */
 function updateStatusBulk(statusName, statusLabel) {
   performBulkStatusUpdate(
-    "/parkjoon/admin/parents/bulk-status",
+    `${ADMIN_URLS.ADMIN_PARENTS}/bulk-status`,
     statusName,
     statusLabel,
     ".parent-checkbox",
@@ -60,7 +60,7 @@ function searchStudents() {
   }
 
   fetch(
-    `/parkjoon/admin/parents/search-student?keyword=${encodeURIComponent(keyword)}`,
+    `${ADMIN_URLS.ADMIN_PARENTS}/search-student?keyword=${encodeURIComponent(keyword)}`,
   )
     .then((res) => res.json())
     .then((data) => {
@@ -184,10 +184,10 @@ function confirmRelation() {
   let successMsg = "";
 
   if (type === "ADD") {
-    url = `/parkjoon/admin/parents/${detailParentId}/add-child?studentUid=${uid}&relationship=${relation}`;
+    url = `${ADMIN_URLS.ADMIN_PARENTS}/${detailParentId}/add-child?studentUid=${uid}&relationship=${relation}`;
     successMsg = "자녀가 추가되었습니다.";
   } else {
-    url = `/parkjoon/admin/parents/${detailParentId}/update-child-relation?studentUid=${uid}&relationship=${relation}`;
+    url = `${ADMIN_URLS.ADMIN_PARENTS}/${detailParentId}/update-child-relation?studentUid=${uid}&relationship=${relation}`;
     successMsg = "관계가 수정되었습니다.";
   }
 
@@ -216,7 +216,7 @@ function removeChild(pId, sUid) {
   const token = document.querySelector('meta[name="_csrf"]')?.content;
   const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-  fetch(`/parkjoon/admin/parents/${pId}/remove-child?studentUid=${sUid}`, {
+  fetch(`${ADMIN_URLS.ADMIN_PARENTS}/${pId}/remove-child?studentUid=${sUid}`, {
     method: "POST",
     headers: { [header]: token },
   }).then(async (res) => {

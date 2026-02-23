@@ -72,8 +72,7 @@ public class MyChildrenStatusController {
             imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
         }
 
-        int currentYear = systemSettingService.getCurrentSchoolYear();
-        StudentAssignment assignment = studentInfo.getCurrentAssignment(currentYear);
+        StudentAssignment assignment = studentInfo.getCurrentAssignment();
 
         return ChildDTO.builder()
                 .id(studentUser.getUid())

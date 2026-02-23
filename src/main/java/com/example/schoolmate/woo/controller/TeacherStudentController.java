@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
-import com.example.schoolmate.woo.service.TeacherService;
+import com.example.schoolmate.common.service.TeacherService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

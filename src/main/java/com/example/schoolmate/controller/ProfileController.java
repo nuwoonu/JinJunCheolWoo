@@ -32,6 +32,7 @@ import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
@@ -49,6 +50,7 @@ public class ProfileController {
     private String uploadPath;
 
     private final UserRepository userRepository;
+    private final StudentInfoRepository studentInfoRepository;
     private final ProfileRepository profileRepository;
 
     @GetMapping("/manage")
@@ -56,7 +58,7 @@ public class ProfileController {
     public String manageProfiles(Model model) {
         // 학생 목록 조회 (새 구조)
         StudentDTO.StudentSearchCondition condition = new StudentDTO.StudentSearchCondition();
-        List<ChildDTO> students = userRepository.searchStudents(condition, Pageable.unpaged())
+        List<ChildDTO> students = studentInfoRepository.search(condition, Pageable.unpaged())
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -72,8 +74,7 @@ public class ProfileController {
         }
 
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
-        int currentYear = LocalDate.now().getYear();
-        StudentAssignment assignment = studentInfo != null ? studentInfo.getCurrentAssignment(currentYear) : null;
+        StudentAssignment assignment = studentInfo != null ? studentInfo.getCurrentAssignment() : null;
 
         return ChildDTO.builder()
                 .id(user.getUid())

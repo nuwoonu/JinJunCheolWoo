@@ -12,628 +12,260 @@
   <body>
     <div layout:fragment="content">
 
-        <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-  <div class="">
-    <h6 class="fw-semibold mb-0">Dashboard</h6>
-    <p class="text-neutral-600 mt-4 mb-0">교사 대시보드</p>
-  </div>
-</div>
-
-
-        <div class="mt-24">
-            <div class="row gy-4">
-
-
-                <!-- Notice Board start -->
-                <div class="col-xxl-4 col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body p-0">
-                            <div
-                                class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
-                                <h6 class="text-lg mb-0">알림 보드</h6>
-                                <div class="dropdown">
-                                    <button type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <iconify-icon icon="entypo:dots-three-vertical"
-                                            class="icon text-secondary-light"></iconify-icon>
-                                    </button>
-                                    <ul class="dropdown-menu p-12 border bg-base shadow">
-                                        <li>
-                                            <button type="button"
-                                                class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                data-bs-toggle="modal" data-bs-target="#exampleModalView">
-                                                <iconify-icon icon="hugeicons:view"
-                                                    class="icon text-lg line-height-1"></iconify-icon>
-                                                View
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button type="button"
-                                                class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                data-bs-toggle="modal" data-bs-target="#exampleModalEdit">
-                                                <iconify-icon icon="lucide:edit"
-                                                    class="icon text-lg line-height-1"></iconify-icon>
-                                                Edit
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button type="button"
-                                                class="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10"
-                                                data-bs-toggle="modal" data-bs-target="#exampleModalDelete">
-                                                <iconify-icon icon="fluent:delete-24-regular"
-                                                    class="icon text-lg line-height-1"></iconify-icon>
-                                                Delete
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="ps-20 pt-20 pb-20">
-                                <div class="pe-20 d-flex flex-column gap-20 max-h-462-px overflow-y-auto scroll-sm">
-                                    <div class="d-flex align-items-start gap-16">
-                                        <img src="/images/thumbs/notice-board-img1.png" alt="Thumbnail"
-                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
-                                        <div class="">
-                                            <h6 class="mb-4 text-lg">Admin</h6>
-                                            <p class="text-secondary-light text-sm mb-0">Lorem Ipsum is simply dummy
-                                                text of the
-                                                printing and typesetti</p>
-                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-start gap-16">
-                                        <img src="/images/thumbs/notice-board-img2.png" alt="Thumbnail"
-                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
-                                        <div class="">
-                                            <h6 class="mb-4 text-lg">테스트</h6>
-                                            <p class="text-secondary-light text-sm mb-0">Lorem Ipsum is simply dummy
-                                                text of the
-                                                printing and typesett ing industry Lorem Ipsum is simply dummy text of
-                                                the printing and
-                                                typesetting industry.</p>
-                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-start gap-16">
-                                        <img src="/images/thumbs/notice-board-img3.png" alt="Thumbnail"
-                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
-                                        <div class="">
-                                            <h6 class="mb-4 text-lg">Admin</h6>
-                                            <p class="text-secondary-light text-sm mb-0">Lorem Ipsum is simply dummy
-                                                text of the
-                                                printing and typesetti</p>
-                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-start gap-16">
-                                        <img src="/images/thumbs/notice-board-img2.png" alt="Thumbnail"
-                                            class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0">
-                                        <div class="">
-                                            <h6 class="mb-4 text-lg">테스트</h6>
-                                            <p class="text-secondary-light text-sm mb-0">Lorem ipsum dolor sit amet
-                                                consectetur
-                                                adipisicing elit. Laborum voluptas corporis qui dolore est odit officia
-                                                fuga?</p>
-                                            <span class="text-secondary-light text-sm mb-0 mt-4">25 Jan 2024</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Notice Board End -->
-
-                <!-- [woo] 오늘의 수업 일정 - React Island (add/edit/delete 모달 포함) -->
-                <div class="col-xxl-4 col-lg-6">
-                    <div id="dashboard-schedule-root"></div>
-                    <script type="module" th:src="@{/js/react/teacher/dashboard.js}"></script>
-                </div>
-                <!-- 오늘의 수업 일정 End -->
-
-                <!-- Calendar start -->
-                <div class="col-xxl-4 col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body p-0">
-                            <div
-                                class="d-flex flex-wrap align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
-                                <h6 class="text-lg mb-0">Calendar</h6>
-                            </div>
-                            <div class="p-20">
-                                <div class="calendar style-big">
-                                    <div class="calendar__header">
-                                        <button type="button" class="calendar__arrow left">
-                                            <i class="ri-arrow-left-s-line"></i>
-                                        </button>
-                                        <p class="display text-md text-secondary-light fw-semibold mb-0">""</p>
-                                        <button type="button" class="calendar__arrow right">
-                                            <i class="ri-arrow-right-s-line"></i>
-                                        </button>
-                                    </div>
-
-                                    <div class="calendar__week week">
-                                        <div class="calendar__week-text">Su</div>
-                                        <div class="calendar__week-text">Mo</div>
-                                        <div class="calendar__week-text">Tu</div>
-                                        <div class="calendar__week-text">We</div>
-                                        <div class="calendar__week-text">Th</div>
-                                        <div class="calendar__week-text">Fr</div>
-                                        <div class="calendar__week-text">Sa</div>
-                                    </div>
-                                    <div class="days"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Calendar end -->
-
-                <!-- Recent Enrolled Courses Start -->
-                <div class="col-xxl-8">
-                    <div class="card radius-12 border-0">
-                        <div
-                            class="d-flex align-items-center flex-wrap gap-2 justify-content-between py-12 px-20 border-bottom border-neutral-200">
-                            <h6 class="mb-2 fw-bold text-lg">Student Marks</h6>
-                            <div class="dropdown">
-                                <button type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <iconify-icon icon="entypo:dots-three-vertical"
-                                        class="icon text-secondary-light"></iconify-icon>
-                                </button>
-                                <ul class="dropdown-menu p-12 border bg-base shadow">
-                                    <li>
-                                        <button type="button"
-                                            class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                            data-bs-toggle="modal" data-bs-target="#exampleModalView">
-                                            <iconify-icon icon="hugeicons:view"
-                                                class="icon text-lg line-height-1"></iconify-icon>
-                                            View
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                            class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                            data-bs-toggle="modal" data-bs-target="#exampleModalEdit">
-                                            <iconify-icon icon="lucide:edit"
-                                                class="icon text-lg line-height-1"></iconify-icon>
-                                            Edit
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                            class="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10"
-                                            data-bs-toggle="modal" data-bs-target="#exampleModalDelete">
-                                            <iconify-icon icon="fluent:delete-24-regular"
-                                                class="icon text-lg line-height-1"></iconify-icon>
-                                            Delete
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive scroll-sm">
-                                <table class="table bordered-table mb-0 data-table" id="dataTable"
-                                    data-page-length='10'>
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Admission No</th>
-                                            <th scope="col">Name</th>
-                                            <th scope="col">Class</th>
-                                            <th scope="col">Marks%</th>
-                                            <th scope="col">CGPA</th>
-                                            <th scope="col">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="py-10-px"><span class="text-primary-600">AD45231</span></td>
-                                            <td class="py-10-px">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="/images/thumbs/avatar-img2.png" alt="Image"
-                                                        class="flex-shrink-0 me-12 radius-8">
-                                                    <div>
-                                                        <h6 class="text-md mb-0 fw-medium">Wade Warren</h6>
-                                                        <span>Roll No: <span class="fw-semibold">08</span></span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-10-px">Class 2 (B)</td>
-                                            <td class="py-10-px">88%</td>
-                                            <td class="py-10-px">3.9</td>
-                                            <td class="py-10-px">
-                                                <span
-                                                    class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Pass</span>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="py-10-px"><span class="text-primary-600">AD67452</span></td>
-                                            <td class="py-10-px">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="/images/thumbs/avatar-img3.png" alt="Image"
-                                                        class="flex-shrink-0 me-12 radius-8">
-                                                    <div>
-                                                        <h6 class="text-md mb-0 fw-medium">Brooklyn Simmons</h6>
-                                                        <span>Roll No: <span class="fw-semibold">15</span></span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-10-px">Class 3 (A)</td>
-                                            <td class="py-10-px">72%</td>
-                                            <td class="py-10-px">3.1</td>
-                                            <td class="py-10-px">
-                                                <span
-                                                    class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Pass</span>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="py-10-px"><span class="text-primary-600">AD98214</span></td>
-                                            <td class="py-10-px">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="/images/thumbs/avatar-img4.png" alt="Image"
-                                                        class="flex-shrink-0 me-12 radius-8">
-                                                    <div>
-                                                        <h6 class="text-md mb-0 fw-medium">Darlene Robertson</h6>
-                                                        <span>Roll No: <span class="fw-semibold">20</span></span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-10-px">Class 4 (C)</td>
-                                            <td class="py-10-px">54%</td>
-                                            <td class="py-10-px">2.4</td>
-                                            <td class="py-10-px">
-                                                <span
-                                                    class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm">Fail</span>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="py-10-px"><span class="text-primary-600">AD76133</span></td>
-                                            <td class="py-10-px">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="/images/thumbs/avatar-img5.png" alt="Image"
-                                                        class="flex-shrink-0 me-12 radius-8">
-                                                    <div>
-                                                        <h6 class="text-md mb-0 fw-medium">Theresa Webb</h6>
-                                                        <span>Roll No: <span class="fw-semibold">11</span></span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-10-px">Class 5 (A)</td>
-                                            <td class="py-10-px">41%</td>
-                                            <td class="py-10-px">1.9</td>
-                                            <td class="py-10-px">
-                                                <span
-                                                    class="bg-danger-100 text-danger-600 px-24 py-4 radius-4 fw-medium text-sm">Fail</span>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="py-10-px"><span class="text-primary-600">AD33578</span></td>
-                                            <td class="py-10-px">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="/images/thumbs/avatar-img6.png" alt="Image"
-                                                        class="flex-shrink-0 me-12 radius-8">
-                                                    <div>
-                                                        <h6 class="text-md mb-0 fw-medium">Arlene McCoy</h6>
-                                                        <span>Roll No: <span class="fw-semibold">06</span></span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-10-px">Class 1 (C)</td>
-                                            <td class="py-10-px">91%</td>
-                                            <td class="py-10-px">4.0</td>
-                                            <td class="py-10-px">
-                                                <span
-                                                    class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Pass</span>
-                                            </td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Recent Enrolled Courses End -->
-
-                <!-- Leave Status start -->
-                <div class="col-xxl-4">
-                    <div class="card radius-12 border-0 h-100">
-                        <div
-                            class="d-flex align-items-center flex-wrap gap-2 justify-content-between py-12 px-20 border-bottom border-neutral-200">
-                            <h6 class="mb-2 fw-bold text-lg">Leave Status</h6>
-                            <select class="form-select bg-base form-select-sm w-auto radius-8">
-                                <option>Yearly</option>
-                                <option>Monthly</option>
-                                <option>Weekly</option>
-                                <option>Today</option>
-                            </select>
-                        </div>
-                        <div class="card-body pe-0">
-                            <div class="d-flex flex-column max-h-494-px overflow-y-auto scroll-sm pe-20">
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Medical Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Emergency Leave</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-success-100 text-success-600 px-24 py-4 radius-4 fw-medium text-sm">Accepted</span>
-                                    </div>
-                                </div>
-                                <div
-                                    class="d-flex align-items-center justify-content-between gap-3 py-10 border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h6 class="text-lg mb-0 fw-medium">Now Well</h6>
-                                        <span class="text-sm text-secondary-light fw-medium">Date: 10/10/24</span>
-                                    </div>
-                                    <div class="">
-                                        <span
-                                            class="bg-warning-100 text-warning-600 px-24 py-4 radius-4 fw-medium text-sm">Pending</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Leave Status End -->
-
-            </div>
+      <!-- ===== Header ===== -->
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 class="fw-semibold mb-0">선생님 대시보드</h6>
+          <p class="text-neutral-600 mt-4 mb-0">
+            <span th:if="${teacherSubject != null and teacherSubject != ''}"
+                  th:text="${teacherSubject}">수학</span>
+            <span th:if="${teacherSubject != null and teacherSubject != ''}"> | </span>
+            <span th:text="${teacherName != null ? teacherName : '선생님'}">박선생</span>선생
+          </p>
         </div>
-    </div>
+      </div>
 
-    </div>
+      <div class="mt-24">
+        <div class="row gy-4">
 
-    <th:block layout:fragment="css">
-        <link rel="stylesheet" th:href="@{/css/lib/dataTables.min.css}" />
-        <link rel="stylesheet" th:href="@{/css/lib/calendar.css}" />
-    </th:block>
+          <!-- ===== 1. 알림 메시지 ===== -->
+          <div class="col-xxl-4 col-lg-6">
+            <div class="card h-100">
+              <div class="card-body p-0">
+                <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
+                  <iconify-icon icon="mdi:bell-outline" class="icon text-lg text-primary-600"></iconify-icon>
+                  <h6 class="text-lg mb-0 fw-semibold">알림 메시지</h6>
+                </div>
+                <div class="px-16 py-12">
+
+                  <!-- 공지사항 있을 때 -->
+                  <div th:if="${notices != null and !notices.isEmpty()}" class="d-flex flex-column gap-4">
+                    <div th:each="notice, iterStat : ${notices}"
+                         th:classappend="${iterStat.index < 2 ? 'bg-warning-focus' : ''}"
+                         class="d-flex flex-column gap-6 p-12 radius-8">
+                      <div class="d-flex align-items-start justify-content-between gap-8">
+                        <h6 class="text-sm fw-semibold mb-0 flex-grow-1"
+                            style="word-break: keep-all;"
+                            th:text="${notice.title}">알림 제목</h6>
+                        <div class="d-flex align-items-center gap-6 flex-shrink-0">
+                          <span th:if="${iterStat.index < 2}"
+                                class="badge bg-danger text-white text-xs px-8 py-2 radius-4 fw-semibold">NEW</span>
+                          <span class="text-secondary-light text-xs"
+                                th:if="${notice.createDate != null}"
+                                th:text="${#temporals.format(notice.createDate, 'M/d')}">1/29</span>
+                        </div>
+                      </div>
+                      <p class="text-secondary-light text-xs mb-0"
+                         th:text="${notice.writerName != null ? notice.writerName + ' | ' : ''}
+                                  + ${#strings.abbreviate(notice.content ?: '', 50)}">내용</p>
+                    </div>
+                  </div>
+
+                  <!-- 공지사항 없을 때 -->
+                  <div th:if="${notices == null or notices.isEmpty()}"
+                       class="text-center py-32 text-secondary-light">
+                    <iconify-icon icon="mdi:bell-off-outline" class="text-4xl d-block mb-8"></iconify-icon>
+                    <p class="text-sm mb-0">새로운 알림이 없습니다.</p>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 2. 오늘의 시간표 (React Island - 기존 유지) ===== -->
+          <div class="col-xxl-4 col-lg-6">
+            <div id="dashboard-schedule-root"></div>
+            <script type="module" th:src="@{/js/react/teacher/dashboard.js}"></script>
+          </div>
+
+          <!-- ===== 3. 학교 일정 ===== -->
+          <div class="col-xxl-4 col-lg-6">
+            <div class="card h-100">
+              <div class="card-body p-0">
+                <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
+                  <iconify-icon icon="mdi:calendar-month-outline" class="icon text-lg text-success-600"></iconify-icon>
+                  <h6 class="text-lg mb-0 fw-semibold">학교 일정</h6>
+                </div>
+                <div class="px-16 py-12">
+                  <div class="d-flex flex-column gap-10" id="school-events-list">
+                    <!-- JS로 동적 생성 -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 4. 과제 제출 확인 ===== -->
+          <div class="col-xxl-8">
+            <div class="card">
+              <div class="card-body p-0">
+                <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
+                  <iconify-icon icon="mdi:clipboard-text-outline" class="icon text-lg text-warning-600"></iconify-icon>
+                  <h6 class="text-lg mb-0 fw-semibold">과제 제출 확인</h6>
+                </div>
+                <div class="p-20">
+                  <div class="d-flex flex-column gap-24">
+
+                    <!-- 과제 1 -->
+                    <div>
+                      <div class="d-flex align-items-center justify-content-between mb-8">
+                        <div>
+                          <h6 class="text-md fw-semibold mb-2">기하학 프로젝트</h6>
+                          <span class="text-secondary-light text-sm">3학년 4반 &nbsp;마감: 01/29</span>
+                        </div>
+                        <span class="badge bg-warning-100 text-warning-600 fw-semibold radius-4 px-12 py-6">15/29</span>
+                      </div>
+                      <div class="progress" style="height:8px; border-radius:4px;">
+                        <div class="progress-bar bg-warning" role="progressbar"
+                             style="width:52%;" aria-valuenow="52" aria-valuemin="0" aria-valuemax="100"></div>
+                      </div>
+                    </div>
+
+                    <!-- 과제 2 -->
+                    <div>
+                      <div class="d-flex align-items-center justify-content-between mb-8">
+                        <div>
+                          <h6 class="text-md fw-semibold mb-2">확률과 통계 과제</h6>
+                          <span class="text-secondary-light text-sm">2학년 1반 &nbsp;마감: 01/30</span>
+                        </div>
+                        <span class="badge bg-success-100 text-success-600 fw-semibold radius-4 px-12 py-6">25/31</span>
+                      </div>
+                      <div class="progress" style="height:8px; border-radius:4px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width:81%;" aria-valuenow="81" aria-valuemin="0" aria-valuemax="100"></div>
+                      </div>
+                    </div>
+
+                    <!-- 과제 3 -->
+                    <div>
+                      <div class="d-flex align-items-center justify-content-between mb-8">
+                        <div>
+                          <h6 class="text-md fw-semibold mb-2">미적분 연습문제</h6>
+                          <span class="text-secondary-light text-sm">3학년 2반 &nbsp;마감: 02/01</span>
+                        </div>
+                        <span class="badge bg-danger-100 text-danger-600 fw-semibold radius-4 px-12 py-6">10/28</span>
+                      </div>
+                      <div class="progress" style="height:8px; border-radius:4px;">
+                        <div class="progress-bar bg-danger" role="progressbar"
+                             style="width:36%;" aria-valuenow="36" aria-valuemin="0" aria-valuemax="100"></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 5. 학급 학생 출결 상태 ===== -->
+          <div class="col-xxl-4">
+            <div class="card h-100">
+              <div class="card-body p-0">
+                <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
+                  <iconify-icon icon="mdi:account-group-outline" class="icon text-lg text-info-600"></iconify-icon>
+                  <h6 class="text-lg mb-0 fw-semibold">학급 학생 출결 상태</h6>
+                </div>
+
+                <!-- 학급 정보 있을 때 -->
+                <div th:if="${classInfo != null}" class="p-16">
+                  <!-- 반 정보 & 출결 요약 -->
+                  <div class="mb-12">
+                    <p class="text-sm text-secondary-light mb-8"
+                       th:text="${classInfo.grade + '학년 ' + classInfo.classNum + '반 (' + classInfo.totalStudents + '명)'}">
+                      1학년 2반 (10명)
+                    </p>
+                    <div class="d-flex gap-6 flex-wrap">
+                      <span class="badge bg-success-100 text-success-600 px-10 py-4 radius-4 fw-medium text-xs">
+                        출석: <span th:text="${classInfo.totalStudents}">10</span>
+                      </span>
+                      <span class="badge bg-warning-100 text-warning-600 px-10 py-4 radius-4 fw-medium text-xs">지각: 0</span>
+                      <span class="badge bg-danger-100 text-danger-600 px-10 py-4 radius-4 fw-medium text-xs">결석: 0</span>
+                      <span class="badge bg-secondary-100 text-secondary-600 px-10 py-4 radius-4 fw-medium text-xs">조퇴: 0</span>
+                    </div>
+                  </div>
+
+                  <!-- 학생 목록 -->
+                  <div class="d-flex flex-column gap-0 max-h-320-px overflow-y-auto scroll-sm">
+                    <div th:each="student : ${classInfo.students}"
+                         class="d-flex align-items-center justify-content-between py-10 border-bottom border-neutral-100">
+                      <div>
+                        <h6 class="text-sm fw-medium mb-1" th:text="${student.name}">학생명</h6>
+                        <span class="text-xs text-secondary-light"
+                              th:text="${student.studentNumber != null ? student.studentNumber + '번' : '-'}">1번</span>
+                      </div>
+                      <span class="badge bg-success-100 text-success-600 px-10 py-4 radius-4 fw-medium text-xs">출석</span>
+                    </div>
+                    <!-- 학생 없을 때 -->
+                    <div th:if="${classInfo.students == null or classInfo.students.isEmpty()}"
+                         class="text-center py-16 text-secondary-light">
+                      <p class="text-sm mb-0">배정된 학생이 없습니다.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 학급 정보 없을 때 -->
+                <div th:if="${classInfo == null}" class="p-20 text-center text-secondary-light">
+                  <iconify-icon icon="mdi:account-off-outline" class="text-4xl d-block mb-8"></iconify-icon>
+                  <p class="text-sm mb-0">담당 학급 정보가 없습니다.</p>
+                  <p class="text-xs mb-0 mt-4">관리자에게 학급 배정을 요청하세요.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /row -->
+      </div>
+    </div><!-- /content -->
 
     <th:block layout:fragment="script">
-      <!-- Data Table js -->
-      <script th:src="@{/js/lib/dataTables.min.js}"></script>
+      <script>
+        // ===== 학교 일정 D-day 계산 =====
+        (function () {
+          const events = [
+            { date: '2026-01-23', label: '1/23(금) 겨울방학식' },
+            { date: '2026-02-10', label: '2/10(수) 개학식' },
+            { date: '2026-03-02', label: '3/2(월) 새학기 시작' },
+            { date: '2026-05-05', label: '5/5(화) 어린이날' },
+          ];
 
-<script>
-    // ============================= Calendar Js Start =================================
-    let display = document.querySelector(".display");
-    let days = document.querySelector(".days");
-    let previous = document.querySelector(".left");
-    let next = document.querySelector(".right");
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
 
-    let date = new Date();
+          const container = document.getElementById('school-events-list');
+          if (!container) return;
 
-    let year = date.getFullYear();
-    let month = date.getMonth();
+          events.forEach(function (evt) {
+            const evtDate = new Date(evt.date);
+            evtDate.setHours(0, 0, 0, 0);
+            const diffDays = Math.round((evtDate - today) / (1000 * 60 * 60 * 24));
 
-    function displayCalendar() {
-        const firstDay = new Date(year, month, 1);
-
-        const lastDay = new Date(year, month + 1, 0);
-
-        const firstDayIndex = firstDay.getDay(); //4
-
-        const numberOfDays = lastDay.getDate(); //31
-
-        let formattedDate = date.toLocaleString("en-US", {
-            month: "long",
-            year: "numeric"
-        });
-
-        display.innerHTML = `${formattedDate}`;
-
-        for (let x = 1; x <= firstDayIndex; x++) {
-            const div = document.createElement("div");
-            div.innerHTML += "";
-
-            days.appendChild(div);
-        }
-
-        for (let i = 1; i <= numberOfDays; i++) {
-            let div = document.createElement("div");
-            let currentDate = new Date(year, month, i);
-
-            div.dataset.date = currentDate.toDateString();
-
-            div.innerHTML += i;
-            days.appendChild(div);
-            if (
-                currentDate.getFullYear() === new Date().getFullYear() &&
-                currentDate.getMonth() === new Date().getMonth() &&
-                currentDate.getDate() === new Date().getDate()
-            ) {
-                div.classList.add("current-date");
+            let dLabel, badgeStyle;
+            if (diffDays === 0) {
+              dLabel = 'D-Day';
+              badgeStyle = 'background:#dc3545; color:#fff;';
+            } else if (diffDays > 0) {
+              dLabel = 'D-' + diffDays;
+              badgeStyle = 'background:#d1f7e8; color:#198754;';
+            } else {
+              dLabel = 'D+' + Math.abs(diffDays);
+              badgeStyle = 'background:#e9ecef; color:#6c757d;';
             }
-        }
-    }
 
-    // Call the function to display the calendar
-    displayCalendar();
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#f0faf5; border-radius:8px;';
+            div.innerHTML =
+              '<div style="display:flex; align-items:center; gap:10px;">' +
+                '<iconify-icon icon="mdi:calendar-check-outline" style="font-size:18px; color:#198754;"></iconify-icon>' +
+                '<span style="font-size:13px; font-weight:500;">' + evt.label + '</span>' +
+              '</div>' +
+              '<span style="' + badgeStyle + ' padding:3px 10px; border-radius:4px; font-size:11px; font-weight:700;">' + dLabel + '</span>';
 
-    previous.addEventListener("click", () => {
-        days.innerHTML = "";
-
-        if (month < 0) {
-            month = 11;
-            year = year - 1;
-        }
-        month = month - 1;
-        date.setMonth(month);
-        displayCalendar();
-    });
-
-    next.addEventListener("click", () => {
-        days.innerHTML = "";
-
-        if (month > 11) {
-            month = 0;
-            year = year + 1;
-        }
-
-        month = month + 1;
-        date.setMonth(month);
-
-        displayCalendar();
-    });
-    // ============================= Calendar Js End =================================
-
-
-    let table = new DataTable('#dataTable');
-
-    //============================= ✅ Data Table start =============================
-    $('.data-table').each(function () {
-        const $table = $(this);
-        const tableInstance = new DataTable(this);
-
-        // Handle search input (inside same wrapper)
-        $table.closest('.dataTable-wrapper').find('.dt-search .dt-input').on('keyup', function () {
-            tableInstance.search(this.value).draw();
-        });
-
-        // Handle page length change (inside same wrapper)
-        $table.closest('.dataTable-wrapper').find('.dt-length .dt-input').on('change', function () {
-            const value = $(this).val();
-            tableInstance.page.len(value).draw();
-        });
-    });
-    //============================= ✅ Data Table end =============================
-
-</script>
-
-
+            container.appendChild(div);
+          });
+        })();
+      </script>
     </th:block>
   </body>
 </html>

@@ -20,7 +20,7 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
-import com.example.schoolmate.woo.service.TeacherService;
+import com.example.schoolmate.common.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 

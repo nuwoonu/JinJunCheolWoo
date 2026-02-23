@@ -3,7 +3,7 @@ package com.example.schoolmate.config;
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.CustomLoginSuccessHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
-import com.example.schoolmate.service.CustomOAuth2UserService;
+import com.example.schoolmate.common.service.CustomOAuth2UserService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +45,9 @@ public class SecurityConfig {
                                 .permitAll()
 
                                 // images 불러사용 하기 위해 추가 [woo]
-                                .requestMatchers("/assets/**", "/images/**", "/img/**", "/js/**", "/css/**").permitAll()
+                                .requestMatchers("/assets/**", "/images/**", "/img/**", "/js/**", "/css/**",
+                                                "/uploads/**")
+                                .permitAll()
                                 .requestMatchers("/error/**").permitAll()
 
                                 // 관리자 전용 영역

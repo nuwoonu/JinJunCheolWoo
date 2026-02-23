@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.soojin.entity.constant.DayOfWeek;
 import com.example.schoolmate.woo.dto.TeacherScheduleDTO;
-import com.example.schoolmate.woo.service.TeacherScheduleService;
+import com.example.schoolmate.common.service.TeacherScheduleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

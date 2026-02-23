@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ public class LoginController {
 
     // 역할 선택 기능을 위한 UserRepository 주입 (01/29[woo])
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping("/login")
     public String getLogin() {
@@ -81,10 +83,10 @@ public class LoginController {
                 return "select-role";
             }
 
-            // 역할 설정
+            // 역할 설정 및 Info 엔티티 생성 (승인대기 상태)
             UserRole userRole = UserRole.valueOf(role);
             user.addRole(userRole);
-            userRepository.save(user);
+            userService.createSocialUserInfo(user, userRole); // Info 생성 + save 포함
 
             log.info("소셜 로그인 사용자 역할 설정 완료 - uid: {}, role: {}", user.getUid(), role);
 

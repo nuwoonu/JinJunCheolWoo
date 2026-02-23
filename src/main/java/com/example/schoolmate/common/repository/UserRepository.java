@@ -11,7 +11,7 @@ import com.example.schoolmate.common.entity.user.User;
 public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
 
     // [woo 수정] LazyInitializationException 방지 - infos, roles 함께 로딩
-    @EntityGraph(attributePaths = {"infos", "roles"})
+    @EntityGraph(attributePaths = { "infos", "roles" })
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

@@ -18,14 +18,17 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Spring Boot API 프록시 (dev 전용)
-      '/api': {
+      // Vite 내부 경로(/@vite, /src, /__) 제외한 모든 요청을 Spring Boot(:8080)로 전달
+      '/': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-      },
-      '/teacher/schedule': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
+        bypass(req) {
+          const url = req.url ?? ''
+          // Vite HMR·모듈 변환 경로는 Vite가 직접 처리
+          if (url.startsWith('/@') || url.startsWith('/src/') || url.startsWith('/__')) {
+            return url
+          }
+        },
       },
     },
   },

@@ -1,8 +1,11 @@
 package com.example.schoolmate.common.dto;
 
 import com.example.schoolmate.common.entity.SchoolNotice;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class NoticeDTO {
@@ -43,5 +46,61 @@ public class NoticeDTO {
                     .updatedDate(notice.getUpdateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                     .build();
         }
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BoardNotice {
+        private Long nno;
+
+        @NotBlank(message = "제목을 입력해주세요")
+        private String title;
+
+        @NotBlank(message = "내용을 입력해주세요")
+        private String content;
+
+        private Long writerId;
+        private String writerEmail;
+        private String writerName;
+
+        private LocalDateTime createDate;
+        private LocalDateTime updateDate;
+    }
+
+    @Getter
+    @Setter
+    @ToString
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ClassNotice {
+        private Long no;
+        private String title;
+        private String content;
+        private Integer grade;
+        private Integer classNum;
+        private String writerName;
+        private String attachmentUrl;
+        private LocalDate createdDate;
+    }
+
+    @Getter
+    @Setter
+    @ToString
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class NoticeToParents {
+        private Long no;
+        private String title;
+        private String content;
+        private Integer targetGrade;
+        private String targetGradeText;
+        private String writerName;
+        private String attachmentUrl;
+        private Boolean hasAttachment;
+        private LocalDate createdDate;
     }
 }
