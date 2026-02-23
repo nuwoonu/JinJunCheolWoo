@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.schoolmate.common.dto.ClassDTO;
-import com.example.schoolmate.service.ClassService;
+import com.example.schoolmate.common.service.ClassService;
 
 import lombok.RequiredArgsConstructor;
 

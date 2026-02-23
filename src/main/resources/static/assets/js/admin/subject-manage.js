@@ -8,7 +8,7 @@ function openCreateModal() {
 
   document.getElementById("modalTitle").innerText = "과목 등록";
   document.getElementById("subjectForm").action =
-    "/parkjoon/admin/master/subjects/create";
+    `${ADMIN_URLS.ADMIN_MASTER}/subjects/create`;
   document.getElementById("originCode").value = "";
   document.getElementById("subjectCode").value = "";
   document.getElementById("subjectName").value = "";
@@ -22,7 +22,7 @@ function openUpdateModal(code, name) {
 
   document.getElementById("modalTitle").innerText = "과목 수정";
   document.getElementById("subjectForm").action =
-    "/parkjoon/admin/master/subjects/update";
+    `${ADMIN_URLS.ADMIN_MASTER}/subjects/update`;
   document.getElementById("originCode").value = code;
   document.getElementById("subjectCode").value = code;
   document.getElementById("subjectName").value = name;

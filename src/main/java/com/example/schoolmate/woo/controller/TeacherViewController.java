@@ -18,11 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
-import com.example.schoolmate.parkjoon.service.AdminTeacherService;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
-import com.example.schoolmate.woo.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -38,9 +37,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class TeacherViewController {
 
-    private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
-    private final AdminTeacherService adminTeacherService;
+    private final TeacherService teacherService;
 
     /**
      * 선생님 목록 페이지 (TEACHER, ADMIN 모두 접근 가능)
@@ -52,7 +50,7 @@ public class TeacherViewController {
             @PageableDefault(size = 10, sort = "uid", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
 
-        Page<TeacherDTO.DetailResponse> teacherPage = adminTeacherService.getTeacherList(condition, pageable);
+        Page<TeacherDTO.DetailResponse> teacherPage = teacherService.getTeacherList(condition, pageable);
 
         model.addAttribute("teachers", teacherPage.getContent());
         model.addAttribute("page", teacherPage);

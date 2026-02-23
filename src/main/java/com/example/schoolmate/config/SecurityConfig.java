@@ -34,7 +34,9 @@ public class SecurityConfig {
                                 .permitAll()
 
                                 // images 불러사용 하기 위해 추가 [woo]
-                                .requestMatchers("/assets/**", "/images/**", "/img/**", "/js/**", "/css/**").permitAll()
+                                .requestMatchers("/assets/**", "/images/**", "/img/**", "/js/**", "/css/**",
+                                                "/uploads/**")
+                                .permitAll()
                                 .requestMatchers("/error/**").permitAll()
 
                                 // 관리자 전용 영역

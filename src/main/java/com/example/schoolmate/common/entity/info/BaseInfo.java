@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 사용자 상세 정보의 최상위 추상 클래스
@@ -30,6 +31,7 @@ import lombok.Setter;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Getter
 @Setter
+@ToString(exclude = "user")
 public abstract class BaseInfo extends BaseEntity {
 
     @Id

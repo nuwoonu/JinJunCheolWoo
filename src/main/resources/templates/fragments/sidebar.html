@@ -147,6 +147,12 @@
               학생 리스트
             </a>
           </li>
+          <li sec:authorize="hasRole('STUDENT')">
+            <a th:href="@{/student/myinfo}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생세부사항
+            </a>
+          </li>
           <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
             <a th:href="@{/profile/manage}">
               <i class="ri-circle-fill circle-icon w-auto"></i>

@@ -53,9 +53,10 @@ public class StudentDTO {
 
         // 초기 배정 정보
         private Integer year;
+        private Long classroomId; // 학급 선택용 ID
         private Integer grade;
         private Integer classNum;
-        private Integer studentNum;
+        private Integer attendanceNum;
 
         // 보호자 연동 정보
         private List<ParentRelationRequest> guardians = new ArrayList<>();
@@ -68,7 +69,7 @@ public class StudentDTO {
             this.year = csv.getYear();
             this.grade = csv.getGrade();
             this.classNum = csv.getClassNum();
-            this.studentNum = csv.getStudentNum();
+            this.attendanceNum = csv.getAttendanceNum();
         }
     }
 
@@ -111,9 +112,10 @@ public class StudentDTO {
     public static class AssignmentRequest {
         private Long uid;
         private int schoolYear;
+        private Long classroomId;
         private int grade;
         private int classNum;
-        private int studentNum;
+        private int attendanceNum;
     }
 
     /**
@@ -137,10 +139,13 @@ public class StudentDTO {
             if (info != null) {
                 this.code = info.getCode();
                 this.status = info.getStatus() != null ? info.getStatus().getDescription() : "-";
-                this.latestClass = info.getLatestAssignment()
-                        .map(a -> a.getSchoolYear() + "년 " + a.getGrade() + "-" + a.getClassNum() + "-"
-                                + a.getStudentNum())
-                        .orElse("-");
+                if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getClassroom() != null) {
+                    StudentAssignment a = info.getCurrentAssignment();
+                    this.latestClass = a.getSchoolYear() + "년 " + a.getGrade() + "-" + a.getClassNum() + "-"
+                            + a.getAttendanceNum();
+                } else {
+                    this.latestClass = "-";
+                }
             }
         }
     }
@@ -231,6 +236,6 @@ public class StudentDTO {
         private Integer classNum;
 
         @CsvBindByName(column = "번호")
-        private Integer studentNum;
+        private Integer attendanceNum;
     }
 }

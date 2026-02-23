@@ -2,7 +2,6 @@ package com.example.schoolmate.cheol.entity;
 
 import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
 import com.example.schoolmate.common.entity.user.constant.Year;

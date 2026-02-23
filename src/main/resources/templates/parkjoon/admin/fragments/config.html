@@ -1,0 +1,17 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <!-- 전역 설정 및 상수 정의 Fragment -->
+  <div th:fragment="configFragment">
+    <script th:inline="javascript">
+      /*
+       * UrlControllerAdvice에서 전달된 urls 맵을
+       * 자바스크립트 객체로 자동 변환하여 전역 상수에 할당합니다.
+       * 예: ADMIN_URLS.ADMIN_STUDENTS -> "/parkjoon/admin/students"
+       */
+      const ADMIN_URLS = /*[[${urls}]]*/ {};
+
+      // 편의를 위해 ROOT 경로 별도 할당 (필요 시 사용)
+      const ADMIN_PATH = ADMIN_URLS.ADMIN_ROOT;
+    </script>
+  </div>
+</html>

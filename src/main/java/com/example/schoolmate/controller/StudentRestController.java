@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
-import com.example.schoolmate.cheol.service.StudentServiceImpl;
+import com.example.schoolmate.common.service.StudentService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StudentRestController {
 
-    private final StudentServiceImpl studentService;
+    private final StudentService studentService;
 
     // 학생 등록
     // POST /api/students
@@ -40,9 +40,9 @@ public class StudentRestController {
 
     // 학생 정보 조회 (UID)
     // GET /api/students/{uid}
-    @GetMapping("/{uid}")
-    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long uid) {
-        StudentResponseDTO response = studentService.getStudentByUid(uid);
+    @GetMapping("/{id}")
+    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
+        StudentResponseDTO response = studentService.getStudentByUid(id);
         return ResponseEntity.ok(response);
     }
 
@@ -50,7 +50,7 @@ public class StudentRestController {
     // GET /api/students/student-number/{studentNumber}
     @GetMapping("/student-number/{studentNumber}")
     public ResponseEntity<StudentResponseDTO> getStudentByStudentNumber(
-            @PathVariable Long studentNumber) {
+            @PathVariable Integer studentNumber) {
         StudentResponseDTO response = studentService.getStudentByStudentNumber(studentNumber);
         return ResponseEntity.ok(response);
     }

@@ -11,9 +11,9 @@ import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.TeacherStudent;
 import com.example.schoolmate.common.entity.info.constant.TeacherRole;
-import com.example.schoolmate.common.repository.StudentInfoRepository;
-import com.example.schoolmate.common.repository.TeacherInfoRepository;
-import com.example.schoolmate.common.repository.TeacherStudentRepository;
+import com.example.schoolmate.common.repository.info.TeacherStudentRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 

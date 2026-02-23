@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.schoolmate.cheol.dto.GradeDTO;
+import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
-import com.example.schoolmate.woo.service.TeacherService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

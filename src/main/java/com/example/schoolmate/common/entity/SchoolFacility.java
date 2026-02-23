@@ -17,7 +17,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchoolFacility {
+public class SchoolFacility extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,4 +29,5 @@ public class SchoolFacility {
     private Integer capacity; // 수용 인원
     private String description; // 설명
     private boolean isAvailable; // 사용 가능 여부
+    private String imageFilename; // 이미지 파일명 (경로 제외)
 }

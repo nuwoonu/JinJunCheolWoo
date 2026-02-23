@@ -22,7 +22,7 @@ import lombok.Setter;
 public class StudentCreateDTO {
 
     @NotNull(message = "학번은 필수입니다.")
-    private Long studentNumber;
+    private Integer studentNumber;
 
     @NotNull(message = "학급 ID는 필수입니다.")
     private Long classroomId;

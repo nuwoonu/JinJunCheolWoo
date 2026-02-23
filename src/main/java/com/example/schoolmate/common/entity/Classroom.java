@@ -1,10 +1,6 @@
 package com.example.schoolmate.common.entity;
 
-import com.example.schoolmate.common.entity.info.constant.ClassroomStatus;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
 
@@ -17,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -26,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 학급(반) 정보 엔티티
@@ -43,6 +39,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"students", "teacher", "homeroomTeacher", "viceTeacher"})
 public class Classroom extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,11 +69,6 @@ public class Classroom extends BaseEntity {
     @JoinColumn(name = "vice_teacher_id")
     private TeacherInfo viceTeacher;
 
-    // ========== 이 반 학생들 ==========
-    @OneToMany(mappedBy = "classroom")
-    @Builder.Default
-    private List<StudentInfo> students = new ArrayList<>();
-
     // ========== 편의 메서드 ==========
 
     // 학급명 (ex: "2025학년도 3학년 2반")
@@ -84,8 +76,8 @@ public class Classroom extends BaseEntity {
         return year + "학년도 " + grade + "학년 " + classNum + "반";
     }
 
-    // 학생 수
-    public int getStudentCount() {
-        return students != null ? students.size() : 0;
-    }
+    // 학생 수는 이제 별도 쿼리로 조회해야 함 (StudentAssignment 기준)
+    // public int getStudentCount() {
+    // return students != null ? students.size() : 0;
+    // }
 }

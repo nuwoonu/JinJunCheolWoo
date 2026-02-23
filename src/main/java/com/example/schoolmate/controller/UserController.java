@@ -1,9 +1,9 @@
 package com.example.schoolmate.controller;
 
+import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
-import com.example.schoolmate.service.UserService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
