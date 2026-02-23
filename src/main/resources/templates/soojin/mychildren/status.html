@@ -300,12 +300,36 @@
         <!-- 오늘의 급식 -->
         <div class="col-xl-4">
           <div class="card border-0 shadow-sm p-20 h-100" style="border-radius: 16px">
-            <h6 class="fw-bold mb-20 text-sm">
-              <i class="fa-solid fa-utensils text-primary-600 me-2"></i>
-              오늘의 급식
-            </h6>
-            <p class="text-sm mb-12">잡곡밥, 미역국, 제육볶음, 배추김치, 과일</p>
-            <span class="badge bg-primary-100 text-primary-600 px-8 py-4 rounded-pill text-xs">칼로리: 645kcal</span>
+            <div class="d-flex justify-content-between align-items-center mb-20">
+              <h6 class="fw-bold text-sm mb-0">
+                <i class="fa-solid fa-utensils text-primary-600 me-2"></i>
+                오늘의 급식
+              </h6>
+              <a href="/soojin/meal/monthly" class="text-primary-600 text-xs">더보기</a>
+            </div>
+
+            <!-- 급식 데이터가 있을 때 -->
+            <th:block th:if="${!todayMeal.isEmpty()}">
+              <div th:each="meal : ${todayMeal}" class="mb-12">
+                <span
+                  class="badge text-xs mb-4"
+                  th:classappend="${meal.mealType.name() == 'BREAKFAST' ? 'bg-warning-100 text-warning-600' :
+                                   (meal.mealType.name() == 'LUNCH' ? 'bg-primary-100 text-primary-600' : 'bg-info-100 text-info-600')}"
+                  th:text="${meal.mealType.name() == 'BREAKFAST' ? '조식' :
+                            (meal.mealType.name() == 'LUNCH' ? '중식' : '석식')}"
+                  >중식</span
+                >
+                <p class="text-sm mb-4" th:text="${meal.menu}">메뉴</p>
+                <span
+                  class="badge bg-primary-100 text-primary-600 px-8 py-4 rounded-pill text-xs"
+                  th:text="'칼로리: ' + (${meal.calories} != null ? ${meal.calories} + 'kcal' : '정보없음')"
+                  >칼로리</span
+                >
+              </div>
+            </th:block>
+
+            <!-- 급식 데이터가 없을 때 -->
+            <p th:if="${todayMeal.isEmpty()}" class="text-sm text-secondary-light">오늘 등록된 급식이 없습니다.</p>
           </div>
         </div>
       </div>
