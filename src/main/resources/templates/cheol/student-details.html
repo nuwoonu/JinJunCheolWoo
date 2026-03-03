@@ -501,15 +501,6 @@
               <span class="text-secondary-light">/ Student Details</span>
             </div>
           </div>
-          <button
-            type="button"
-            class="my-sidebar-btn btn btn-primary-600 d-flex align-items-center gap-6 bg-base text-primary-light bg-hover-primary-600"
-          >
-            <span class="d-flex text-md">
-              <i class="ri-lock-2-line"></i>
-            </span>
-            Login Details
-          </button>
         </div>
 
         <div class="mt-24">
@@ -519,26 +510,15 @@
                 <div class="max-w-300-px w-100 text-center">
                   <figure class="mb-24 w-120-px h-120-px mx-auto rounded-circle overflow-hidden">
                     <img
-                      src="/images/thumbs/student-details-img.png"
+                      th:src="${profileImageUrl != null ? profileImageUrl : '/images/thumbs/student-details-img.png'}"
                       alt="Student Image"
                       class="w-100 h-100 object-fit-cover"
                     />
                   </figure>
                   <h2 class="h6 text-primary-light mb-16 fw-semibold">[[${student.userName}]]</h2>
-                  <p class="mb-0">Admission No: <span class="text-primary-600 fw-semibold">AD1256589</span></p>
-                  <p class="mb-0">Admission No: <span class="text-primary-light fw-semibold">10</span></p>
+                  <p class="mb-0">학번: <span class="text-primary-600 fw-semibold">ST1256589</span></p>
+                  <p class="mb-0">반 번호: <span class="text-primary-light fw-semibold">10</span></p>
                   <div class="mt-32 d-flex gap-16 w-100">
-                    <button
-                      type="button"
-                      class="btn border fw-medium border-danger-600 bg-hover-danger-200 text-danger-600 text-md d-flex justify-content-center align-items-center gap-8 flex-grow-1 px-12 py-8 radius-8"
-                      data-bs-toggle="modal"
-                      data-bs-target="#exampleModalDelete"
-                    >
-                      <span class="d-flex text-lg">
-                        <i class="ri-delete-bin-2-line"></i>
-                      </span>
-                      Suspend
-                    </button>
                     <a
                       th:href="@{/student/edit/{id}(id=${student.id})}"
                       class="btn btn-primary-600 border fw-medium border-primary-600 text-md d-flex justify-content-center align-items-center gap-8 flex-grow-1 px-12 py-8 radius-8"
@@ -791,21 +771,21 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Previous School Details</h6>
+                        <h6 class="text-lg fw-semibold mb-0">이전 학교 정보</h6>
                       </div>
                       <div class="card-body p-0">
                         <div class="p-20">
                           <div class="row gy-4">
                             <div class="col-sm-12">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Previous School Name</h6>
-                                <span class="">Stuyvesant High School</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">이전 학교명</h6>
+                                <span class="">한국고등학교</span>
                               </div>
                             </div>
                             <div class="col-sm-12">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Current School Name</h6>
-                                <span class="">Bronx High School of Science</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">재학 중인 학교명</h6>
+                                <span class="">서울고등학교</span>
                               </div>
                             </div>
                           </div>
@@ -831,8 +811,8 @@
                             </div>
                             <div class="col-sm-12">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Permanent Address</h6>
-                                <span class="">2118 Thornridge Cir. Syracuse, Connecticut 35624</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">현주소</h6>
+                                <span class="">서울특별시 종로구</span>
                               </div>
                             </div>
                           </div>
@@ -845,27 +825,27 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Bank Details</h6>
+                        <h6 class="text-lg fw-semibold mb-0">계좌 정보</h6>
                       </div>
                       <div class="card-body p-0">
                         <div class="p-20">
                           <div class="row gy-4">
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Bank Name</h6>
-                                <span class="">Bank of America</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">은행명</h6>
+                                <span class="">국민은행</span>
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Branch</h6>
-                                <span class="">New York</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">지점</h6>
+                                <span class="">종로 본점</span>
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">IFSC Code</h6>
-                                <span class="">5283209832</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">계좌번호</h6>
+                                <span class="">94111133332222</span>
                               </div>
                             </div>
                           </div>
@@ -911,7 +891,7 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Documents</h6>
+                        <h6 class="text-lg fw-semibold mb-0">첨부 서류</h6>
                       </div>
                       <div class="card-body p-20">
                         <div class="p-10 border radius-8">
@@ -940,27 +920,27 @@
                       <div
                         class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                       >
-                        <h6 class="text-lg fw-semibold mb-0">Hostel</h6>
+                        <h6 class="text-lg fw-semibold mb-0">기숙사</h6>
                       </div>
                       <div class="card-body p-0">
                         <div class="p-20">
                           <div class="row gy-4">
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Hostel</h6>
-                                <span class="">Boys Hostel 101</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">기숙사명</h6>
+                                <span class="">1기숙사</span>
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Room No.</h6>
-                                <span class="">Room No.</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">호실</h6>
+                                <span class="">101호</span>
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">Room Type</h6>
-                                <span class="">One Bed</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">방 유형</h6>
+                                <span class="">1인실</span>
                               </div>
                             </div>
                           </div>
@@ -1003,7 +983,7 @@
                   <div
                     class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
                   >
-                    <h6 class="text-lg fw-semibold mb-0">Attendance</h6>
+                    <h6 class="text-lg fw-semibold mb-0">출결 현황</h6>
                   </div>
                   <div class="card-body p-0">
                     <div class="px-20 pt-20">
@@ -1016,7 +996,7 @@
                               <div class="d-flex flex-wrap align-items-center justify-content-between gap-1">
                                 <div>
                                   <h6 class="fw-semibold mb-2">227</h6>
-                                  <span class="fw-medium text-secondary-light text-sm">Total Present</span>
+                                  <span class="fw-medium text-secondary-light text-sm">출석일수</span>
                                 </div>
                                 <span
                                   class="mb-0 w-48-px h-48-px bg-success-600 text-white flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6 mb-0"
@@ -2298,71 +2278,261 @@
               <!-- Exam tab start -->
               <div class="tab-pane fade" id="pills-exam" role="tabpanel" aria-labelledby="pills-exam-tab" tabindex="0">
                 <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
-                  <div class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
+                  <div
+                    class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
+                  >
                     <h6 class="text-lg fw-semibold mb-0">성적</h6>
                   </div>
                   <div class="card-body p-20 d-flex flex-column gap-20">
-
                     <!-- 1학년 성적 -->
                     <div class="border radius-8 overflow-hidden" id="firstYearGrades">
-                      <button type="button" class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50">
+                      <button
+                        type="button"
+                        class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50"
+                      >
                         1학년 성적
-                        <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                        <span class="arrow-icon text-lg d-flex line-height-1"
+                          ><i class="ri-arrow-down-s-line"></i
+                        ></span>
                       </button>
                       <div class="custom-accordion-content p-16 d-flex flex-column gap-16">
                         <!-- 1학년 1학기 중간고사 -->
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
                             1학기 중간고사
-                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                            <span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
                           </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_firstSemesterMidterm">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="firstYear_firstSemesterMidterm"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <!-- 1학년 1학기 기말고사 -->
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
                             1학기 기말고사
-                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                            <span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
                           </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_firstSemesterFinal">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="firstYear_firstSemesterFinal"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <!-- 1학년 2학기 중간고사 -->
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
                             2학기 중간고사
-                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                            <span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
                           </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_secondSemesterMidterm">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="firstYear_secondSemesterMidterm"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <!-- 1학년 2학기 기말고사 -->
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
                             2학기 기말고사
-                            <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                            <span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
                           </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="firstYear_secondSemesterFinal">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="firstYear_secondSemesterFinal"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
@@ -2371,48 +2541,245 @@
 
                     <!-- 2학년 성적 -->
                     <div class="border radius-8 overflow-hidden" id="secondYearGrades">
-                      <button type="button" class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50">
+                      <button
+                        type="button"
+                        class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50"
+                      >
                         2학년 성적
-                        <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                        <span class="arrow-icon text-lg d-flex line-height-1"
+                          ><i class="ri-arrow-down-s-line"></i
+                        ></span>
                       </button>
                       <div class="custom-accordion-content p-16 d-flex flex-column gap-16">
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            1학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_firstSemesterMidterm">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="secondYear_firstSemesterMidterm"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            1학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_firstSemesterFinal">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="secondYear_firstSemesterFinal"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            2학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_secondSemesterMidterm">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="secondYear_secondSemesterMidterm"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            2학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="secondYear_secondSemesterFinal">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="secondYear_secondSemesterFinal"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
@@ -2421,54 +2788,250 @@
 
                     <!-- 3학년 성적 -->
                     <div class="border radius-8 overflow-hidden" id="thirdYearGrades">
-                      <button type="button" class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50">
+                      <button
+                        type="button"
+                        class="custom-accordion-btn text-md fw-bold text-primary-600 w-100 py-12 px-20 d-flex align-items-center gap-12 justify-content-between bg-primary-50"
+                      >
                         3학년 성적
-                        <span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span>
+                        <span class="arrow-icon text-lg d-flex line-height-1"
+                          ><i class="ri-arrow-down-s-line"></i
+                        ></span>
                       </button>
                       <div class="custom-accordion-content p-16 d-flex flex-column gap-16">
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            1학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_firstSemesterMidterm">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="thirdYear_firstSemesterMidterm"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">1학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            1학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_firstSemesterFinal">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="thirdYear_firstSemesterFinal"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            2학기 중간고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_secondSemesterMidterm">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="thirdYear_secondSemesterMidterm"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                         <div class="border radius-8 overflow-hidden">
-                          <button type="button" class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between">2학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"><i class="ri-arrow-down-s-line"></i></span></button>
+                          <button
+                            type="button"
+                            class="custom-accordion-btn text-md fw-semibold text-secondary-light w-100 py-10 px-20 d-flex align-items-center gap-12 justify-content-between"
+                          >
+                            2학기 기말고사<span class="arrow-icon text-lg d-flex line-height-1"
+                              ><i class="ri-arrow-down-s-line"></i
+                            ></span>
+                          </button>
                           <div class="custom-accordion-content table-bottom-info-none">
-                            <table class="table bordered-table mb-0 table-heading-dark-mode w-100" id="thirdYear_secondSemesterFinal">
-                              <thead><tr><th scope="col" class="text-start">과목</th><th scope="col" class="text-start">만점</th><th scope="col" class="text-start">과락</th><th scope="col" class="text-start">원점수</th><th scope="col" class="text-start">등급</th><th scope="col" class="text-start">결과</th></tr></thead>
+                            <table
+                              class="table bordered-table mb-0 table-heading-dark-mode w-100"
+                              id="thirdYear_secondSemesterFinal"
+                            >
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="text-start">과목</th>
+                                  <th scope="col" class="text-start">만점</th>
+                                  <th scope="col" class="text-start">과락</th>
+                                  <th scope="col" class="text-start">원점수</th>
+                                  <th scope="col" class="text-start">등급</th>
+                                  <th scope="col" class="text-start">결과</th>
+                                </tr>
+                              </thead>
                               <tbody></tbody>
-                              <tfoot><tr><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">Total:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"></td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">총점수:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">등급:</td><td class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50">결과:</td></tr></tfoot>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    Total:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  ></td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    총점수:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    등급:
+                                  </td>
+                                  <td
+                                    class="text-primary-light fw-semibold text-md border-top border-bottom border-neutral-200 text-start bg-neutral-50"
+                                  >
+                                    결과:
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           </div>
                         </div>
                       </div>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -2658,62 +3221,6 @@
       </footer>
     </main>
 
-    <!-- Login Details sidebar start -->
-    <div
-      class="my-sidebar bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-700-px w-100 translate-x-full duration-300 active-translate-0"
-    >
-      <div class="px-20 py-12 border-bottom d-flex align-items-center justify-content-between gap-20">
-        <h5 class="text-lg mb-0">Login Details</h5>
-        <button type="button" class="close-my-sidebar text-danger-600 text-lg d-flex">
-          <i class="ri-close-large-line"></i>
-        </button>
-      </div>
-      <form action="#" class="d-flex flex-column">
-        <div class="p-20">
-          <div class="d-flex align-items-center gap-20">
-            <figure class="w-72-px h-72-px rounded-circle overflow-hidden mb-0">
-              <img
-                src="/images/thumbs/student-details-img.png"
-                alt="Student Image"
-                class="w-100 h-100 object-fit-cover"
-              />
-            </figure>
-            <div class="flex-grow-1">
-              <h2 class="text-xl text-primary-light mb-4">Seth Hallam</h2>
-              <p class="mb-0">Roll No: <span class="text-primary-light fw-semibold">10</span></p>
-            </div>
-          </div>
-        </div>
-        <div class="table-bottom-info-none">
-          <table
-            class="table bordered-table mb-0 table-heading-dark-mode w-100 data-table"
-            id="loginDetailsTable"
-            data-page-length="10"
-          >
-            <thead>
-              <tr>
-                <th scope="col" class="text-start">User Type</th>
-                <th scope="col" class="text-start">Email</th>
-                <th scope="col" class="text-start">Password</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="text-start">Student</td>
-                <td class="text-start">student@example.com</td>
-                <td class="text-start">15445@#AC</td>
-              </tr>
-              <tr>
-                <td class="text-start">Parent</td>
-                <td class="text-start">parent@example.com</td>
-                <td class="text-start">52445@#AC</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </form>
-    </div>
-    <!-- Login Details sidebar end -->
 
     <!-- Apply Leave sidebar start -->
     <div
@@ -2998,15 +3505,6 @@
       });
       // Custom accordion js end
 
-      // Sidebar js start
-      $(".my-sidebar-btn").on("click", function () {
-        $(".my-sidebar").addClass("active");
-        $(".overlay").addClass("active");
-      });
-      $(".close-my-sidebar, .overlay").on("click", function () {
-        $(".my-sidebar").removeClass("active");
-        $(".overlay").removeClass("active");
-      });
 
       $(".apply-leave-btn").on("click", function () {
         $(".apply-leave").addClass("active");

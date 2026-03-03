@@ -35,7 +35,7 @@
       >
         <span class="d-flex align-items-start gap-10">
           <img
-            src="/images/thumbs/leave-request-img2.png"
+            th:src="${profileImageUrl != null ? profileImageUrl : '/images/thumbs/leave-request-img2.png'}"
             alt="Thumbnail"
             class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
           />
@@ -82,7 +82,7 @@
             class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
           >
             <i class="ri-shut-down-line"></i>
-            Log Out
+            로그아웃
           </a>
         </li>
       </ul>
@@ -298,29 +298,29 @@
         </a>
       </li>
 
-      <!-- Examinations - 모든 로그인 사용자(학부모 제외) -->
+      <!-- Assignments - 모든 로그인 사용자(학부모 제외) -->
       <li class="dropdown" sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-file-edit-line"></i>
-          <span>Examinations</span>
+          <span>과제</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/exam}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Exam
+              과제 목록
             </a>
           </li>
           <li>
             <a th:href="@{/exam/schedule}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Exam Schedule
+              과제 일정
             </a>
           </li>
           <li>
             <a th:href="@{/exam/result}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Exam Result
+              과제 결과
             </a>
           </li>
         </ul>
@@ -330,19 +330,19 @@
       <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-calendar-check-line"></i>
-          <span>Attendance</span>
+          <span>출결 관리</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/attendance/student}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Student Attendance
+              학생 출결
             </a>
           </li>
           <li>
             <a th:href="@{/attendance/teacher}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Teacher Attendance
+              교사 출결
             </a>
           </li>
         </ul>
@@ -352,19 +352,19 @@
       <li class="dropdown" sec:authorize="!isAuthenticated()">
         <a href="javascript:void(0)">
           <i class="ri-shield-check-line"></i>
-          <span>Authentication</span>
+          <span>계정</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/login}">
               <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
-              Login
+              로그인
             </a>
           </li>
           <li>
             <a th:href="@{/register}">
               <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i>
-              Register
+              회원가입
             </a>
           </li>
         </ul>
@@ -374,19 +374,19 @@
       <li class="dropdown" sec:authorize="hasRole('ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-user-settings-line"></i>
-          <span>Settings</span>
+          <span>설정</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/settings/general}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              General
+              일반
             </a>
           </li>
           <li>
             <a th:href="@{/settings/notification}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Notification
+              알림
             </a>
           </li>
         </ul>

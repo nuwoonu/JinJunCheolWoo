@@ -30,7 +30,7 @@ public class AdminFacilityController {
     @GetMapping("/rooms")
     public String rooms(Model model) {
         model.addAttribute("facilities", adminFacilityService.getAllFacilities());
-        return SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
+        return "parkjoon/admin/facilities/rooms";
     }
 
     @PostMapping("/rooms/create")

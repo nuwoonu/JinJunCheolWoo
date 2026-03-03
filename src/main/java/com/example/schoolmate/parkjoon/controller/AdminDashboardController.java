@@ -28,6 +28,6 @@ public class AdminDashboardController {
     public String dashboard(Model model) {
         DashboardDTO stats = adminDashboardService.getDashboardStats();
         model.addAttribute("stats", stats);
-        return SchoolmateUrls.ADMIN_ROOT + "/main";
+        return "parkjoon/admin/main";
     }
 }

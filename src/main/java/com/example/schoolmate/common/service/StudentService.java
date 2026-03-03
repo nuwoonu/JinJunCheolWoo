@@ -203,6 +203,9 @@ public class StudentService {
         User user = userRepository.findById(request.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo info = user.getInfo(StudentInfo.class);
+        if (info == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + request.getUid());
+        }
 
         StudentAssignment assignment = info.getAssignments().stream()
                 .filter(a -> a.getSchoolYear() == request.getSchoolYear())
@@ -264,6 +267,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo info = user.getInfo(StudentInfo.class);
+        if (info == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         // 해당 학년도의 이력만 제거
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
@@ -296,6 +302,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        if (studentInfo == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         ParentInfo parentInfo = parentInfoRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
@@ -319,6 +328,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        if (studentInfo == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         ParentInfo parentInfo = parentInfoRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
@@ -333,6 +345,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        if (studentInfo == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         FamilyRelation relation = studentInfo.getFamilyRelations().stream()
                 .filter(r -> r.getParentInfo().getId().equals(parentId))
@@ -408,11 +423,19 @@ public class StudentService {
         return convertToResponseDTO(student);
     }
 
-    // 승철님 작업물
+    // 승철님 작업물 - student_info.id(PK)로 조회 (edit 컨트롤러용)
     @Transactional(readOnly = true)
     public StudentResponseDTO getStudentByUid(Long uid) {
         StudentInfo student = studentInfoRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+        return convertToResponseDTO(student);
+    }
+
+    // user.uid(FK)로 student_info 조회 (로그인 학생 본인 조회용)
+    @Transactional(readOnly = true)
+    public StudentResponseDTO getStudentByUserUid(Long userUid) {
+        StudentInfo student = studentInfoRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + userUid));
         return convertToResponseDTO(student);
     }
 

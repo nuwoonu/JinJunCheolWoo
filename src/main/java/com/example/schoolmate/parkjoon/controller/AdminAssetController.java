@@ -38,7 +38,7 @@ public class AdminAssetController {
         model.addAttribute("summaries", adminAssetService.getAssetSummaries());
         model.addAttribute("statuses", AssetStatus.values());
         model.addAttribute("keyword", keyword);
-        return SchoolmateUrls.ADMIN_ASSETS;
+        return "parkjoon/admin/facilities/assets";
     }
 
     @PostMapping("/create")

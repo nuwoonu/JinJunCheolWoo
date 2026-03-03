@@ -61,7 +61,7 @@ public class AdminStudentController {
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", StudentStatus.values());
 
-        return SchoolmateUrls.ADMIN_STUDENTS + "/main";
+        return "parkjoon/admin/students/main";
     }
 
     // 2. 등록 페이지 이동
@@ -75,7 +75,7 @@ public class AdminStudentController {
         model.addAttribute("currentYear", currentYear);
         model.addAttribute("relationships", FamilyRelationship.values());
         model.addAttribute("classrooms", studentService.getOpenClassrooms(currentYear));
-        return SchoolmateUrls.ADMIN_STUDENTS + "/create";
+        return "parkjoon/admin/students/create";
     }
 
     // 3. 상세 페이지 이동
@@ -88,7 +88,7 @@ public class AdminStudentController {
             model.addAttribute("student", student);
             model.addAttribute("relationships", FamilyRelationship.values());
             model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
-            return SchoolmateUrls.ADMIN_STUDENTS + "/detail";
+            return "parkjoon/admin/students/detail";
         } catch (IllegalArgumentException e) {
             // 존재하지 않는 학생일 경우 메시지를 담아 리다이렉트
             redirectAttributes.addFlashAttribute("errorMessage", "해당 학생이 존재하지 않습니다.");

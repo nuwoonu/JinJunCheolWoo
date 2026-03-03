@@ -33,13 +33,13 @@ public class AdminNoticeBoardController {
         Page<NoticeDTO.Response> notices = adminNoticeService.getNoticeList(keyword, pageable);
         model.addAttribute("notices", notices);
         model.addAttribute("keyword", keyword);
-        return SchoolmateUrls.ADMIN_NOTICES + "/main";
+        return "parkjoon/admin/notices/main";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("notice", new NoticeDTO.Request());
-        return SchoolmateUrls.ADMIN_NOTICES + "/form";
+        return "parkjoon/admin/notices/form";
     }
 
     @PostMapping("/create")
@@ -56,14 +56,14 @@ public class AdminNoticeBoardController {
         adminNoticeService.increaseViewCount(id);
         NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
-        return SchoolmateUrls.ADMIN_NOTICES + "/detail";
+        return "parkjoon/admin/notices/detail";
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
-        return SchoolmateUrls.ADMIN_NOTICES + "/form";
+        return "parkjoon/admin/notices/form";
     }
 
     @PostMapping("/{id}/edit")

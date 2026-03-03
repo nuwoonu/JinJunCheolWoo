@@ -33,7 +33,6 @@
             <div class="card h-100">
               <div class="card-body p-0">
                 <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
-                  <iconify-icon icon="mdi:bell-outline" class="icon text-lg text-primary-600"></iconify-icon>
                   <h6 class="text-lg mb-0 fw-semibold">알림 메시지</h6>
                 </div>
                 <div class="px-16 py-12">
@@ -64,7 +63,6 @@
                   <!-- 공지사항 없을 때 -->
                   <div th:if="${notices == null or notices.isEmpty()}"
                        class="text-center py-32 text-secondary-light">
-                    <iconify-icon icon="mdi:bell-off-outline" class="text-4xl d-block mb-8"></iconify-icon>
                     <p class="text-sm mb-0">새로운 알림이 없습니다.</p>
                   </div>
 
@@ -84,7 +82,6 @@
             <div class="card h-100">
               <div class="card-body p-0">
                 <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
-                  <iconify-icon icon="mdi:calendar-month-outline" class="icon text-lg text-success-600"></iconify-icon>
                   <h6 class="text-lg mb-0 fw-semibold">학교 일정</h6>
                 </div>
                 <div class="px-16 py-12">
@@ -101,7 +98,6 @@
             <div class="card">
               <div class="card-body p-0">
                 <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
-                  <iconify-icon icon="mdi:clipboard-text-outline" class="icon text-lg text-warning-600"></iconify-icon>
                   <h6 class="text-lg mb-0 fw-semibold">과제 제출 확인</h6>
                 </div>
                 <div class="p-20">
@@ -163,7 +159,6 @@
             <div class="card h-100">
               <div class="card-body p-0">
                 <div class="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
-                  <iconify-icon icon="mdi:account-group-outline" class="icon text-lg text-info-600"></iconify-icon>
                   <h6 class="text-lg mb-0 fw-semibold">학급 학생 출결 상태</h6>
                 </div>
 
@@ -206,7 +201,6 @@
 
                 <!-- 학급 정보 없을 때 -->
                 <div th:if="${classInfo == null}" class="p-20 text-center text-secondary-light">
-                  <iconify-icon icon="mdi:account-off-outline" class="text-4xl d-block mb-8"></iconify-icon>
                   <p class="text-sm mb-0">담당 학급 정보가 없습니다.</p>
                   <p class="text-xs mb-0 mt-4">관리자에게 학급 배정을 요청하세요.</p>
                 </div>
@@ -257,7 +251,6 @@
             div.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#f0faf5; border-radius:8px;';
             div.innerHTML =
               '<div style="display:flex; align-items:center; gap:10px;">' +
-                '<iconify-icon icon="mdi:calendar-check-outline" style="font-size:18px; color:#198754;"></iconify-icon>' +
                 '<span style="font-size:13px; font-weight:500;">' + evt.label + '</span>' +
               '</div>' +
               '<span style="' + badgeStyle + ' padding:3px 10px; border-radius:4px; font-size:11px; font-weight:700;">' + dLabel + '</span>';

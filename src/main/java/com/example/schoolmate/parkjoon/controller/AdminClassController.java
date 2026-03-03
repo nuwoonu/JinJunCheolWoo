@@ -59,7 +59,7 @@ public class AdminClassController {
         model.addAttribute("classes", classes);
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", ClassroomStatus.values());
-        return SchoolmateUrls.ADMIN_CLASSES + "/main";
+        return "parkjoon/admin/classes/main";
     }
 
     @GetMapping("/create")
@@ -74,7 +74,7 @@ public class AdminClassController {
             log.info("교사 목록 조회 완료. 조회된 교사 수: {}", teachers != null ? teachers.size() : "null");
 
             model.addAttribute("teachers", teachers);
-            return SchoolmateUrls.ADMIN_CLASSES;
+            return "parkjoon/admin/classes/create";
         } catch (Exception e) {
             log.error("[AdminClassController] GET /create 처리 중 치명적 에러 발생", e);
             throw e; // 에러 페이지로 전파
@@ -108,7 +108,7 @@ public class AdminClassController {
         model.addAttribute("teachers", teachers);
         model.addAttribute("statuses", ClassroomStatus.values());
 
-        return SchoolmateUrls.ADMIN_CLASSES + "/detail";
+        return "parkjoon/admin/classes/detail";
     }
 
     @PostMapping("/update")

@@ -19,8 +19,12 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.service.StudentService;
 import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -32,6 +36,8 @@ import lombok.extern.log4j.Log4j2;
 public class StudentController {
 
     private final StudentService studentService;
+    private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
 
     // 학생 목록 페이지
     @GetMapping("/list")
@@ -47,8 +53,18 @@ public class StudentController {
     @GetMapping("/myinfo")
     public String getMyInfo(@AuthenticationPrincipal AuthUserDTO authUserDTO, Model model) {
         Long uid = authUserDTO.getCustomUserDTO().getUid();
-        StudentResponseDTO student = studentService.getStudentByUid(uid);
+        StudentResponseDTO student = studentService.getStudentByUserUid(uid);
         model.addAttribute("student", student);
+
+        User user = userRepository.findById(uid).orElse(null);
+        if (user != null) {
+            Profile profile = profileRepository.findByUser(user).orElse(null);
+            if (profile != null && profile.getUuid() != null) {
+                String imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
+                model.addAttribute("profileImageUrl", imageUrl);
+            }
+        }
+
         log.info("학생 본인 정보 조회: {}", uid);
         return "cheol/student-details";
     }

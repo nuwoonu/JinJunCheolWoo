@@ -17,6 +17,6 @@ public class AdminAuthController {
 
     @GetMapping("/login")
     public String adminLoginPage() {
-        return SchoolmateUrls.ADMIN_ROOT + "/auth/login";
+        return "parkjoon/admin/auth/login";
     }
 }

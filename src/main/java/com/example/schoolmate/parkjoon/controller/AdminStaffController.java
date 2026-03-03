@@ -60,14 +60,14 @@ public class AdminStaffController {
         model.addAttribute("statuses", StaffStatus.values());
         model.addAttribute("employmentTypes", EmploymentType.values());
 
-        return SchoolmateUrls.ADMIN_STAFFS + "/main";
+        return "parkjoon/admin/staffs/main";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("departments", List.of("행정실", "시설관리실", "급식실", "전산실", "당직실", "기타"));
         model.addAttribute("employmentTypes", EmploymentType.values());
-        return SchoolmateUrls.ADMIN_STAFFS + "/create";
+        return "parkjoon/admin/staffs/create";
     }
 
     @PostMapping("/create")
@@ -90,7 +90,7 @@ public class AdminStaffController {
         model.addAttribute("employmentTypes", EmploymentType.values());
         model.addAttribute("departments", List.of("행정실", "시설관리실", "급식실", "전산실", "당직실", "기타"));
         model.addAttribute("allRoles", UserRole.values()); // 권한 목록 추가
-        return SchoolmateUrls.ADMIN_STAFFS + "/detail";
+        return "parkjoon/admin/staffs/detail";
     }
 
     @PostMapping("/update")

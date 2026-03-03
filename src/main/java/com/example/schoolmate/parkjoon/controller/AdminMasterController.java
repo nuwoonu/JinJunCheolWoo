@@ -34,14 +34,14 @@ public class AdminMasterController {
     @GetMapping("/schedule")
     public String schedule(Model model) {
         model.addAttribute("eventTypes", EventType.values());
-        return SchoolmateUrls.ADMIN_MASTER + "/schedule";
+        return "parkjoon/admin/master/schedule";
     }
 
     // 교과목 관리 페이지
     @GetMapping("/subjects")
     public String subjects(Model model) {
         model.addAttribute("subjects", adminSubjectService.getAllSubjects());
-        return SchoolmateUrls.ADMIN_MASTER + "/subjects";
+        return "parkjoon/admin/master/subjects";
     }
 
     @PostMapping("/subjects/create")
@@ -68,7 +68,7 @@ public class AdminMasterController {
     @GetMapping("/settings")
     public String settings(Model model) {
         model.addAttribute("setting", systemSettingService.getCurrentSetting());
-        return SchoolmateUrls.ADMIN_MASTER + "/settings";
+        return "parkjoon/admin/master/settings";
     }
 
     @PostMapping("/settings")

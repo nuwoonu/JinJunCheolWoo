@@ -18,11 +18,11 @@ public class AdminAuditController {
 
     @GetMapping("/access")
     public String accessLogs() {
-        return SchoolmateUrls.ADMIN_AUDIT + "/access";
+        return "parkjoon/admin/audit/access";
     }
 
     @GetMapping("/changes")
     public String changeLogs() {
-        return SchoolmateUrls.ADMIN_AUDIT + "/changes";
+        return "parkjoon/admin/audit/changes";
     }
 }

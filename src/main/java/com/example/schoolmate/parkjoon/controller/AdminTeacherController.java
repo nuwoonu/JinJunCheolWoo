@@ -50,14 +50,14 @@ public class AdminTeacherController {
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", TeacherStatus.values());
 
-        return SchoolmateUrls.ADMIN_TEACHERS + "/main";
+        return "parkjoon/admin/teachers/main";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("departments", List.of("교무부", "학생부", "연구부", "진로진학부", "환경부", "체육부"));
         model.addAttribute("positions", List.of("교장", "교감", "수석교사", "부장교사", "평교사", "기간제교사"));
-        return SchoolmateUrls.ADMIN_TEACHERS + "/create";
+        return "parkjoon/admin/teachers/create";
     }
 
     @PostMapping("/create")
@@ -80,7 +80,7 @@ public class AdminTeacherController {
         model.addAttribute("departments", List.of("교무부", "학생부", "연구부", "진로진학부", "환경부", "체육부"));
         model.addAttribute("positions", List.of("교장", "교감", "수석교사", "부장교사", "평교사", "기간제교사"));
         model.addAttribute("allRoles", UserRole.values()); // 권한 목록 추가
-        return SchoolmateUrls.ADMIN_TEACHERS + "/detail";
+        return "parkjoon/admin/teachers/detail";
     }
 
     @PostMapping("/update")

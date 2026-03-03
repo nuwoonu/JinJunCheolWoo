@@ -56,14 +56,14 @@ public class AdminParentController {
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", ParentStatus.values());
 
-        return SchoolmateUrls.ADMIN_PARENTS + "/main";
+        return "parkjoon/admin/parents/main";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("createRequest", new ParentDTO.CreateRequest());
         model.addAttribute("relationships", FamilyRelationship.values());
-        return SchoolmateUrls.ADMIN_PARENTS + "/create";
+        return "parkjoon/admin/parents/create";
     }
 
     @PostMapping("/create")
@@ -113,7 +113,7 @@ public class AdminParentController {
         model.addAttribute("parent", parent);
         model.addAttribute("statuses", ParentStatus.values());
         model.addAttribute("relationships", FamilyRelationship.values());
-        return SchoolmateUrls.ADMIN_PARENTS + "/detail";
+        return "parkjoon/admin/parents/detail";
     }
 
     // 학생 검색 API (AJAX)
