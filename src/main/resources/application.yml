@@ -2,6 +2,9 @@ spring:
   application:
     name: schoolmate
 
+  profiles:
+    include: oauth
+
   # DB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
