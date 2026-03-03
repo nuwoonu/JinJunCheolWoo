@@ -79,7 +79,6 @@ bin/
 
 ### Spring Boot - 보안 파일 ###
 src/main/resources/application.properties
-src/main/resources/application.yml
 src/main/resources/application-oauth.properties
 src/main/resources/application-oauth.yml
 application-local.yml
