@@ -1,5 +1,6 @@
 package com.example.schoolmate.soojin.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,13 +17,16 @@ import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.dto.dashboardinfo.SchoolCalendarDTO;
+import com.example.schoolmate.common.dto.dashboardinfo.SchoolMealDTO;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
+import com.example.schoolmate.soojin.repository.SchoolMealRepository;
 import com.example.schoolmate.soojin.service.CalendarService;
+import com.example.schoolmate.soojin.service.SchoolMealService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +40,7 @@ public class MyChildrenStatusController {
     private final ProfileRepository profileRepository;
     private final SystemSettingService systemSettingService;
     private final CalendarService calendarService;
+    private final SchoolMealService schoolMealService;
 
     // 학부모 - 자녀 대시보드
     @GetMapping("/status")
@@ -59,6 +64,10 @@ public class MyChildrenStatusController {
         // 다가오는 일정
         List<SchoolCalendarDTO> upcomingEvents = calendarService.getUpcomingEvents(5);
         model.addAttribute("upcomingEvents", upcomingEvents);
+
+        // 오늘의 급식 (중식 기준)
+        List<SchoolMealDTO> todayMeal = schoolMealService.getDailyMeal(LocalDate.now(), null);
+        model.addAttribute("todayMeal", todayMeal);
 
         return "soojin/mychildren/status";
     }
