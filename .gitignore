@@ -110,3 +110,4 @@ target/
 # *.mv.db
 # *.trace.db_compare/
 .vscode/tasks.json
+.env
