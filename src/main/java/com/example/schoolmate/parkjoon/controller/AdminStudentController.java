@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
  * - 신규 학생 등록(개별/CSV) 및 학적 이력(Assignment) 관리
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_STUDENTS)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_STUDENTS)
 @RequiredArgsConstructor
 public class AdminStudentController {
 
@@ -61,7 +61,7 @@ public class AdminStudentController {
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", StudentStatus.values());
 
-        return SchoolmateUrls.ADMIN_STUDENTS + "/main";
+        return SchoolmateUrls.View.ADMIN_STUDENTS_MAIN;
     }
 
     // 2. 등록 페이지 이동
@@ -75,7 +75,7 @@ public class AdminStudentController {
         model.addAttribute("currentYear", currentYear);
         model.addAttribute("relationships", FamilyRelationship.values());
         model.addAttribute("classrooms", studentService.getOpenClassrooms(currentYear));
-        return SchoolmateUrls.ADMIN_STUDENTS + "/create";
+        return SchoolmateUrls.View.ADMIN_STUDENTS_CREATE;
     }
 
     // 3. 상세 페이지 이동
@@ -88,11 +88,11 @@ public class AdminStudentController {
             model.addAttribute("student", student);
             model.addAttribute("relationships", FamilyRelationship.values());
             model.addAttribute("currentYear", systemSettingService.getCurrentSchoolYear());
-            return SchoolmateUrls.ADMIN_STUDENTS + "/detail";
+            return SchoolmateUrls.View.ADMIN_STUDENTS_DETAIL;
         } catch (IllegalArgumentException e) {
             // 존재하지 않는 학생일 경우 메시지를 담아 리다이렉트
             redirectAttributes.addFlashAttribute("errorMessage", "해당 학생이 존재하지 않습니다.");
-            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS;
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_STUDENTS;
         }
     }
 
@@ -104,11 +104,11 @@ public class AdminStudentController {
             Long uid = studentService.createStudent(request);
 
             // 상세 페이지로 이동
-            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + uid;
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_STUDENTS + "/" + uid;
         } catch (Exception e) {
             // 중복 학번 등 예외 발생 시 에러 메시지와 함께 작성 폼으로 유지
             redirectAttributes.addFlashAttribute("errorMessage", "등록 중 오류가 발생했습니다: " + e.getMessage());
-            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/create";
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_STUDENTS + "/create";
         }
     }
 
@@ -119,7 +119,7 @@ public class AdminStudentController {
 
         // 수정 후 다시 해당 학생의 상세 페이지로 이동 (UID 기준)
         redirectAttributes.addFlashAttribute("successMessage", "기본 정보가 수정되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + request.getUid();
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_STUDENTS + "/" + request.getUid();
     }
 
     // 학적 이력 수정
@@ -128,10 +128,10 @@ public class AdminStudentController {
         try {
             Long uid = studentService.updateAssignment(request);
             redirectAttributes.addFlashAttribute("successMessage", request.getSchoolYear() + "학년도 배정 정보가 수정되었습니다.");
-            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + uid + "#history";
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_STUDENTS + "/" + uid + "#history";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "수정 실패: " + e.getMessage());
-            return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + request.getUid() + "#history";
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_STUDENTS + "/" + request.getUid() + "#history";
         }
     }
 
@@ -140,7 +140,7 @@ public class AdminStudentController {
             @RequestParam("schoolYear") int schoolYear, RedirectAttributes ra) {
         Long studentUid = studentService.deleteAssignment(uid, schoolYear);
         ra.addFlashAttribute("successMessage", schoolYear + "학년도 이력이 삭제되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_STUDENTS + "/" + studentUid + "#history";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_STUDENTS + "/" + studentUid + "#history";
     }
 
     @PostMapping("/import-csv")

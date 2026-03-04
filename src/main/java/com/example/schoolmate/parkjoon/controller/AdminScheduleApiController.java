@@ -24,7 +24,7 @@ import com.example.schoolmate.config.SchoolmateUrls;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping(SchoolmateUrls.ADMIN_API_SCHEDULE)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_API_SCHEDULE)
 @RequiredArgsConstructor
 public class AdminScheduleApiController {
 

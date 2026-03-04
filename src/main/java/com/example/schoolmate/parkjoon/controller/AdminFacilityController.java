@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  * - 시설 및 자산 목록 조회 화면 연결
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_FACILITIES)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_FACILITIES)
 @RequiredArgsConstructor
 public class AdminFacilityController {
 
@@ -30,27 +30,27 @@ public class AdminFacilityController {
     @GetMapping("/rooms")
     public String rooms(Model model) {
         model.addAttribute("facilities", adminFacilityService.getAllFacilities());
-        return SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
+        return SchoolmateUrls.View.ADMIN_FACILITIES_ROOMS;
     }
 
     @PostMapping("/rooms/create")
     public String createRoom(FacilityDTO.Request request, RedirectAttributes ra) {
         adminFacilityService.createFacility(request);
         ra.addFlashAttribute("successMessage", "시설이 등록되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_FACILITIES + "/rooms";
     }
 
     @PostMapping("/rooms/update")
     public String updateRoom(FacilityDTO.Request request, RedirectAttributes ra) {
         adminFacilityService.updateFacility(request);
         ra.addFlashAttribute("successMessage", "시설 정보가 수정되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_FACILITIES + "/rooms";
     }
 
     @PostMapping("/rooms/delete")
     public String deleteRoom(@RequestParam("id") Long id, RedirectAttributes ra) {
         adminFacilityService.deleteFacility(id);
         ra.addFlashAttribute("successMessage", "시설이 삭제되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_FACILITIES + "/rooms";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_FACILITIES + "/rooms";
     }
 }

@@ -12,7 +12,7 @@ import com.example.schoolmate.config.SchoolmateUrls;
  * 관리자 페이지의 진입점(/parkjoon/admin) 접근 시 대시보드로 리다이렉트합니다.
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_ROOT)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_ROOT)
 public class AdminMainController {
 
     /**
@@ -20,6 +20,6 @@ public class AdminMainController {
      */
     @GetMapping({ "", "/" })
     public String index() {
-        return "redirect:" + SchoolmateUrls.ADMIN_DASHBOARD;
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_DASHBOARD;
     }
 }

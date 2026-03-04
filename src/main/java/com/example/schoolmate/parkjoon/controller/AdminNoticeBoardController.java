@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_NOTICES)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_NOTICES)
 @RequiredArgsConstructor
 public class AdminNoticeBoardController {
 
@@ -33,13 +33,13 @@ public class AdminNoticeBoardController {
         Page<NoticeDTO.Response> notices = adminNoticeService.getNoticeList(keyword, pageable);
         model.addAttribute("notices", notices);
         model.addAttribute("keyword", keyword);
-        return SchoolmateUrls.ADMIN_NOTICES + "/main";
+        return SchoolmateUrls.View.ADMIN_NOTICES_MAIN;
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("notice", new NoticeDTO.Request());
-        return SchoolmateUrls.ADMIN_NOTICES + "/form";
+        return SchoolmateUrls.View.ADMIN_NOTICES_FORM;
     }
 
     @PostMapping("/create")
@@ -48,7 +48,7 @@ public class AdminNoticeBoardController {
             RedirectAttributes ra) {
         adminNoticeService.createNotice(request, principal.getName());
         ra.addFlashAttribute("successMessage", "공지사항이 등록되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_NOTICES;
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES;
     }
 
     @GetMapping("/{id}")
@@ -56,14 +56,14 @@ public class AdminNoticeBoardController {
         adminNoticeService.increaseViewCount(id);
         NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
-        return SchoolmateUrls.ADMIN_NOTICES + "/detail";
+        return SchoolmateUrls.View.ADMIN_NOTICES_DETAIL;
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
-        return SchoolmateUrls.ADMIN_NOTICES + "/form";
+        return SchoolmateUrls.View.ADMIN_NOTICES_FORM;
     }
 
     @PostMapping("/{id}/edit")
@@ -71,13 +71,13 @@ public class AdminNoticeBoardController {
         request.setId(id);
         adminNoticeService.updateNotice(request);
         ra.addFlashAttribute("successMessage", "공지사항이 수정되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_NOTICES + "/" + id;
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES + "/" + id;
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         adminNoticeService.deleteNotice(id);
         ra.addFlashAttribute("successMessage", "공지사항이 삭제되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_NOTICES;
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES;
     }
 }

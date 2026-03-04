@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
  * - 자녀 추가/해제 및 관계 설정 기능
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_PARENTS)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_PARENTS)
 @RequiredArgsConstructor
 public class AdminParentController {
 
@@ -56,14 +56,14 @@ public class AdminParentController {
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", ParentStatus.values());
 
-        return SchoolmateUrls.ADMIN_PARENTS + "/main";
+        return SchoolmateUrls.View.ADMIN_PARENTS_MAIN;
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("createRequest", new ParentDTO.CreateRequest());
         model.addAttribute("relationships", FamilyRelationship.values());
-        return SchoolmateUrls.ADMIN_PARENTS + "/create";
+        return SchoolmateUrls.View.ADMIN_PARENTS_CREATE;
     }
 
     @PostMapping("/create")
@@ -71,10 +71,10 @@ public class AdminParentController {
         try {
             adminParentService.createParent(request);
             ra.addFlashAttribute("successMessage", "학부모 계정이 생성되었습니다.");
-            return "redirect:" + SchoolmateUrls.ADMIN_PARENTS;
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_PARENTS;
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "등록 실패: " + e.getMessage());
-            return "redirect:" + SchoolmateUrls.ADMIN_PARENTS + "/create";
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_PARENTS + "/create";
         }
     }
 
@@ -113,7 +113,7 @@ public class AdminParentController {
         model.addAttribute("parent", parent);
         model.addAttribute("statuses", ParentStatus.values());
         model.addAttribute("relationships", FamilyRelationship.values());
-        return SchoolmateUrls.ADMIN_PARENTS + "/detail";
+        return SchoolmateUrls.View.ADMIN_PARENTS_DETAIL;
     }
 
     // 학생 검색 API (AJAX)
@@ -127,7 +127,7 @@ public class AdminParentController {
     public String update(ParentDTO.UpdateRequest request, RedirectAttributes ra) {
         adminParentService.updateParent(request);
         ra.addFlashAttribute("successMessage", "정보가 수정되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_PARENTS + "/" + request.getId();
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_PARENTS + "/" + request.getId();
     }
 
     @PostMapping("/{parentId}/add-child")

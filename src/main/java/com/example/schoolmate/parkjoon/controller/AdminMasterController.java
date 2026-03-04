@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
  * - 학사 일정 및 교과목 코드 관리 페이지 연결
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_MASTER)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_MASTER)
 @RequiredArgsConstructor
 public class AdminMasterController {
 
@@ -34,41 +34,41 @@ public class AdminMasterController {
     @GetMapping("/schedule")
     public String schedule(Model model) {
         model.addAttribute("eventTypes", EventType.values());
-        return SchoolmateUrls.ADMIN_MASTER + "/schedule";
+        return SchoolmateUrls.View.ADMIN_MASTER_SCHEDULE;
     }
 
     // 교과목 관리 페이지
     @GetMapping("/subjects")
     public String subjects(Model model) {
         model.addAttribute("subjects", adminSubjectService.getAllSubjects());
-        return SchoolmateUrls.ADMIN_MASTER + "/subjects";
+        return SchoolmateUrls.View.ADMIN_MASTER_SUBJECTS;
     }
 
     @PostMapping("/subjects/create")
     public String createSubject(SubjectDTO.Request request, RedirectAttributes ra) {
         adminSubjectService.createSubject(request);
         ra.addFlashAttribute("successMessage", "과목이 등록되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_MASTER + "/subjects";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_MASTER + "/subjects";
     }
 
     @PostMapping("/subjects/update")
     public String updateSubject(SubjectDTO.Request request, RedirectAttributes ra) {
         adminSubjectService.updateSubject(request);
         ra.addFlashAttribute("successMessage", "과목 정보가 수정되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_MASTER + "/subjects";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_MASTER + "/subjects";
     }
 
     @PostMapping("/subjects/delete")
     public String deleteSubject(@RequestParam("code") String code, RedirectAttributes ra) {
         adminSubjectService.deleteSubject(code);
         ra.addFlashAttribute("successMessage", "과목이 삭제되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_MASTER + "/subjects";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_MASTER + "/subjects";
     }
 
     @GetMapping("/settings")
     public String settings(Model model) {
         model.addAttribute("setting", systemSettingService.getCurrentSetting());
-        return SchoolmateUrls.ADMIN_MASTER + "/settings";
+        return SchoolmateUrls.View.ADMIN_MASTER_SETTINGS;
     }
 
     @PostMapping("/settings")
@@ -76,6 +76,6 @@ public class AdminMasterController {
             RedirectAttributes ra) {
         systemSettingService.updateSystemSetting(year, semester);
         ra.addFlashAttribute("successMessage", "시스템 설정이 저장되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_MASTER + "/settings";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_MASTER + "/settings";
     }
 }

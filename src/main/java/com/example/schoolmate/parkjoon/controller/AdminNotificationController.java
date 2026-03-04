@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
  * - 개별 또는 그룹 알림 전송 API 제공
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_NOTIFICATIONS)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_NOTIFICATIONS)
 @RequiredArgsConstructor
 public class AdminNotificationController {
 

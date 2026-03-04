@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
  * 노트북, 태블릿 등 학교 비품의 재고와 상태를 관리합니다.
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_ASSETS)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_ASSETS)
 @RequiredArgsConstructor
 public class AdminAssetController {
 
@@ -38,7 +38,7 @@ public class AdminAssetController {
         model.addAttribute("summaries", adminAssetService.getAssetSummaries());
         model.addAttribute("statuses", AssetStatus.values());
         model.addAttribute("keyword", keyword);
-        return SchoolmateUrls.ADMIN_ASSETS;
+        return SchoolmateUrls.View.ADMIN_ASSETS;
     }
 
     @PostMapping("/create")
@@ -49,20 +49,20 @@ public class AdminAssetController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "등록 실패: " + e.getMessage());
         }
-        return "redirect:" + SchoolmateUrls.ADMIN_ASSETS;
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_ASSETS;
     }
 
     @PostMapping("/update")
     public String update(AssetDTO.Request request, RedirectAttributes ra) {
         adminAssetService.updateAsset(request);
         ra.addFlashAttribute("successMessage", "기자재 정보가 수정되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_ASSETS;
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_ASSETS;
     }
 
     @PostMapping("/delete")
     public String delete(@RequestParam("id") Long id, RedirectAttributes ra) {
         adminAssetService.deleteAsset(id);
         ra.addFlashAttribute("successMessage", "기자재가 삭제되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_ASSETS;
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_ASSETS;
     }
 }

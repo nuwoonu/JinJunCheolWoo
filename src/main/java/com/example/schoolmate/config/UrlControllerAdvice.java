@@ -20,7 +20,7 @@ public class UrlControllerAdvice {
     @ModelAttribute("urls")
     public Map<String, String> urls() {
         Map<String, String> urls = new HashMap<>();
-        Field[] fields = SchoolmateUrls.class.getDeclaredFields();
+        Field[] fields = SchoolmateUrls.Url.class.getDeclaredFields();
 
         for (Field field : fields) {
             int modifiers = field.getModifiers();

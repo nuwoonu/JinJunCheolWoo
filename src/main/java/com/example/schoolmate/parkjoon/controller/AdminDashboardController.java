@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
  * - 전체 학생, 교사, 직원 수 및 승인 대기 학부모 수 조회
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_ROOT)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_ROOT)
 @RequiredArgsConstructor
 public class AdminDashboardController {
 
@@ -28,6 +28,6 @@ public class AdminDashboardController {
     public String dashboard(Model model) {
         DashboardDTO stats = adminDashboardService.getDashboardStats();
         model.addAttribute("stats", stats);
-        return SchoolmateUrls.ADMIN_ROOT + "/main";
+        return SchoolmateUrls.View.ADMIN_DASHBOARD;
     }
 }

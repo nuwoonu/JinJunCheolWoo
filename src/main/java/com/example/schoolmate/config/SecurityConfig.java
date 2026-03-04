@@ -93,10 +93,10 @@ public class SecurityConfig {
         @Order(1) // 우선순위 1등
         SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
                 http
-                                .securityMatcher(SchoolmateUrls.ADMIN_ROOT + "/**") // 이 경로로 시작하는 요청만 담당
+                                .securityMatcher(SchoolmateUrls.Url.ADMIN_ROOT + "/**") // 이 경로로 시작하는 요청만 담당
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
-                                                                SchoolmateUrls.ADMIN_ROOT + "/login",
+                                                                SchoolmateUrls.Url.ADMIN_ROOT + "/login",
                                                                 "/assets/**",
                                                                 "/css/**",
                                                                 "/js/**")
@@ -105,25 +105,25 @@ public class SecurityConfig {
                                                 .anyRequest().hasRole("ADMIN") // 나머지는 무조건 ADMIN 권한 필요
                                 )
                                 .formLogin(form -> form
-                                                .loginPage(SchoolmateUrls.ADMIN_ROOT + "/login") // 어드민 전용 로그인 페이지
-                                                                                                 // URL
-                                                .loginProcessingUrl(SchoolmateUrls.ADMIN_ROOT + "/login_proc") // 어드민
-                                                                                                               // 로그인
-                                                                                                               // 처리
-                                                                                                               // URL
+                                                .loginPage(SchoolmateUrls.Url.ADMIN_ROOT + "/login") // 어드민 전용 로그인 페이지
+                                                                                                     // URL
+                                                .loginProcessingUrl(SchoolmateUrls.Url.ADMIN_ROOT + "/login_proc") // 어드민
+                                                                                                                   // 로그인
+                                                                                                                   // 처리
+                                                                                                                   // URL
                                                 .usernameParameter("username") // login.html의 name 속성과 일치
                                                 .passwordParameter("password")
-                                                .defaultSuccessUrl(SchoolmateUrls.ADMIN_DASHBOARD, true) // 성공 시
-                                                                                                         // 대시보드로
-                                                .failureUrl(SchoolmateUrls.ADMIN_ROOT + "/login?error=true") // 실패
-                                                                                                             // 시
-                                                                                                             // 에러
-                                                                                                             // 파라미터
+                                                .defaultSuccessUrl(SchoolmateUrls.Url.ADMIN_DASHBOARD, true) // 성공 시
+                                                                                                             // 대시보드로
+                                                .failureUrl(SchoolmateUrls.Url.ADMIN_ROOT + "/login?error=true") // 실패
+                                                                                                                 // 시
+                                                                                                                 // 에러
+                                                                                                                 // 파라미터
                                                 .permitAll())
                                 .logout(logout -> logout
-                                                .logoutUrl(SchoolmateUrls.ADMIN_ROOT + "/logout")
+                                                .logoutUrl(SchoolmateUrls.Url.ADMIN_ROOT + "/logout")
                                                 .logoutSuccessUrl(
-                                                                SchoolmateUrls.ADMIN_ROOT + "/login?logout=true")
+                                                                SchoolmateUrls.Url.ADMIN_ROOT + "/login?logout=true")
                                                 .invalidateHttpSession(true)
                                                 .deleteCookies("JSESSIONID"));
                 // .csrf(csrf -> csrf.disable()); // CSRF 활성화 (기본값)

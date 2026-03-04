@@ -30,7 +30,7 @@ import com.example.schoolmate.common.entity.user.User;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_TEACHERS)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_TEACHERS)
 @RequiredArgsConstructor
 public class AdminTeacherController {
 
@@ -50,14 +50,14 @@ public class AdminTeacherController {
         model.addAttribute("condition", condition);
         model.addAttribute("statuses", TeacherStatus.values());
 
-        return SchoolmateUrls.ADMIN_TEACHERS + "/main";
+        return SchoolmateUrls.View.ADMIN_TEACHERS_MAIN;
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("departments", List.of("교무부", "학생부", "연구부", "진로진학부", "환경부", "체육부"));
         model.addAttribute("positions", List.of("교장", "교감", "수석교사", "부장교사", "평교사", "기간제교사"));
-        return SchoolmateUrls.ADMIN_TEACHERS + "/create";
+        return SchoolmateUrls.View.ADMIN_TEACHERS_CREATE;
     }
 
     @PostMapping("/create")
@@ -65,10 +65,10 @@ public class AdminTeacherController {
         try {
             adminTeacherService.createTeacher(request);
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-            return "redirect:" + SchoolmateUrls.ADMIN_TEACHERS + "/" + user.getUid();
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_TEACHERS + "/" + user.getUid();
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "등록 실패: " + e.getMessage());
-            return "redirect:" + SchoolmateUrls.ADMIN_TEACHERS + "/create";
+            return "redirect:" + SchoolmateUrls.Url.ADMIN_TEACHERS + "/create";
         }
     }
 
@@ -80,7 +80,7 @@ public class AdminTeacherController {
         model.addAttribute("departments", List.of("교무부", "학생부", "연구부", "진로진학부", "환경부", "체육부"));
         model.addAttribute("positions", List.of("교장", "교감", "수석교사", "부장교사", "평교사", "기간제교사"));
         model.addAttribute("allRoles", UserRole.values()); // 권한 목록 추가
-        return SchoolmateUrls.ADMIN_TEACHERS + "/detail";
+        return SchoolmateUrls.View.ADMIN_TEACHERS_DETAIL;
     }
 
     @PostMapping("/update")
@@ -91,7 +91,7 @@ public class AdminTeacherController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "수정 실패: " + e.getMessage());
         }
-        return "redirect:" + SchoolmateUrls.ADMIN_TEACHERS + "/" + request.getUid();
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_TEACHERS + "/" + request.getUid();
     }
 
     @PostMapping("/import-csv")
@@ -121,13 +121,13 @@ public class AdminTeacherController {
     public String addRole(@PathVariable Long uid, @RequestParam("role") String role, RedirectAttributes ra) {
         adminTeacherService.addRole(uid, role);
         ra.addFlashAttribute("successMessage", "권한이 추가되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_TEACHERS + "/" + uid + "#roles";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_TEACHERS + "/" + uid + "#roles";
     }
 
     @PostMapping("/{uid}/remove-role")
     public String removeRole(@PathVariable Long uid, @RequestParam("role") String role, RedirectAttributes ra) {
         adminTeacherService.removeRole(uid, role);
         ra.addFlashAttribute("successMessage", "권한이 삭제되었습니다.");
-        return "redirect:" + SchoolmateUrls.ADMIN_TEACHERS + "/" + uid + "#roles";
+        return "redirect:" + SchoolmateUrls.Url.ADMIN_TEACHERS + "/" + uid + "#roles";
     }
 }

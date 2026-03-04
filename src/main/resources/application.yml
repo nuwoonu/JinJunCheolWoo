@@ -17,7 +17,6 @@ spring:
       hibernate:
         format_sql: true
         highlight_sql: true
-    database-paltform: org.hibernate.dialect.MySQL8Dialect
   # profiles:
   #   include: oauth
   servlet:

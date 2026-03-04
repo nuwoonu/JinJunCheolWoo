@@ -13,16 +13,16 @@ import com.example.schoolmate.config.SchoolmateUrls;
  * - 사용자 접속 기록 및 데이터 변경 이력 조회 화면 연결
  */
 @Controller
-@RequestMapping(SchoolmateUrls.ADMIN_AUDIT)
+@RequestMapping(SchoolmateUrls.Url.ADMIN_AUDIT)
 public class AdminAuditController {
 
     @GetMapping("/access")
     public String accessLogs() {
-        return SchoolmateUrls.ADMIN_AUDIT + "/access";
+        return SchoolmateUrls.View.ADMIN_AUDIT_ACCESS;
     }
 
     @GetMapping("/changes")
     public String changeLogs() {
-        return SchoolmateUrls.ADMIN_AUDIT + "/changes";
+        return SchoolmateUrls.View.ADMIN_AUDIT_CHANGES;
     }
 }
