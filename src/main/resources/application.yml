@@ -8,11 +8,6 @@ spring:
       pageable:
         #페이지 1부터 시작
         one-indexed-parameters: true
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/schoolmate
-    username: javadb
-    password: 12345
   jpa:
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -22,6 +17,7 @@ spring:
       hibernate:
         format_sql: true
         highlight_sql: true
+    database-paltform: org.hibernate.dialect.MySQL8Dialect
   # profiles:
   #   include: oauth
   servlet:
@@ -38,8 +34,3 @@ logging:
         orm:
           jdbc:
             bind: trace
-com:
-  example:
-    schoolmate:
-      upload:
-        path: /Users/hyeonwoo/Desktop/backend/upload
