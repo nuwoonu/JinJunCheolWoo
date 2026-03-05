@@ -92,6 +92,8 @@ public class UserService {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
         studentInfo.setStatus(StudentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
+        // ↓ [woo] 회원가입 시 입력한 전화번호 저장 (미입력 시 null)
+        studentInfo.setPhone(dto.getPhoneNumber());
 
         // studentInfo.setCode(dto.getStudentIdentityNum() != null
         // ? dto.getStudentIdentityNum()
@@ -130,6 +132,8 @@ public class UserService {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
         teacherInfo.setStatus(TeacherStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
+        // ↓ [woo] 회원가입 시 입력한 전화번호 저장 (미입력 시 null)
+        teacherInfo.setPhone(dto.getPhoneNumber());
 
         // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
         // 사번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
