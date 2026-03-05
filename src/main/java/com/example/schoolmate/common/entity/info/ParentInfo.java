@@ -29,7 +29,6 @@ import lombok.Setter;
 public class ParentInfo extends BaseInfo {
     // 1. 인적 사항 (계정 유무와 상관없이 기록 가능)
     private String parentName; // 보호자 실명
-    private String phoneNumber; // 연락처 (ID 매칭 및 알림 발송용)
     // 2. 관리 상태
     @Enumerated(EnumType.STRING)
     private ParentStatus status = ParentStatus.PENDING; // 기본값은 승인대기

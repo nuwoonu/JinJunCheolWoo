@@ -39,7 +39,7 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"students", "teacher", "homeroomTeacher", "viceTeacher"})
+@ToString(exclude = { "teacher", "homeroomTeacher", "viceTeacher" })
 public class Classroom extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

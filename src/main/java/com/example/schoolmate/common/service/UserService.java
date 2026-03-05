@@ -152,7 +152,7 @@ public class UserService {
         ParentInfo parentInfo = new ParentInfo();
         parentInfo.setUser(user);
         parentInfo.setParentName(dto.getName());
-        parentInfo.setPhoneNumber(dto.getPhoneNumber());
+        parentInfo.setPhone(dto.getPhoneNumber());
         parentInfo.setStatus(ParentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
 
         // ========== [변경] 중복 code 체크 추가 (2025-01-29 woo) ==========
@@ -323,7 +323,7 @@ public class UserService {
         ParentInfo parentInfo = user.getInfo(ParentInfo.class);
         if (parentInfo != null) {
             builder.role(UserRole.PARENT)
-                    .phoneNumber(parentInfo.getPhoneNumber());
+                    .phoneNumber(parentInfo.getPhone());
         }
 
         // 기본 역할 설정 (Info가 없는 경우)

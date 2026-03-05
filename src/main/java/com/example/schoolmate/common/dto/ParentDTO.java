@@ -104,7 +104,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
+            this.phone = entity.getPhone();
             this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.linked = entity.getUser() != null;
@@ -154,7 +154,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
+            this.phone = entity.getPhone();
             this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";

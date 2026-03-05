@@ -201,7 +201,7 @@ public class StudentDTO {
         public LinkedGuardian(com.example.schoolmate.common.entity.info.FamilyRelation relation) {
             this.parentId = relation.getParentInfo().getId();
             this.name = relation.getParentInfo().getParentName();
-            this.phone = relation.getParentInfo().getPhoneNumber();
+            this.phone = relation.getParentInfo().getPhone();
             this.relationship = relation.getRelationship().getDescription();
             this.relationshipCode = relation.getRelationship().name();
         }
