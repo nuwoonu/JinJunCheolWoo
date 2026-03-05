@@ -5,6 +5,8 @@ import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,42 +44,64 @@ public class UserController {
      * 회원가입 처리
      */
     @PostMapping("/register")
-    public String postRegister(@Valid CustomUserDTO customUserDTO, BindingResult result, RedirectAttributes rttr) {
+    public String postRegister(@Valid CustomUserDTO customUserDTO, BindingResult result, RedirectAttributes rttr,
+            HttpServletRequest request) {
         log.info("회원가입 시도: {}", customUserDTO);
 
+        // woo 01/28 회원가입 오류 및 성공시 처리 수정.
         // 유효성 검사 실패
         if (result.hasErrors()) {
             log.warn("회원가입 유효성 검사 실패: {}", result.getAllErrors());
-            return "/user/register";
+            rttr.addFlashAttribute("error", "입력 정보를 확인해주세요.");
+            return "redirect:/register"; // 변경: register.html로
         }
 
         try {
             userService.join(customUserDTO);
-            rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다. 로그인해주세요.");
-            return "redirect:/login";
+            // woo 01/28 회원가입 오류 및 성공시 처리 추가
+            // 자동 로그인 처리
+            try {
+                request.login(customUserDTO.getEmail(), customUserDTO.getPassword());
+            } catch (ServletException e) {
+                log.error("자동 로그인 실패: {}", e.getMessage());
+                rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다. 로그인해주세요.");
+                return "redirect:/login";
+            }
+
+            // 역할별 dashboard로 리다이렉트
+            return switch (customUserDTO.getRole()) {
+                case TEACHER -> "redirect:/teacher/dashboard";
+                case STUDENT -> "redirect:/student/dashboard";
+                case PARENT -> "redirect:/parent/dashboard";
+                default -> "redirect:/login";
+            };
+
         } catch (Exception e) {
             log.error("회원가입 실패: {}", e.getMessage());
             rttr.addFlashAttribute("error", e.getMessage());
-            return "redirect:/user/register";
+            return "redirect:/register";
         }
     }
 
     /**
-     * 프로필 페이지
+     * 프로필 페이지 - 역할에 따라 해당 details 페이지로 리다이렉트
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
-    public String getProfile(Model model) {
+    public String getProfile() {
         log.info("프로필 페이지 요청");
 
-        // 현재 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AuthUserDTO authUser = (AuthUserDTO) authentication.getPrincipal();
+        CustomUserDTO userDTO = authUser.getCustomUserDTO();
 
-        CustomUserDTO userDTO = userService.getUserDTOByEmail(authUser.getUsername());
-        model.addAttribute("user", userDTO);
-
-        return "/user/profile";
+        return switch (userDTO.getRole()) {
+            case STUDENT -> "redirect:/student/details/" + userDTO.getUid();
+            case PARENT -> "redirect:/parent/details";
+            case TEACHER -> "redirect:/teacher/list"; // TODO: teacher-details 페이지 생성 필요
+            case ADMIN -> "redirect:/dashboard";
+            default -> "redirect:/dashboard";
+        };
     }
 
     /**

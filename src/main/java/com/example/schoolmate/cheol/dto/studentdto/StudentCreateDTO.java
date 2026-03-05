@@ -24,8 +24,13 @@ public class StudentCreateDTO {
     @NotNull(message = "학번은 필수입니다.")
     private Integer studentNumber;
 
-    @NotNull(message = "학급 ID는 필수입니다.")
+    // [woo 수정] classroomId → @NotNull 제거 (선택사항으로 변경)
+    // classroomId가 없으면 grade+classNum으로 학급 조회 (StudentService.createStudent 참고)
     private Long classroomId;
+
+    // [woo 추가] 교사 폼에서 담임 학급 자동 세팅용 (classroomId 대체)
+    private Integer grade;
+    private Integer classNum;
     @NotBlank(message = "이름은 필수입니다.")
     private String name;
 

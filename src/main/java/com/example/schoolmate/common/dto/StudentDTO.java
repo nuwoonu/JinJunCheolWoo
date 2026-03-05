@@ -34,7 +34,7 @@ public class StudentDTO {
     public static class StudentSearchCondition {
         private String type;
         private String keyword;
-        private String status = StudentStatus.ENROLLED.name(); // 기본값: 재학
+        private String status; // 기본값: 전체 (null이면 필터 없음) [woo]
     }
 
     /**
@@ -201,7 +201,7 @@ public class StudentDTO {
         public LinkedGuardian(com.example.schoolmate.common.entity.info.FamilyRelation relation) {
             this.parentId = relation.getParentInfo().getId();
             this.name = relation.getParentInfo().getParentName();
-            this.phone = relation.getParentInfo().getPhoneNumber();
+            this.phone = relation.getParentInfo().getPhone();
             this.relationship = relation.getRelationship().getDescription();
             this.relationshipCode = relation.getRelationship().name();
         }

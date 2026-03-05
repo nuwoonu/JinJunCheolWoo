@@ -11,8 +11,8 @@
     <div class="sidebar-logo d-flex align-items-center justify-content-between">
       <a th:href="@{/dashboard}" class="">
         <img th:src="@{/images/schoolmateLogo.png}" alt="홈" class="light-logo" width="173" height="40" />
-        <img src="/images/logo-light.png" alt="site logo" class="dark-logo" />
-        <img src="/images/logo-icon.png" alt="site logo" class="logo-icon" />
+        <img th:src="@{/images/schoolmateLogo.png}" alt="홈" class="dark-logo" width="173" height="40" />
+        <img th:src="@{/images/schoolmateLogo.png}" alt="홈" class="logo-icon" />
       </a>
       <button
         type="button"
@@ -35,18 +35,20 @@
       >
         <span class="d-flex align-items-start gap-10">
           <img
-            src="/images/thumbs/leave-request-img2.png"
+            th:src="${profileImageUrl != null ? profileImageUrl : '/images/thumbs/leave-request-img2.png'}"
             alt="Thumbnail"
             class="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
           />
           <span class="profile-dropdown__contents">
-            <span class="h6 mb-0 text-md d-block text-primary-light" th:text="${#authentication.principal.username}"
-              >User</span
-            >
-            <!-- Admin은 표시 안함, 나머지는 학년-반 표시 -->
+            <!-- 사용자 이름 표시 - OAuth2/일반 로그인 통합 (01/29[woo]) -->
+            <span class="h6 mb-0 text-md d-block text-primary-light"
+              th:text="${#authentication.principal instanceof T(com.example.schoolmate.dto.AuthUserDTO) ? #authentication.principal.customUserDTO.name : #authentication.name}">User</span>
+            <!-- Admin, Parent, Guest 제외 - 학년-반 표시 (일반 로그인만) (01/30[woo]) -->
+            <!-- OAuth2 로그인(DefaultOAuth2User)은 customUserDTO 없음 - instanceof 체크로 분기 -->
             <span
-              sec:authorize="!hasRole('ADMIN')"
+              sec:authorize="hasAnyRole('STUDENT', 'TEACHER')"
               class="text-secondary-light text-sm mb-0 d-block"
+              th:if="${#authentication.principal instanceof T(com.example.schoolmate.dto.AuthUserDTO) and #authentication.principal.customUserDTO?.grade != null}"
               th:text="${#authentication.principal.customUserDTO.grade} + '학년 ' + ${#authentication.principal.customUserDTO.classNum} + '반'"
             ></span>
           </span>
@@ -58,20 +60,11 @@
       <ul class="dropdown-menu dropdown-menu-lg-end border p-12">
         <li>
           <a
-            th:href="@{/profile}"
+            th:href="@{/user/profile}"
             class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
           >
             <i class="ri-user-3-line"></i>
-            My Profile
-          </a>
-        </li>
-        <li>
-          <a
-            th:href="@{/settings}"
-            class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-          >
-            <i class="ri-settings-3-line"></i>
-            Setting
+            나의 프로필
           </a>
         </li>
         <li>
@@ -89,7 +82,7 @@
             class="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
           >
             <i class="ri-shut-down-line"></i>
-            Log Out
+            로그아웃
           </a>
         </li>
       </ul>
@@ -125,7 +118,21 @@
               학생 관리
             </a>
           </li>
+          <li>
+            <a th:href="@{/student/add}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생 추가
+            </a>
+          </li>
         </ul>
+      </li>
+
+      <!-- 수업 일정 - TEACHER만 -->
+      <li sec:authorize="hasRole('TEACHER')">
+        <a th:href="@{/teacher/schedule}">
+          <i class="ri-calendar-schedule-line"></i>
+          <span>수업 일정</span>
+        </a>
       </li>
 
       <!-- Students - TEACHER, ADMIN, STUDENT만 (학부모 제외) -->
@@ -135,7 +142,7 @@
           <span>학생</span>
         </a>
         <ul class="sidebar-submenu">
-          <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
+          <li sec:authorize="hasRole('ADMIN')">
             <a th:href="@{/student/add}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학생 추가
@@ -145,6 +152,12 @@
             <a th:href="@{/student/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학생 리스트
+            </a>
+          </li>
+          <li sec:authorize="hasRole('STUDENT')">
+            <a th:href="@{/student/myinfo}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학생세부사항
             </a>
           </li>
           <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
@@ -170,7 +183,7 @@
             </a>
           </li>
           <li>
-            <a th:href="@{/parent/children/status}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               성적 조회
             </a>
@@ -200,7 +213,8 @@
         </ul>
       </li>
 
-      <!-- Parent - TEACHER, ADMIN만 조회 가능 -->
+      <!-- [2025.01 수정] Parent - TEACHER, ADMIN만 조회 가능 -->
+      <!-- 링크: /parent/list → /teacher/parent/list 로 변경 (TeacherViewController 사용) -->
       <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-user-heart-line"></i>
@@ -208,7 +222,7 @@
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/parent/list}">
+            <a th:href="@{/teacher/parent/list}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학부모 목록
             </a>
@@ -245,12 +259,12 @@
               학년 게시판
             </a>
           </li>
-          <li sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
+          <!-- <li sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
             <a th:href="@{/board/class/1/1}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               우리 반 게시판
             </a>
-          </li>
+          </li> -->
           <li sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
             <a th:href="@{/board/teacher}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
@@ -284,29 +298,29 @@
         </a>
       </li>
 
-      <!-- Examinations - 모든 로그인 사용자(학부모 제외) -->
+      <!-- Assignments - 모든 로그인 사용자(학부모 제외) -->
       <li class="dropdown" sec:authorize="hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-file-edit-line"></i>
-          <span>Examinations</span>
+          <span>과제</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/exam}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Exam
+              과제 목록
             </a>
           </li>
           <li>
             <a th:href="@{/exam/schedule}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Exam Schedule
+              과제 일정
             </a>
           </li>
           <li>
             <a th:href="@{/exam/result}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Exam Result
+              과제 결과
             </a>
           </li>
         </ul>
@@ -316,19 +330,19 @@
       <li class="dropdown" sec:authorize="hasAnyRole('TEACHER', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-calendar-check-line"></i>
-          <span>Attendance</span>
+          <span>출결 관리</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/attendance/student}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Student Attendance
+              학생 출결
             </a>
           </li>
           <li>
             <a th:href="@{/attendance/teacher}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Teacher Attendance
+              교사 출결
             </a>
           </li>
         </ul>
@@ -338,19 +352,19 @@
       <li class="dropdown" sec:authorize="!isAuthenticated()">
         <a href="javascript:void(0)">
           <i class="ri-shield-check-line"></i>
-          <span>Authentication</span>
+          <span>계정</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/login}">
               <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
-              Login
+              로그인
             </a>
           </li>
           <li>
             <a th:href="@{/register}">
               <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i>
-              Register
+              회원가입
             </a>
           </li>
         </ul>
@@ -360,25 +374,26 @@
       <li class="dropdown" sec:authorize="hasRole('ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-user-settings-line"></i>
-          <span>Settings</span>
+          <span>설정</span>
         </a>
         <ul class="sidebar-submenu">
           <li>
             <a th:href="@{/settings/general}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              General
+              일반
             </a>
           </li>
           <li>
             <a th:href="@{/settings/notification}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
-              Notification
+              알림
             </a>
           </li>
         </ul>
       </li>
 
       <!-- ========= soojin, 학부모 사이드 수정 중 ========== -->
+      <!-- 현재 생성 안된 페이지는 주소 /dashboard -->
       <li class="dropdown" sec:authorize="hasAnyRole('PARENT', 'ADMIN')">
         <a href="javascript:void(0)">
           <i class="ri-megaphone-line"></i>
@@ -386,31 +401,31 @@
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/board/parent-notice}">
+            <a th:href="@{/board/school-notice}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학교 공지
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               가정통신문
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학급 공지
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent-notice}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학교 갤러리
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/soojin/calendar/monthly}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학사 일정
             </a>
@@ -432,6 +447,12 @@
             </a>
           </li>
           <li>
+            <a th:href="@{/dashboard}">
+              <i class="ri-circle-fill circle-icon w-auto"></i>
+              학급 게시판
+            </a>
+          </li>
+          <li>
             <a th:href="@{/board/parent}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               학부모 게시판
@@ -446,13 +467,13 @@
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a th:href="@{/board/parent-notice}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               상담 신청
             </a>
           </li>
           <li>
-            <a th:href="@{/board/parent}">
+            <a th:href="@{/dashboard}">
               <i class="ri-circle-fill circle-icon w-auto"></i>
               1:1 채팅
             </a>

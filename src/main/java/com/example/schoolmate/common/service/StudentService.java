@@ -203,6 +203,9 @@ public class StudentService {
         User user = userRepository.findById(request.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo info = user.getInfo(StudentInfo.class);
+        if (info == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + request.getUid());
+        }
 
         StudentAssignment assignment = info.getAssignments().stream()
                 .filter(a -> a.getSchoolYear() == request.getSchoolYear())
@@ -264,6 +267,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo info = user.getInfo(StudentInfo.class);
+        if (info == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         // 해당 학년도의 이력만 제거
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
@@ -296,6 +302,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        if (studentInfo == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         ParentInfo parentInfo = parentInfoRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
@@ -319,6 +328,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        if (studentInfo == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         ParentInfo parentInfo = parentInfoRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("학부모 정보를 찾을 수 없습니다."));
@@ -333,6 +345,9 @@ public class StudentService {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
         StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        if (studentInfo == null) {
+            throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
+        }
 
         FamilyRelation relation = studentInfo.getFamilyRelations().stream()
                 .filter(r -> r.getParentInfo().getId().equals(parentId))
@@ -342,6 +357,13 @@ public class StudentService {
     }
 
     // 승철님 작업물
+    // [woo 수정] 기존 코드에서 User 생성 누락 + BaseInfo.code null → DB 제약 위반 에러 수정
+    // 변경사항:
+    //   1. classroomId 없으면 grade+classNum으로 학급 조회 (담임 교사 폼 지원)
+    //   2. User 계정 생성 추가 (name/email/password/STUDENT role)
+    //   3. code 자동 생성 (년도+학년+반+번호)
+    //   4. user.addInfo(student)로 양방향 연관관계 설정
+    //   5. studentInfoRepository.save() → userRepository.save(user)로 변경 (cascade)
     @Transactional
     public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
         // 학번 중복 체크
@@ -349,34 +371,71 @@ public class StudentService {
             throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
         }
 
-        // Classroom 조회
-        Classroom classroom = classroomRepository.findById(createDTO.getClassroomId())
-                .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
-
-        // Student 엔티티 생성 (Setter 방식)
-        StudentInfo student = new StudentInfo();
-        // 주의: StudentInfo의 currentAssignment가 초기화되어 있지 않다면 NPE 발생 가능성 있음 (기존 코드 유지)
-        if (student.getCurrentAssignment() == null) {
-            StudentAssignment assignment = new StudentAssignment();
-            student.setCurrentAssignment(assignment);
-            student.getAssignments().add(assignment);
+        // Classroom 조회 (classroomId 우선, 없으면 grade+classNum으로 조회)
+        Classroom classroom;
+        if (createDTO.getClassroomId() != null) {
+            classroom = classroomRepository.findById(createDTO.getClassroomId())
+                    .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
+        } else {
+            int year = java.time.LocalDate.now().getYear();
+            classroom = classroomRepository.findByYearAndGradeAndClassNum(year, createDTO.getGrade(), createDTO.getClassNum())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            createDTO.getGrade() + "학년 " + createDTO.getClassNum() + "반 학급을 찾을 수 없습니다."));
         }
-        student.getCurrentAssignment().setAttendanceNum(createDTO.getStudentNumber());
-        student.getCurrentAssignment().setClassroom(classroom);
+
+        // 이메일 중복 체크
+        if (userRepository.existsByEmail(createDTO.getEmail())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다: " + createDTO.getEmail());
+        }
+
+        // User 계정 생성
+        User user = User.builder()
+                .name(createDTO.getName())
+                .email(createDTO.getEmail())
+                .password(passwordEncoder.encode(createDTO.getPassword()))
+                .roles(new HashSet<>(Set.of(UserRole.STUDENT)))
+                .build();
+
+        // 학생 코드 자동 생성 (년도+학년+반+번호, 예: 2026010105)
+        String code = String.format("%d%02d%02d%02d",
+                classroom.getYear(), classroom.getGrade(), classroom.getClassNum(), createDTO.getStudentNumber());
+
+        // StudentInfo 생성 및 User 연동
+        StudentInfo student = new StudentInfo();
+        student.setCode(code);
+        student.setStatus(StudentStatus.ENROLLED);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
         student.setGender(createDTO.getGender());
+        user.addInfo(student);
 
-        StudentInfo savedStudent = studentInfoRepository.save(student);
-        return convertToResponseDTO(savedStudent);
+        // 학급 배정 생성
+        StudentAssignment assignment = new StudentAssignment();
+        assignment.setStudentInfo(student);
+        assignment.setSchoolYear(classroom.getYear());
+        assignment.setClassroom(classroom);
+        assignment.setAttendanceNum(createDTO.getStudentNumber());
+        student.getAssignments().add(assignment);
+        student.setCurrentAssignment(assignment);
+
+        userRepository.save(user);
+        return convertToResponseDTO(student);
     }
 
-    // 승철님 작업물
+    // 승철님 작업물 - student_info.id(PK)로 조회 (edit 컨트롤러용)
     @Transactional(readOnly = true)
     public StudentResponseDTO getStudentByUid(Long uid) {
         StudentInfo student = studentInfoRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+        return convertToResponseDTO(student);
+    }
+
+    // user.uid(FK)로 student_info 조회 (로그인 학생 본인 조회용)
+    @Transactional(readOnly = true)
+    public StudentResponseDTO getStudentByUserUid(Long userUid) {
+        StudentInfo student = studentInfoRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + userUid));
         return convertToResponseDTO(student);
     }
 
@@ -471,8 +530,19 @@ public class StudentService {
         studentInfoRepository.deleteById(uid);
     }
 
+    /**
+     * [woo 추가] 로그인한 교사의 담임 학급 조회 (당해 연도 기준)
+     * AdminService에서 teacher(User) 필드로 담임 배정하므로 User.uid로 조회
+     * StudentController.getAddStudentForm()에서 사용 - 담임 아니면 접근 차단
+     */
+    @Transactional(readOnly = true)
+    public java.util.Optional<Classroom> findHomeroomClassroom(Long teacherUid) {
+        int year = java.time.LocalDate.now().getYear();
+        return classroomRepository.findByTeacherUidAndYear(teacherUid, year);
+    }
+
     // 승철님 작업물
     private StudentResponseDTO convertToResponseDTO(StudentInfo student) {
-        return new StudentResponseDTO(student);
+        return StudentResponseDTO.from(student);
     }
 }

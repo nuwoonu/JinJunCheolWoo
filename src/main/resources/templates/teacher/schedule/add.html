@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+    <title>수업 일정 등록</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+
+      <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 class="fw-semibold mb-0">수업 일정 등록</h6>
+          <p class="text-neutral-600 mt-4 mb-0">새 수업 일정을 등록합니다</p>
+        </div>
+        <a th:href="@{/teacher/schedule}" class="btn btn-outline-secondary d-flex align-items-center gap-8">
+          <iconify-icon icon="mdi:arrow-left" class="text-lg"></iconify-icon>
+          목록으로
+        </a>
+      </div>
+
+      <!-- 에러 메시지 -->
+      <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
+      <div class="card radius-12">
+        <div class="card-body p-24">
+          <form th:action="@{/teacher/schedule/add}" method="post">
+
+            <div class="row gy-3">
+              <!-- 요일 선택 -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">요일 <span class="text-danger">*</span></label>
+                <select name="dayOfWeek" class="form-select" required>
+                  <option value="">선택하세요</option>
+                  <option th:each="day : ${dayOfWeekValues}" th:value="${day.name()}" th:text="${day.description}">월요일</option>
+                </select>
+              </div>
+
+              <!-- 교시 -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">교시 <span class="text-danger">*</span></label>
+                <select name="period" class="form-select" required>
+                  <option value="">선택하세요</option>
+                  <option th:each="i : ${#numbers.sequence(1,8)}" th:value="${i}" th:text="${i} + '교시'">1교시</option>
+                </select>
+              </div>
+
+              <!-- 반복 유형 -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">반복 유형 <span class="text-danger">*</span></label>
+                <select name="repeatType" class="form-select" required id="repeatTypeSelect">
+                  <option th:each="type : ${repeatTypeValues}" th:value="${type.name()}" th:text="${type.description}">매주</option>
+                </select>
+              </div>
+
+              <!-- 시작 시간 -->
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">시작 시간 <span class="text-danger">*</span></label>
+                <input type="time" name="startTime" class="form-control" required id="startTimeInput">
+              </div>
+
+              <!-- 종료 시간 -->
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">종료 시간 <span class="text-danger">*</span></label>
+                <input type="time" name="endTime" class="form-control" required>
+              </div>
+
+              <!-- 과목명 -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">과목명 <span class="text-danger">*</span></label>
+                <input type="text" name="subjectName" class="form-control" placeholder="예: 수학, 국어, 과학" required maxlength="50">
+              </div>
+
+              <!-- 대상 학급 -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">대상 학급</label>
+                <input type="text" name="className" class="form-control" placeholder="예: 1학년 2반" maxlength="50">
+              </div>
+
+              <!-- 장소 -->
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">장소</label>
+                <input type="text" name="location" class="form-control" placeholder="예: 본관 301호" maxlength="100">
+              </div>
+
+              <!-- 특정 날짜 (일회성) -->
+              <div class="col-md-4" id="specificDateGroup" style="display: none;">
+                <label class="form-label fw-semibold">특정 날짜 <span class="text-danger">*</span></label>
+                <input type="date" name="specificDate" class="form-control" id="specificDateInput">
+              </div>
+
+              <!-- 메모 -->
+              <div class="col-12">
+                <label class="form-label fw-semibold">메모</label>
+                <input type="text" name="memo" class="form-control" placeholder="추가 메모 (선택)" maxlength="200">
+              </div>
+
+              <!-- 버튼 -->
+              <div class="col-12 mt-16">
+                <div class="d-flex gap-12">
+                  <button type="submit" class="btn btn-primary-600 px-32">
+                    <iconify-icon icon="mdi:check" class="me-4"></iconify-icon>
+                    등록
+                  </button>
+                  <a th:href="@{/teacher/schedule}" class="btn btn-outline-secondary px-32">취소</a>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <th:block layout:fragment="script">
+      <script>
+        // 교시 선택 시 자동 시간 설정
+        const periodTimes = {
+          1: { start: '09:00', end: '09:45' },
+          2: { start: '09:55', end: '10:40' },
+          3: { start: '10:50', end: '11:35' },
+          4: { start: '11:45', end: '12:30' },
+          5: { start: '13:30', end: '14:15' },
+          6: { start: '14:25', end: '15:10' },
+          7: { start: '15:20', end: '16:05' },
+          8: { start: '16:15', end: '17:00' }
+        };
+
+        document.querySelector('select[name="period"]').addEventListener('change', function() {
+          const period = this.value;
+          if (period && periodTimes[period]) {
+            document.querySelector('input[name="startTime"]').value = periodTimes[period].start;
+            document.querySelector('input[name="endTime"]').value = periodTimes[period].end;
+          }
+        });
+
+        // 반복 유형 변경 시 특정 날짜 필드 토글
+        document.getElementById('repeatTypeSelect').addEventListener('change', function() {
+          const dateGroup = document.getElementById('specificDateGroup');
+          const dateInput = document.getElementById('specificDateInput');
+          if (this.value === 'ONCE') {
+            dateGroup.style.display = 'block';
+            dateInput.required = true;
+          } else {
+            dateGroup.style.display = 'none';
+            dateInput.required = false;
+            dateInput.value = '';
+          }
+        });
+      </script>
+    </th:block>
+  </body>
+</html>

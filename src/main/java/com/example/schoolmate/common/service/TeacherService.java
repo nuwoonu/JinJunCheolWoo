@@ -1,10 +1,11 @@
 package com.example.schoolmate.common.service;
 
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,26 +49,41 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-@Log4j2
+/**
+ * 교사 통합 서비스
+ * - 관리자용 교사 관리 (CRUD, CSV 일괄 등록, 권한 관리)
+ * - 교사 전용 기능 (담당 학급 조회, 학생 관리, 성적 입력)
+ */
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
+@Log4j2
 public class TeacherService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final NotificationRepository notificationRepository;
     private final TeacherInfoRepository teacherInfoRepository;
-    private final StudentInfoRepository studentRepository;
+    private final StudentInfoRepository studentInfoRepository;
     private final ClassroomRepository classroomRepository;
     private final GradeRepository gradeRepository;
     private final SubjectRepository subjectRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final NotificationRepository notificationRepository;
 
+    // ==================================================================================
+    // ========== [관리자] 교사 관리 ==========
+    // ==================================================================================
+
+    /**
+     * 교사 목록 조회 (검색 조건 포함)
+     */
     public Page<TeacherDTO.DetailResponse> getTeacherList(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
         Page<User> userPage = teacherInfoRepository.search(cond, pageable);
         return userPage.map(TeacherDTO.DetailResponse::new);
     }
 
+    /**
+     * 교사 상세 정보 조회
+     */
     public TeacherDTO.DetailResponse getTeacherDetail(Long uid) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 교사입니다."));
@@ -75,11 +91,17 @@ public class TeacherService {
         TeacherDTO.DetailResponse response = new TeacherDTO.DetailResponse(user);
 
         List<Notification> notifications = notificationRepository.findByReceiverOrderByCreateDateDesc(user);
-        response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
+        response.setNotifications(notifications.stream()
+                .map(NotificationDTO.NotificationHistory::new)
+                .toList());
 
         return response;
     }
 
+    /**
+     * 교사 신규 등록
+     */
+    @Transactional
     public void createTeacher(TeacherDTO.CreateRequest request) {
         if (request.getCode() != null && teacherInfoRepository.existsByCode(request.getCode())) {
             throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
@@ -101,10 +123,13 @@ public class TeacherService {
         info.setUser(user);
 
         user.getInfos().add(info);
-
         userRepository.save(user);
     }
 
+    /**
+     * 교사 정보 수정 (관리자용 - UpdateRequest)
+     */
+    @Transactional
     public void updateTeacher(TeacherDTO.UpdateRequest request) {
         User user = userRepository.findById(request.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + request.getUid()));
@@ -124,6 +149,10 @@ public class TeacherService {
         }
     }
 
+    /**
+     * CSV 파일 일괄 교사 등록
+     */
+    @Transactional
     public void importTeachersFromCsv(MultipartFile file) throws Exception {
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             log.info("CSV 파일 읽기 시작: {}", file.getOriginalFilename());
@@ -143,8 +172,7 @@ public class TeacherService {
                         log.warn("이미 존재하는 사번 건너뜀: {}", csvReq.getCode());
                         continue;
                     }
-                    TeacherDTO.CreateRequest createReq = new TeacherDTO.CreateRequest(csvReq);
-                    this.createTeacher(createReq);
+                    this.createTeacher(new TeacherDTO.CreateRequest(csvReq));
                     log.info("교사 등록 성공: {}", csvReq.getEmail());
                 } catch (Exception e) {
                     log.error("교사 등록 중 상세 에러 ({}) : {}", csvReq.getEmail(), e.getMessage());
@@ -157,6 +185,10 @@ public class TeacherService {
         }
     }
 
+    /**
+     * 교사 상태 일괄 변경
+     */
+    @Transactional
     public void bulkUpdateTeacherStatus(List<Long> uids, String statusName) {
         TeacherStatus status = TeacherStatus.valueOf(statusName);
         List<User> users = userRepository.findAllById(uids);
@@ -167,35 +199,51 @@ public class TeacherService {
         }
     }
 
+    /**
+     * 교사 권한 추가
+     */
+    @Transactional
     public void addRole(Long uid, String roleName) {
         User user = userRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         user.getRoles().add(UserRole.valueOf(roleName));
     }
 
+    /**
+     * 교사 권한 삭제
+     */
+    @Transactional
     public void removeRole(Long uid, String roleName) {
         User user = userRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        UserRole role = UserRole.valueOf(roleName);
-        if (role == UserRole.TEACHER) {
-            throw new IllegalArgumentException("기본 권한(교사)은 삭제할 수 없습니다.");
-        }
-        user.getRoles().remove(role);
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        user.getRoles().remove(UserRole.valueOf(roleName));
     }
 
+    // ==================================================================================
+    // ========== [교사] 교사 정보 관리 ==========
+    // ==================================================================================
+
+    /**
+     * 교사 정보 단건 조회 (woo dto 반환)
+     */
     public TeacherResponseDTO getTeacherById(Long id) {
         TeacherInfo teacher = teacherInfoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다. ID: " + id));
-
         return new TeacherResponseDTO(teacher);
     }
 
+    /**
+     * 전체 교사 목록 조회 (woo dto 반환)
+     */
     public List<TeacherResponseDTO> getAllTeachers() {
         return teacherInfoRepository.findAll().stream()
                 .map(TeacherResponseDTO::new)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 교사 정보 수정 (교사용 - TeacherUpdateDTO)
+     */
     @Transactional
     public TeacherResponseDTO updateTeacher(Long id, TeacherUpdateDTO updateDTO) {
         TeacherInfo teacher = teacherInfoRepository.findById(id)
@@ -217,11 +265,18 @@ public class TeacherService {
         return new TeacherResponseDTO(teacher);
     }
 
+    // ==================================================================================
+    // ========== [교사] 학생 CRUD ==========
+    // ==================================================================================
+
+    /**
+     * 학생 등록 (classroomId 직접 지정)
+     */
     @Transactional
     public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
         log.info("학생 등록: {}", createDTO.getStudentNumber());
 
-        if (studentRepository.findByAttendanceNum(createDTO.getStudentNumber().intValue()).isPresent()) {
+        if (studentInfoRepository.findByAttendanceNum(createDTO.getStudentNumber()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
         }
 
@@ -229,57 +284,52 @@ public class TeacherService {
                 .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
 
         StudentInfo student = new StudentInfo();
+        StudentAssignment assignment = new StudentAssignment();
+        assignment.setAttendanceNum(createDTO.getStudentNumber());
+        assignment.setClassroom(classroom);
+        assignment.setStudentInfo(student);
+        student.getAssignments().add(assignment);
+        student.setCurrentAssignment(assignment);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
         student.setGender(createDTO.getGender());
 
-        StudentAssignment assignment = StudentAssignment.builder()
-                .studentInfo(student)
-                .schoolYear(classroom.getYear())
-                .classroom(classroom)
-                .attendanceNum(createDTO.getStudentNumber().intValue())
-                .build();
-        student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
-
-        StudentInfo savedStudent = studentRepository.save(student);
-        return new StudentResponseDTO(savedStudent);
+        StudentInfo savedStudent = studentInfoRepository.save(student);
+        return StudentResponseDTO.from(savedStudent);
     }
 
+    /**
+     * 학생 단건 조회
+     */
     public StudentResponseDTO getStudentById(Long studentId) {
-        StudentInfo student = studentRepository.findById(studentId)
+        StudentInfo student = studentInfoRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
-        return new StudentResponseDTO(student);
+        return StudentResponseDTO.from(student);
     }
 
+    /**
+     * 전체 학생 목록 조회
+     */
     public List<StudentResponseDTO> getAllStudents() {
-        return studentRepository.findAll().stream()
-                .map(StudentResponseDTO::new)
+        return studentInfoRepository.findAll().stream()
+                .map(StudentResponseDTO::from)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 학생 정보 수정
+     */
     @Transactional
     public StudentResponseDTO updateStudent(Long studentId, StudentUpdateDTO updateDTO) {
-        StudentInfo student = studentRepository.findById(studentId)
+        StudentInfo student = studentInfoRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
 
         if (updateDTO.getClassroomId() != null) {
             Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
-                    .orElseThrow(
-                            () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
-
-            StudentAssignment current = student.getCurrentAssignment();
-            if (current != null) {
-                current.setSchoolYear(classroom.getYear());
-                current.setClassroom(classroom);
-            } else {
-                StudentAssignment newAssign = new StudentAssignment();
-                newAssign.setStudentInfo(student);
-                newAssign.setSchoolYear(classroom.getYear());
-                newAssign.setClassroom(classroom);
-                student.setCurrentAssignment(newAssign);
-                student.getAssignments().add(newAssign);
+                    .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
+            if (student.getCurrentAssignment() != null) {
+                student.getCurrentAssignment().setClassroom(classroom);
             }
         }
         if (updateDTO.getBirthDate() != null) {
@@ -295,44 +345,305 @@ public class TeacherService {
             student.setGender(updateDTO.getGender());
         }
 
-        return new StudentResponseDTO(student);
+        return StudentResponseDTO.from(student);
     }
 
+    /**
+     * 학생 삭제 (소프트 삭제 - 자퇴 처리)
+     */
     @Transactional
     public void deleteStudent(Long studentId) {
-        StudentInfo student = studentRepository.findById(studentId)
+        StudentInfo student = studentInfoRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
 
         student.setStatus(StudentStatus.DROPOUT);
         log.info("학생 삭제(자퇴) 처리: {}", studentId);
     }
 
+    // ==================================================================================
+    // ========== [교사] 담당 학급 조회 ==========
+    // ==================================================================================
+
+    /**
+     * 내 담임 학급 학생 조회
+     */
     public ClassStudentDTO getMyClassStudents(Long teacherId, int schoolYear) {
         log.info("담당 반 학생 조회 - 교사 ID: {}, 학년도: {}", teacherId, schoolYear);
-
-        Classroom classroom = classroomRepository.findByHomeroomTeacherIdAndYear(teacherId, schoolYear)
+        Long userUid = getUserUidFromTeacherId(teacherId);
+        Classroom classroom = classroomRepository.findByTeacherUidAndYear(userUid, schoolYear)
                 .orElseThrow(() -> new IllegalArgumentException("담당 학급이 없습니다."));
-
         return buildClassStudentDTO(classroom);
     }
 
+    /**
+     * 특정 학급 학생 조회 (학년도/학년/반)
+     */
     public ClassStudentDTO getClassStudents(int schoolYear, int grade, int classNum) {
         log.info("학급 학생 조회 - {}학년도 {}학년 {}반", schoolYear, grade, classNum);
-
         Classroom classroom = classroomRepository.findByYearAndGradeAndClassNum(schoolYear, grade, classNum)
                 .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
-
         return buildClassStudentDTO(classroom);
     }
 
+    // ==================================================================================
+    // ========== [교사] 성적 관리 ==========
+    // ==================================================================================
+
+    /**
+     * 성적 입력
+     */
+    @Transactional
+    public void inputGrade(Long teacherId, GradeInputDTO gradeDTO) {
+        log.info("성적 입력 - 교사: {}, 학생: {}, 과목: {}",
+                teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectCode());
+
+        TeacherInfo teacher = teacherInfoRepository.findById(teacherId)
+                .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
+
+        Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())
+                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
+
+        if (subject.getTeacher() != null && !subject.getTeacher().getId().equals(teacherId)) {
+            log.warn("담당 과목이 아닙니다. 교사: {}, 과목 담당: {}", teacherId, subject.getTeacher().getId());
+        }
+
+        StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+
+        Grade grade = Grade.builder()
+                .student(student)
+                .subject(subject)
+                .testType(gradeDTO.getTestType())
+                .semester(gradeDTO.getSemester())
+                .year(gradeDTO.getYear())
+                .score(gradeDTO.getScore())
+                .build();
+
+        gradeRepository.save(grade);
+        log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
+                student.getId(), subject.getName(), gradeDTO.getScore());
+    }
+
+    /**
+     * 성적 수정
+     */
+    @Transactional
+    public void updateGrade(Long teacherId, Long gradeId, Double newScore) {
+        log.info("성적 수정 - 교사: {}, 성적ID: {}, 새점수: {}", teacherId, gradeId, newScore);
+        Grade grade = gradeRepository.findById(gradeId)
+                .orElseThrow(() -> new IllegalArgumentException("성적을 찾을 수 없습니다."));
+        grade.changeScore(newScore);
+    }
+
+    /**
+     * 과목별 성적 조회
+     */
+    public List<GradeDTO> getMySubjectGrades(Long teacherId, String subjectCode) {
+        log.info("과목 성적 조회 - 교사: {}, 과목: {}", teacherId, subjectCode);
+        List<Grade> grades = gradeRepository.findBySubjectCodeWithSubject(subjectCode);
+        return grades.stream().map(this::entityToDto).collect(Collectors.toList());
+    }
+
+    /**
+     * 학생별 성적 조회
+     */
+    public List<GradeDTO> getStudentGrades(Long studentId) {
+        log.info("학생 성적 조회 - 학생 ID: {}", studentId);
+        List<Grade> grades = gradeRepository.findByStudentIdWithSubject(studentId);
+        return grades.stream().map(this::entityToDto).collect(Collectors.toList());
+    }
+
+    // ==================================================================================
+    // ========== [교사] 담임 배정 확인 및 담당 학급 관리 ==========
+    // ==================================================================================
+
+    /**
+     * 담임 배정 여부 확인
+     */
+    public boolean isHomeroom(Long teacherId, int schoolYear) {
+        Long userUid = getUserUidFromTeacherId(teacherId);
+        return classroomRepository.findByTeacherUidAndYear(userUid, schoolYear).isPresent();
+    }
+
+    /**
+     * 내 담임 학급 정보 조회 (Optional)
+     */
+    public Optional<Classroom> getMyClassroom(Long teacherId, int schoolYear) {
+        Long userUid = getUserUidFromTeacherId(teacherId);
+        return classroomRepository.findByTeacherUidAndYear(userUid, schoolYear);
+    }
+
+    /**
+     * 내 담임 학급 정보 조회 (예외 발생 버전)
+     */
+    public Classroom getMyClassroomOrThrow(Long teacherId, int schoolYear) {
+        Long userUid = getUserUidFromTeacherId(teacherId);
+        return classroomRepository.findByTeacherUidAndYear(userUid, schoolYear)
+                .orElseThrow(() -> new IllegalArgumentException("담당 학급이 없습니다. 관리자에게 담임 배정을 요청하세요."));
+    }
+
+    /**
+     * 담당 학급에 학생 등록 (담임 전용)
+     */
+    @Transactional
+    public StudentResponseDTO createStudentInMyClass(Long teacherId, int schoolYear, StudentCreateDTO createDTO) {
+        log.info("담당 학급에 학생 등록 - 교사: {}, 학년도: {}", teacherId, schoolYear);
+
+        Classroom myClassroom = getMyClassroomOrThrow(teacherId, schoolYear);
+
+        if (studentInfoRepository.findByAttendanceNum(createDTO.getStudentNumber()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
+        }
+
+        StudentInfo student = new StudentInfo();
+        StudentAssignment assignment = new StudentAssignment();
+        assignment.setAttendanceNum(createDTO.getStudentNumber());
+        assignment.setClassroom(myClassroom);
+        assignment.setStudentInfo(student);
+        student.getAssignments().add(assignment);
+        student.setCurrentAssignment(assignment);
+        student.setBirthDate(createDTO.getBirthDate());
+        student.setAddress(createDTO.getAddress());
+        student.setPhone(createDTO.getPhone());
+        student.setGender(createDTO.getGender());
+
+        StudentInfo savedStudent = studentInfoRepository.save(student);
+        log.info("담당 학급에 학생 등록 완료 - 학생 ID: {}, 학급: {}",
+                savedStudent.getId(), myClassroom.getClassName());
+
+        return StudentResponseDTO.from(savedStudent);
+    }
+
+    /**
+     * 담당 학급 학생 정보 수정 (담임 전용)
+     */
+    @Transactional
+    public StudentResponseDTO updateMyClassStudent(Long teacherId, int schoolYear, Long studentId,
+            StudentUpdateDTO updateDTO) {
+        log.info("담당 학급 학생 수정 - 교사: {}, 학생: {}", teacherId, studentId);
+
+        Classroom myClassroom = getMyClassroomOrThrow(teacherId, schoolYear);
+
+        StudentInfo student = studentInfoRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
+
+        if (student.getCurrentAssignment() == null
+                || student.getCurrentAssignment().getClassroom() == null
+                || !student.getCurrentAssignment().getClassroom().getCid().equals(myClassroom.getCid())) {
+            throw new IllegalArgumentException("담당 학급 학생이 아닙니다. 본인 반 학생만 수정할 수 있습니다.");
+        }
+
+        if (updateDTO.getClassroomId() != null) {
+            log.warn("담당 학급 학생 수정 시 반 이동은 불가합니다. classroomId 무시됨.");
+        }
+        if (updateDTO.getBirthDate() != null) {
+            student.setBirthDate(updateDTO.getBirthDate());
+        }
+        if (updateDTO.getAddress() != null) {
+            student.setAddress(updateDTO.getAddress());
+        }
+        if (updateDTO.getPhone() != null) {
+            student.setPhone(updateDTO.getPhone());
+        }
+        if (updateDTO.getGender() != null) {
+            student.setGender(updateDTO.getGender());
+        }
+
+        log.info("담당 학급 학생 수정 완료 - 학생: {}", studentId);
+        return StudentResponseDTO.from(student);
+    }
+
+    /**
+     * 담당 학급 학생 삭제 (담임 전용 - 소프트 삭제)
+     */
+    @Transactional
+    public void deleteMyClassStudent(Long teacherId, int schoolYear, Long studentId) {
+        log.info("담당 학급 학생 삭제(자퇴) - 교사: {}, 학생: {}", teacherId, studentId);
+
+        Classroom myClassroom = getMyClassroomOrThrow(teacherId, schoolYear);
+
+        StudentInfo student = studentInfoRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + studentId));
+
+        if (student.getCurrentAssignment() == null
+                || student.getCurrentAssignment().getClassroom() == null
+                || !student.getCurrentAssignment().getClassroom().getCid().equals(myClassroom.getCid())) {
+            throw new IllegalArgumentException("담당 학급 학생이 아닙니다. 본인 반 학생만 삭제할 수 있습니다.");
+        }
+
+        student.setStatus(StudentStatus.DROPOUT);
+        log.info("담당 학급 학생 삭제(자퇴) 완료 - 학생: {}", studentId);
+    }
+
+    /**
+     * 담당 학급 학생 성적 입력 (담임 전용)
+     */
+    @Transactional
+    public void inputGradeForMyClass(Long teacherId, int schoolYear, GradeInputDTO gradeDTO) {
+        log.info("담당 학급 학생 성적 입력 - 교사: {}, 학생: {}", teacherId, gradeDTO.getStudentId());
+
+        Classroom myClassroom = getMyClassroomOrThrow(teacherId, schoolYear);
+
+        StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+
+        if (student.getCurrentAssignment() == null
+                || student.getCurrentAssignment().getClassroom() == null
+                || !student.getCurrentAssignment().getClassroom().getCid().equals(myClassroom.getCid())) {
+            throw new IllegalArgumentException("담당 학급 학생이 아닙니다. 본인 반 학생의 성적만 입력할 수 있습니다.");
+        }
+
+        Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())
+                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
+
+        Grade grade = Grade.builder()
+                .student(student)
+                .subject(subject)
+                .testType(gradeDTO.getTestType())
+                .semester(gradeDTO.getSemester())
+                .year(gradeDTO.getYear())
+                .score(gradeDTO.getScore())
+                .build();
+
+        gradeRepository.save(grade);
+        log.info("담당 학급 학생 성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
+                student.getId(), subject.getName(), gradeDTO.getScore());
+    }
+
+    /**
+     * 담당 학급 학생인지 확인
+     */
+    public boolean isMyClassStudent(Long teacherId, int schoolYear, Long studentId) {
+        Optional<Classroom> myClassroom = getMyClassroom(teacherId, schoolYear);
+        if (myClassroom.isEmpty()) {
+            return false;
+        }
+
+        Optional<StudentInfo> student = studentInfoRepository.findById(studentId);
+        if (student.isEmpty()
+                || student.get().getCurrentAssignment() == null
+                || student.get().getCurrentAssignment().getClassroom() == null) {
+            return false;
+        }
+
+        return student.get().getCurrentAssignment().getClassroom().getCid()
+                .equals(myClassroom.get().getCid());
+    }
+
+    // ==================================================================================
+    // ========== private 헬퍼 ==========
+    // ==================================================================================
+
     private ClassStudentDTO buildClassStudentDTO(Classroom classroom) {
-        List<StudentInfo> students = studentRepository.findByClassroomCid(classroom.getCid());
+        List<StudentInfo> students = studentInfoRepository.findByClassroomCid(classroom.getCid());
 
         List<ClassStudentDTO.StudentSimpleDTO> studentDTOs = students.stream()
                 .map(s -> ClassStudentDTO.StudentSimpleDTO.builder()
                         .studentId(s.getId())
                         .name(s.getUser() != null ? s.getUser().getName() : "이름없음")
-                        .studentNumber(s.getCurrentAssignment().getAttendanceNum())
+                        .studentNumber(s.getCurrentAssignment() != null
+                                ? s.getCurrentAssignment().getAttendanceNum()
+                                : null)
                         .phone(s.getPhone())
                         .email(s.getUser() != null ? s.getUser().getEmail() : null)
                         .build())
@@ -355,66 +666,13 @@ public class TeacherService {
                 .build();
     }
 
-    @Transactional
-    public void inputGrade(Long teacherId, GradeInputDTO gradeDTO) {
-        log.info("성적 입력 - 교사: {}, 학생: {}, 과목: {}",
-                teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectCode());
-
+    private Long getUserUidFromTeacherId(Long teacherId) {
         TeacherInfo teacher = teacherInfoRepository.findById(teacherId)
-                .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
-
-        Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())
-                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
-
-        if (subject.getTeacher() != null && !subject.getTeacher().getId().equals(teacherId)) {
-            log.warn("담당 과목이 아닙니다. 교사: {}, 과목 담당: {}", teacherId, subject.getTeacher().getId());
+                .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다. ID: " + teacherId));
+        if (teacher.getUser() == null) {
+            throw new IllegalArgumentException("교사의 사용자 정보가 없습니다. ID: " + teacherId);
         }
-
-        StudentInfo student = studentRepository.findById(gradeDTO.getStudentId())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-
-        Grade grade = Grade.builder()
-                .student(student)
-                .subject(subject)
-                .testType(gradeDTO.getTestType())
-                .semester(gradeDTO.getSemester())
-                .year(gradeDTO.getYear())
-                .score(gradeDTO.getScore())
-                .build();
-
-        gradeRepository.save(grade);
-        log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
-                student.getId(), subject.getName(), gradeDTO.getScore());
-    }
-
-    @Transactional
-    public void updateGrade(Long teacherId, Long gradeId, Double newScore) {
-        log.info("성적 수정 - 교사: {}, 성적ID: {}, 새점수: {}", teacherId, gradeId, newScore);
-
-        Grade grade = gradeRepository.findById(gradeId)
-                .orElseThrow(() -> new IllegalArgumentException("성적을 찾을 수 없습니다."));
-
-        grade.changeScore(newScore);
-    }
-
-    public List<GradeDTO> getMySubjectGrades(Long teacherId, String subjectCode) {
-        log.info("과목 성적 조회 - 교사: {}, 과목: {}", teacherId, subjectCode);
-
-        List<Grade> grades = gradeRepository.findBySubjectCodeWithSubject(subjectCode);
-
-        return grades.stream()
-                .map(this::entityToDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<GradeDTO> getStudentGrades(Long studentId) {
-        log.info("학생 성적 조회 - 학생 ID: {}", studentId);
-
-        List<Grade> grades = gradeRepository.findByStudentIdWithSubject(studentId);
-
-        return grades.stream()
-                .map(this::entityToDto)
-                .collect(Collectors.toList());
+        return teacher.getUser().getUid();
     }
 
     private GradeDTO entityToDto(Grade grade) {

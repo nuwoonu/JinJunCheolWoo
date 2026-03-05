@@ -1,0 +1,334 @@
+<!doctype html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  data-theme="light"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Student - Schoolmate</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png" sizes="16x16" />
+    <link rel="stylesheet" href="/css/remixicon.css" />
+    <link rel="stylesheet" href="/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/lib/flatpickr.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+
+  <body>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="dashboard-main">
+      <div class="navbar-header shadow-1">
+        <div class="row align-items-center justify-content-between">
+          <div class="col-auto">
+            <div class="d-flex flex-wrap align-items-center gap-4">
+              <button type="button" class="sidebar-mobile-toggle" aria-label="Sidebar Mobile Toggler Button">
+                <iconify-icon icon="heroicons:bars-3-solid" class="icon"></iconify-icon>
+              </button>
+              <form class="navbar-search">
+                <input type="text" class="bg-transparent" name="search" placeholder="Search" />
+                <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
+              </form>
+            </div>
+          </div>
+          <div class="col-auto">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+              <button
+                type="button"
+                data-theme-toggle
+                class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+                aria-label="Dark & Light Mode Button"
+              ></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-main-body">
+        <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+          <div>
+            <h1 class="fw-semibold mb-4 h6 text-primary-light">내 정보 수정</h1>
+            <div>
+              <a th:href="@{/student/dashboard}" class="text-secondary-light hover-text-primary hover-underline"
+                >Dashboard</a
+              >
+              <a th:href="@{/student/myinfo}" class="text-secondary-light hover-text-primary hover-underline">
+                / 내 정보</a
+              >
+              <span class="text-secondary-light">/ 정보 수정</span>
+            </div>
+          </div>
+        </div>
+
+        <form
+          th:action="@{/student/edit/{id}(id=${student.id})}"
+          th:object="${studentUpdateDTO}"
+          method="post"
+          class="mt-24"
+        >
+          <div class="row gy-3">
+            <!-- Personal Info -->
+            <div class="col-lg-12">
+              <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                <div
+                  class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
+                >
+                  <h6 class="text-lg fw-semibold mb-0">기본 정보</h6>
+                </div>
+                <div class="card-body p-20">
+                  <div class="row gy-3">
+                    <!-- 이름 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label for="name" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
+                          이름 <span class="text-danger-600">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="name"
+                          name="name"
+                          th:value="${student.userName}"
+                          placeholder="이름을 입력하세요"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- 이메일 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label for="email" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
+                          이메일 <span class="text-danger-600">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          class="form-control"
+                          id="email"
+                          name="email"
+                          th:value="${student.userEmail}"
+                          placeholder="이메일을 입력하세요"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- 성별 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label for="gender" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
+                          성별
+                        </label>
+                        <select id="gender" name="gender" class="form-control form-select" disabled>
+                          <option value="">성별 선택</option>
+                          <option value="MALE" th:selected="${student.gender?.name() == 'MALE'}">남자</option>
+                          <option value="FEMALE" th:selected="${student.gender?.name() == 'FEMALE'}">여자</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- 생년월일 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label for="birthDate" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
+                          생년월일 <span class="text-danger-600">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          class="form-control"
+                          id="birthDate"
+                          name="birthDate"
+                          th:value="${student.birthDate}"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- 전화번호 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label for="phone" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
+                          전화번호 <span class="text-danger-600">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          class="form-control"
+                          id="phone"
+                          name="phone"
+                          th:value="${student.phone}"
+                          placeholder="전화번호를 입력하세요"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- 주소 -->
+                    <div class="col-xxl-6 col-xl-8 col-sm-12">
+                      <div>
+                        <label for="address" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
+                          주소
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="address"
+                          name="address"
+                          th:value="${student.address}"
+                          placeholder="주소를 입력하세요"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 학적 정보 (읽기 전용) -->
+            <div class="col-lg-12">
+              <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                <div
+                  class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
+                >
+                  <h6 class="text-lg fw-semibold mb-0">학적 정보</h6>
+                  <span class="badge bg-info-600">읽기 전용</span>
+                </div>
+                <div class="card-body p-20">
+                  <div class="row gy-3">
+                    <!-- 학번 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학번</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          th:value="${student.fullStudentNumber}"
+                          readonly
+                          disabled
+                        />
+                      </div>
+                    </div>
+
+                    <!-- 학년 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">학년</label>
+                        <input type="text" class="form-control" th:value="${student.year + '학년'}" readonly disabled />
+                      </div>
+                    </div>
+
+                    <!-- 반 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">반</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          th:value="${student.classNum + '반'}"
+                          readonly
+                          disabled
+                        />
+                      </div>
+                    </div>
+
+                    <!-- 상태 -->
+                    <div class="col-xxl-3 col-xl-4 col-sm-6">
+                      <div>
+                        <label class="text-sm fw-semibold text-primary-light d-inline-block mb-8">상태</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          th:value="${student.status?.description}"
+                          readonly
+                          disabled
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 비밀번호 변경 -->
+            <div class="col-lg-12">
+              <div class="shadow-1 radius-12 bg-base h-100 overflow-hidden">
+                <div
+                  class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between"
+                >
+                  <h6 class="text-lg fw-semibold mb-0">비밀번호 변경</h6>
+                  <span class="text-sm text-secondary-light">비밀번호를 변경하려면 입력하세요 (선택사항)</span>
+                </div>
+                <div class="card-body p-20">
+                  <div class="row gy-3">
+                    <div class="col-sm-6">
+                      <div>
+                        <label for="password" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
+                          새 비밀번호
+                        </label>
+                        <div class="position-relative">
+                          <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-control"
+                            placeholder="새 비밀번호를 입력하세요"
+                          />
+                          <span
+                            class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light"
+                            data-toggle="#password"
+                          ></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-center gap-3 mt-8">
+                <a
+                  th:href="@{/student/myinfo}"
+                  class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-50 py-11 radius-8"
+                >
+                  취소
+                </a>
+                <button
+                  type="submit"
+                  class="btn btn-primary-600 border border-primary-600 text-md px-28 py-12 radius-8"
+                >
+                  저장
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <footer class="d-footer">
+        <div>
+          <p class="mb-0 text-center">&copy; <span class="current-year"></span> Schoolmate</p>
+        </div>
+      </footer>
+    </main>
+
+    <script src="/js/lib/jquery-3.7.1.min.js"></script>
+    <script src="/js/lib/bootstrap.bundle.min.js"></script>
+    <script src="/js/lib/iconify-icon.min.js"></script>
+    <script src="/js/app.js"></script>
+
+    <script>
+      // Password Show/Hide Toggle
+      function initializePasswordToggle(toggleSelector) {
+        $(toggleSelector).on("click", function () {
+          $(this).toggleClass("ri-eye-off-line");
+          var input = $($(this).attr("data-toggle"));
+          if (input.attr("type") === "password") {
+            input.attr("type", "text");
+          } else {
+            input.attr("type", "password");
+          }
+        });
+      }
+      initializePasswordToggle(".toggle-password");
+    </script>
+  </body>
+</html>

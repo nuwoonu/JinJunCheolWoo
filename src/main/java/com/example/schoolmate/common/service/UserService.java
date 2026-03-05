@@ -5,10 +5,16 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.ParentInfo;
+import com.example.schoolmate.common.entity.info.constant.ParentStatus;
+import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
-import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
+import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
@@ -35,6 +41,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final ParentInfoRepository parentInfoRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
 
@@ -75,12 +84,27 @@ public class UserService {
         return savedUser.getUid();
     }
 
+    // [변경 전] dto에서 학번(studentIdentityNum 또는 studentNumber)을 가져옴
+    // 회원가입 폼에서 학번을 입력하지 않으면 null이 되어 DB 저장 시 에러 발생
+    // "Column 'code' cannot be null" 에러
+
     private void createStudentInfo(User user, CustomUserDTO dto) {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
-        studentInfo.setCode(dto.getStudentIdentityNum() != null
-                ? dto.getStudentIdentityNum()
-                : dto.getStudentNumber());
+        studentInfo.setStatus(StudentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
+
+        // studentInfo.setCode(dto.getStudentIdentityNum() != null
+        // ? dto.getStudentIdentityNum()
+        // : dto.getStudentNumber());
+
+        // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
+        // 학번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
+        String code = dto.getStudentIdentityNum();
+        if (code == null || code.isEmpty()) {
+            code = java.util.UUID.randomUUID().toString();
+        }
+        studentInfo.setCode(code);
+        // ================================================================
 
         // 초기 학급 배정
         if (dto.getGrade() != null && dto.getClassNum() != null) {
@@ -105,7 +129,18 @@ public class UserService {
     private void createTeacherInfo(User user, CustomUserDTO dto) {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
-        teacherInfo.setCode(dto.getEmployeeNumber());
+        teacherInfo.setStatus(TeacherStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
+
+        // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
+        // 사번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
+        String code = dto.getEmployeeNumber();
+        if (code == null || code.isEmpty()) {
+            code = java.util.UUID.randomUUID().toString();
+        }
+        teacherInfo.setCode(code);
+        // ================================================================
+
+        // 나머지는 null 허용 (관리자가 나중에 설정)
         teacherInfo.setSubject(dto.getSubject());
         teacherInfo.setDepartment(dto.getDepartment());
         teacherInfo.setPosition(dto.getPosition());
@@ -117,9 +152,57 @@ public class UserService {
         ParentInfo parentInfo = new ParentInfo();
         parentInfo.setUser(user);
         parentInfo.setParentName(dto.getName());
-        parentInfo.setPhoneNumber(dto.getPhoneNumber());
+        parentInfo.setPhone(dto.getPhoneNumber());
+        parentInfo.setStatus(ParentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
+
+        // ========== [변경] 중복 code 체크 추가 (2025-01-29 woo) ==========
+        // 동일한 이메일 아이디로 가입 시 중복 에러 방지
+        String code = "TEMP_" + user.getEmail().split("@")[0];
+        if (parentInfoRepository.existsByCode(code)) {
+            throw new IllegalStateException("이미 사용 중인 아이디입니다. 다른 이메일로 가입해주세요.");
+        }
+        parentInfo.setCode(code);
+        // ================================================================
 
         user.getInfos().add(parentInfo);
+    }
+
+    /**
+     * 소셜 로그인 역할 선택 후 Info 엔티티 생성 (승인대기 상태로)
+     * - LoginController.postSelectRole()에서 호출
+     */
+    public void createSocialUserInfo(User user, UserRole role) {
+        switch (role) {
+            case STUDENT -> {
+                StudentInfo studentInfo = new StudentInfo();
+                studentInfo.setUser(user);
+                studentInfo.setStatus(StudentStatus.PENDING);
+                studentInfo.setCode(java.util.UUID.randomUUID().toString());
+                user.getInfos().add(studentInfo);
+            }
+            case TEACHER -> {
+                TeacherInfo teacherInfo = new TeacherInfo();
+                teacherInfo.setUser(user);
+                teacherInfo.setStatus(TeacherStatus.PENDING);
+                teacherInfo.setCode(java.util.UUID.randomUUID().toString());
+                user.getInfos().add(teacherInfo);
+            }
+            case PARENT -> {
+                ParentInfo parentInfo = new ParentInfo();
+                parentInfo.setUser(user);
+                parentInfo.setParentName(user.getName());
+                parentInfo.setStatus(ParentStatus.PENDING);
+                String code = "TEMP_" + user.getEmail().split("@")[0];
+                if (parentInfoRepository.existsByCode(code)) {
+                    code = "TEMP_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+                }
+                parentInfo.setCode(code);
+                user.getInfos().add(parentInfo);
+            }
+            default -> {
+            } // ADMIN은 Info 없이 역할만
+        }
+        userRepository.save(user);
     }
 
     /**
@@ -240,7 +323,7 @@ public class UserService {
         ParentInfo parentInfo = user.getInfo(ParentInfo.class);
         if (parentInfo != null) {
             builder.role(UserRole.PARENT)
-                    .phoneNumber(parentInfo.getPhoneNumber());
+                    .phoneNumber(parentInfo.getPhone());
         }
 
         // 기본 역할 설정 (Info가 없는 경우)

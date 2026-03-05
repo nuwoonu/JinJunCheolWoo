@@ -64,6 +64,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 // StudentInfo가 있으면 학생 정보 추가
                 StudentInfo studentInfo = user.getInfo(StudentInfo.class);
                 if (studentInfo != null) {
+                        dto.setStudentInfoId(studentInfo.getId()); // StudentInfo의 PK
                         dto.setStudentIdentityNum(studentInfo.getCode());
                         dto.setStudentNumber(studentInfo.getCode()); // 하위 호환
 
@@ -88,7 +89,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 // ParentInfo가 있으면 학부모 정보 추가
                 ParentInfo parentInfo = user.getInfo(ParentInfo.class);
                 if (parentInfo != null) {
-                        dto.setPhoneNumber(parentInfo.getPhoneNumber());
+                        dto.setPhoneNumber(parentInfo.getPhone());
                 }
 
                 return dto;

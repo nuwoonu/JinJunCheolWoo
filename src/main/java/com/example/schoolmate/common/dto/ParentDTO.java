@@ -32,7 +32,7 @@ public class ParentDTO {
     public static class ParentSearchCondition {
         private String type; // name, email, phone, childName
         private String keyword;
-        private String status = ParentStatus.ACTIVE.name(); // 기본값: 연결됨
+        private String status; // 기본값: 전체 (null이면 필터 없음) [woo]
     }
 
     /**
@@ -104,7 +104,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
+            this.phone = entity.getPhone();
             this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.linked = entity.getUser() != null;
@@ -154,7 +154,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
+            this.phone = entity.getPhone();
             this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";

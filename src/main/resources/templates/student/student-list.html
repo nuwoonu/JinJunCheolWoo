@@ -56,31 +56,32 @@
                   등록된 학생이 없습니다.
                 </td>
               </tr>
+              <!-- [woo] StudentResponseDTO 필드명 맞게 수정 -->
               <tr th:each="s : ${students}">
                 <td th:text="${s.uid}">1</td>
                 <td>
-                  <span class="text-primary-600 fw-medium" th:text="${s.studentIdentityNum}">20241001</span>
+                  <span class="text-primary-600 fw-medium" th:text="${s.studentCode ?: '-'}">20241001</span>
                 </td>
                 <td>
                   <div class="d-flex align-items-center">
                     <img src="/images/thumbs/avatar-img1.png" alt="프로필" class="w-40-px h-40-px rounded-circle flex-shrink-0 me-12" />
-                    <h6 class="text-md mb-0 fw-medium" th:text="${s.name}">학생이름</h6>
+                    <h6 class="text-md mb-0 fw-medium" th:text="${s.userName ?: '(미연결)'}">학생이름</h6>
                   </div>
                 </td>
-                <td th:text="${s.email}">student@school.com</td>
-                <td th:text="${s.latestClass ?: '미배정'}">2024년 1-2-15</td>
+                <td th:text="${s.userEmail ?: '-'}">student@school.com</td>
+                <td th:text="${s.fullStudentNumber ?: '미배정'}">2024년 1-2-15</td>
                 <td>
-                  <span th:classappend="${s.status == '재학' ? 'bg-success-100 text-success-600' : 'bg-neutral-200 text-neutral-600'}"
+                  <span th:classappend="${s.status?.name() == 'ENROLLED' ? 'bg-success-100 text-success-600' : 'bg-neutral-200 text-neutral-600'}"
                         class="px-12 py-4 radius-4 fw-medium text-sm"
-                        th:text="${s.status}">재학</span>
+                        th:text="${s.status?.description}">재학</span>
                 </td>
                 <td sec:authorize="hasRole('ADMIN')">
                   <button type="button"
                           class="edit-sidebar-btn btn btn-sm btn-outline-primary"
                           th:data-uid="${s.uid}"
-                          th:data-name="${s.name}"
-                          th:data-identity="${s.studentIdentityNum}"
-                          th:data-status="${s.status}">
+                          th:data-name="${s.userName ?: ''}"
+                          th:data-identity="${s.studentCode ?: ''}"
+                          th:data-status="${s.status?.description}">
                     <i class="ri-edit-2-line"></i> 수정
                   </button>
                 </td>

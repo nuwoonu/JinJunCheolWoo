@@ -21,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 학급(반) 정보 엔티티
@@ -38,6 +39,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = { "teacher", "homeroomTeacher", "viceTeacher" })
 public class Classroom extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,6 +1,5 @@
 package com.example.schoolmate.common.entity.info;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -8,6 +7,9 @@ import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.cheol.entity.AwardsAndHonors;
+import com.example.schoolmate.cheol.entity.Grade;
+import com.example.schoolmate.cheol.entity.MedicalDetails;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -38,12 +40,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(exclude = { "assignments", "familyRelations", "currentAssignment" })
 public class StudentInfo extends BaseInfo {
-    private LocalDate birthDate; // 생일
-
-    private String address; // 주소
-
-    private String phone; // 연락처
-
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "current_assignment_id")
     private StudentAssignment currentAssignment;
@@ -54,19 +50,10 @@ public class StudentInfo extends BaseInfo {
             return "-";
         }
         return String.format("%d-%d-%02d",
-                currentAssignment.getSchoolYear(),
                 currentAssignment.getGrade(),
                 currentAssignment.getClassNum(),
                 currentAssignment.getAttendanceNum());
         // 예: "1-3-05" (1학년 3반 5번)
-    }
-
-    public void changeAddress(String address) {
-        this.address = address;
-    }
-
-    public void changePhone(String phone) {
-        this.phone = phone;
     }
 
     @Enumerated(EnumType.STRING)
@@ -95,4 +82,16 @@ public class StudentInfo extends BaseInfo {
         return assignments.stream()
                 .max(Comparator.comparingInt(StudentAssignment::getSchoolYear));
     }
+
+    // 의료기록
+    @OneToMany(mappedBy = "studentInfo")
+    private List<MedicalDetails> medicalDetails = new ArrayList<>();
+
+    // 수상이력
+    @OneToMany(mappedBy = "studentInfo")
+    private List<AwardsAndHonors> awardsAndHonors = new ArrayList<>();
+
+    // 성적
+    @OneToMany(mappedBy = "student")
+    private List<Grade> grades = new ArrayList<>();
 }

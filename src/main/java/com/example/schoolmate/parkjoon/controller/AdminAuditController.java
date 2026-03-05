@@ -16,13 +16,13 @@ import com.example.schoolmate.config.SchoolmateUrls;
 @RequestMapping(SchoolmateUrls.Url.ADMIN_AUDIT)
 public class AdminAuditController {
 
-    @GetMapping("/access")
-    public String accessLogs() {
-        return SchoolmateUrls.View.ADMIN_AUDIT_ACCESS;
-    }
+        @GetMapping("/access")
+        public String accessLogs() {
+                return SchoolmateUrls.View.ADMIN_AUDIT_ACCESS;
+        }
 
-    @GetMapping("/changes")
-    public String changeLogs() {
-        return SchoolmateUrls.View.ADMIN_AUDIT_CHANGES;
-    }
+        @GetMapping("/changes")
+        public String changeLogs() {
+                return SchoolmateUrls.View.ADMIN_AUDIT_CHANGES;
+        }
 }

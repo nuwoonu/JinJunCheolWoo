@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="/css/style.css" />
     <!-- login page css -->
     <link rel="stylesheet" href="/css/login.css" />
+    <!-- Font Awesome  사용하기 위해 추가 [01/28woo]-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   </head>
 
   <body>
@@ -33,7 +35,8 @@
 
           <!-- Error Message -->
           <div th:if="${param.error}" class="error-message">
-            <i class="ri-error-warning-line"></i>
+            <!-- 폰트어썸 경고 아이콘으로 변경 01/28[woo] -->
+            <i class="fa-solid fa-triangle-exclamation"></i>
             <span>이메일 또는 비밀번호가 올바르지 않습니다.</span>
           </div>
 
@@ -63,7 +66,8 @@
                   required
                 />
                 <button type="button" class="password-toggle" onclick="togglePassword()">
-                  <i class="ri-eye-line" id="toggleIcon"></i>
+                  <!-- 폰트어썸 비밀번호 보이기 아이콘으로 변경 01/28 [woo] -->
+                  <i class="fa-solid fa-eye" id="toggleIcon"></i>
                 </button>
               </div>
             </div>
@@ -75,30 +79,19 @@
               </div>
               <a href="#" class="forgot-link">비밀번호 찾기</a>
             </div>
-
-            <button type="submit" class="btn-login">
-              <i class="ri-login-box-line"></i>
-              로그인
-            </button>
+            <!-- 로그인 버튼 -->
+            <button type="submit" class="btn-login">로그인</button>
           </form>
 
-          <!-- Divider -->
+          <!-- 나눔선 -->
           <div class="divider">
             <span>또는</span>
           </div>
 
-          <!-- Social Login Buttons -->
+          <!-- Social Login Buttons (OAuth2 연동 추가 01/29[woo]) -->
           <div class="social-buttons">
-            <button type="button" class="btn-social btn-kakao">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 3C6.477 3 2 6.463 2 10.691c0 2.718 1.805 5.104 4.516 6.441-.199.748-.72 2.712-.825 3.131-.129.516.189.508.398.37.164-.109 2.612-1.773 3.674-2.492.717.099 1.455.151 2.237.151 5.523 0 10-3.463 10-7.691S17.523 3 12 3z"
-                />
-              </svg>
-              카카오톡으로 계속하기
-            </button>
-
-            <button type="button" class="btn-social">
+            <!-- 구글 OAuth2 로그인 -->
+            <a th:href="@{/oauth2/authorization/google}" class="btn-social">
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -118,7 +111,16 @@
                 />
               </svg>
               구글로 계속하기
-            </button>
+            </a>
+            <!-- 카카오 OAuth2 로그인 -->
+            <a th:href="@{/oauth2/authorization/kakao}" class="btn-social btn-kakao">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 3C6.477 3 2 6.463 2 10.691c0 2.718 1.805 5.104 4.516 6.441-.199.748-.72 2.712-.825 3.131-.129.516.189.508.398.37.164-.109 2.612-1.773 3.674-2.492.717.099 1.455.151 2.237.151 5.523 0 10-3.463 10-7.691S17.523 3 12 3z"
+                />
+              </svg>
+              카카오톡으로 계속하기
+            </a>
           </div>
 
           <!-- Register Link -->
@@ -129,19 +131,21 @@
 
     <!-- Bootstrap js -->
     <script src="/js/lib/bootstrap.bundle.min.js"></script>
+    
     <script>
+      // 비밀번호 확인 토글
       function togglePassword() {
         const passwordInput = document.getElementById("password");
         const toggleIcon = document.getElementById("toggleIcon");
 
         if (passwordInput.type === "password") {
           passwordInput.type = "text";
-          toggleIcon.classList.remove("ri-eye-line");
-          toggleIcon.classList.add("ri-eye-off-line");
+          toggleIcon.classList.remove("fa-eye"); // 변경
+          toggleIcon.classList.add("fa-eye-slash"); // 변경
         } else {
           passwordInput.type = "password";
-          toggleIcon.classList.remove("ri-eye-off-line");
-          toggleIcon.classList.add("ri-eye-line");
+          toggleIcon.classList.remove("fa-eye-slash"); // 변경
+          toggleIcon.classList.add("fa-eye"); // 변경
         }
       }
     </script>

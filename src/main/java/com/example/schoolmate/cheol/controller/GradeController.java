@@ -52,7 +52,7 @@ public class GradeController {
 
     // 학생별 성적 조회
     // GET /api/grades/student/{studentId}
-    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.id")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.customUserDTO.studentInfoId")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<GradeDTO>> getGradesByStudent(
             @PathVariable Long studentId) {
@@ -62,7 +62,7 @@ public class GradeController {
 
     // GET /api/grades/student/{studentId}/search?semester=1&year=FIRST
     // 학생의 특정 학기/학년 성적 조회
-    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.id")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.customUserDTO.studentInfoId")
     @GetMapping("/student/{studentId}/search")
     public ResponseEntity<List<GradeDTO>> getGradesByStudentAndSemesterAndYear(
             @PathVariable Long studentId,

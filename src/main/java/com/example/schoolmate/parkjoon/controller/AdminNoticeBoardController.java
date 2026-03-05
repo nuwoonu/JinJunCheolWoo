@@ -24,60 +24,60 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class AdminNoticeBoardController {
 
-    private final NoticeService adminNoticeService;
+        private final NoticeService adminNoticeService;
 
-    @GetMapping
-    public String list(@RequestParam(value = "keyword", required = false) String keyword,
-            @PageableDefault(size = 10) Pageable pageable,
-            Model model) {
-        Page<NoticeDTO.Response> notices = adminNoticeService.getNoticeList(keyword, pageable);
-        model.addAttribute("notices", notices);
-        model.addAttribute("keyword", keyword);
-        return SchoolmateUrls.View.ADMIN_NOTICES_MAIN;
-    }
+        @GetMapping
+        public String list(@RequestParam(value = "keyword", required = false) String keyword,
+                        @PageableDefault(size = 10) Pageable pageable,
+                        Model model) {
+                Page<NoticeDTO.Response> notices = adminNoticeService.getNoticeList(keyword, pageable);
+                model.addAttribute("notices", notices);
+                model.addAttribute("keyword", keyword);
+                return SchoolmateUrls.View.ADMIN_NOTICES_MAIN;
+        }
 
-    @GetMapping("/create")
-    public String createForm(Model model) {
-        model.addAttribute("notice", new NoticeDTO.Request());
-        return SchoolmateUrls.View.ADMIN_NOTICES_FORM;
-    }
+        @GetMapping("/create")
+        public String createForm(Model model) {
+                model.addAttribute("notice", new NoticeDTO.Request());
+                return SchoolmateUrls.View.ADMIN_NOTICES_FORM;
+        }
 
-    @PostMapping("/create")
-    public String create(NoticeDTO.Request request,
-            Principal principal,
-            RedirectAttributes ra) {
-        adminNoticeService.createNotice(request, principal.getName());
-        ra.addFlashAttribute("successMessage", "공지사항이 등록되었습니다.");
-        return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES;
-    }
+        @PostMapping("/create")
+        public String create(NoticeDTO.Request request,
+                        Principal principal,
+                        RedirectAttributes ra) {
+                adminNoticeService.createNotice(request, principal.getName());
+                ra.addFlashAttribute("successMessage", "공지사항이 등록되었습니다.");
+                return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES;
+        }
 
-    @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
-        adminNoticeService.increaseViewCount(id);
-        NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
-        model.addAttribute("notice", notice);
-        return SchoolmateUrls.View.ADMIN_NOTICES_DETAIL;
-    }
+        @GetMapping("/{id}")
+        public String detail(@PathVariable Long id, Model model) {
+                adminNoticeService.increaseViewCount(id);
+                NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
+                model.addAttribute("notice", notice);
+                return SchoolmateUrls.View.ADMIN_NOTICES_DETAIL;
+        }
 
-    @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
-        NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
-        model.addAttribute("notice", notice);
-        return SchoolmateUrls.View.ADMIN_NOTICES_FORM;
-    }
+        @GetMapping("/{id}/edit")
+        public String editForm(@PathVariable Long id, Model model) {
+                NoticeDTO.Response notice = adminNoticeService.getNoticeDetail(id);
+                model.addAttribute("notice", notice);
+                return SchoolmateUrls.View.ADMIN_NOTICES_FORM;
+        }
 
-    @PostMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, NoticeDTO.Request request, RedirectAttributes ra) {
-        request.setId(id);
-        adminNoticeService.updateNotice(request);
-        ra.addFlashAttribute("successMessage", "공지사항이 수정되었습니다.");
-        return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES + "/" + id;
-    }
+        @PostMapping("/{id}/edit")
+        public String edit(@PathVariable Long id, NoticeDTO.Request request, RedirectAttributes ra) {
+                request.setId(id);
+                adminNoticeService.updateNotice(request);
+                ra.addFlashAttribute("successMessage", "공지사항이 수정되었습니다.");
+                return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES + "/" + id;
+        }
 
-    @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes ra) {
-        adminNoticeService.deleteNotice(id);
-        ra.addFlashAttribute("successMessage", "공지사항이 삭제되었습니다.");
-        return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES;
-    }
+        @PostMapping("/{id}/delete")
+        public String delete(@PathVariable Long id, RedirectAttributes ra) {
+                adminNoticeService.deleteNotice(id);
+                ra.addFlashAttribute("successMessage", "공지사항이 삭제되었습니다.");
+                return "redirect:" + SchoolmateUrls.Url.ADMIN_NOTICES;
+        }
 }

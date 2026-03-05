@@ -1,0 +1,174 @@
+<!--
+  [2025.01 추가] 교사용 학부모 목록 페이지
+  - 경로: /teacher/parent/list
+  - 컨트롤러: TeacherViewController.parentList()
+  - teacher-list.html 구조 참고하여 생성
+  - 테이블: ID, 이름, 이메일, 연락처, 자녀, 상태
+  - 기능: 검색(이름/연락처), 상태 필터, 페이지네이션
+-->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>학부모 목록 - Schoolmate</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png" sizes="16x16" />
+    <link rel="stylesheet" href="/css/remixicon.css" />
+    <link rel="stylesheet" href="/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/lib/dataTables.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+
+  <body>
+    <div class="body-overlay"></div>
+    <div class="overlay bg-black bg-opacity-50 w-100 h-100 position-fixed z-9 visibility-hidden opacity-0 duration-300"></div>
+
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="dashboard-main">
+      <div class="navbar-header shadow-1">
+        <div class="row align-items-center justify-content-between">
+          <div class="col-auto">
+            <div class="d-flex flex-wrap align-items-center gap-4">
+              <button type="button" class="sidebar-mobile-toggle" aria-label="Sidebar Mobile Toggler Button">
+                <iconify-icon icon="heroicons:bars-3-solid" class="icon"></iconify-icon>
+              </button>
+              <form class="navbar-search">
+                <input type="text" class="bg-transparent" name="search" placeholder="Search" />
+                <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
+              </form>
+            </div>
+          </div>
+          <div class="col-auto">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+              <button type="button" data-theme-toggle
+                class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+                aria-label="Dark & Light Mode Button">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-main-body">
+        <!-- 브레드크럼 -->
+        <div class="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+          <div class="">
+            <h1 class="fw-semibold mb-4 h6 text-primary-light">학부모 목록</h1>
+            <div class="">
+              <a th:href="@{/dashboard}" class="text-secondary-light hover-text-primary hover-underline">홈 </a>
+              <span class="text-secondary-light">/ 학부모 목록</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-24">
+          <div class="card h-100">
+            <div class="card-body p-0 dataTable-wrapper">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-16 px-20 py-12 border-bottom border-neutral-200">
+                <div class="d-flex flex-wrap align-items-center gap-16">
+                  <!-- 검색 -->
+                  <form th:action="@{/teacher/parent/list}" method="get" class="navbar-search dt-search m-0">
+                    <input type="text" class="dt-input bg-transparent radius-4" name="keyword"
+                      th:value="${condition.keyword}" placeholder="이름, 연락처 검색..." />
+                    <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
+                  </form>
+                  <!-- 상태 필터 -->
+                  <form th:action="@{/teacher/parent/list}" method="get">
+                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                      <option value="">전체 상태</option>
+                      <option th:each="s : ${statusList}" th:value="${s.name()}" th:text="${s.description}"
+                        th:selected="${condition.status == s.name()}"></option>
+                    </select>
+                  </form>
+                </div>
+                <div class="d-flex align-items-center gap-8 text-secondary-light">
+                  <span> 총 <strong th:text="${page.totalElements}">0</strong>명 </span>
+                </div>
+              </div>
+
+              <div class="p-0">
+                <table class="table bordered-table mb-0" id="parentTable">
+                  <thead>
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">이름</th>
+                      <th scope="col">이메일</th>
+                      <th scope="col">연락처</th>
+                      <th scope="col">자녀</th>
+                      <th scope="col">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="p : ${parents}">
+                      <td th:text="${p.id}">1</td>
+                      <td class="fw-medium" th:text="${p.name ?: '-'}">홍길동</td>
+                      <td th:text="${p.email ?: '-'}">parent@example.com</td>
+                      <td th:text="${p.phone ?: '-'}">010-1234-5678</td>
+                      <td>
+                        <span th:if="${#lists.isEmpty(p.childrenStrings)}" class="text-secondary-light">-</span>
+                        <span th:unless="${#lists.isEmpty(p.childrenStrings)}">
+                          <span th:each="child, stat : ${p.childrenStrings}">
+                            <span th:text="${child}"></span>
+                            <span th:if="${!stat.last}">, </span>
+                          </span>
+                        </span>
+                      </td>
+                      <td>
+                        <span th:classappend="${p.statusName == 'ACTIVE' ? 'bg-success-100 text-success-600' :
+                                               (p.statusName == 'PENDING' ? 'bg-warning-100 text-warning-600' :
+                                               'bg-danger-100 text-danger-600')}"
+                              class="px-16 py-4 radius-4 fw-medium text-sm"
+                              th:text="${p.status}">연결됨</span>
+                      </td>
+                    </tr>
+                    <!-- 데이터 없을 때 -->
+                    <tr th:if="${#lists.isEmpty(parents)}">
+                      <td colspan="6" class="text-center py-40 text-secondary-light">
+                        <i class="ri-parent-line d-block mb-2 text-xxl"></i>
+                        등록된 학부모 정보가 없습니다.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 페이지네이션 -->
+              <div th:if="${page.totalPages > 1}" class="d-flex justify-content-center py-16">
+                <nav>
+                  <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                      <a class="page-link" th:href="@{/teacher/parent/list(page=${page.number - 1}, keyword=${condition.keyword}, status=${condition.status})}">
+                        <i class="ri-arrow-left-s-line"></i>
+                      </a>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                        class="page-item" th:classappend="${i == page.number} ? 'active'">
+                      <a class="page-link" th:href="@{/teacher/parent/list(page=${i}, keyword=${condition.keyword}, status=${condition.status})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                      <a class="page-link" th:href="@{/teacher/parent/list(page=${page.number + 1}, keyword=${condition.keyword}, status=${condition.status})}">
+                        <i class="ri-arrow-right-s-line"></i>
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="d-footer">
+        <div class="">
+          <p class="mb-0 text-center">&copy; <span class="current-year"></span> Schoolmate</p>
+        </div>
+      </footer>
+    </main>
+
+    <script src="/js/lib/jquery-3.7.1.min.js"></script>
+    <script src="/js/lib/bootstrap.bundle.min.js"></script>
+    <script src="/js/lib/iconify-icon.min.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

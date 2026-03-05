@@ -22,12 +22,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminDashboardController {
 
-    private final DashboardService adminDashboardService;
+        private final DashboardService adminDashboardService;
 
-    @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        DashboardDTO stats = adminDashboardService.getDashboardStats();
-        model.addAttribute("stats", stats);
-        return SchoolmateUrls.View.ADMIN_DASHBOARD;
-    }
+        @GetMapping("/dashboard")
+        public String dashboard(Model model) {
+                DashboardDTO stats = adminDashboardService.getDashboardStats();
+                model.addAttribute("stats", stats);
+                return SchoolmateUrls.View.ADMIN_DASHBOARD;
+        }
 }

@@ -13,8 +13,8 @@ import com.example.schoolmate.board.entity.Board;
 import com.example.schoolmate.board.entity.BoardType;
 
 @Repository
-public interface BoardRepository extends JpaRepository<Board, Long> {
 
+public interface BoardRepository extends JpaRepository<Board, Long> {
     // ========== 학교 공지 ==========
     // 학교 공지 목록 (삭제되지 않은 것만, 고정글 우선 + 최신순)
     @Query("SELECT b FROM Board b WHERE b.boardType = :type AND b.isDeleted = false " +
@@ -64,9 +64,9 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // ========== 교직원 게시판 ==========
     // 교직원 게시판 (전체)
-    @Query("SELECT b FROM Board b WHERE b.boardType = 'TEACHER_BOARD' " +
+    @Query("SELECT b FROM Board b WHERE b.boardType = :type " +
            "AND b.isDeleted = false ORDER BY b.isPinned DESC, b.createDate DESC")
-    Page<Board> findTeacherBoard(Pageable pageable);
+    Page<Board> findTeacherBoard(@Param("type") BoardType type, Pageable pageable);
 
     // ========== 검색 ==========
     // 제목으로 검색

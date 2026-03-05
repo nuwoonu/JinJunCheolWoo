@@ -45,6 +45,32 @@
         ></div>
 
         <main class="col-md-10 p-4">
+          <!-- [추가] 수정,에러 알림 메시지 표시 (01/28 woo) -->
+          <div
+            th:if="${msg}"
+            class="alert alert-success alert-dismissible fade show"
+            role="alert"
+          >
+            <span th:text="${msg}"></span>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+          <div
+            th:if="${error}"
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+          >
+            <span th:text="${error}"></span>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+
           <div layout:fragment="content"></div>
         </main>
       </div>
