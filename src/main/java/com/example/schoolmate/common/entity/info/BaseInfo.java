@@ -1,5 +1,7 @@
 package com.example.schoolmate.common.entity.info;
 
+import java.time.LocalDate;
+
 import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.Gender;
@@ -45,6 +47,16 @@ public abstract class BaseInfo extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String code;
 
+    // 공통 인적 사항 (User에서 분리되어 이곳으로 통합)
+    private String phone; // 연락처
+
+    private String address; // 주소
+
+    private String addressDetail; // 상세주소
+
+    private LocalDate birthDate; // 생년월일
+
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
 }

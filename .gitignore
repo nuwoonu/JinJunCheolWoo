@@ -103,3 +103,4 @@ dist/
 ### Logs ###
 logs/
 *.log
+.vscode/tasks.json

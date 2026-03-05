@@ -88,7 +88,7 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
         return switch (type) {
             case "name" -> parent.parentName.contains(keyword);
             case "email" -> user.email.contains(keyword);
-            case "phone" -> parent.phoneNumber.contains(keyword);
+            case "phone" -> parent.phone.contains(keyword);
             case "childName" -> studentUser.name.contains(keyword);
             default -> null;
         };

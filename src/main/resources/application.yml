@@ -17,7 +17,7 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
@@ -46,28 +46,28 @@ spring:
       max-request-size: 30MB
 
   # OAuth2 (키 값은 로컬 application-oauth.properties 에서 관리)
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          google:
-#            client-id: 발급받은_구글_클라이언트_ID
-#            client-secret: 발급받은_구글_클라이언트_시크릿
-#            scope: email, profile
-#          kakao:
-#            client-id: 발급받은_카카오_클라이언트_ID
-#            client-secret: 발급받은_카카오_클라이언트_시크릿
-#            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
-#            authorization-grant-type: authorization_code
-#            client-authentication-method: client_secret_post
-#            scope: profile_nickname, account_email
-#            client-name: Kakao
-#        provider:
-#          kakao:
-#            authorization-uri: https://kauth.kakao.com/oauth/authorize
-#            token-uri: https://kauth.kakao.com/oauth/token
-#            user-info-uri: https://kapi.kakao.com/v2/user/me
-#            user-name-attribute: id
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 발급받은_구글_클라이언트_ID
+            client-secret: 발급받은_구글_클라이언트_시크릿
+            scope: email, profile
+          kakao:
+            client-id: 발급받은_카카오_클라이언트_ID
+            client-secret: 발급받은_카카오_클라이언트_시크릿
+            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            scope: profile_nickname, account_email
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 # 업로드 경로
 com:
