@@ -119,7 +119,7 @@
                         <label for="gender" class="text-sm fw-semibold text-primary-light d-inline-block mb-8">
                           성별
                         </label>
-                        <select id="gender" name="gender" class="form-control form-select" disabled>
+                        <select id="gender" name="gender" class="form-control form-select">
                           <option value="">성별 선택</option>
                           <option value="MALE" th:selected="${student.gender?.name() == 'MALE'}">남자</option>
                           <option value="FEMALE" th:selected="${student.gender?.name() == 'FEMALE'}">여자</option>
