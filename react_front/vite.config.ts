@@ -1,6 +1,7 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { resolve } from "path";
 
 // [woo] Vite 설정 - Thymeleaf Shell + React Island 패턴
 // - dev:   npm run dev   → localhost:5173 (프록시로 Spring Boot :8080 연결)
@@ -13,20 +14,20 @@ import { resolve } from 'path'
 //     'parent/dashboard': resolve(__dirname, 'src/parent/dashboard.tsx'), // 추가 예시
 //   }
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
 
   server: {
     port: 5173,
     proxy: {
       // Vite 내부 경로(/@vite, /src, /__) 제외한 모든 요청을 Spring Boot(:8080)로 전달
-      '/': {
-        target: 'http://localhost:8080',
+      "/": {
+        target: "http://localhost:8080",
         changeOrigin: true,
         bypass(req) {
-          const url = req.url ?? ''
+          const url = req.url ?? "";
           // Vite HMR·모듈 변환 경로는 Vite가 직접 처리
-          if (url.startsWith('/@') || url.startsWith('/src/') || url.startsWith('/__')) {
-            return url
+          if (url.startsWith("/@") || url.startsWith("/src/") || url.startsWith("/__")) {
+            return url;
           }
         },
       },
@@ -35,24 +36,25 @@ export default defineConfig({
 
   build: {
     // Spring Boot static 폴더로 직접 출력
-    outDir: resolve(__dirname, '../src/main/resources/static/js/react'),
+    outDir: resolve(__dirname, "../src/main/resources/static/js/react"),
     emptyOutDir: false,
     rollupOptions: {
       input: {
         // [woo] 역할별 entry - 파일 추가 시 여기에만 한 줄 추가
-        'teacher/schedule':  resolve(__dirname, 'src/teacher/schedule.tsx'),
-        'teacher/dashboard': resolve(__dirname, 'src/teacher/dashboard.tsx'),
+        "teacher/schedule": resolve(__dirname, "src/teacher/schedule.tsx"),
+        "teacher/dashboard": resolve(__dirname, "src/teacher/dashboard.tsx"),
+        "cheol/dormitory": resolve(__dirname, "src/cheol/dormitory.tsx"), // 기숙사
         // 'student/grade':    resolve(__dirname, 'src/student/grade.tsx'),
         // 'parent/dashboard': resolve(__dirname, 'src/parent/dashboard.tsx'),
       },
       output: {
         // 파일명 고정 (해시 없이) → Thymeleaf에서 /js/react/teacher/schedule.js 로 참조
-        entryFileNames: '[name].js',
-        chunkFileNames: 'shared/[name]-[hash].js',
-        assetFileNames: '[name][extname]',
+        entryFileNames: "[name].js",
+        chunkFileNames: "shared/[name]-[hash].js",
+        assetFileNames: "[name][extname]",
         // [woo] ES 모듈 형식 사용 (다중 엔트리 지원, Thymeleaf에서 type="module" 로 로드)
-        format: 'es',
+        format: "es",
       },
     },
   },
-})
+});

@@ -927,20 +927,30 @@
                           <div class="row gy-4">
                             <div class="col-sm-4">
                               <div class="">
-                                <h6 class="text-md mb-2 fw-medium flex-grow-1">기숙사명</h6>
-                                <span class="">1기숙사</span>
+                                <h6 class="text-md mb-2 fw-medium flex-grow-1">기숙사동</h6>
+                                <span
+                                  class=""
+                                  th:text="${student.domitoryUnit != null ? student.domitoryUnit + '동' : '-'}"
+                                  >-</span
+                                >
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
                                 <h6 class="text-md mb-2 fw-medium flex-grow-1">호실</h6>
-                                <span class="">101호</span>
+                                <span class="" th:text="${student.domitoryNo != null ? student.domitoryNo + '호' : '-'}"
+                                  >-</span
+                                >
                               </div>
                             </div>
                             <div class="col-sm-4">
                               <div class="">
                                 <h6 class="text-md mb-2 fw-medium flex-grow-1">방 유형</h6>
-                                <span class="">1인실</span>
+                                <span
+                                  class=""
+                                  th:text="${student.domitoryRoomtype != null ? student.domitoryRoomtype : '-'}"
+                                  >-</span
+                                >
                               </div>
                             </div>
                           </div>
@@ -3221,7 +3231,6 @@
       </footer>
     </main>
 
-
     <!-- Apply Leave sidebar start -->
     <div
       class="apply-leave bg-white position-fixed end-0 top-0 h-100vh overflow-y-auto z-99 max-w-700-px w-100 translate-x-full duration-300 active-translate-0"
@@ -3504,7 +3513,6 @@
         firstAccordion.siblings(".custom-accordion-content").show();
       });
       // Custom accordion js end
-
 
       $(".apply-leave-btn").on("click", function () {
         $(".apply-leave").addClass("active");

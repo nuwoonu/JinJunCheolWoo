@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
+import com.example.schoolmate.cheol.entity.Dormitory;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 
@@ -19,6 +20,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
@@ -94,4 +96,37 @@ public class StudentInfo extends BaseInfo {
     // 성적
     @OneToMany(mappedBy = "student")
     private List<Grade> grades = new ArrayList<>();
+
+    // 기숙사
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dormitory_id", nullable = true)
+    private Dormitory dormitory; // null 허용 (기숙사 미배정 학생 존재)
+
+    // 기숙사 배정
+    public void assignDormitory(Dormitory dormitory) {
+        this.dormitory = dormitory;
+
+        // 기존 기숙사에서 제거
+        if (this.dormitory != null) {
+            this.dormitory.getStudents().remove(this);
+        }
+
+        // 새 기숙사에 추가
+        if (dormitory != null && !dormitory.getStudents().contains(this)) {
+            dormitory.getStudents().add(this);
+        }
+    }
+
+    // 기숙사 배정 해제
+    public void removeDormitory() {
+        if (this.dormitory != null) {
+            this.dormitory.getStudents().remove(this);
+            this.dormitory = null;
+        }
+    }
+
+    // 기숙사 배정 여부 확인
+    public boolean hasDormitory() {
+        return this.dormitory != null;
+    }
 }
