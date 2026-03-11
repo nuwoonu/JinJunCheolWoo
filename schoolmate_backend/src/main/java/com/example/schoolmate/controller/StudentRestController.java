@@ -38,11 +38,11 @@ public class StudentRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 학생 정보 조회 (UID)
+    // 학생 정보 조회 (User.uid 기준)
     // GET /api/students/{uid}
     @GetMapping("/{id}")
     public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
-        StudentResponseDTO response = studentService.getStudentByUid(id);
+        StudentResponseDTO response = studentService.getStudentByUserUid(id);
         return ResponseEntity.ok(response);
     }
 
