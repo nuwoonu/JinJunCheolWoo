@@ -104,3 +104,5 @@ dist/
 logs/
 *.log
 .vscode/tasks.json
+schoolmate_backend/src/main/resources/application-oauth.properties
+schoolmate_backend/src/main/resources/application.properties
