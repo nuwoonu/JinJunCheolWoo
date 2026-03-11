@@ -9,6 +9,7 @@ import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -115,7 +116,13 @@ public class SecurityConfig {
                                                                         response, authentication);
                                                 }))
                                 .exceptionHandling(exception -> exception
-                                                .accessDeniedHandler(accessDeniedHandler()))
+                                                .accessDeniedHandler(accessDeniedHandler())
+                                                // REST API: 인증 실패 시 /login 리다이렉트 대신 401 JSON 반환
+                                                .authenticationEntryPoint((request, response, authException) -> {
+                                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                                        response.setContentType("application/json;charset=UTF-8");
+                                                        response.getWriter().write("{\"message\":\"인증이 필요합니다.\"}");
+                                                }))
                                 // JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 등록
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

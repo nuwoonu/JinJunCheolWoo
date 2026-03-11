@@ -1,7 +1,7 @@
-// [joon] 관리자 API - /parkjoon/admin/api/* 호출 (vite proxy: /parkjoon → 8080)
+// [joon] 관리자 API - /api/admin/* 호출 (vite proxy: /api → 8080)
 import axios from 'axios'
 
-const BASE = '/parkjoon/admin/api'
+const BASE = '/api/admin'
 
 // axios 인스턴스 - localStorage JWT 자동 첨부
 const admin = axios.create({ baseURL: BASE })
