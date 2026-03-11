@@ -4,7 +4,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-// [woo] Spring Security 6.5.x AnonymousAuthenticationFilter StackOverflow 무한 재귀 버그 우회 
+// [woo] gradle bootRun 시 Spring Security 무한 재귀 버그 우회 
 ext['spring-security.version'] = '6.4.5'
 
 group = 'com.example'
