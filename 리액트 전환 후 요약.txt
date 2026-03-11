@@ -1,0 +1,437 @@
+================================================================
+  Schoolmate - Thymeleaf → React 전환 변경 문서
+  작성일: 2026-03-11
+================================================================
+
+■ 한 줄 요약
+  "HTML 파일로 화면을 만들던 방식 → React 컴포넌트로 화면을 만들고,
+   백엔드는 데이터만 준다"
+
+
+================================================================
+  1. 가장 크게 바뀐 것 3가지
+================================================================
+
+[ 1-1. 화면을 누가 그리나? ]
+
+  [Before - Thymeleaf]
+  브라우저 요청 → 스프링이 HTML 완성해서 전달 → 브라우저가 그대로 보여줌
+
+  [After - React]
+  브라우저 요청 → React가 화면 구성 → 필요한 데이터만 API로 요청 → 화면 업데이트
+
+
+[ 1-2. 컨트롤러가 바뀜 ]
+
+  // [Before] String 반환 = Thymeleaf HTML 파일 이름
+  @Controller
+  @GetMapping("/student/myinfo")
+  public String myInfo(Model model) {
+      model.addAttribute("student", ...);
+      return "student/myinfo";  // → templates/student/myinfo.html 렌더링
+  }
+
+  // [After] JSON 반환 = React가 받아서 화면에 그림
+  @RestController
+  @GetMapping("/api/students/{uid}")
+  public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable String uid) {
+      return ResponseEntity.ok(...);
+  }
+
+  ※ 현재 프로젝트에 @Controller (Thymeleaf 반환)는 하나도 없음
+     전부 @RestController로 JSON만 반환
+
+
+[ 1-3. 인증 방식이 바뀜 ]
+
+  [Before] 세션 (서버가 로그인 상태 기억)
+  [After]  JWT 토큰 (클라이언트 localStorage에 저장, 매 요청마다 헤더에 첨부)
+
+
+================================================================
+  2. 프로젝트 구조
+================================================================
+
+[ 백엔드: schoolmate_backend/src/main/java/com/example/schoolmate/ ]
+
+  controller/          ← 공통 API (auth, students, notifications, dashboard)
+  cheol/controller/    ← [cheol] 학생 성적 API (GradeController)
+  woo/controller/      ← [woo] 교사 API (성적입력, 학급관리, 일정)
+  soojin/controller/   ← [soojin] 학부모/일정/식단 API
+  board/controller/    ← 게시판 API
+  parkjoon/api/        ← [parkjoon] 관리자 API (11개)
+  consultation/        ← 상담 예약 API
+  config/              ← Security, JWT, CORS 설정
+
+  ※ templates/ 폴더는 비어 있음 (Thymeleaf HTML 파일 없음)
+
+
+[ 프론트엔드: schoolmate_frontend/src/ ]
+
+  App.tsx                ← URL 주소와 페이지를 연결하는 지도
+  api/auth.ts            ← 모든 API 요청에 JWT 토큰 자동 첨부
+  contexts/
+    AuthContext.tsx      ← "지금 누가 로그인했나" 전역 상태
+  components/            ← 여러 페이지에서 공통으로 쓰는 부품들
+    PrivateRoute.tsx       → 권한 없으면 못 들어오게 막음
+    MiniCalendar.tsx       → 학교 일정 달력 위젯
+    NeisEventsWidget.tsx   → D-day 표시 일정 위젯
+    layout/
+      DashboardLayout.tsx  → 일반 사용자 레이아웃 (사이드바+헤더)
+      AdminLayout.tsx      → 관리자 전용 레이아웃
+      Header.tsx           → 상단 바 (알림, 다크모드)
+      Sidebar.tsx          → 왼쪽 메뉴 (역할별 다른 메뉴 보임)
+  pages/                 ← 실제 페이지들
+    auth/                → 로그인, 회원가입
+    cheol/               → [cheol] 학생 관련
+    woo/                 → [woo] 교사 관련
+    jin/                 → [jin] 학부모 관련
+    parkjoon/            → [parkjoon] 관리자 관련
+
+
+================================================================
+  3. 공통 컴포넌트 설명 (components/)
+================================================================
+
+[ PrivateRoute.tsx — 문지기 ]
+  역할: 허가된 역할(STUDENT/TEACHER/PARENT/ADMIN)만 페이지 접근 허용
+  로그인 안 함 → /login 이동
+  권한 없음    → /unauthorized 이동
+  권한 있음    → 페이지 정상 표시
+
+
+[ layout/Sidebar.tsx — 왼쪽 메뉴 ]
+  역할: 로그인한 사람의 role에 따라 다른 메뉴를 보여줌
+  STUDENT  → 학생 관련 메뉴
+  TEACHER  → 교사 관련 메뉴
+  PARENT   → 학부모 관련 메뉴
+  ADMIN    → 전체 관리 메뉴
+
+
+[ layout/Header.tsx — 상단 바 ]
+  기능:
+  - 검색창
+  - 다크모드 토글 (localStorage에 저장)
+  - 알림 드롭다운 (30초마다 새 알림 자동 확인)
+  - 읽지 않은 알림 수 빨간 점으로 표시
+
+
+[ MiniCalendar.tsx / NeisEventsWidget.tsx — 일정 위젯 ]
+  MiniCalendar     → 달력 형태, 날짜별 이벤트 표시
+  NeisEventsWidget → 앞으로 올 일정 5개 + D-day 배지
+
+
+================================================================
+  4. 팀원별 페이지 변경 내용
+================================================================
+
+[ [cheol] 학생 페이지 ]
+
+  파일: pages/cheol/student/MyInfo.tsx
+  경로: /student/myinfo
+  API:  GET /api/students/{uid}
+  기능: 학생 정보 조회/수정, 보호자·수상 탭
+
+  파일: pages/cheol/student/Grades.tsx
+  경로: /exam
+  API:  GET /api/grades/student/{id}
+  기능: 학년/학기 필터, 점수 색상 표시
+        90점 이상 → 초록 / 70~89점 → 파랑 / 70점 미만 → 빨강
+
+  MyInfo 탭 구성:
+    기본정보 탭      → 이름/학번/학년/반/연락처 (수정 가능)
+    Student Details  → 보호자, 의료기록, 수상이력
+    Attendance       → (준비 중)
+
+
+[ [woo] 교사 페이지 ]
+
+  파일: pages/woo/teacher/Dashboard.tsx
+  경로: /teacher/dashboard
+  API:  GET /api/dashboard/teacher
+  기능: 알림, 오늘시간표, 출결 위젯
+
+  파일: pages/woo/teacher/SchedulePage.tsx
+  경로: /teacher/schedule
+  API:  GET /api/teacher/schedule
+  기능: 5일 × 8교시 시간표 그리드
+
+  교사 대시보드 위젯 구성:
+  +-------------+------------------+----------------+
+  |  알림 메시지  |   오늘 시간표    |   학교 일정    |
+  +-------------+------------------+----------------+
+  |           학급 학생 출결 현황                     |
+  +---------------------------------------------------+
+
+
+[ [jin] 학부모 페이지 ]
+
+  파일: pages/jin/parent/Dashboard.tsx
+  경로: /parent/dashboard
+  API:  GET /api/dashboard/parent
+  기능: 자녀 카드, 공지, 게시판 요약
+
+  파일: pages/jin/parent/ChildrenStatus.tsx
+  경로: /parent/children/status
+  API:  4개 API 동시 호출
+        - GET /api/dashboard/parent      (자녀 목록)
+        - GET /api/calendar/events       (오늘 일정)
+        - GET /api/meals/daily           (오늘 급식)
+        - GET /api/calendar/timetable    (자녀 시간표)
+  기능: 자녀 출결+시간표+급식+일정 종합 표시
+
+  ChildrenStatus 화면 구성:
+  +--------------+----------------+----------------+
+  | 자녀 프로필   |  오늘 시간표   |   학교 일정   |
+  | + 출결 현황  |  + 학사일정    |               |
+  +--------------+----------------+----------------+
+  |  가정통신문   |        오늘의 급식              |
+  +--------------+---------------------------------+
+
+
+[ [parkjoon] 관리자 페이지 ]
+
+  Dashboard         /parkjoon/admin/dashboard    학생수, 교직원수, 승인대기 통계
+  students/         /parkjoon/admin/students     학생 목록/등록/수정/CSV
+  teachers/         /parkjoon/admin/teachers     교사 목록/등록/역할부여
+  classes/          /parkjoon/admin/classes      학급 생성/학생배정/담임지정
+  notices/          /parkjoon/admin/notices      공지사항 CRUD
+
+
+================================================================
+  5. 인증 흐름 (로그인 후 API 호출까지)
+================================================================
+
+  1. 로그인
+     POST /api/auth/login
+     ← { accessToken, refreshToken }
+     → localStorage에 저장
+
+  2. 페이지 이동 시
+     AuthContext → GET /api/auth/me → 현재 사용자 정보 확인
+     → role에 따라 메뉴 표시
+
+  3. API 요청 시 (자동)
+     api/auth.ts의 axios interceptor가
+     Authorization: Bearer <accessToken> 헤더 자동 추가
+
+  4. 백엔드 처리
+     JwtAuthFilter가 헤더 또는 쿠키에서 토큰 검증
+     → 통과 시 API 응답
+
+
+================================================================
+  6. 전체 REST API 목록 (백엔드)
+================================================================
+
+[ 인증 ]
+  POST   /api/auth/register
+  POST   /api/auth/login
+  POST   /api/auth/refresh
+  POST   /api/auth/logout
+  GET    /api/auth/me
+  POST   /api/auth/select-role
+
+[ 학생 ]
+  POST   /api/students
+  GET    /api/students
+  GET    /api/students/{uid}
+  GET    /api/students/grade/{grade}
+  GET    /api/students/class/{classNum}
+  PUT    /api/students/{uid}
+  DELETE /api/students/{uid}
+
+[ 성적 ]
+  GET    /api/grades
+  GET    /api/grades/student/{studentId}
+  GET    /api/grades/subject/{subjectCode}
+
+[ 게시판 ]
+  GET    /api/board/grade/{grade}
+  GET    /api/board/school-notice
+  GET    /api/board/parent-notice
+  GET    /api/board/parent-board
+  GET    /api/board/{id}
+  POST   /api/board
+  PUT    /api/board/{id}
+  DELETE /api/board/{id}
+
+[ 교사 ]
+  GET    /api/teacher/schedule
+  GET    /api/teacher/schedule/today
+  POST   /api/teacher/schedule
+  PUT    /api/teacher/schedule/{id}
+  DELETE /api/teacher/schedule/{id}
+  GET    /api/teacher/myclass
+  GET    /api/teacher/list
+  GET    /api/teacher/grades/student/{studentId}
+  POST   /api/teacher/grades
+
+[ 학교 일정/식단 ]
+  GET    /api/calendar/events
+  GET    /api/calendar/timetable
+  GET    /api/meals/daily
+
+[ 알림 ]
+  GET    /api/notifications
+  GET    /api/notifications/unread-count
+  POST   /api/notifications/{id}/read
+  POST   /api/notifications/read-all
+
+[ 대시보드 ]
+  GET    /api/dashboard/student
+  GET    /api/dashboard/teacher
+  GET    /api/dashboard/parent
+
+[ 상담 ]
+  GET    /api/consultation/reservations/my
+  POST   /api/consultation/reservations
+  DELETE /api/consultation/reservations/{id}
+  PATCH  /api/consultation/reservations/{id}/confirm
+
+[ 관리자 (모두 /parkjoon/admin/api/ 하위) ]
+  students/       학생 관리 (목록/등록/수정/CSV/보호자 연동)
+  teachers/       교사 관리 (목록/등록/역할/CSV)
+  parents/        학부모 관리 (목록/등록/자녀 연동)
+  classes/        학급 관리 (생성/학생배정/담임지정)
+  notices/        공지사항 CRUD
+  subjects/       교과목 CRUD
+  schedule/       학사일정 CRUD
+  dashboard/stats 통계 조회
+
+
+================================================================
+  7. 개발 서버 실행
+================================================================
+
+  터미널 1 (백엔드):
+    cd schoolmate_backend
+    ./gradlew bootRun       → 포트 8080
+
+  터미널 2 (프론트엔드):
+    cd schoolmate_frontend
+    npm run dev             → 포트 5173
+
+  브라우저: localhost:5173 접속
+  /api/** 요청은 vite proxy가 자동으로 8080으로 전달
+
+
+================================================================
+  8. Security 권한 설정 요약 (SecurityConfig.java)
+================================================================
+
+  공개 (누구나):
+    /api/auth/login, /api/auth/register, /api/auth/refresh
+    /oauth2/**, /login/oauth2/**
+
+  ADMIN만:
+    /parkjoon/admin/**
+
+  TEACHER 또는 ADMIN:
+    /api/teacher/**
+
+  STUDENT, TEACHER, ADMIN:
+    /api/student/**
+
+  PARENT만:
+    /api/parent/dashboard, /api/parent/children/**
+
+  나머지: 로그인 필요
+
+
+================================================================
+  9. React 전환을 위해 백엔드에서 수정/추가된 파일들
+================================================================
+
+※ 이 항목이 "Thymeleaf → React 전환"의 핵심 변경사항입니다.
+
+[ SecurityConfig.java — 세션 제거 + JWT 방식으로 전환 ]
+  파일: config/SecurityConfig.java
+
+  변경 전 (Thymeleaf 시절):
+    - formLogin() 활성화 → Spring이 로그인 폼 제공
+    - 세션 기반 인증 (STATEFUL)
+    - CSRF 활성화
+
+  변경 후 (React 전환):
+    - formLogin 비활성화   → React가 로그인 UI 직접 처리
+    - httpBasic 비활성화
+    - SessionCreationPolicy.STATELESS  → JWT이므로 서버에 세션 없음
+    - CSRF 비활성화        → JWT + React는 CSRF 불필요
+    - @EnableMethodSecurity → @PreAuthorize 어노테이션 사용 가능
+    - /user/register, /auth/register permitAll 추가 (React 회원가입 경로)
+
+
+[ JwtAuthFilter.java — 쿠키 폴백 추가 ]
+  파일: config/jwt/JwtAuthFilter.java
+
+  동작 순서:
+    1순위: Authorization 헤더에서 Bearer 토큰 읽기  (React AJAX 요청)
+    2순위: accessToken 쿠키에서 읽기               (브라우저 직접 접근 시)
+
+  → React에서는 localStorage의 accessToken을 헤더에 담아 보내고
+    쿠키는 OAuth2 로그인 직후 등 헤더가 없는 경우의 보조 수단
+
+
+[ CorsConfig.java — React 개발서버 허용 (신규 추가) ]
+  파일: config/CorsConfig.java
+
+  설정 내용:
+    허용 Origin:  http://localhost:5173 (React 개발서버)
+    허용 Method:  GET, POST, PUT, DELETE, PATCH, OPTIONS
+    허용 Header:  * (모두)
+    Credentials:  true (쿠키 포함 허용)
+    대상 경로:    /api/** 전체
+
+  → 로컬 개발 시 React(5173)가 Spring Boot(8080)에 요청할 때
+    브라우저의 CORS 차단 없이 통신 가능
+
+
+[ WebMvcConfig.java — 업로드 파일 경로 매핑 ]
+  파일: config/WebMvcConfig.java
+
+  설정 내용:
+    /upload/**  → 실제 파일시스템 uploadPath
+    /uploads/** → src/main/resources/static/uploads/
+
+  → React에서 이미지(프로필 사진, 시설 사진 등) URL로 직접 접근 가능
+
+
+[ vite.config.ts — 개발서버 프록시 설정 ]
+  파일: schoolmate_frontend/vite.config.ts
+
+  React 개발서버(5173)가 이 경로들을 Spring Boot(8080)로 자동 전달:
+    /api/**                → http://localhost:8080  (일반 API)
+    /parkjoon/admin/api/** → http://localhost:8080  (관리자 API)
+    /oauth2/authorization  → http://localhost:8080  (소셜 로그인 시작)
+    /login/oauth2/**       → http://localhost:8080  (소셜 로그인 콜백)
+
+  open: "/main"  → npm run dev 실행 시 브라우저 자동으로 /main 열림
+
+  → 개발 중에는 CORS 설정 없이도 통신 가능 (프록시가 같은 origin처럼 처리)
+  → 배포 시에는 CorsConfig.java 의 설정이 실제로 적용됨
+
+
+================================================================
+  10. 변경 파일 체크리스트
+================================================================
+
+  백엔드 (schoolmate_backend):
+  [수정] config/SecurityConfig.java        세션→JWT, formLogin 제거
+  [수정] config/jwt/JwtAuthFilter.java     쿠키 폴백 추가
+  [신규] config/CorsConfig.java            React 개발서버 CORS 허용
+  [수정] config/WebMvcConfig.java          업로드 파일 경로 매핑
+  [수정] board/controller/BoardRestController.java  학년 게시판 API 추가
+  [삭제] src/main/resources/templates/    Thymeleaf HTML 파일 전부 제거
+
+  프론트엔드 (schoolmate_frontend):
+  [신규] vite.config.ts                   프록시 설정, 자동 open
+  [신규] src/api/auth.ts                  axios 인터셉터 (JWT 자동 첨부)
+  [신규] src/contexts/AuthContext.tsx     전역 인증 상태 관리
+  [신규] src/App.tsx                      React Router 전체 라우팅
+  [신규] src/components/PrivateRoute.tsx  역할 기반 접근 제어
+  [신규] src/components/layout/          공통 레이아웃 컴포넌트들
+  [신규] src/pages/**                     각 팀원 담당 페이지들
+
+
+================================================================
