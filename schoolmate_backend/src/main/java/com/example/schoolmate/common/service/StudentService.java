@@ -482,8 +482,9 @@ public class StudentService {
     // 승철님 작업물
     @Transactional
     public StudentResponseDTO updateStudent(Long uid, StudentUpdateDTO updateDTO) {
-        StudentInfo student = studentInfoRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+        // [woo] user.uid(FK)로 조회 - GET과 일관성 유지 (findById는 StudentInfo.id 기준이라 user.uid와 불일치)
+        StudentInfo student = studentInfoRepository.findByUserUid(uid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + uid));
 
         // 업데이트 가능한 필드만 변경 (Dirty Checking 활용)
         if (updateDTO.getClassroomId() != null) {
