@@ -43,14 +43,24 @@ export default function StaffList() {
     load(0);
   };
   const list = page?.content ?? [];
-  const toggleAll = (checked: boolean) => setSelected(checked ? list.map((s: any) => s.uid) : []);
+  const toggleAll = (checked: boolean) =>
+    setSelected(checked ? list.map((s: any) => s.uid) : []);
   const toggleOne = (uid: string) =>
-    setSelected((prev) => (prev.includes(uid) ? prev.filter((x) => x !== uid) : [...prev, uid]));
+    setSelected((prev) =>
+      prev.includes(uid) ? prev.filter((x) => x !== uid) : [...prev, uid],
+    );
 
   const bulkStatus = async (s: string, label: string) => {
     if (!selected.length) return alert("직원을 선택하세요.");
-    if (!confirm(`선택한 ${selected.length}명을 "${label}" 상태로 변경하시겠습니까?`)) return;
-    await admin.post("/staffs/bulk-status", { uids: selected, status: s });
+    if (
+      !confirm(
+        `선택한 ${selected.length}명을 "${label}" 상태로 변경하시겠습니까?`,
+      )
+    )
+      return;
+    await admin.post("/staffs/bulk-status", null, {
+      params: { uids: selected, status: s },
+    });
     setSelected([]);
     load(currentPage);
   };
@@ -77,7 +87,8 @@ export default function StaffList() {
         ? "bg-warning-subtle text-warning border border-warning-subtle"
         : "bg-danger-subtle text-danger border border-danger-subtle";
 
-  const statusLabel = (s: string) => (s === "EMPLOYED" ? "재직중" : s === "LEAVE" ? "휴직" : "퇴직");
+  const statusLabel = (s: string) =>
+    s === "EMPLOYED" ? "재직중" : s === "LEAVE" ? "휴직" : "퇴직";
 
   const EMP_LABEL: Record<string, string> = {
     PERMANENT: "정규직",
@@ -87,9 +98,13 @@ export default function StaffList() {
   };
   const empTypeBadge = (t: string) =>
     t === "PERMANENT" ? (
-      <span className="badge bg-primary-subtle text-primary border border-primary-subtle">정규직</span>
+      <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
+        정규직
+      </span>
     ) : (
-      <span className="badge bg-info-subtle text-info border border-info-subtle">{EMP_LABEL[t] ?? t}</span>
+      <span className="badge bg-info-subtle text-info border border-info-subtle">
+        {EMP_LABEL[t] ?? t}
+      </span>
     );
 
   return (
@@ -100,7 +115,10 @@ export default function StaffList() {
           style={{ background: "rgba(0,0,0,0.5)", zIndex: 9999 }}
         >
           <div className="text-center">
-            <div className="spinner-border text-light" style={{ width: "3rem", height: "3rem" }} />
+            <div
+              className="spinner-border text-light"
+              style={{ width: "3rem", height: "3rem" }}
+            />
             <h5 className="text-white mt-3">직원 데이터를 등록 중입니다...</h5>
           </div>
         </div>
@@ -108,7 +126,13 @@ export default function StaffList() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">직원 정보 관리</h2>
         <div className="d-flex align-items-center gap-2">
-          <input type="file" ref={csvRef} accept=".csv" style={{ display: "none" }} onChange={uploadCsv} />
+          <input
+            type="file"
+            ref={csvRef}
+            accept=".csv"
+            style={{ display: "none" }}
+            onChange={uploadCsv}
+          />
           <div className="dropdown">
             <button
               className="btn btn-outline-dark dropdown-toggle"
@@ -162,7 +186,10 @@ export default function StaffList() {
               </li>
             </ul>
           </div>
-          <button className="btn btn-outline-success" onClick={() => csvRef.current?.click()}>
+          <button
+            className="btn btn-outline-success"
+            onClick={() => csvRef.current?.click()}
+          >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
           </button>
           <Link to={`${BASE}/staffs/create`} className="btn btn-primary">
@@ -197,8 +224,10 @@ export default function StaffList() {
                   onChange={(e) => setEmploymentType(e.target.value)}
                 >
                   <option value="">전체 고용형태</option>
-                  <option value="FULL_TIME">정규직</option>
-                  <option value="CONTRACT">계약직</option>
+                  <option value="PERMANENT">정규직</option>
+                  <option value="INDEFINITE_CONTRACT">무기계약직</option>
+                  <option value="FIXED_TERM">기간제/계약직</option>
+                  <option value="PART_TIME">시간제/단기</option>
                 </select>
                 <select
                   className="form-select"
@@ -241,11 +270,18 @@ export default function StaffList() {
           </div>
         </div>
         <div className="card-body p-0">
-          <table className="table table-hover align-middle mb-0" style={{ tableLayout: "fixed", width: "100%" }}>
+          <table
+            className="table table-hover align-middle mb-0"
+            style={{ tableLayout: "fixed", width: "100%" }}
+          >
             <thead className="table-light">
               <tr>
                 <th className="text-center" style={{ width: 60 }}>
-                  <input type="checkbox" className="form-check-input" onChange={(e) => toggleAll(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    onChange={(e) => toggleAll(e.target.checked)}
+                  />
                 </th>
                 <th className="ps-4" style={{ width: 140 }}>
                   사번
@@ -274,21 +310,38 @@ export default function StaffList() {
                   </td>
                   <td className="ps-4 text-secondary">{s.code}</td>
                   <td>
-                    <Link to={`${BASE}/staffs/${s.uid}`} className="fw-bold text-decoration-none text-dark">
+                    <Link
+                      to={`${BASE}/staffs/${s.uid}`}
+                      className="fw-bold text-decoration-none text-dark"
+                    >
                       {s.name}
                     </Link>
                   </td>
-                  <td style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.email}</td>
+                  <td
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {s.email}
+                  </td>
                   <td>{s.extensionNumber ?? "-"}</td>
                   <td>
-                    <span>{s.department}</span> / <span className="small text-muted">{s.jobTitle}</span>
+                    <span>{s.department}</span> /{" "}
+                    <span className="small text-muted">{s.jobTitle}</span>
                   </td>
                   <td>{empTypeBadge(s.employmentType)}</td>
                   <td>
-                    <span className={`badge ${statusBadge(s.statusName)}`}>{statusLabel(s.statusName)}</span>
+                    <span className={`badge ${statusBadge(s.statusName)}`}>
+                      {statusLabel(s.statusName)}
+                    </span>
                   </td>
                   <td className="text-end pe-4">
-                    <Link to={`${BASE}/staffs/${s.uid}`} className="btn btn-sm btn-outline-primary">
+                    <Link
+                      to={`${BASE}/staffs/${s.uid}`}
+                      className="btn btn-sm btn-outline-primary"
+                    >
                       상세보기
                     </Link>
                   </td>
@@ -308,7 +361,7 @@ export default function StaffList() {
           <div className="card-footer bg-white py-3">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
-                <li className={`page-item${!page.hasPrevious ? " disabled" : ""}`}>
+                <li className={`page-item${page.first ? " disabled" : ""}`}>
                   <a
                     className="page-link"
                     href="#"
@@ -321,7 +374,10 @@ export default function StaffList() {
                   </a>
                 </li>
                 {Array.from({ length: page.totalPages }, (_, i) => (
-                  <li key={i} className={`page-item${i === currentPage ? " active" : ""}`}>
+                  <li
+                    key={i}
+                    className={`page-item${i === currentPage ? " active" : ""}`}
+                  >
                     <a
                       className="page-link"
                       href="#"
@@ -334,7 +390,7 @@ export default function StaffList() {
                     </a>
                   </li>
                 ))}
-                <li className={`page-item${!page.hasNext ? " disabled" : ""}`}>
+                <li className={`page-item${page.last ? " disabled" : ""}`}>
                   <a
                     className="page-link"
                     href="#"

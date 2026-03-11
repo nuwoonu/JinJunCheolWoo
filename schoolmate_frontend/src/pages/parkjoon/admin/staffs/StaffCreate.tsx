@@ -23,7 +23,7 @@ export default function StaffCreate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload: any = { ...form };
-    if (form.employmentType !== "CONTRACT") delete payload.contractEndDate;
+    if (form.employmentType !== "FIXED_TERM") delete payload.contractEndDate;
     await admin.post("/staffs", payload);
     navigate(`${BASE}/staffs`);
   };

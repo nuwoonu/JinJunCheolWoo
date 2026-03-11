@@ -15,6 +15,8 @@ export default function ParentDetail() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [showModal, setShowModal] = useState(false)
+  const [relationship, setRelationship] = useState('OTHER')
+  const [pendingStudent, setPendingStudent] = useState<any>(null)
 
   const load = () =>
     admin.get(`/parents/${id}`).then(r => {
@@ -37,7 +39,7 @@ export default function ParentDetail() {
 
   const removeChild = async (studentUid: string) => {
     if (!confirm('자녀 연결을 해제하시겠습니까?')) return
-    await admin.delete(`/parents/${id}/children/${studentUid}`)
+    await admin.delete(`/parents/${id}/child/${studentUid}`)
     load()
   }
 
@@ -47,8 +49,15 @@ export default function ParentDetail() {
     setSearchResults(r.data?.content ?? [])
   }
 
-  const addChild = async (studentUid: string) => {
-    await admin.post(`/parents/${id}/children`, { studentUid })
+  const selectStudent = (student: any) => {
+    setPendingStudent(student)
+    setRelationship('OTHER')
+  }
+
+  const addChild = async () => {
+    if (!pendingStudent) return
+    await admin.post(`/parents/${id}/child`, null, { params: { studentUid: pendingStudent.uid, relationship } })
+    setPendingStudent(null)
     setShowModal(false)
     setSearchQuery('')
     setSearchResults([])
@@ -66,23 +75,45 @@ export default function ParentDetail() {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">학생 검색</h5>
-                <button type="button" className="btn-close" onClick={() => { setShowModal(false); setSearchResults([]) }} />
+                <h5 className="modal-title">자녀 추가</h5>
+                <button type="button" className="btn-close" onClick={() => { setShowModal(false); setSearchResults([]); setPendingStudent(null) }} />
               </div>
               <div className="modal-body">
-                <div className="input-group mb-3">
-                  <input className="form-control" placeholder="학생 이름 또는 학번 검색..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchStudents()} />
-                  <button className="btn btn-primary" onClick={searchStudents}>검색</button>
-                </div>
-                {searchResults.length > 0 && (
-                  <div className="list-group" style={{ maxHeight: 250, overflowY: 'auto' }}>
-                    {searchResults.map((s: any) => (
-                      <div key={s.uid} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                        <span><strong>{s.name}</strong> <small className="text-muted ms-2">{s.code}</small></span>
-                        <button className="btn btn-sm btn-primary" onClick={() => addChild(s.uid)}>추가</button>
+                {!pendingStudent ? (
+                  <>
+                    <div className="input-group mb-3">
+                      <input className="form-control" placeholder="학생 이름 또는 학번 검색..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchStudents()} />
+                      <button className="btn btn-primary" onClick={searchStudents}>검색</button>
+                    </div>
+                    {searchResults.length > 0 && (
+                      <div className="list-group" style={{ maxHeight: 250, overflowY: 'auto' }}>
+                        {searchResults.map((s: any) => (
+                          <div key={s.uid} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><strong>{s.name}</strong> <small className="text-muted ms-2">{s.code}</small></span>
+                            <button className="btn btn-sm btn-outline-primary" onClick={() => selectStudent(s)}>선택</button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-3">선택한 학생: <strong>{pendingStudent.name}</strong> ({pendingStudent.code})</p>
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">관계 선택</label>
+                      <select className="form-select" value={relationship} onChange={e => setRelationship(e.target.value)}>
+                        <option value="FATHER">부</option>
+                        <option value="MOTHER">모</option>
+                        <option value="GRANDFATHER">조부</option>
+                        <option value="GRANDMOTHER">조모</option>
+                        <option value="OTHER">기타</option>
+                      </select>
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button className="btn btn-secondary flex-fill" onClick={() => setPendingStudent(null)}>다시 검색</button>
+                      <button className="btn btn-primary flex-fill" onClick={addChild}>연결 추가</button>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
