@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
+import { TEACHER_STATUS, STATUS_DEFAULT } from "../../../../constants/statusConfig";
 
 const BASE = "/parkjoon/admin";
 
@@ -78,16 +79,6 @@ export default function TeacherList() {
     e.target.value = "";
   };
 
-  const statusBadge = (s: string) =>
-    s === "EMPLOYED"
-      ? "bg-success-subtle text-success border border-success-subtle"
-      : s === "LEAVE"
-        ? "bg-warning-subtle text-warning border border-warning-subtle"
-        : "bg-danger-subtle text-danger border border-danger-subtle";
-
-  const statusLabel = (s: string) =>
-    s === "EMPLOYED" ? "재직중" : s === "LEAVE" ? "휴직" : "퇴직";
-
   return (
     <AdminLayout>
       {loading && (
@@ -123,48 +114,18 @@ export default function TeacherList() {
               <i className="bi bi-pencil-square" /> 선택 상태 변경
             </button>
             <ul className={`dropdown-menu${showDropdown ? " show" : ""}`}>
-              <li>
-                <a
-                  className="dropdown-item"
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    bulkStatus("EMPLOYED", "재직");
-                    setShowDropdown(false);
-                  }}
-                >
-                  재직
-                </a>
-              </li>
-              <li>
-                <a
-                  className="dropdown-item"
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    bulkStatus("LEAVE", "휴직");
-                    setShowDropdown(false);
-                  }}
-                >
-                  휴직
-                </a>
-              </li>
-              <li>
-                <hr className="dropdown-divider" />
-              </li>
-              <li>
-                <a
-                  className="dropdown-item text-danger"
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    bulkStatus("RETIRED", "퇴직");
-                    setShowDropdown(false);
-                  }}
-                >
-                  퇴직
-                </a>
-              </li>
+              {Object.entries(TEACHER_STATUS).map(([value, { label }]) => (
+                <li key={value}>
+                  {value === "RETIRED" && <hr className="dropdown-divider" />}
+                  <a
+                    className={`dropdown-item${value === "RETIRED" ? " text-danger" : ""}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); bulkStatus(value, label); setShowDropdown(false); }}
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
           <button
@@ -194,9 +155,9 @@ export default function TeacherList() {
                   onChange={(e) => setStatus(e.target.value)}
                 >
                   <option value="">전체 상태</option>
-                  <option value="EMPLOYED">재직</option>
-                  <option value="LEAVE">휴직</option>
-                  <option value="RETIRED">퇴직</option>
+                  {Object.entries(TEACHER_STATUS).map(([value, { label }]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
                 <select
                   className="form-select"
@@ -290,9 +251,7 @@ export default function TeacherList() {
                       </span>
                     </td>
                     <td>
-                      <span className={`badge ${statusBadge(t.statusName)}`}>
-                        {statusLabel(t.statusName)}
-                      </span>
+                      {(() => { const cfg = TEACHER_STATUS[t.statusName] ?? STATUS_DEFAULT; return <span className={`badge ${cfg.badge}`}>{cfg.label}</span> })()}
                     </td>
                     <td className="text-end pe-4">
                       <Link

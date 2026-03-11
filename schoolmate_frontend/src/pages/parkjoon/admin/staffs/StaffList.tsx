@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
+import { STAFF_STATUS, EMPLOYMENT_TYPE, STATUS_DEFAULT } from "../../../../constants/statusConfig";
 
 const BASE = "/parkjoon/admin";
 
@@ -80,33 +81,6 @@ export default function StaffList() {
     e.target.value = "";
   };
 
-  const statusBadge = (s: string) =>
-    s === "EMPLOYED"
-      ? "bg-success-subtle text-success border border-success-subtle"
-      : s === "LEAVE"
-        ? "bg-warning-subtle text-warning border border-warning-subtle"
-        : "bg-danger-subtle text-danger border border-danger-subtle";
-
-  const statusLabel = (s: string) =>
-    s === "EMPLOYED" ? "재직중" : s === "LEAVE" ? "휴직" : "퇴직";
-
-  const EMP_LABEL: Record<string, string> = {
-    PERMANENT: "정규직",
-    INDEFINITE_CONTRACT: "무기계약직",
-    FIXED_TERM: "기간제/계약직",
-    PART_TIME: "시간제/단기",
-  };
-  const empTypeBadge = (t: string) =>
-    t === "PERMANENT" ? (
-      <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
-        정규직
-      </span>
-    ) : (
-      <span className="badge bg-info-subtle text-info border border-info-subtle">
-        {EMP_LABEL[t] ?? t}
-      </span>
-    );
-
   return (
     <AdminLayout>
       {loading && (
@@ -169,6 +143,32 @@ export default function StaffList() {
                 </a>
               </li>
               <li>
+                <a
+                  className="dropdown-item"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    bulkStatus("DISPATCHED", "파견");
+                    setShowDropdown(false);
+                  }}
+                >
+                  파견
+                </a>
+              </li>
+              <li>
+                <a
+                  className="dropdown-item"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    bulkStatus("SUSPENDED", "정직");
+                    setShowDropdown(false);
+                  }}
+                >
+                  정직
+                </a>
+              </li>
+              <li>
                 <hr className="dropdown-divider" />
               </li>
               <li>
@@ -213,9 +213,9 @@ export default function StaffList() {
                   onChange={(e) => setStatus(e.target.value)}
                 >
                   <option value="">전체 상태</option>
-                  <option value="EMPLOYED">재직</option>
-                  <option value="LEAVE">휴직</option>
-                  <option value="RETIRED">퇴직</option>
+                  {Object.entries(STAFF_STATUS).map(([value, { label }]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
                 <select
                   className="form-select"
@@ -224,10 +224,9 @@ export default function StaffList() {
                   onChange={(e) => setEmploymentType(e.target.value)}
                 >
                   <option value="">전체 고용형태</option>
-                  <option value="PERMANENT">정규직</option>
-                  <option value="INDEFINITE_CONTRACT">무기계약직</option>
-                  <option value="FIXED_TERM">기간제/계약직</option>
-                  <option value="PART_TIME">시간제/단기</option>
+                  {Object.entries(EMPLOYMENT_TYPE).map(([value, { label }]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
                 <select
                   className="form-select"
@@ -331,12 +330,8 @@ export default function StaffList() {
                     <span>{s.department}</span> /{" "}
                     <span className="small text-muted">{s.jobTitle}</span>
                   </td>
-                  <td>{empTypeBadge(s.employmentType)}</td>
-                  <td>
-                    <span className={`badge ${statusBadge(s.statusName)}`}>
-                      {statusLabel(s.statusName)}
-                    </span>
-                  </td>
+                  <td>{(() => { const cfg = EMPLOYMENT_TYPE[s.employmentType]; return <span className={`badge ${cfg?.badge ?? 'bg-secondary-subtle text-secondary'}`}>{cfg?.label ?? s.employmentType}</span> })()}</td>
+                  <td>{(() => { const cfg = STAFF_STATUS[s.statusName] ?? STATUS_DEFAULT; return <span className={`badge ${cfg.badge}`}>{cfg.label}</span> })()}</td>
                   <td className="text-end pe-4">
                     <Link
                       to={`${BASE}/staffs/${s.uid}`}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
+import { PARENT_STATUS, STATUS_DEFAULT } from '../../../../constants/statusConfig'
 
 const BASE = '/parkjoon/admin'
 
@@ -142,9 +143,11 @@ export default function ParentDetail() {
               </div>
               <h5 className="mb-1 fw-bold">{parent.name}</h5>
               <p className="text-muted small mb-2">{parent.email}</p>
-              <button type="button" className={`btn ${parent.statusName === 'ACTIVE' ? 'btn-success' : 'btn-secondary'} w-100 rounded-pill mb-3`} style={{ pointerEvents: 'none' }}>
-                {parent.statusName === 'ACTIVE' ? '활성' : '비활성'}
-              </button>
+              {(() => { const cfg = PARENT_STATUS[parent.statusName] ?? STATUS_DEFAULT; return (
+                <button type="button" className={`btn ${cfg.btn} w-100 rounded-pill mb-3`} style={{ pointerEvents: 'none' }}>
+                  {cfg.label}
+                </button>
+              ) })()}
               <hr />
               <div className="text-start px-2">
                 <div className="mb-2">
@@ -196,8 +199,10 @@ export default function ParentDetail() {
                     <div className="col-md-6">
                       <label className="form-label fw-bold">상태</label>
                       <select className="form-select" value={form.statusName} onChange={e => setForm(f => ({ ...f, statusName: e.target.value }))}>
+                        <option value="PENDING">승인대기</option>
                         <option value="ACTIVE">활성</option>
                         <option value="INACTIVE">비활성</option>
+                        <option value="BLOCKED">차단</option>
                       </select>
                     </div>
                   </div>

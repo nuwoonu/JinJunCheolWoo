@@ -93,7 +93,6 @@ public class ParentDTO {
         private String name;
         private String code;
         private String phone;
-        private String status;
         private String statusName;
         private String email;
         private boolean linked;
@@ -104,7 +103,6 @@ public class ParentDTO {
             this.name = entity.getParentName();
             this.code = entity.getCode();
             this.phone = entity.getPhone();
-            this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.linked = entity.getUser() != null;
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";
@@ -156,7 +154,6 @@ public class ParentDTO {
         private String code;
         private String email;
         private String phone;
-        private String status;
         private String statusName;
         private List<LinkedStudent> children;
         private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
@@ -166,7 +163,6 @@ public class ParentDTO {
             this.name = entity.getParentName();
             this.code = entity.getCode();
             this.phone = entity.getPhone();
-            this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";
             this.children = entity.getChildrenRelations().stream()

@@ -1,7 +1,6 @@
 package com.example.schoolmate.common.dto;
 
 import com.example.schoolmate.common.entity.info.TeacherInfo;
-import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.user.User;
 import com.opencsv.bean.CsvBindByName;
@@ -39,9 +38,7 @@ public class TeacherDTO {
         private String code;
         private String subject;
 
-        private TeacherStatus status; // Enum 객체 자체 (상태 비교용)
-        private String statusName; // "EMPLOYED", "LEAVE" 등
-        private String statusDesc; // "재직", "휴직" 등 (화면 표시용)
+        private String statusName;
 
         private String department;
         private String position;
@@ -65,11 +62,8 @@ public class TeacherDTO {
                 this.department = ti.getDepartment();
                 this.position = ti.getPosition();
 
-                // TeacherInfo 내부에 있는 status 정보 추출
-                this.status = ti.getStatus();
-                if (this.status != null) {
-                    this.statusName = this.status.name();
-                    this.statusDesc = this.status.getDescription(); // Enum에 있는 한글명 메서드
+                if (ti.getStatus() != null) {
+                    this.statusName = ti.getStatus().name();
                 }
             }
         }
