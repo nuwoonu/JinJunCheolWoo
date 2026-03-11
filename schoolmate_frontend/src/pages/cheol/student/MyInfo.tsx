@@ -123,7 +123,7 @@ export default function StudentMyInfo() {
     if (!user?.uid) return;
     setSaving(true);
     try {
-      await api.put(`/students/user/${user.uid}`, {
+      await api.put(`/students/${user.uid}`, {
         name: editForm.name || null,
         phone: editForm.phone || null,
         birthDate: editForm.birthDate || null,
@@ -142,7 +142,7 @@ export default function StudentMyInfo() {
 
   useEffect(() => {
     if (!user?.uid) return;
-    Promise.all([api.get(`/students/user/${user.uid}`), api.get("/dashboard/student")])
+    Promise.all([api.get(`/students/${user.uid}`), api.get("/dashboard/student")])
       .then(([studentRes, dashRes]) => {
         setStudent(studentRes.data);
         if (dashRes.data?.profileImageUrl) setProfileImageUrl(dashRes.data.profileImageUrl);

@@ -359,11 +359,11 @@ public class StudentService {
     // 승철님 작업물
     // [woo 수정] 기존 코드에서 User 생성 누락 + BaseInfo.code null → DB 제약 위반 에러 수정
     // 변경사항:
-    //   1. classroomId 없으면 grade+classNum으로 학급 조회 (담임 교사 폼 지원)
-    //   2. User 계정 생성 추가 (name/email/password/STUDENT role)
-    //   3. code 자동 생성 (년도+학년+반+번호)
-    //   4. user.addInfo(student)로 양방향 연관관계 설정
-    //   5. studentInfoRepository.save() → userRepository.save(user)로 변경 (cascade)
+    // 1. classroomId 없으면 grade+classNum으로 학급 조회 (담임 교사 폼 지원)
+    // 2. User 계정 생성 추가 (name/email/password/STUDENT role)
+    // 3. code 자동 생성 (년도+학년+반+번호)
+    // 4. user.addInfo(student)로 양방향 연관관계 설정
+    // 5. studentInfoRepository.save() → userRepository.save(user)로 변경 (cascade)
     @Transactional
     public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
         // 학번 중복 체크
@@ -375,10 +375,12 @@ public class StudentService {
         Classroom classroom;
         if (createDTO.getClassroomId() != null) {
             classroom = classroomRepository.findById(createDTO.getClassroomId())
-                    .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
         } else {
             int year = java.time.LocalDate.now().getYear();
-            classroom = classroomRepository.findByYearAndGradeAndClassNum(year, createDTO.getGrade(), createDTO.getClassNum())
+            classroom = classroomRepository
+                    .findByYearAndGradeAndClassNum(year, createDTO.getGrade(), createDTO.getClassNum())
                     .orElseThrow(() -> new IllegalArgumentException(
                             createDTO.getGrade() + "학년 " + createDTO.getClassNum() + "반 학급을 찾을 수 없습니다."));
         }
@@ -436,31 +438,6 @@ public class StudentService {
     public StudentResponseDTO getStudentByUserUid(Long userUid) {
         StudentInfo student = studentInfoRepository.findByUserUid(userUid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + userUid));
-        return convertToResponseDTO(student);
-    }
-
-    // user.uid(FK)로 학생 정보 수정 (로그인 학생 본인 수정용)
-    @Transactional
-    public StudentResponseDTO updateStudentByUserUid(Long userUid, StudentUpdateDTO updateDTO) {
-        StudentInfo student = studentInfoRepository.findByUserUid(userUid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + userUid));
-
-        if (updateDTO.getName() != null) {
-            student.getUser().setName(updateDTO.getName());
-        }
-        if (updateDTO.getBirthDate() != null) {
-            student.setBirthDate(updateDTO.getBirthDate());
-        }
-        if (updateDTO.getAddress() != null) {
-            student.setAddress(updateDTO.getAddress());
-        }
-        if (updateDTO.getPhone() != null) {
-            student.setPhone(updateDTO.getPhone());
-        }
-        if (updateDTO.getGender() != null) {
-            student.setGender(updateDTO.getGender());
-        }
-
         return convertToResponseDTO(student);
     }
 
