@@ -99,7 +99,7 @@ public class StudentResponseDTO {
             return ParentGuardianInfo.builder()
                     .id(relation.getParentInfo().getId())
                     .name(relation.getParentInfo().getParentName())
-                    .phone(relation.getParentInfo().getPhoneNumber())
+                    .phone(relation.getParentInfo().getPhone())
                     .email(relation.getParentInfo().getUser() != null
                             ? relation.getParentInfo().getUser().getEmail()
                             : null)

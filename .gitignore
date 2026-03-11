@@ -113,8 +113,7 @@ lerna-debug.log*
 .claude/settings.local.json
 schoolmate_backend/src/main/resources/application-oauth.properties
 schoolmate_backend/src/main/resources/application.properties
-.gitignore
-*.yml
-
+schoolmate_backend/src/main/resources/application-secret.properties
+schoolmate_backend/.vscode/tasks.json
 schoolmate_frontend/.vite/deps/package.json
 schoolmate_frontend/.vite/deps/_metadata.json

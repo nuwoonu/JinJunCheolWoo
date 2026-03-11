@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.domain.log.entity.ClassroomHistory;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 
 import lombok.AllArgsConstructor;
-import com.example.schoolmate.common.entity.log.ClassroomHistory;
 import com.opencsv.bean.CsvBindByName;
 import lombok.Builder;
 import lombok.Getter;

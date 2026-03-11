@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.schoolmate.common.entity.log.ClassroomHistory;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import com.example.schoolmate.common.dto.ClassDTO;
@@ -26,10 +25,12 @@ import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.repository.classroom.ClassroomHistoryRepository;
+
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.domain.log.entity.ClassroomHistory;
+import com.example.schoolmate.domain.log.repository.ClassroomHistoryRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
