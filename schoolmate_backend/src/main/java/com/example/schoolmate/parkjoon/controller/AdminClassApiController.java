@@ -137,6 +137,14 @@ public class AdminClassApiController {
         return ResponseEntity.ok(classService.getUnassignedTeachers(y));
     }
 
+    // 반 배정용 미배정 학생 검색
+    @GetMapping("/students/unassigned")
+    public ResponseEntity<List<ClassDTO.StudentSummary>> unassignedStudents(
+            @RequestParam int year,
+            @RequestParam(required = false) String keyword) {
+        return ResponseEntity.ok(classService.getUnassignedStudents(year, keyword));
+    }
+
     // 담임 배정 가능 교사 목록 (수정용)
     @GetMapping("/{cid}/teachers/available")
     public ResponseEntity<List<ClassDTO.TeacherSelectResponse>> availableTeachers(

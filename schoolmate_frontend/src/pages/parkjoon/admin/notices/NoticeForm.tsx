@@ -29,8 +29,8 @@ export default function NoticeForm() {
         await admin.put(`/notices/${id}`, form)
         navigate(`${BASE}/notices/${id}`)
       } else {
-        const r = await admin.post('/notices', form)
-        navigate(`${BASE}/notices/${r.data?.id ?? ''}`)
+        await admin.post('/notices', form)
+        navigate(`${BASE}/notices`)
       }
     } finally { setSaving(false) }
   }

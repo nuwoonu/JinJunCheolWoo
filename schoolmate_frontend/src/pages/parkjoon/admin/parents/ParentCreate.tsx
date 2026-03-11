@@ -7,11 +7,13 @@ const BASE = '/parkjoon/admin'
 
 export default function ParentCreate() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', code: '' })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await admin.post('/parents', form)
+    // code가 빈 문자열이면 null로 전송 (백엔드가 null일 때 중복 체크 생략)
+    const payload = { ...form, code: form.code || null }
+    await admin.post('/parents', payload)
     navigate(`${BASE}/parents`)
   }
 
@@ -29,10 +31,14 @@ export default function ParentCreate() {
               <input className="form-control" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="성함 입력" />
             </div>
             <div className="col-md-6">
+              <label className="form-label fw-bold">학부모 코드</label>
+              <input className="form-control" value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} placeholder="예: P2024001 (선택)" />
+            </div>
+            <div className="col-md-6">
               <label className="form-label fw-bold">연락처</label>
               <input className="form-control" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="010-0000-0000" />
             </div>
-            <div className="col-md-12">
+            <div className="col-md-6">
               <label className="form-label fw-bold">이메일 (ID)</label>
               <input type="email" className="form-control" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="example@school.com" />
             </div>
