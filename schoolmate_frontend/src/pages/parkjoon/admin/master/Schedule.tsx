@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
 
@@ -53,6 +53,8 @@ export default function Schedule() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState<any>({ ...EMPTY_FORM })
   const [editId, setEditId] = useState<number | null>(null)
+  const [importing, setImporting] = useState(false)
+  const csvRef = useRef<HTMLInputElement>(null)
 
   const load = (y = year, m = month) => {
     const start = new Date(y, m - 1, 1).toISOString()
@@ -103,15 +105,30 @@ export default function Schedule() {
     await admin.delete(`/schedule/${id}`); load()
   }
 
-  const downloadCsv = () => {
+  const exportCsv = () => {
     const rows = events.map((e: any) =>
       `${e.title},${e.eventType},${e.start?.split('T')[0]},${e.end?.split('T')[0]},${e.targetGrade ?? '전체'}`
     ).join('\n')
-    const blob = new Blob([`제목,유형,시작일,종료일,대상학년\n${rows}`], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob([`일정명,유형,시작일,종료일,대상학년\n${rows}`], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url; a.download = `학사일정_${year}년${month}월.csv`; a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const importCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    const fd = new FormData(); fd.append('file', file)
+    try {
+      await admin.post('/schedule/import-csv', fd)
+      alert('일정이 일괄 등록되었습니다.')
+      load()
+    } catch (err: any) {
+      alert(`등록 실패: ${err.response?.data ?? err.message}`)
+    } finally { setImporting(false) }
+    e.target.value = ''
   }
 
   const cells = buildCalendar(year, month)
@@ -185,12 +202,25 @@ export default function Schedule() {
         </div>
       )}
 
+      {importing && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.5)', zIndex: 9999 }}>
+          <div className="text-center">
+            <div className="spinner-border text-light" style={{ width: '3rem', height: '3rem' }} />
+            <h5 className="text-white mt-3">일정 데이터를 등록 중입니다...</h5>
+          </div>
+        </div>
+      )}
+      <input type="file" ref={csvRef} accept=".csv" style={{ display: 'none' }} onChange={importCsv} />
+
       {/* 헤더 */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">🗓️ 학사 일정 관리</h2>
         <div className="d-flex gap-2">
-          <button className="btn btn-outline-success" onClick={downloadCsv}>
-            <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
+          <button className="btn btn-outline-secondary" onClick={exportCsv}>
+            <i className="bi bi-file-earmark-arrow-down" /> CSV 내보내기
+          </button>
+          <button className="btn btn-outline-success" onClick={() => csvRef.current?.click()}>
+            <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
           </button>
           <button className="btn btn-primary" onClick={() => openCreate()}>
             <i className="bi bi-plus-lg" /> 일정 등록
