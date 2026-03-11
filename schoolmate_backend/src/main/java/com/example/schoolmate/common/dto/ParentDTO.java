@@ -3,7 +3,6 @@ package com.example.schoolmate.common.dto;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
-import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
@@ -104,7 +103,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
+            this.phone = entity.getPhone();
             this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.linked = entity.getUser() != null;
@@ -166,7 +165,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
+            this.phone = entity.getPhone();
             this.status = entity.getStatus().getDescription();
             this.statusName = entity.getStatus().name();
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";

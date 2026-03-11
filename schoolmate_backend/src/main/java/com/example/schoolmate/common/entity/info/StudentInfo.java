@@ -1,6 +1,5 @@
 package com.example.schoolmate.common.entity.info;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
-import com.example.schoolmate.common.entity.user.constant.Gender;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
@@ -42,17 +40,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(exclude = { "assignments", "familyRelations", "currentAssignment" })
 public class StudentInfo extends BaseInfo {
-    private LocalDate birthDate; // 생일
-
-    private String address; // 주소
-
-    private String addressDetail; // 상세주소
-
-    private String phone; // 연락처
-
-    @Enumerated(EnumType.STRING)
-    private Gender gender; // 성별
-
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "current_assignment_id")
     private StudentAssignment currentAssignment;
@@ -67,14 +54,6 @@ public class StudentInfo extends BaseInfo {
                 currentAssignment.getClassNum(),
                 currentAssignment.getAttendanceNum());
         // 예: "1-3-05" (1학년 3반 5번)
-    }
-
-    public void changeAddress(String address) {
-        this.address = address;
-    }
-
-    public void changePhone(String phone) {
-        this.phone = phone;
     }
 
     @Enumerated(EnumType.STRING)

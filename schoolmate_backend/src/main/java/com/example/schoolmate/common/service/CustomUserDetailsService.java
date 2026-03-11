@@ -90,7 +90,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 // ParentInfo가 있으면 학부모 정보 추가
                 ParentInfo parentInfo = user.getInfo(ParentInfo.class);
                 if (parentInfo != null) {
-                        dto.setPhoneNumber(parentInfo.getPhoneNumber());
+                        dto.setPhoneNumber(parentInfo.getPhone());
                 }
 
                 return dto;
