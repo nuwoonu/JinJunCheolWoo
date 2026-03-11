@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
+import { PARENT_STATUS, STATUS_DEFAULT } from "../../../../constants/statusConfig";
 
 const BASE = "/parkjoon/admin";
 
@@ -76,11 +77,6 @@ export default function ParentList() {
     e.target.value = "";
   };
 
-  const statusBadge = (s: string) =>
-    s === "ACTIVE"
-      ? "bg-success-subtle text-success border border-success-subtle"
-      : "bg-secondary-subtle text-secondary border border-secondary-subtle";
-
   return (
     <AdminLayout>
       {loading && (
@@ -118,32 +114,18 @@ export default function ParentList() {
               <i className="bi bi-pencil-square" /> 선택 상태 변경
             </button>
             <ul className={`dropdown-menu${showDropdown ? " show" : ""}`}>
-              <li>
-                <a
-                  className="dropdown-item"
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    bulkStatus("ACTIVE", "활성");
-                    setShowDropdown(false);
-                  }}
-                >
-                  활성
-                </a>
-              </li>
-              <li>
-                <a
-                  className="dropdown-item text-danger"
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    bulkStatus("INACTIVE", "비활성");
-                    setShowDropdown(false);
-                  }}
-                >
-                  비활성
-                </a>
-              </li>
+              {Object.entries(PARENT_STATUS).map(([value, { label }]) => (
+                <li key={value}>
+                  {value === "BLOCKED" && <hr className="dropdown-divider" />}
+                  <a
+                    className={`dropdown-item${value === "BLOCKED" ? " text-danger" : ""}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); bulkStatus(value, label); setShowDropdown(false); }}
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
           <button
@@ -173,8 +155,9 @@ export default function ParentList() {
                   onChange={(e) => setStatus(e.target.value)}
                 >
                   <option value="">전체 상태</option>
-                  <option value="ACTIVE">활성</option>
-                  <option value="INACTIVE">비활성</option>
+                  {Object.entries(PARENT_STATUS).map(([value, { label }]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
                 <select
                   className="form-select"
@@ -258,11 +241,7 @@ export default function ParentList() {
                       {p.childrenStrings?.length ?? 0}명
                     </span>
                   </td>
-                  <td>
-                    <span className={`badge ${statusBadge(p.statusName)}`}>
-                      {p.statusName === "ACTIVE" ? "활성" : "비활성"}
-                    </span>
-                  </td>
+                  <td>{(() => { const cfg = PARENT_STATUS[p.statusName] ?? STATUS_DEFAULT; return <span className={`badge ${cfg.badge}`}>{cfg.label}</span> })()}</td>
                   <td className="text-end pe-4">
                     <Link
                       to={`${BASE}/parents/${p.id}`}

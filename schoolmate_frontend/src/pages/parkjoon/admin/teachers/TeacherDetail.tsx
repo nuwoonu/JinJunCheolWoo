@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
+import { TEACHER_STATUS, STATUS_DEFAULT } from '../../../../constants/statusConfig'
 
 // [joon] 교사 상세
 
@@ -68,11 +69,6 @@ export default function TeacherDetail() {
 
   const roles: string[] = teacher.roles ?? []
 
-  const statusBtnClass = (s: string) =>
-    s === 'EMPLOYED' ? 'btn-success' : s === 'LEAVE' ? 'btn-warning' : 'btn-secondary'
-  const statusLabel = (s: string) =>
-    s === 'EMPLOYED' ? '재직' : s === 'LEAVE' ? '휴직' : '퇴직'
-
   return (
     <AdminLayout>
       <div className="mb-4">
@@ -96,9 +92,11 @@ export default function TeacherDetail() {
               </div>
               <h5 className="mb-1 fw-bold">{teacher.name}</h5>
               <p className="text-muted small mb-3">{teacher.email}</p>
-              <button type="button" className={`btn ${statusBtnClass(teacher.statusName)} w-100 rounded-pill mb-3`} style={{ pointerEvents: 'none' }}>
-                {statusLabel(teacher.statusName)}
-              </button>
+              {(() => { const cfg = TEACHER_STATUS[teacher.statusName] ?? STATUS_DEFAULT; return (
+                <button type="button" className={`btn ${cfg.btn} w-100 rounded-pill mb-3`} style={{ pointerEvents: 'none' }}>
+                  {cfg.label}
+                </button>
+              ) })()}
               <hr />
               <div className="text-start px-2">
                 <div className="mb-2">
@@ -154,9 +152,9 @@ export default function TeacherDetail() {
                     <div className="col-md-12">
                       <label className="form-label fw-bold">재직 상태</label>
                       <select className="form-select" value={form.statusName} onChange={e => setForm(f => ({ ...f, statusName: e.target.value }))}>
-                        <option value="EMPLOYED">재직</option>
-                        <option value="LEAVE">휴직</option>
-                        <option value="RETIRED">퇴직</option>
+                        {Object.entries(TEACHER_STATUS).map(([value, { label }]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="col-md-12">

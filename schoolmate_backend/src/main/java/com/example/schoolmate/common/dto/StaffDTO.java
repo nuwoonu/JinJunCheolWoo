@@ -102,9 +102,7 @@ public class StaffDTO {
         private String email;
         private String code;
 
-        private StaffStatus status;
         private String statusName;
-        private String statusDesc;
 
         private String department;
         private String jobTitle;
@@ -112,7 +110,6 @@ public class StaffDTO {
         private String extensionNumber;
 
         private EmploymentType employmentType;
-        private String employmentTypeDesc;
         private LocalDate contractEndDate;
 
         @Builder.Default
@@ -133,14 +130,10 @@ public class StaffDTO {
                 this.workLocation = info.getWorkLocation();
                 this.extensionNumber = info.getExtensionNumber();
                 this.employmentType = info.getEmploymentType();
-                this.employmentTypeDesc = info.getEmploymentType() != null ? info.getEmploymentType().getDescription()
-                        : "-";
                 this.contractEndDate = info.getContractEndDate();
 
-                this.status = info.getStatus();
-                if (this.status != null) {
-                    this.statusName = this.status.name();
-                    this.statusDesc = this.status.getDescription();
+                if (info.getStatus() != null) {
+                    this.statusName = info.getStatus().name();
                 }
             }
         }
