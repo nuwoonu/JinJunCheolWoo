@@ -38,11 +38,19 @@ public class StudentRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 학생 정보 조회 (UID)
-    // GET /api/students/{uid}
+    // 학생 정보 조회 (student_info PK)
+    // GET /api/students/{id}
     @GetMapping("/{id}")
     public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
         StudentResponseDTO response = studentService.getStudentByUid(id);
+        return ResponseEntity.ok(response);
+    }
+
+    // 학생 정보 조회 (user.uid 기준 - 로그인 학생 본인 조회용)
+    // GET /api/students/user/{userUid}
+    @GetMapping("/user/{userUid}")
+    public ResponseEntity<StudentResponseDTO> getStudentByUserUid(@PathVariable Long userUid) {
+        StudentResponseDTO response = studentService.getStudentByUserUid(userUid);
         return ResponseEntity.ok(response);
     }
 
@@ -89,13 +97,23 @@ public class StudentRestController {
         return ResponseEntity.ok(students);
     }
 
-    // 학생 정보 수정
+    // 학생 정보 수정 (student_info PK 기준)
     // PUT /api/students/{uid}
     @PutMapping("/{uid}")
     public ResponseEntity<StudentResponseDTO> updateStudent(
             @PathVariable Long uid,
             @Validated @RequestBody StudentUpdateDTO updateDTO) {
         StudentResponseDTO response = studentService.updateStudent(uid, updateDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    // 학생 정보 수정 (user.uid 기준 - 로그인 학생 본인 수정용)
+    // PUT /api/students/user/{userUid}
+    @PutMapping("/user/{userUid}")
+    public ResponseEntity<StudentResponseDTO> updateStudentByUserUid(
+            @PathVariable Long userUid,
+            @RequestBody StudentUpdateDTO updateDTO) {
+        StudentResponseDTO response = studentService.updateStudentByUserUid(userUid, updateDTO);
         return ResponseEntity.ok(response);
     }
 

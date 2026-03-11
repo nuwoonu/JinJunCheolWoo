@@ -1,84 +1,89 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import api from '../../../api/auth'
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../../../api/auth";
+import { useAuth } from "../../../contexts/AuthContext";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 // [cheol] /student/myinfo - 학생 본인 정보 (student/student-details.html 구조 그대로)
 
 const STATUS_LABEL: Record<string, string> = {
-  PENDING: '승인대기', ENROLLED: '재학', LEAVE_OF_ABSENCE: '휴학',
-  DROPOUT: '자퇴', EXPELLED: '제적', GRADUATED: '졸업', TRANSFERRED: '전학',
-}
+  PENDING: "승인대기",
+  ENROLLED: "재학",
+  LEAVE_OF_ABSENCE: "휴학",
+  DROPOUT: "자퇴",
+  EXPELLED: "제적",
+  GRADUATED: "졸업",
+  TRANSFERRED: "전학",
+};
 const STATUS_COLOR: Record<string, string> = {
-  ENROLLED: 'bg-success-100 text-success-600',
-  LEAVE_OF_ABSENCE: 'bg-warning-100 text-warning-600',
-  DROPOUT: 'bg-danger-100 text-danger-600',
-  EXPELLED: 'bg-danger-100 text-danger-600',
-  GRADUATED: 'bg-primary-100 text-primary-600',
-  TRANSFERRED: 'bg-info-100 text-info-600',
-  PENDING: 'bg-neutral-100 text-secondary-light',
-}
-const GENDER_LABEL: Record<string, string> = { MALE: '남성', FEMALE: '여성' }
+  ENROLLED: "bg-success-100 text-success-600",
+  LEAVE_OF_ABSENCE: "bg-warning-100 text-warning-600",
+  DROPOUT: "bg-danger-100 text-danger-600",
+  EXPELLED: "bg-danger-100 text-danger-600",
+  GRADUATED: "bg-primary-100 text-primary-600",
+  TRANSFERRED: "bg-info-100 text-info-600",
+  PENDING: "bg-neutral-100 text-secondary-light",
+};
+const GENDER_LABEL: Record<string, string> = { MALE: "남성", FEMALE: "여성" };
 
 const TABS = [
-  { key: 'details', icon: 'ri-group-line', label: 'Student Details' },
-  { key: 'attendance', icon: 'ri-calendar-check-line', label: 'Attendance' },
-  { key: 'awards', icon: 'ri-trophy-line', label: '수상경력' },
-  { key: 'fees', icon: 'ri-money-dollar-box-line', label: 'Fees' },
-  { key: 'grades', icon: 'ri-file-edit-line', label: '성적' },
-  { key: 'library', icon: 'ri-book-line', label: 'Library' },
-]
+  { key: "details", icon: "ri-group-line", label: "Student Details" },
+  { key: "attendance", icon: "ri-calendar-check-line", label: "Attendance" },
+  { key: "awards", icon: "ri-trophy-line", label: "수상경력" },
+  { key: "fees", icon: "ri-money-dollar-box-line", label: "Fees" },
+  { key: "grades", icon: "ri-file-edit-line", label: "성적" },
+  { key: "library", icon: "ri-book-line", label: "Library" },
+];
 
 interface Guardian {
-  id: number
-  name: string
-  phone?: string
-  email?: string
-  relationship?: string
-  representative: boolean
+  id: number;
+  name: string;
+  phone?: string;
+  email?: string;
+  relationship?: string;
+  representative: boolean;
 }
 
 interface Award {
-  id: number
-  name: string
-  achievementsGrade?: string
-  day?: string
-  organization?: string
+  id: number;
+  name: string;
+  achievementsGrade?: string;
+  day?: string;
+  organization?: string;
 }
 
 interface StudentInfo {
-  id: number
-  studentNumber?: number
-  fullStudentNumber?: string
-  studentCode?: string
-  year: number
-  classNum?: number
-  birthDate?: string
-  address?: string
-  addressDetail?: string
-  phone?: string
-  gender?: string
-  status?: string
-  basicHabits?: string
-  specialNotes?: string
-  bloodGroup?: string
-  height?: number
-  weight?: number
-  userUid?: number
-  userName?: string
-  userEmail?: string
-  guardians?: Guardian[]
-  awards?: Award[]
+  id: number;
+  studentNumber?: number;
+  fullStudentNumber?: string;
+  studentCode?: string;
+  year: number;
+  classNum?: number;
+  birthDate?: string;
+  address?: string;
+  addressDetail?: string;
+  phone?: string;
+  gender?: string;
+  status?: string;
+  basicHabits?: string;
+  specialNotes?: string;
+  bloodGroup?: string;
+  height?: number;
+  weight?: number;
+  userUid?: number;
+  userName?: string;
+  userEmail?: string;
+  guardians?: Guardian[];
+  awards?: Award[];
 }
 
 function InfoRow({ label, value }: { label: string; value?: string | number | null }) {
   return (
     <div className="d-flex gap-4">
       <span className="fw-semibold text-sm text-primary-light w-110-px">{label}</span>
-      <span className="fw-normal text-sm text-secondary-light">: {value ?? '-'}</span>
+      <span className="fw-normal text-sm text-secondary-light">: {value ?? "-"}</span>
     </div>
-  )
+  );
 }
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -87,76 +92,71 @@ function SectionCard({ title, children }: { title: string; children: React.React
       <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
         <h6 className="text-lg fw-semibold mb-0">{title}</h6>
       </div>
-      <div className="card-body p-0">
-        {children}
-      </div>
+      <div className="card-body p-0">{children}</div>
     </div>
-  )
+  );
 }
 
 export default function StudentMyInfo() {
-  const { user } = useAuth()
-  const [student, setStudent] = useState<StudentInfo | null>(null)
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('details')
-  const [isEditing, setIsEditing] = useState(false)
-  const [editForm, setEditForm] = useState({ name: '', phone: '', birthDate: '', address: '', gender: '' })
-  const [saving, setSaving] = useState(false)
+  const { user } = useAuth();
+  const [student, setStudent] = useState<StudentInfo | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("details");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", phone: "", birthDate: "", address: "", gender: "" });
+  const [saving, setSaving] = useState(false);
 
   const startEdit = () => {
-    if (!student) return
+    if (!student) return;
     setEditForm({
-      name: student.userName ?? '',
-      phone: student.phone ?? '',
-      birthDate: student.birthDate?.slice(0, 10) ?? '',
-      address: student.address ?? '',
-      gender: student.gender ?? '',
-    })
-    setIsEditing(true)
-  }
+      name: student.userName ?? "",
+      phone: student.phone ?? "",
+      birthDate: student.birthDate?.slice(0, 10) ?? "",
+      address: student.address ?? "",
+      gender: student.gender ?? "",
+    });
+    setIsEditing(true);
+  };
 
   const saveEdit = async () => {
-    if (!user?.uid) return
-    setSaving(true)
+    if (!user?.uid) return;
+    setSaving(true);
     try {
-      await api.put(`/students/${user.uid}`, {
+      await api.put(`/students/user/${user.uid}`, {
         name: editForm.name || null,
         phone: editForm.phone || null,
         birthDate: editForm.birthDate || null,
         address: editForm.address || null,
         gender: editForm.gender || null,
-      })
-      const res = await api.get(`/students/${user.uid}`)
-      setStudent(res.data)
-      setIsEditing(false)
+      });
+      const res = await api.get(`/students/${user.uid}`);
+      setStudent(res.data);
+      setIsEditing(false);
     } catch {
-      alert('저장에 실패했습니다.')
+      alert("저장에 실패했습니다.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   useEffect(() => {
-    if (!user?.uid) return
-    Promise.all([
-      api.get(`/students/${user.uid}`),
-      api.get('/dashboard/student'),
-    ])
+    if (!user?.uid) return;
+    Promise.all([api.get(`/students/user/${user.uid}`), api.get("/dashboard/student")])
       .then(([studentRes, dashRes]) => {
-        setStudent(studentRes.data)
-        if (dashRes.data?.profileImageUrl) setProfileImageUrl(dashRes.data.profileImageUrl)
+        setStudent(studentRes.data);
+        if (dashRes.data?.profileImageUrl) setProfileImageUrl(dashRes.data.profileImageUrl);
       })
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [user?.uid])
+      .finally(() => setLoading(false));
+  }, [user?.uid]);
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className="text-center py-80 text-secondary-light">불러오는 중...</div>
       </DashboardLayout>
-    )
+    );
   }
 
   if (!student) {
@@ -167,11 +167,13 @@ export default function StudentMyInfo() {
           <h5 className="text-secondary-light">학생 정보를 불러올 수 없습니다.</h5>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
-  const statusLabel = student.status ? (STATUS_LABEL[student.status] ?? student.status) : '재학'
-  const statusClass = student.status ? (STATUS_COLOR[student.status] ?? 'bg-neutral-100 text-secondary-light') : 'bg-success-100 text-success-600'
+  const statusLabel = student.status ? (STATUS_LABEL[student.status] ?? student.status) : "재학";
+  const statusClass = student.status
+    ? (STATUS_COLOR[student.status] ?? "bg-neutral-100 text-secondary-light")
+    : "bg-success-100 text-success-600";
 
   return (
     <DashboardLayout>
@@ -180,7 +182,9 @@ export default function StudentMyInfo() {
         <div>
           <h1 className="fw-semibold mb-4 h6 text-primary-light">Student Details</h1>
           <div>
-            <Link to="/student/dashboard" className="text-secondary-light hover-text-primary hover-underline">Dashboard </Link>
+            <Link to="/student/dashboard" className="text-secondary-light hover-text-primary hover-underline">
+              Dashboard{" "}
+            </Link>
             <span className="text-secondary-light"> / Student</span>
             <span className="text-secondary-light"> / Student Details</span>
           </div>
@@ -191,7 +195,6 @@ export default function StudentMyInfo() {
       <div className="card h-100 mb-16">
         <div className="card-body p-24">
           <div className="d-flex gap-32 flex-md-row flex-column">
-
             {/* 왼쪽: 아바타 + 이름 + 학번 + 버튼 */}
             <div className="max-w-300-px w-100 text-center">
               <figure className="mb-24 w-120-px h-120-px mx-auto rounded-circle overflow-hidden bg-neutral-100 d-flex align-items-center justify-content-center">
@@ -203,12 +206,15 @@ export default function StudentMyInfo() {
                   </span>
                 )}
               </figure>
-              <h2 className="h6 text-primary-light mb-16 fw-semibold">{student.userName ?? '-'}</h2>
+              <h2 className="h6 text-primary-light mb-16 fw-semibold">{student.userName ?? "-"}</h2>
               <p className="mb-0">
-                학번: <span className="text-primary-600 fw-semibold">{student.studentCode ?? student.fullStudentNumber ?? '-'}</span>
+                학번:{" "}
+                <span className="text-primary-600 fw-semibold">
+                  {student.studentCode ?? student.fullStudentNumber ?? "-"}
+                </span>
               </p>
               <p className="mb-0">
-                번 번호: <span className="text-primary-light fw-semibold">{student.studentNumber ?? '-'}</span>
+                번 번호: <span className="text-primary-light fw-semibold">{student.studentNumber ?? "-"}</span>
               </p>
               <div className="mt-32 d-flex gap-16 w-100">
                 {!isEditing ? (
@@ -217,7 +223,9 @@ export default function StudentMyInfo() {
                     className="btn btn-primary-600 border fw-medium border-primary-600 text-md d-flex justify-content-center align-items-center gap-8 flex-grow-1 px-12 py-8 radius-8"
                     onClick={startEdit}
                   >
-                    <span className="d-flex text-lg"><i className="ri-edit-line" /></span>
+                    <span className="d-flex text-lg">
+                      <i className="ri-edit-line" />
+                    </span>
                     수정
                   </button>
                 ) : (
@@ -228,8 +236,10 @@ export default function StudentMyInfo() {
                       onClick={saveEdit}
                       disabled={saving}
                     >
-                      <span className="d-flex text-lg"><i className="ri-save-line" /></span>
-                      {saving ? '저장 중...' : '저장'}
+                      <span className="d-flex text-lg">
+                        <i className="ri-save-line" />
+                      </span>
+                      {saving ? "저장 중..." : "저장"}
                     </button>
                     <button
                       type="button"
@@ -260,7 +270,10 @@ export default function StudentMyInfo() {
                   <InfoRow label="학번" value={student.fullStudentNumber ?? student.studentCode} />
                   <InfoRow label="학년" value={student.year ? `${student.year}학년` : undefined} />
                   <InfoRow label="반" value={student.classNum ? `${student.classNum}반` : undefined} />
-                  <InfoRow label="성별" value={student.gender ? (GENDER_LABEL[student.gender] ?? student.gender) : undefined} />
+                  <InfoRow
+                    label="성별"
+                    value={student.gender ? (GENDER_LABEL[student.gender] ?? student.gender) : undefined}
+                  />
                   <InfoRow label="생년월일" value={student.birthDate?.slice(0, 10)} />
                   <InfoRow label="주소" value={student.address} />
                   <InfoRow label="연락처" value={student.phone} />
@@ -279,7 +292,7 @@ export default function StudentMyInfo() {
                     <input
                       className="form-control form-control-sm"
                       value={editForm.name}
-                      onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                      onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                     />
                   </div>
                   <div className="d-flex align-items-center gap-4">
@@ -287,7 +300,7 @@ export default function StudentMyInfo() {
                     <select
                       className="form-select form-select-sm"
                       value={editForm.gender}
-                      onChange={e => setEditForm(f => ({ ...f, gender: e.target.value }))}
+                      onChange={(e) => setEditForm((f) => ({ ...f, gender: e.target.value }))}
                     >
                       <option value="">선택</option>
                       <option value="MALE">남성</option>
@@ -300,7 +313,7 @@ export default function StudentMyInfo() {
                       type="date"
                       className="form-control form-control-sm"
                       value={editForm.birthDate}
-                      onChange={e => setEditForm(f => ({ ...f, birthDate: e.target.value }))}
+                      onChange={(e) => setEditForm((f) => ({ ...f, birthDate: e.target.value }))}
                     />
                   </div>
                   <div className="d-flex align-items-center gap-4">
@@ -308,7 +321,7 @@ export default function StudentMyInfo() {
                     <input
                       className="form-control form-control-sm"
                       value={editForm.address}
-                      onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))}
+                      onChange={(e) => setEditForm((f) => ({ ...f, address: e.target.value }))}
                     />
                   </div>
                   <div className="d-flex align-items-center gap-4">
@@ -316,7 +329,7 @@ export default function StudentMyInfo() {
                     <input
                       className="form-control form-control-sm"
                       value={editForm.phone}
-                      onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
+                      onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -329,10 +342,10 @@ export default function StudentMyInfo() {
       {/* 탭 */}
       <div className="my-16">
         <ul className="nav nav-pills bordered-tab mb-3" role="tablist">
-          {TABS.map(tab => (
+          {TABS.map((tab) => (
             <li key={tab.key} className="nav-item" role="presentation">
               <button
-                className={`nav-link d-flex align-items-center gap-8 text-secondary-light fw-medium text-sm text-hover-primary-600 text-capitalize bg-transparent px-20 py-12${activeTab === tab.key ? ' active' : ''}`}
+                className={`nav-link d-flex align-items-center gap-8 text-secondary-light fw-medium text-sm text-hover-primary-600 text-capitalize bg-transparent px-20 py-12${activeTab === tab.key ? " active" : ""}`}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
               >
@@ -346,11 +359,9 @@ export default function StudentMyInfo() {
         </ul>
 
         <div className="tab-content">
-
           {/* Student Details 탭 */}
-          {activeTab === 'details' && (
+          {activeTab === "details" && (
             <div className="row gy-4">
-
               {/* 보호자 정보 (col-12) */}
               <div className="col-12">
                 <SectionCard title="보호자 정보">
@@ -366,9 +377,11 @@ export default function StudentMyInfo() {
                               <div>
                                 <h6 className="text-md mb-2 fw-medium flex-grow-1">{g.name}</h6>
                                 <span>
-                                  {g.relationship ?? '-'}
+                                  {g.relationship ?? "-"}
                                   {g.representative && (
-                                    <span className="ms-6 badge bg-primary-100 text-primary-600 text-xs px-6 py-2 radius-4">주보호자</span>
+                                    <span className="ms-6 badge bg-primary-100 text-primary-600 text-xs px-6 py-2 radius-4">
+                                      주보호자
+                                    </span>
                                   )}
                                 </span>
                               </div>
@@ -376,11 +389,11 @@ export default function StudentMyInfo() {
                           </div>
                           <div className="col-sm-4">
                             <h6 className="text-md mb-2 fw-medium">연락처</h6>
-                            <span>{g.phone ?? '-'}</span>
+                            <span>{g.phone ?? "-"}</span>
                           </div>
                           <div className="col-sm-4">
                             <h6 className="text-md mb-2 fw-medium">이메일</h6>
-                            <span>{g.email ?? '-'}</span>
+                            <span>{g.email ?? "-"}</span>
                           </div>
                         </div>
                       </div>
@@ -416,11 +429,11 @@ export default function StudentMyInfo() {
                     <div className="row gy-4">
                       <div className="col-sm-12">
                         <h6 className="text-md mb-2 fw-medium">현재 주소</h6>
-                        <span className="text-secondary-light">{student.address ?? '-'}</span>
+                        <span className="text-secondary-light">{student.address ?? "-"}</span>
                       </div>
                       <div className="col-sm-12">
                         <h6 className="text-md mb-2 fw-medium">현주소</h6>
-                        <span className="text-secondary-light">{student.addressDetail ?? '-'}</span>
+                        <span className="text-secondary-light">{student.addressDetail ?? "-"}</span>
                       </div>
                     </div>
                   </div>
@@ -456,15 +469,15 @@ export default function StudentMyInfo() {
                     <div className="row gy-4">
                       <div className="col-sm-4">
                         <h6 className="text-md mb-2 fw-medium">혈액형</h6>
-                        <span className="text-secondary-light">{student.bloodGroup ?? '-'}</span>
+                        <span className="text-secondary-light">{student.bloodGroup ?? "-"}</span>
                       </div>
                       <div className="col-sm-4">
                         <h6 className="text-md mb-2 fw-medium">신장(cm)</h6>
-                        <span className="text-secondary-light">{student.height ?? '-'}</span>
+                        <span className="text-secondary-light">{student.height ?? "-"}</span>
                       </div>
                       <div className="col-sm-4">
                         <h6 className="text-md mb-2 fw-medium">체중(kg)</h6>
-                        <span className="text-secondary-light">{student.weight ?? '-'}</span>
+                        <span className="text-secondary-light">{student.weight ?? "-"}</span>
                       </div>
                     </div>
                   </div>
@@ -508,25 +521,24 @@ export default function StudentMyInfo() {
                   <div className="p-20">
                     <div className="mb-16">
                       <h6 className="text-md mb-2 fw-medium">기초 생활 기록</h6>
-                      <p className="text-secondary-light mb-0" style={{ whiteSpace: 'pre-wrap' }}>
-                        {student.basicHabits ?? '-'}
+                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                        {student.basicHabits ?? "-"}
                       </p>
                     </div>
                     <div>
                       <h6 className="text-md mb-2 fw-medium">특이사항</h6>
-                      <p className="text-secondary-light mb-0" style={{ whiteSpace: 'pre-wrap' }}>
-                        {student.specialNotes ?? '-'}
+                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                        {student.specialNotes ?? "-"}
                       </p>
                     </div>
                   </div>
                 </SectionCard>
               </div>
-
             </div>
           )}
 
           {/* 수상경력 탭 */}
-          {activeTab === 'awards' && (
+          {activeTab === "awards" && (
             <div className="shadow-1 radius-12 bg-base overflow-hidden">
               <div className="card-header border-bottom bg-base py-16 px-24">
                 <h6 className="text-lg fw-semibold mb-0">수상 이력</h6>
@@ -537,16 +549,19 @@ export default function StudentMyInfo() {
                     <table className="table bordered-table mb-0">
                       <thead>
                         <tr>
-                          <th>수상명</th><th>수상일</th><th>수상 기관</th><th>등급</th>
+                          <th>수상명</th>
+                          <th>수상일</th>
+                          <th>수상 기관</th>
+                          <th>등급</th>
                         </tr>
                       </thead>
                       <tbody>
                         {student.awards.map((a, i) => (
                           <tr key={a.id ?? i}>
                             <td className="fw-medium">{a.name}</td>
-                            <td className="text-secondary-light">{a.day?.slice(0, 10) ?? '-'}</td>
-                            <td className="text-secondary-light">{a.organization ?? '-'}</td>
-                            <td className="text-secondary-light">{a.achievementsGrade ?? '-'}</td>
+                            <td className="text-secondary-light">{a.day?.slice(0, 10) ?? "-"}</td>
+                            <td className="text-secondary-light">{a.organization ?? "-"}</td>
+                            <td className="text-secondary-light">{a.achievementsGrade ?? "-"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -560,15 +575,14 @@ export default function StudentMyInfo() {
           )}
 
           {/* 나머지 탭 - 준비 중 */}
-          {['attendance', 'fees', 'grades', 'library'].includes(activeTab) && (
+          {["attendance", "fees", "grades", "library"].includes(activeTab) && (
             <div className="shadow-1 radius-12 bg-base p-40 text-center text-secondary-light">
               <i className="ri-tools-line text-3xl mb-12 d-block" />
               준비 중입니다.
             </div>
           )}
-
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }

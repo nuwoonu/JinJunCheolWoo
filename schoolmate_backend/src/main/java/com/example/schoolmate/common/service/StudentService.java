@@ -439,6 +439,31 @@ public class StudentService {
         return convertToResponseDTO(student);
     }
 
+    // user.uid(FK)로 학생 정보 수정 (로그인 학생 본인 수정용)
+    @Transactional
+    public StudentResponseDTO updateStudentByUserUid(Long userUid, StudentUpdateDTO updateDTO) {
+        StudentInfo student = studentInfoRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + userUid));
+
+        if (updateDTO.getName() != null) {
+            student.getUser().setName(updateDTO.getName());
+        }
+        if (updateDTO.getBirthDate() != null) {
+            student.setBirthDate(updateDTO.getBirthDate());
+        }
+        if (updateDTO.getAddress() != null) {
+            student.setAddress(updateDTO.getAddress());
+        }
+        if (updateDTO.getPhone() != null) {
+            student.setPhone(updateDTO.getPhone());
+        }
+        if (updateDTO.getGender() != null) {
+            student.setGender(updateDTO.getGender());
+        }
+
+        return convertToResponseDTO(student);
+    }
+
     // 승철님 작업물
     @Transactional(readOnly = true)
     public StudentResponseDTO getStudentByStudentNumber(Integer studentNumber) {
