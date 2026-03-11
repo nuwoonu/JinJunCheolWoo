@@ -1,6 +1,3 @@
-# File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
-# Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,macos,windows
-
 ### macOS ###
 .DS_Store
 .AppleDouble
@@ -21,17 +18,6 @@ Temporary Items
 .apdisk
 *.icloud
 
-### VisualStudioCode ###
-.vscode/*
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
-.history/
-*.vsix
-.history
-.ionide
-
 ### Windows ###
 Thumbs.db
 Thumbs.db:encryptable
@@ -47,14 +33,40 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
+### Editor - VSCode ###
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+*.vsix
+.ionide
+
+### Editor - IntelliJ IDEA ###
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+### Editor - Eclipse ###
+.classpath
+.project
+.settings/
+
+### Editor - 기타 ###
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
 ### Java ###
 *.class
 *.jar
 *.war
 *.ear
-*.zip
-*.tar.gz
-*.rar
 hs_err_pid*
 
 ### Gradle ###
@@ -64,18 +76,8 @@ build/
 !gradle-wrapper.properties
 .gradletasknamecache
 
-### IntelliJ IDEA ###
-.idea/
-*.iml
-*.iws
-*.ipr
-out/
-
-### Eclipse ###
-.classpath
-.project
-.settings/
-bin/
+### Eclipse bin (백엔드) ###
+schoolmate_backend/bin/
 
 ### Spring Boot - 보안 파일 ###
 src/main/resources/application.properties
@@ -88,20 +90,24 @@ application-local.properties
 src/main/generated/
 
 ### Node.js / React ###
-react_front/node_modules/
 node_modules/
 dist/
+dist-ssr/
+*.local
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-### Claude AI ###
-.claude/settings.local.json
-
 ### Logs ###
 logs/
 *.log
-.vscode/tasks.json
-.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+### Claude AI ###
+.claude/settings.local.json

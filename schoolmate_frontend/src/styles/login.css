@@ -1,0 +1,291 @@
+/* [woo] 로그인 페이지 전용 스타일 - 글로벌 리셋 제거, .login-container 하위로 스코프 */
+
+.login-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.login-left {
+  width: 30%;
+  max-width: 30%;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.login-left img {
+  max-width: 320px;
+  width: 100%;
+  height: auto;
+}
+
+.login-right {
+  width: 70%;
+  max-width: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-form-wrapper .form-group {
+  margin-bottom: 16px;
+}
+
+.login-form-wrapper .form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
+}
+
+.login-form-wrapper .form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #1a1a2e;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+.login-form-wrapper .form-input:focus {
+  outline: none;
+  border-color: #25a194;
+  box-shadow: 0 0 0 3px rgba(37, 161, 148, 0.1);
+}
+
+.login-form-wrapper .form-input::placeholder {
+  color: #a0aec0;
+}
+
+.login-form-wrapper .password-wrapper {
+  position: relative;
+}
+
+.login-form-wrapper .password-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.25rem;
+  border-radius: 0;
+}
+
+.login-form-wrapper .password-toggle:hover {
+  color: #4a5568;
+  border-color: transparent;
+}
+
+.login-form-wrapper .form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0 24px;
+  font-size: 0.875rem;
+}
+
+.login-form-wrapper .form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+}
+
+.login-form-wrapper .form-check-input {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.login-form-wrapper .form-check-input:checked {
+  background-color: #25a194;
+  border-color: #25a194;
+}
+
+.login-form-wrapper .form-check-label {
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.login-form-wrapper .forgot-link {
+  color: #25a194;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-form-wrapper .forgot-link:hover {
+  text-decoration: underline;
+}
+
+.login-form-wrapper .btn-login {
+  width: 100%;
+  padding: 16px 24px;
+  background-color: #25a194;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.login-form-wrapper .btn-login:hover {
+  background-color: #1e8a7e;
+  border-color: transparent;
+}
+
+.login-form-wrapper .divider {
+  display: flex;
+  align-items: center;
+  margin: 28px 0;
+  color: #a0aec0;
+  font-size: 0.875rem;
+}
+
+.login-form-wrapper .divider::before,
+.login-form-wrapper .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #e2e8f0;
+}
+
+.login-form-wrapper .divider span {
+  padding: 0 20px;
+}
+
+.login-form-wrapper .social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-form-wrapper .btn-social {
+  width: 100%;
+  padding: 14px 24px;
+  background-color: #ffffff;
+  color: #1a1a2e;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.login-form-wrapper .btn-social:hover {
+  background-color: #f7fafc;
+  border-color: #cbd5e0;
+  color: #1a1a2e;
+}
+
+.login-form-wrapper .btn-kakao {
+  background-color: #fee500;
+  border-color: #fee500;
+  color: #000000;
+}
+
+.login-form-wrapper .btn-kakao:hover {
+  background-color: #e6cf00;
+  border-color: #e6cf00;
+  color: #000000;
+}
+
+.login-form-wrapper .register-link {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 0.9375rem;
+  color: #4a5568;
+}
+
+.login-form-wrapper .register-link a {
+  color: #25a194;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-form-wrapper .register-link a:hover {
+  text-decoration: underline;
+}
+
+.login-form-wrapper .error-message {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 모바일 */
+@media (max-width: 991px) {
+  .login-left {
+    display: none;
+  }
+
+  .login-right {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px;
+  }
+
+  .login-form-wrapper {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .login-title {
+    text-align: center;
+  }
+
+  .mobile-logo {
+    display: block;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .mobile-logo img {
+    max-width: 160px;
+    height: auto;
+  }
+}
+
+@media (min-width: 992px) {
+  .mobile-logo {
+    display: none;
+  }
+}

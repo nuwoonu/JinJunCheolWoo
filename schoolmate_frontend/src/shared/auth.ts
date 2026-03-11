@@ -1,0 +1,23 @@
+// [woo] JWT 토큰 관리 유틸리티
+const ACCESS_TOKEN_KEY = 'accessToken'
+const REFRESH_TOKEN_KEY = 'refreshToken'
+
+export const auth = {
+  getAccessToken: (): string | null => localStorage.getItem(ACCESS_TOKEN_KEY),
+  getRefreshToken: (): string | null => localStorage.getItem(REFRESH_TOKEN_KEY),
+
+  setTokens: (accessToken: string, refreshToken: string): void => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    // [woo] 브라우저 페이지 이동 시 JwtAuthFilter가 읽을 수 있도록 쿠키에도 저장
+    document.cookie = `accessToken=${accessToken}; path=/; SameSite=Strict`
+  },
+
+  clearTokens: (): void => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
+    document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+  },
+
+  isLoggedIn: (): boolean => !!localStorage.getItem(ACCESS_TOKEN_KEY),
+}
