@@ -84,7 +84,7 @@ public class ParentService {
         ParentInfo info = new ParentInfo();
         info.setCode(request.getCode());
         info.setParentName(request.getName());
-        info.setPhoneNumber(request.getPhone());
+        info.setPhone(request.getPhone());
         info.setStatus(ParentStatus.ACTIVE);
         info.setUser(user);
 
@@ -196,7 +196,7 @@ public class ParentService {
         }
 
         info.setParentName(request.getName());
-        info.setPhoneNumber(request.getPhone());
+        info.setPhone(request.getPhone());
 
         if (request.getStatusName() != null) {
             info.setStatus(ParentStatus.valueOf(request.getStatusName()));

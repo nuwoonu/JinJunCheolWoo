@@ -1,6 +1,7 @@
 package com.example.schoolmate.common.entity.info;
 
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,7 +26,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FamilyRelation {
+public class FamilyRelation extends SchoolBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
