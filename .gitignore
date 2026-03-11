@@ -111,3 +111,5 @@ lerna-debug.log*
 
 ### Claude AI ###
 .claude/settings.local.json
+schoolmate_backend/src/main/resources/application-oauth.properties
+
