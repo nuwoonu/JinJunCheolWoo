@@ -9,7 +9,9 @@ import com.example.schoolmate.domain.log.entity.AccessLog;
 import com.example.schoolmate.domain.log.service.LogService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +44,6 @@ public class AuthApiController {
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
      */
     @PostMapping("/register")
-    @Transactional
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         String name = body.get("name");
         String email = body.get("email");
@@ -72,8 +73,8 @@ public class AuthApiController {
             return ResponseEntity.ok(result);
 
         } catch (IllegalStateException e) {
-            // 이메일 중복
-            return ResponseEntity.status(409).body(Map.of("message", e.getMessage()));
+            // [woo] 이메일 중복 - @Transactional 제거 후 IllegalStateException 정상 전파되도록 수정
+            return ResponseEntity.status(409).body(Map.of("message", "중복된 이메일입니다. 다른 이메일을 입력해주세요."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
@@ -120,12 +121,18 @@ public class AuthApiController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal AuthUserDTO user, HttpServletRequest request) {
+    public ResponseEntity<?> logout(@AuthenticationPrincipal AuthUserDTO user,
+                                    HttpServletRequest request, HttpServletResponse response) {
         if (user != null) {
             authService.logout(user.getUsername());
             logService.logAccess(user.getUsername(), getClientIp(request), request.getHeader("User-Agent"),
                     AccessLog.AccessType.LOGOUT);
         }
+        // [woo] 응답 헤더로 accessToken 쿠키 만료 - JS 쿠키 삭제보다 신뢰성 높음
+        Cookie expiredCookie = new Cookie("accessToken", "");
+        expiredCookie.setMaxAge(0);
+        expiredCookie.setPath("/");
+        response.addCookie(expiredCookie);
         return ResponseEntity.ok(Map.of("message", "로그아웃되었습니다."));
     }
 
