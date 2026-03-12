@@ -42,7 +42,6 @@ public class AuthApiController {
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
      */
     @PostMapping("/register")
-    @Transactional
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         String name = body.get("name");
         String email = body.get("email");
@@ -72,8 +71,8 @@ public class AuthApiController {
             return ResponseEntity.ok(result);
 
         } catch (IllegalStateException e) {
-            // 이메일 중복
-            return ResponseEntity.status(409).body(Map.of("message", e.getMessage()));
+            // [woo] 이메일 중복 - @Transactional 제거 후 IllegalStateException 정상 전파되도록 수정
+            return ResponseEntity.status(409).body(Map.of("message", "중복된 이메일입니다. 다른 이메일을 입력해주세요."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
