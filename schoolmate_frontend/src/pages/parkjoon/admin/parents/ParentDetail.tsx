@@ -121,16 +121,17 @@ export default function ParentDetail() {
         </div>
       )}
 
-      <div className="mb-4">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(ADMIN_ROUTES.PARENTS.LIST)}>
-          <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
+      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+        <button type="button" onClick={() => navigate(ADMIN_ROUTES.PARENTS.LIST)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}>
+          <i className="bi bi-arrow-left" />
         </button>
+        <h6 className="fw-semibold mb-0">학부모 상세 정보</h6>
       </div>
 
       <div className="row">
         {/* 좌측 프로필 카드 */}
         <div className="col-md-4">
-          <div className="card mb-4 text-center py-4 shadow-sm border-0">
+          <div className="card mb-4 text-center py-4">
             <div className="card-body">
               <div
                 className="rounded-circle bg-success-subtle d-flex align-items-center justify-content-center mx-auto mb-3"

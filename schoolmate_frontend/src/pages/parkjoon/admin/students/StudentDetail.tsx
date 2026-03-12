@@ -76,15 +76,16 @@ export default function StudentDetail() {
 
   return (
     <AdminLayout msg={msg}>
-      <div className="mb-4">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(ADMIN_ROUTES.STUDENTS.LIST)}>
-          <i className="bi bi-arrow-left" /> 목록으로 돌아가기
+      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+        <button type="button" onClick={() => navigate(ADMIN_ROUTES.STUDENTS.LIST)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}>
+          <i className="bi bi-arrow-left" />
         </button>
+        <h6 className="fw-semibold mb-0">학생 상세 정보</h6>
       </div>
 
       <div className="row">
         <div className="col-md-4">
-          <div className="card mb-4 text-center py-4 shadow-sm border-0">
+          <div className="card mb-4 text-center py-4">
             <div className="bg-primary-subtle rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style={{ width: 100, height: 100 }}>
               <span className="fs-1 text-primary fw-bold">{student.name?.[0]}</span>
             </div>

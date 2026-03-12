@@ -32,20 +32,23 @@ export default function NoticeList() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">공지사항 관리</h2>
-        <Link to={ADMIN_ROUTES.NOTICES.CREATE} className="btn btn-primary">
-          <i className="bi bi-pencil-fill" /> 공지 작성
-        </Link>
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">공지사항 관리</h6>
+          <p className="text-neutral-600 mt-4 mb-0">전체 공지사항을 관리합니다.</p>
+        </div>
+        <div className="d-flex gap-2">
+          <Link to={ADMIN_ROUTES.NOTICES.CREATE} className="btn btn-primary">
+            <i className="bi bi-pencil-fill" /> 공지 작성
+          </Link>
+        </div>
       </div>
 
-      <div className="card shadow-sm border-0">
-        <div className="card-header bg-white py-3">
-          <div className="row align-items-center">
-            <div className="col">
-              <h5 className="mb-0 text-dark">공지사항 목록</h5>
-            </div>
-            <div className="col-auto">
+      <div className="card">
+        <div className="card-body p-0">
+        <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+          <h6 className="fw-semibold mb-0">공지사항 목록</h6>
+          <div className="d-flex gap-2">
               <form className="input-group input-group-sm" onSubmit={search}>
                 <input
                   className="form-control"
@@ -68,10 +71,8 @@ export default function NoticeList() {
                   초기화
                 </button>
               </form>
-            </div>
           </div>
         </div>
-        <div className="card-body p-0">
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">
               <tr>
@@ -126,7 +127,7 @@ export default function NoticeList() {
           </table>
         </div>
         {page && page.totalPages >= 1 && (
-          <div className="card-footer bg-white py-3">
+          <div className="card-footer border-0 bg-white py-16">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

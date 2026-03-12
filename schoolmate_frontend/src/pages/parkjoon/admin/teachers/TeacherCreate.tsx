@@ -18,11 +18,16 @@ export default function TeacherCreate() {
 
   return (
     <AdminLayout>
-      <h2 className="mb-4">
-        <span className="me-2" style={{ cursor: 'pointer' }} onClick={() => navigate(-1)}>←</span>
-        ✨ 신규 교사 등록
-      </h2>
-      <form onSubmit={handleSubmit} className="card shadow-sm">
+      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+        <button type="button" onClick={() => navigate(-1)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}>
+          <i className="bi bi-arrow-left" />
+        </button>
+        <div>
+          <h6 className="fw-semibold mb-0">신규 교사 등록</h6>
+          <p className="text-neutral-600 mt-4 mb-0">새 교사 계정을 등록합니다.</p>
+        </div>
+      </div>
+      <form onSubmit={handleSubmit} className="card">
         <div className="card-body p-4">
           <h5 className="mb-4 text-primary fw-bold"><i className="bi bi-person-circle me-2" />기본 정보</h5>
           <div className="row g-3 mb-4">
@@ -65,7 +70,7 @@ export default function TeacherCreate() {
             </div>
           </div>
         </div>
-        <div className="card-footer bg-light p-4 text-end">
+        <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
           <button type="button" className="btn btn-secondary px-4 me-2" onClick={() => navigate(-1)}>취소</button>
           <button type="submit" className="btn btn-primary px-5">등록 완료</button>
         </div>

@@ -23,10 +23,11 @@ export default function NoticeDetail() {
 
   return (
     <AdminLayout>
-      <div className="mb-4">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}>
-          <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
+      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+        <button type="button" onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}>
+          <i className="bi bi-arrow-left" />
         </button>
+        <h6 className="fw-semibold mb-0">공지사항 상세</h6>
       </div>
 
       <div className="card shadow-sm">

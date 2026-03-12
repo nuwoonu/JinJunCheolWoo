@@ -36,13 +36,16 @@ export default function NoticeForm() {
 
   return (
     <AdminLayout>
-      <div className="d-flex align-items-center mb-4">
-        <button className="btn btn-outline-secondary btn-sm me-3" onClick={() => navigate(-1)}>
-          <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
+      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+        <button type="button" onClick={() => navigate(-1)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}>
+          <i className="bi bi-arrow-left" />
         </button>
-        <h2 className="mb-0">{isEdit ? '공지사항 수정' : '공지사항 작성'}</h2>
+        <div>
+          <h6 className="fw-semibold mb-0">{isEdit ? '공지사항 수정' : '신규 공지사항 작성'}</h6>
+          <p className="text-neutral-600 mt-4 mb-0">{isEdit ? '공지사항을 수정합니다.' : '새 공지사항을 작성합니다.'}</p>
+        </div>
       </div>
-      <form onSubmit={handleSubmit} className="card shadow-sm">
+      <form onSubmit={handleSubmit} className="card">
         <div className="card-body p-4">
           <div className="mb-3">
             <label className="form-label fw-bold">제목</label>
@@ -61,7 +64,7 @@ export default function NoticeForm() {
             <textarea className="form-control" rows={10} required value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="공지 내용을 입력하세요..." />
           </div>
         </div>
-        <div className="card-footer bg-light p-4 text-end">
+        <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
           <button type="button" className="btn btn-secondary px-4 me-2" onClick={() => navigate(-1)}>취소</button>
           <button type="submit" className="btn btn-primary px-5" disabled={saving}>
             {saving ? <><span className="spinner-border spinner-border-sm me-2" />저장 중...</> : (isEdit ? '수정 완료' : '등록 완료')}

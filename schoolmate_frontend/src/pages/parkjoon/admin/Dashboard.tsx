@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../../components/layout/AdminLayout";
 import admin from "../../../api/adminApi";
-import { ADMIN_ROUTES } from '../../../constants/routes';
+import { ADMIN_ROUTES } from "../../../constants/routes";
 
 // [joon] 관리자 대시보드
 
@@ -62,8 +62,13 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">📊 관리자 대시보드</h2>
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">관리자 대시보드</h6>
+          <p className="text-neutral-600 mt-4 mb-0">
+            학교 관리 시스템 현황을 한눈에 확인합니다.
+          </p>
+        </div>
         <div className="d-flex align-items-center gap-3">
           <span className="text-muted">{today}</span>
           {/* 동기화 버튼 */}
@@ -87,53 +92,123 @@ export default function AdminDashboard() {
       </div>
 
       <div className="row">
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-0 border-start border-primary border-4 shadow h-100 py-2">
-            <div className="card-body">
-              <div className="text-xs fw-bold text-primary text-uppercase mb-1">
-                총 학생 수
-              </div>
-              <div className="h5 mb-0 fw-bold text-gray-800">
-                {stats.totalStudents}명
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-0 border-start border-success border-4 shadow h-100 py-2">
-            <div className="card-body">
-              <div className="text-xs fw-bold text-success text-uppercase mb-1">
-                재직 교직원
-              </div>
-              <div className="h5 mb-0 fw-bold">
-                {stats.totalTeachers + stats.totalStaffs}명
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-0 border-start border-warning border-4 shadow h-100 py-2">
-            <div className="card-body">
-              <div className="text-xs fw-bold text-warning text-uppercase mb-1">
-                학부모 승인 대기
-              </div>
-              <div className="h5 mb-0 fw-bold">{stats.pendingParents}건</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-md-6 mb-4">
-          <div className="card border-0 border-start border-info border-4 shadow h-100 py-2">
-            <div className="card-body">
-              <div className="text-xs fw-bold text-info text-uppercase mb-1">
-                주요 일정
-              </div>
-              <div className="h5 mb-0 fw-bold">
-                <Link
-                  to={ADMIN_ROUTES.MASTER.SCHEDULE}
-                  className="text-decoration-none text-dark"
+        <div className="col-xl-3 col-md-6 mb-24">
+          <div className="card">
+            <div className="card-body px-24 py-20">
+              <div className="d-flex align-items-center gap-16">
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: "#e0f2f1",
+                  }}
                 >
-                  일정 확인 →
-                </Link>
+                  <i
+                    className="ri-graduation-cap-line"
+                    style={{ color: "#25A194", fontSize: 22 }}
+                  />
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-4" style={{ fontSize: 12 }}>
+                    총 학생 수
+                  </p>
+                  <h6 className="fw-bold mb-0">{stats.totalStudents}명</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-xl-3 col-md-6 mb-24">
+          <div className="card">
+            <div className="card-body px-24 py-20">
+              <div className="d-flex align-items-center gap-16">
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: "#eff6ff",
+                  }}
+                >
+                  <i
+                    className="ri-user-follow-line"
+                    style={{ color: "#1d4ed8", fontSize: 22 }}
+                  />
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-4" style={{ fontSize: 12 }}>
+                    재직 교직원
+                  </p>
+                  <h6 className="fw-bold mb-0">
+                    {stats.totalTeachers + stats.totalStaffs}명
+                  </h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-xl-3 col-md-6 mb-24">
+          <div className="card">
+            <div className="card-body px-24 py-20">
+              <div className="d-flex align-items-center gap-16">
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: "#faf5ff",
+                  }}
+                >
+                  <i
+                    className="ri-user-heart-line"
+                    style={{ color: "#7c3aed", fontSize: 22 }}
+                  />
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-4" style={{ fontSize: 12 }}>
+                    학부모 승인 대기
+                  </p>
+                  <h6 className="fw-bold mb-0">{stats.pendingParents}건</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-xl-3 col-md-6 mb-24">
+          <div className="card">
+            <div className="card-body px-24 py-20">
+              <div className="d-flex align-items-center gap-16">
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: "#fffbeb",
+                  }}
+                >
+                  <i
+                    className="ri-calendar-line"
+                    style={{ color: "#d97706", fontSize: 22 }}
+                  />
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-4" style={{ fontSize: 12 }}>
+                    주요 일정
+                  </p>
+                  <h6 className="fw-bold mb-0">
+                    <Link
+                      to={ADMIN_ROUTES.MASTER.SCHEDULE}
+                      className="text-decoration-none text-dark"
+                    >
+                      일정 확인 →
+                    </Link>
+                  </h6>
+                </div>
               </div>
             </div>
           </div>
@@ -142,9 +217,9 @@ export default function AdminDashboard() {
 
       <div className="row mt-2">
         <div className="col-lg-8">
-          <div className="card shadow mb-4 border-0">
-            <div className="card-header py-3 d-flex align-items-center justify-content-between bg-white">
-              <h6 className="m-0 fw-bold text-primary">시스템 안내</h6>
+          <div className="card mb-24">
+            <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+              <h6 className="fw-semibold mb-0">시스템 안내</h6>
             </div>
             <div className="card-body">
               <p>학교 관리 시스템 관리자 페이지에 오신 것을 환영합니다.</p>

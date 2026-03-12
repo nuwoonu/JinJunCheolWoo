@@ -29,17 +29,16 @@ export default function ClassCreate() {
 
   return (
     <AdminLayout>
-      <h2 className="mb-4">
-        <span
-          className="me-2"
-          style={{ cursor: "pointer" }}
-          onClick={() => navigate(-1)}
-        >
-          ←
-        </span>
-        학급 생성
-      </h2>
-      <form onSubmit={handleSubmit} className="card shadow-sm">
+      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+        <button type="button" onClick={() => navigate(-1)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}>
+          <i className="bi bi-arrow-left" />
+        </button>
+        <div>
+          <h6 className="fw-semibold mb-0">새 학급 생성</h6>
+          <p className="text-neutral-600 mt-4 mb-0">새 학급을 생성합니다.</p>
+        </div>
+      </div>
+      <form onSubmit={handleSubmit} className="card">
         <div className="card-body p-4">
           <div className="row g-3">
             <div className="col-md-6">
@@ -101,7 +100,7 @@ export default function ClassCreate() {
             </div>
           </div>
         </div>
-        <div className="card-footer bg-light p-4 text-end">
+        <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
           <button
             type="button"
             className="btn btn-secondary px-4 me-2"

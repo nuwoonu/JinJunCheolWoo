@@ -158,20 +158,18 @@ export default function ClassDetail() {
 
   return (
     <AdminLayout>
-      <div className="mb-4">
-        <button
-          className="btn btn-outline-secondary btn-sm"
-          onClick={() => navigate(ADMIN_ROUTES.CLASSES.LIST)}
-        >
-          <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
+      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+        <button type="button" onClick={() => navigate(ADMIN_ROUTES.CLASSES.LIST)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}>
+          <i className="bi bi-arrow-left" />
         </button>
+        <h6 className="fw-semibold mb-0">학급 상세 정보</h6>
       </div>
       {msg && <div className="alert alert-info mb-3">{msg}</div>}
 
       <div className="row gy-4">
         {/* 좌측 학급 정보 */}
         <div className="col-md-4">
-          <div className="card shadow-sm border-0 p-4 text-center">
+          <div className="card p-4 text-center">
             <div className="d-flex gap-2 justify-content-center mb-3">
               <span className="badge bg-primary">{classroom.year}학년도</span>
               <span
