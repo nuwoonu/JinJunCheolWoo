@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
-
-const BASE = '/parkjoon/admin'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 
 export default function NoticeForm() {
   const { id } = useParams<{ id?: string }>()
@@ -27,10 +26,10 @@ export default function NoticeForm() {
     try {
       if (isEdit) {
         await admin.put(`/notices/${id}`, form)
-        navigate(`${BASE}/notices/${id}`)
+        navigate(ADMIN_ROUTES.NOTICES.DETAIL(id!))
       } else {
         await admin.post('/notices', form)
-        navigate(`${BASE}/notices`)
+        navigate(ADMIN_ROUTES.NOTICES.LIST)
       }
     } finally { setSaving(false) }
   }

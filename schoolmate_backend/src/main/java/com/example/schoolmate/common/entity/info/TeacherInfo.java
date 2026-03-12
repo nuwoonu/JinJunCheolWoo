@@ -26,7 +26,7 @@ import lombok.Setter;
 @DiscriminatorValue("TEACHER")
 @Getter
 @Setter
-public class TeacherInfo extends BaseInfo {
+public class TeacherInfo extends SchoolMemberInfo {
     private String subject; // 담당 과목
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

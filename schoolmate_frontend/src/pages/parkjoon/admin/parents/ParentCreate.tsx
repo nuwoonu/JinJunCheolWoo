@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
-
-const BASE = '/parkjoon/admin'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 
 export default function ParentCreate() {
   const navigate = useNavigate()
@@ -14,7 +13,7 @@ export default function ParentCreate() {
     // code가 빈 문자열이면 null로 전송 (백엔드가 null일 때 중복 체크 생략)
     const payload = { ...form, code: form.code || null }
     await admin.post('/parents', payload)
-    navigate(`${BASE}/parents`)
+    navigate(ADMIN_ROUTES.PARENTS.LIST)
   }
 
   return (

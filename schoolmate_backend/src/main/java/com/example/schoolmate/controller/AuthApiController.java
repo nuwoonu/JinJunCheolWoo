@@ -146,7 +146,7 @@ public class AuthApiController {
     @GetMapping("/me")
     public ResponseEntity<?> me(@AuthenticationPrincipal AuthUserDTO user) {
         if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("authenticated", false));
+            return ResponseEntity.ok(Map.of("authenticated", false));
         }
         // [woo] getPrimaryRole()이 null일 수 있음 (OAuth2 신규 GUEST 유저 - DB에 roles 없음)
         UserRole primaryRole = user.getPrimaryRole();

@@ -9,6 +9,7 @@ import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -61,6 +62,7 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
+                                                                "/api/auth/me",
                                                                 "/oauth2/**",
                                                                 "/login/oauth2/**",
                                                                 "/login",
@@ -115,7 +117,13 @@ public class SecurityConfig {
                                                                         response, authentication);
                                                 }))
                                 .exceptionHandling(exception -> exception
-                                                .accessDeniedHandler(accessDeniedHandler()))
+                                                .accessDeniedHandler(accessDeniedHandler())
+                                                // API 요청은 /login redirect 대신 401 JSON 반환 (CORS 우회 방지)
+                                                .authenticationEntryPoint((request, response, authException) -> {
+                                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                                        response.setContentType("application/json;charset=UTF-8");
+                                                        response.getWriter().write("{\"authenticated\":false}");
+                                                }))
                                 // JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 등록
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

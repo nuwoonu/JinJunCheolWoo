@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
 import { PARENT_STATUS, STATUS_DEFAULT } from '../../../../constants/statusConfig'
-
-const BASE = '/parkjoon/admin'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 
 export default function ParentDetail() {
   const { id } = useParams<{ id: string }>()
@@ -123,7 +122,7 @@ export default function ParentDetail() {
       )}
 
       <div className="mb-4">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`${BASE}/parents`)}>
+        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(ADMIN_ROUTES.PARENTS.LIST)}>
           <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
         </button>
       </div>

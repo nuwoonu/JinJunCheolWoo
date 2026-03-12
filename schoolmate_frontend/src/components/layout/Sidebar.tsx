@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSidebar } from '../../contexts/SidebarContext'
+import { ADMIN_ROUTES } from '../../constants/routes'
 
 // [woo] 사이드바 서브메뉴 열림 상태 관리
 // CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전 + 배경색
@@ -37,7 +38,7 @@ function useProfileDropdown() {
 }
 
 export default function Sidebar() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const { open, toggle } = useSubmenu()
   const { isOpen, isCollapsed, closeSidebar, toggleCollapse } = useSidebar()
   const profile = useProfileDropdown()
@@ -94,7 +95,7 @@ export default function Sidebar() {
                 <button
                   type="button"
                   className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6 w-100 border-0 bg-transparent"
-                  onClick={() => { localStorage.clear(); document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT'; window.location.href = '/login' }}
+                  onClick={signOut}
                 >
                   <i className="ri-shut-down-line" /> 로그아웃
                 </button>
@@ -214,7 +215,7 @@ export default function Sidebar() {
 
           {/* [joon] ADMIN 전용 관리 메뉴 */}
           {has('ADMIN') && (
-            <li><Link to="/parkjoon/admin/dashboard"><i className="ri-layout-grid-line" /><span>관리자 대시보드</span></Link></li>
+            <li><Link to={ADMIN_ROUTES.DASHBOARD}><i className="ri-layout-grid-line" /><span>관리자 대시보드</span></Link></li>
           )}
           {has('ADMIN') && (
             <li className={dc(open.adminUsers)}>
@@ -222,10 +223,10 @@ export default function Sidebar() {
                 <i className="ri-group-line" /><span>구성원 관리</span>
               </a>
               <ul className="sidebar-submenu">
-                <li><Link to="/parkjoon/admin/students"><i className="ri-circle-fill circle-icon w-auto" /> 학생 관리</Link></li>
-                <li><Link to="/parkjoon/admin/teachers"><i className="ri-circle-fill circle-icon w-auto" /> 교사 관리</Link></li>
-                <li><Link to="/parkjoon/admin/parents"><i className="ri-circle-fill circle-icon w-auto" /> 학부모 관리</Link></li>
-                <li><Link to="/parkjoon/admin/staffs"><i className="ri-circle-fill circle-icon w-auto" /> 교직원 관리</Link></li>
+                <li><Link to={ADMIN_ROUTES.STUDENTS.LIST}><i className="ri-circle-fill circle-icon w-auto" /> 학생 관리</Link></li>
+                <li><Link to={ADMIN_ROUTES.TEACHERS.LIST}><i className="ri-circle-fill circle-icon w-auto" /> 교사 관리</Link></li>
+                <li><Link to={ADMIN_ROUTES.PARENTS.LIST}><i className="ri-circle-fill circle-icon w-auto" /> 학부모 관리</Link></li>
+                <li><Link to={ADMIN_ROUTES.STAFFS.LIST}><i className="ri-circle-fill circle-icon w-auto" /> 교직원 관리</Link></li>
               </ul>
             </li>
           )}
@@ -235,13 +236,13 @@ export default function Sidebar() {
                 <i className="ri-building-2-line" /><span>학급 관리</span>
               </a>
               <ul className="sidebar-submenu">
-                <li><Link to="/parkjoon/admin/classes"><i className="ri-circle-fill circle-icon w-auto" /> 학급 목록</Link></li>
-                <li><Link to="/parkjoon/admin/classes/create"><i className="ri-circle-fill circle-icon w-auto" /> 학급 생성</Link></li>
+                <li><Link to={ADMIN_ROUTES.CLASSES.LIST}><i className="ri-circle-fill circle-icon w-auto" /> 학급 목록</Link></li>
+                <li><Link to={ADMIN_ROUTES.CLASSES.CREATE}><i className="ri-circle-fill circle-icon w-auto" /> 학급 생성</Link></li>
               </ul>
             </li>
           )}
           {has('ADMIN') && (
-            <li><Link to="/parkjoon/admin/notices"><i className="ri-megaphone-line" /><span>공지사항 관리</span></Link></li>
+            <li><Link to={ADMIN_ROUTES.NOTICES.LIST}><i className="ri-megaphone-line" /><span>공지사항 관리</span></Link></li>
           )}
           {has('ADMIN') && (
             <li className={dc(open.adminFacilities)}>
@@ -249,8 +250,8 @@ export default function Sidebar() {
                 <i className="ri-store-2-line" /><span>시설/기자재</span>
               </a>
               <ul className="sidebar-submenu">
-                <li><Link to="/parkjoon/admin/facilities"><i className="ri-circle-fill circle-icon w-auto" /> 시설 관리</Link></li>
-                <li><Link to="/parkjoon/admin/assets"><i className="ri-circle-fill circle-icon w-auto" /> 기자재 관리</Link></li>
+                <li><Link to={ADMIN_ROUTES.FACILITIES}><i className="ri-circle-fill circle-icon w-auto" /> 시설 관리</Link></li>
+                <li><Link to={ADMIN_ROUTES.ASSETS}><i className="ri-circle-fill circle-icon w-auto" /> 기자재 관리</Link></li>
               </ul>
             </li>
           )}
@@ -260,9 +261,9 @@ export default function Sidebar() {
                 <i className="ri-settings-3-line" /><span>기준 정보</span>
               </a>
               <ul className="sidebar-submenu">
-                <li><Link to="/parkjoon/admin/master/schedule"><i className="ri-circle-fill circle-icon w-auto" /> 학사 일정</Link></li>
-                <li><Link to="/parkjoon/admin/master/subjects"><i className="ri-circle-fill circle-icon w-auto" /> 교과목</Link></li>
-                <li><Link to="/parkjoon/admin/master/settings"><i className="ri-circle-fill circle-icon w-auto" /> 시스템 설정</Link></li>
+                <li><Link to={ADMIN_ROUTES.MASTER.SCHEDULE}><i className="ri-circle-fill circle-icon w-auto" /> 학사 일정</Link></li>
+                <li><Link to={ADMIN_ROUTES.MASTER.SUBJECTS}><i className="ri-circle-fill circle-icon w-auto" /> 교과목</Link></li>
+                <li><Link to={ADMIN_ROUTES.MASTER.SETTINGS}><i className="ri-circle-fill circle-icon w-auto" /> 시스템 설정</Link></li>
               </ul>
             </li>
           )}

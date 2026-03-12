@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import PrivateRoute from './components/PrivateRoute'
+import { ADMIN_ROUTES } from './constants/routes'
 // 공통
 import NotFound from './pages/error/NotFound'
 import Unauthorized from './pages/error/Unauthorized'
@@ -271,52 +272,52 @@ function App() {
         </PrivateRoute>
       } />
 
-      {/* [joon] parkjoon 관리자 페이지 - /parkjoon/admin/... */}
-      <Route path="/parkjoon/admin/dashboard" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonDashboard /></PrivateRoute>} />
+      {/* [joon] parkjoon 관리자 페이지 - /admin/... */}
+      <Route path={ADMIN_ROUTES.DASHBOARD} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonDashboard /></PrivateRoute>} />
 
       {/* [joon] 학생 관리 */}
-      <Route path="/parkjoon/admin/students" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStudentList /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/students/create" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStudentCreate /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/students/:uid" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStudentDetail /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.STUDENTS.LIST} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStudentList /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.STUDENTS.CREATE} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStudentCreate /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.STUDENTS.DETAIL_PATTERN} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStudentDetail /></PrivateRoute>} />
 
       {/* [joon] 교사 관리 */}
-      <Route path="/parkjoon/admin/teachers" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonTeacherList /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/teachers/create" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonTeacherCreate /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/teachers/:uid" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonTeacherDetail /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.TEACHERS.LIST} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonTeacherList /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.TEACHERS.CREATE} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonTeacherCreate /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.TEACHERS.DETAIL_PATTERN} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonTeacherDetail /></PrivateRoute>} />
 
       {/* [joon] 학부모 관리 */}
-      <Route path="/parkjoon/admin/parents" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonParentList /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/parents/create" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonParentCreate /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/parents/:id" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonParentDetail /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.PARENTS.LIST} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonParentList /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.PARENTS.CREATE} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonParentCreate /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.PARENTS.DETAIL_PATTERN} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonParentDetail /></PrivateRoute>} />
 
       {/* [joon] 교직원 관리 */}
-      <Route path="/parkjoon/admin/staffs" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStaffList /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/staffs/create" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStaffCreate /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/staffs/:uid" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStaffDetail /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.STAFFS.LIST} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStaffList /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.STAFFS.CREATE} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStaffCreate /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.STAFFS.DETAIL_PATTERN} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonStaffDetail /></PrivateRoute>} />
 
       {/* [joon] 학급 관리 */}
-      <Route path="/parkjoon/admin/classes" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonClassList /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/classes/create" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonClassCreate /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/classes/:cid" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonClassDetail /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.CLASSES.LIST} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonClassList /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.CLASSES.CREATE} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonClassCreate /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.CLASSES.DETAIL_PATTERN} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonClassDetail /></PrivateRoute>} />
 
       {/* [joon] 공지사항 관리 */}
-      <Route path="/parkjoon/admin/notices" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeList /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/notices/create" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeForm /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/notices/:id" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeDetail /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/notices/:id/edit" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeForm /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.NOTICES.LIST} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeList /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.NOTICES.CREATE} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeForm /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.NOTICES.DETAIL_PATTERN} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeDetail /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.NOTICES.EDIT_PATTERN} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonNoticeForm /></PrivateRoute>} />
 
       {/* [joon] 시설/기자재 관리 */}
-      <Route path="/parkjoon/admin/facilities" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonRooms /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/assets" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonAssets /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.FACILITIES} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonRooms /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.ASSETS} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonAssets /></PrivateRoute>} />
 
       {/* [joon] 기준 정보 관리 */}
-      <Route path="/parkjoon/admin/master/schedule" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonSchedule /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/master/subjects" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonSubjects /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/master/settings" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonSettings /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.MASTER.SCHEDULE} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonSchedule /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.MASTER.SUBJECTS} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonSubjects /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.MASTER.SETTINGS} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonSettings /></PrivateRoute>} />
 
       {/* [joon] 감사 로그 */}
-      <Route path="/parkjoon/admin/audit/access" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonAccessLogs /></PrivateRoute>} />
-      <Route path="/parkjoon/admin/audit/changes" element={<PrivateRoute allowedRoles={['ADMIN']}><JoonChangeLogs /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.AUDIT.ACCESS} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonAccessLogs /></PrivateRoute>} />
+      <Route path={ADMIN_ROUTES.AUDIT.CHANGES} element={<PrivateRoute allowedRoles={['ADMIN']}><JoonChangeLogs /></PrivateRoute>} />
 
       {/* [soojin] 학교 일정 / 갤러리 - PARENT, TEACHER, ADMIN, STUDENT */}
       <Route path="/school/schedule" element={

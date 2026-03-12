@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 // [joon] 학생 목록
-
-const BASE = "/parkjoon/admin";
 const STATUSES = [
   { value: "ENROLLED", label: "재학" },
   { value: "LEAVE_OF_ABSENCE", label: "휴학" },
@@ -154,7 +153,7 @@ export default function StudentList() {
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
           </button>
-          <Link to={`${BASE}/students/create`} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.STUDENTS.CREATE} className="btn btn-primary">
             <i className="bi bi-person-plus-fill" /> 신규 학생 등록
           </Link>
         </div>
@@ -256,7 +255,7 @@ export default function StudentList() {
                     <td className="ps-4 text-secondary">{s.code ?? "-"}</td>
                     <td>
                       <Link
-                        to={`${BASE}/students/${s.uid}`}
+                        to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
                         className="fw-bold text-decoration-none text-dark"
                       >
                         {s.name}
@@ -273,7 +272,7 @@ export default function StudentList() {
                     </td>
                     <td className="text-end pe-4">
                       <Link
-                        to={`${BASE}/students/${s.uid}`}
+                        to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
                         className="btn btn-sm btn-outline-primary"
                       >
                         상세보기

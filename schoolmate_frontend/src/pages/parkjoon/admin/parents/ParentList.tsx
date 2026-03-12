@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
 import { PARENT_STATUS, STATUS_DEFAULT } from "../../../../constants/statusConfig";
-
-const BASE = "/parkjoon/admin";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 export default function ParentList() {
   const [page, setPage] = useState<any>(null);
@@ -134,7 +133,7 @@ export default function ParentList() {
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
           </button>
-          <Link to={`${BASE}/parents/create`} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.PARENTS.CREATE} className="btn btn-primary">
             <i className="bi bi-person-plus-fill" /> 신규 학부모 등록
           </Link>
         </div>
@@ -228,7 +227,7 @@ export default function ParentList() {
                   </td>
                   <td className="ps-4">
                     <Link
-                      to={`${BASE}/parents/${p.id}`}
+                      to={ADMIN_ROUTES.PARENTS.DETAIL(p.id)}
                       className="fw-bold text-decoration-none text-dark"
                     >
                       {p.name}
@@ -244,7 +243,7 @@ export default function ParentList() {
                   <td>{(() => { const cfg = PARENT_STATUS[p.statusName] ?? STATUS_DEFAULT; return <span className={`badge ${cfg.badge}`}>{cfg.label}</span> })()}</td>
                   <td className="text-end pe-4">
                     <Link
-                      to={`${BASE}/parents/${p.id}`}
+                      to={ADMIN_ROUTES.PARENTS.DETAIL(p.id)}
                       className="btn btn-sm btn-outline-primary"
                     >
                       상세보기

@@ -27,7 +27,7 @@ export default function Login() {
       document.cookie = `accessToken=${accessToken}; path=/; SameSite=Strict`
 
       const roleRedirects: Record<string, string> = {
-        ADMIN: '/parkjoon/admin/dashboard',
+        ADMIN: '/admin/dashboard',
         TEACHER: '/teacher/dashboard',
         STUDENT: '/student/dashboard',
         PARENT: '/parent/dashboard',
