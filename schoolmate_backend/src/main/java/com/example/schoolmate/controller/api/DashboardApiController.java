@@ -111,19 +111,30 @@ public class DashboardApiController {
         Long uid = getUid(authentication);
         Map<String, Object> data = new HashMap<>();
 
-        List<NoticeDTO.BoardNotice> notices = noticeService.getRecentList(5);
-        List<ParentBoardDTO> boards = parentBoardService.getRecentList(5);
-        data.put("notices", notices);
-        data.put("boards", boards);
-
         if (uid == null) {
             data.put("children", Collections.emptyList());
+            data.put("parentProfile", null);
             return ResponseEntity.ok(data);
         }
 
         User parentUser = userRepository.findById(uid).orElse(null);
         if (parentUser != null) {
+            // 학부모 프로필 정보
             ParentInfo parentInfo = parentUser.getInfo(ParentInfo.class);
+            Map<String, Object> profile = new HashMap<>();
+            // name: User.name 우선, 없으면 ParentInfo.parentName
+            String name = parentUser.getName();
+            if ((name == null || name.isBlank()) && parentInfo != null) name = parentInfo.getParentName();
+            // phone: ParentInfo.phone 우선, 없으면 User.phoneNumber
+            String phone = parentInfo != null ? parentInfo.getPhone() : null;
+            if (phone == null || phone.isBlank()) phone = parentUser.getPhoneNumber();
+            profile.put("name", name);
+            profile.put("email", parentUser.getEmail());
+            profile.put("phone", phone);
+            profile.put("address", parentInfo != null ? parentInfo.getAddress() : null);
+            data.put("parentProfile", profile);
+
+            // 자녀 목록
             if (parentInfo != null && parentInfo.getChildrenRelations() != null) {
                 List<ChildDTO> children = parentInfo.getChildrenRelations().stream()
                         .map(r -> toChildDTO(r.getStudentInfo()))
@@ -133,6 +144,7 @@ public class DashboardApiController {
                 data.put("children", Collections.emptyList());
             }
         } else {
+            data.put("parentProfile", null);
             data.put("children", Collections.emptyList());
         }
 
@@ -182,12 +194,15 @@ public class DashboardApiController {
             attendanceNum = idx >= 0 ? idx + 1 : null;
         }
 
+        String schoolName = info.getSchool() != null ? info.getSchool().getName() : null;
+
         return ChildDTO.builder()
                 .id(user.getUid())
                 .name(user.getName())
                 .grade(assignment != null ? assignment.getGrade() : null)
                 .classNum(assignment != null ? assignment.getClassNum() : null)
                 .attendanceNum(attendanceNum)
+                .schoolName(schoolName)
                 .profileImageUrl(imageUrl)
                 .build();
     }
