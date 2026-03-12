@@ -86,7 +86,7 @@ export default function StudentDetail() {
       <div className="row">
         <div className="col-md-4">
           <div className="card mb-4 text-center py-4">
-            <div className="bg-primary-subtle rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style={{ width: 100, height: 100 }}>
+            <div className="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style={{ width: 100, height: 100, background: '#e0f2f1' }}>
               <span className="fs-1 text-primary fw-bold">{student.name?.[0]}</span>
             </div>
             <h4 className="fw-bold mb-1">{student.name}</h4>
@@ -107,15 +107,19 @@ export default function StudentDetail() {
         </div>
 
         <div className="col-md-8">
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-white border-bottom">
-              <ul className="nav nav-tabs card-header-tabs">
-                {[['basic', '기본 정보'], ['history', '학적 이력'], ['parent', '보호자 관리']].map(([key, label]) => (
-                  <li key={key} className="nav-item">
-                    <button className={`nav-link fw-bold${tab === key ? ' active' : ''}`} onClick={() => setTab(key)}>{label}</button>
-                  </li>
-                ))}
-              </ul>
+          <div className="card">
+            <div className="d-flex border-bottom border-neutral-200">
+              {[['basic', '기본 정보'], ['history', '학적 이력'], ['parent', '보호자 관리']].map(([key, label]) => (
+                <button key={key} onClick={() => setTab(key)}
+                  style={{
+                    padding: '12px 20px', border: 'none', background: 'none',
+                    borderBottom: `2px solid ${tab === key ? '#25A194' : 'transparent'}`,
+                    color: tab === key ? '#25A194' : '#6b7280',
+                    fontWeight: tab === key ? 600 : 400, fontSize: 14, cursor: 'pointer',
+                  }}>
+                  {label}
+                </button>
+              ))}
             </div>
             <div className="card-body p-4">
               {tab === 'basic' && (
@@ -150,7 +154,7 @@ export default function StudentDetail() {
                       <textarea className="form-control" rows={3} value={form.specialNotes ?? ''} onChange={e => setForm((f: any) => ({ ...f, specialNotes: e.target.value }))} />
                     </div>
                     <div className="col-12 text-end mt-4">
-                      <button type="submit" className="btn btn-primary px-4 fw-bold">정보 수정 저장</button>
+                      <button type="submit" className="btn btn-primary-600 radius-8 px-4 fw-bold">정보 수정 저장</button>
                     </div>
                   </div>
                 </form>
@@ -213,35 +217,33 @@ export default function StudentDetail() {
       </div>
 
       {showParentModal && (
-        <div className="modal fade show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">보호자 검색</h5>
-                <button type="button" className="btn-close" onClick={() => setShowParentModal(false)} />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 480, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>보호자 검색</h6>
+              <button onClick={() => setShowParentModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <div className="input-group mb-3">
+                <input className="form-control" placeholder="보호자 이름 입력" value={parentSearch} onChange={e => setParentSearch(e.target.value)} onKeyUp={e => e.key === 'Enter' && searchParents()} />
+                <button className="btn btn-primary-600 radius-8" onClick={searchParents}>검색</button>
               </div>
-              <div className="modal-body">
-                <div className="input-group mb-3">
-                  <input className="form-control" placeholder="보호자 이름 입력" value={parentSearch} onChange={e => setParentSearch(e.target.value)} onKeyUp={e => e.key === 'Enter' && searchParents()} />
-                  <button className="btn btn-primary" onClick={searchParents}>검색</button>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label fw-semibold">관계</label>
-                  <select className="form-select" value={relationship} onChange={e => setRelationship(e.target.value)}>
-                    <option value="FATHER">부</option>
-                    <option value="MOTHER">모</option>
-                    <option value="GRANDFATHER">조부</option>
-                    <option value="GRANDMOTHER">조모</option>
-                    <option value="OTHER">기타</option>
-                  </select>
-                </div>
-                <div className="list-group" style={{ maxHeight: 260, overflowY: 'auto' }}>
-                  {parentResults.map((p: any) => (
-                    <button key={p.id ?? p.uid} type="button" className="list-group-item list-group-item-action" onClick={() => addGuardian(p.id ?? p.uid)}>
-                      {p.name} ({p.email})
-                    </button>
-                  ))}
-                </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">관계</label>
+                <select className="form-select" value={relationship} onChange={e => setRelationship(e.target.value)}>
+                  <option value="FATHER">부</option>
+                  <option value="MOTHER">모</option>
+                  <option value="GRANDFATHER">조부</option>
+                  <option value="GRANDMOTHER">조모</option>
+                  <option value="OTHER">기타</option>
+                </select>
+              </div>
+              <div className="list-group" style={{ maxHeight: 260, overflowY: 'auto' }}>
+                {parentResults.map((p: any) => (
+                  <button key={p.id ?? p.uid} type="button" className="list-group-item list-group-item-action" onClick={() => addGuardian(p.id ?? p.uid)}>
+                    {p.name} ({p.email})
+                  </button>
+                ))}
               </div>
             </div>
           </div>

@@ -137,67 +137,65 @@ export default function Schedule() {
     <AdminLayout>
       {/* 등록/수정 모달 */}
       {showModal && (
-        <div className="modal d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{editId !== null ? '일정 수정' : '일정 등록'}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)} />
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  <div className="row g-3">
-                    <div className="col-12">
-                      <label className="form-label fw-bold">제목</label>
-                      <input className="form-control" required value={form.title}
-                        onChange={e => setForm((f: any) => ({ ...f, title: e.target.value }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">유형</label>
-                      <select className="form-select" value={form.eventType}
-                        onChange={e => setForm((f: any) => ({ ...f, eventType: e.target.value }))}>
-                        {EVENT_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">대상 학년</label>
-                      <select className="form-select" value={form.targetGrade}
-                        onChange={e => setForm((f: any) => ({ ...f, targetGrade: e.target.value }))}>
-                        <option value="">전체</option>
-                        <option value="1">1학년</option>
-                        <option value="2">2학년</option>
-                        <option value="3">3학년</option>
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">시작일</label>
-                      <input type="date" className="form-control" required value={form.start}
-                        onChange={e => setForm((f: any) => ({ ...f, start: e.target.value }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">종료일</label>
-                      <input type="date" className="form-control" required value={form.end}
-                        onChange={e => setForm((f: any) => ({ ...f, end: e.target.value }))} />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-bold">설명</label>
-                      <textarea className="form-control" rows={2} value={form.description}
-                        onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} />
-                    </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 480, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>{editId !== null ? '일정 수정' : '일정 등록'}</h6>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div style={{ padding: '20px' }}>
+                <div className="row g-3">
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">제목</label>
+                    <input className="form-control" required value={form.title}
+                      onChange={e => setForm((f: any) => ({ ...f, title: e.target.value }))} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">유형</label>
+                    <select className="form-select" value={form.eventType}
+                      onChange={e => setForm((f: any) => ({ ...f, eventType: e.target.value }))}>
+                      {EVENT_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">대상 학년</label>
+                    <select className="form-select" value={form.targetGrade}
+                      onChange={e => setForm((f: any) => ({ ...f, targetGrade: e.target.value }))}>
+                      <option value="">전체</option>
+                      <option value="1">1학년</option>
+                      <option value="2">2학년</option>
+                      <option value="3">3학년</option>
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">시작일</label>
+                    <input type="date" className="form-control" required value={form.start}
+                      onChange={e => setForm((f: any) => ({ ...f, start: e.target.value }))} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">종료일</label>
+                    <input type="date" className="form-control" required value={form.end}
+                      onChange={e => setForm((f: any) => ({ ...f, end: e.target.value }))} />
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">설명</label>
+                    <textarea className="form-control" rows={2} value={form.description}
+                      onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} />
                   </div>
                 </div>
-                <div className="modal-footer">
-                  {editId !== null && (
-                    <button type="button" className="btn btn-outline-danger me-auto"
-                      onClick={() => { handleDelete(editId!); setShowModal(false) }}>
-                      삭제
-                    </button>
-                  )}
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>취소</button>
-                  <button type="submit" className="btn btn-primary">{editId !== null ? '수정' : '등록'}</button>
-                </div>
-              </form>
-            </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '12px 20px', borderTop: '1px solid #e5e7eb' }}>
+                {editId !== null && (
+                  <button type="button" className="btn btn-outline-danger radius-8 me-auto"
+                    onClick={() => { handleDelete(editId!); setShowModal(false) }}>
+                    삭제
+                  </button>
+                )}
+                <button type="button" className="btn btn-outline-secondary radius-8" onClick={() => setShowModal(false)}>취소</button>
+                <button type="submit" className="btn btn-primary-600 radius-8">{editId !== null ? '수정' : '등록'}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -213,24 +211,27 @@ export default function Schedule() {
       <input type="file" ref={csvRef} accept=".csv" style={{ display: 'none' }} onChange={importCsv} />
 
       {/* 헤더 */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">🗓️ 학사 일정 관리</h2>
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">학사 일정 관리</h6>
+          <p className="text-neutral-600 mt-4 mb-0">학년도별 학사 일정을 등록하고 관리합니다.</p>
+        </div>
         <div className="d-flex gap-2">
-          <button className="btn btn-outline-secondary" onClick={exportCsv}>
+          <button className="btn btn-outline-secondary radius-8" onClick={exportCsv}>
             <i className="bi bi-file-earmark-arrow-down" /> CSV 내보내기
           </button>
-          <button className="btn btn-outline-success" onClick={() => csvRef.current?.click()}>
+          <button className="btn btn-outline-success radius-8" onClick={() => csvRef.current?.click()}>
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
           </button>
-          <button className="btn btn-primary" onClick={() => openCreate()}>
+          <button className="btn btn-primary-600 radius-8" onClick={() => openCreate()}>
             <i className="bi bi-plus-lg" /> 일정 등록
           </button>
         </div>
       </div>
 
-      <div className="card shadow-sm border-0">
+      <div className="card">
         {/* 네비게이션 */}
-        <div className="card-header bg-white py-3">
+        <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
           <div className="d-flex align-items-center">
             <button className="btn btn-outline-secondary btn-sm me-1" onClick={() => goMonth(-1)}>
               <i className="bi bi-chevron-left" />

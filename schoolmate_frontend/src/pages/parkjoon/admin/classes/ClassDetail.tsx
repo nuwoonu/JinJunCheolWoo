@@ -144,7 +144,7 @@ export default function ClassDetail() {
   };
 
   const downloadRoster = () => {
-    window.open(`/parkjoon/admin/api/classes/${cid}/roster-csv`, "_blank");
+    window.open(`/api/admin/classes/${cid}/roster-csv`, "_blank");
   };
 
   if (!classroom)
@@ -209,26 +209,19 @@ export default function ClassDetail() {
 
         {/* 우측 탭 */}
         <div className="col-md-8">
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-white p-0">
-              <ul className="nav nav-tabs card-header-tabs">
-                <li className="nav-item">
-                  <button
-                    className={`nav-link fw-semibold${tab === "students" ? " active" : ""}`}
-                    onClick={() => setTab("students")}
-                  >
-                    학생 명단
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button
-                    className={`nav-link fw-semibold${tab === "history" ? " active" : ""}`}
-                    onClick={() => setTab("history")}
-                  >
-                    변경 이력
-                  </button>
-                </li>
-              </ul>
+          <div className="card">
+            <div className="d-flex border-bottom border-neutral-200">
+              {([['students', '학생 명단'], ['history', '변경 이력']] as const).map(([key, label]) => (
+                <button key={key} onClick={() => setTab(key)}
+                  style={{
+                    padding: '12px 20px', border: 'none', background: 'none',
+                    borderBottom: `2px solid ${tab === key ? '#25A194' : 'transparent'}`,
+                    color: tab === key ? '#25A194' : '#6b7280',
+                    fontWeight: tab === key ? 600 : 400, fontSize: 14, cursor: 'pointer',
+                  }}>
+                  {label}
+                </button>
+              ))}
             </div>
             <div className="card-body p-4">
               {tab === "students" && (
@@ -291,7 +284,7 @@ export default function ClassDetail() {
                         />
                         <span className="text-muted small">명</span>
                         <button
-                          className="btn btn-sm btn-primary"
+                          className="btn btn-sm btn-primary-600 radius-8"
                           onClick={() => addStudents([])}
                         >
                           랜덤 배정
@@ -438,101 +431,50 @@ export default function ClassDetail() {
 
       {/* 수정 모달 */}
       {showEdit && (
-        <div
-          className="modal fade show d-block"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title fw-semibold">학급 정보 수정</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowEdit(false)}
-                />
-              </div>
-              <form onSubmit={handleUpdate}>
-                <div className="modal-body">
-                  <div className="row g-3">
-                    <div className="col-6">
-                      <label className="form-label fw-bold">학년</label>
-                      <select
-                        className="form-select"
-                        value={editForm.grade}
-                        onChange={(e) =>
-                          setEditForm((f) => ({ ...f, grade: e.target.value }))
-                        }
-                      >
-                        <option value="1">1학년</option>
-                        <option value="2">2학년</option>
-                        <option value="3">3학년</option>
-                      </select>
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label fw-bold">반</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={editForm.classNum}
-                        onChange={(e) =>
-                          setEditForm((f) => ({
-                            ...f,
-                            classNum: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-bold">운영 상태</label>
-                      <select
-                        className="form-select"
-                        value={editForm.status}
-                        onChange={(e) =>
-                          setEditForm((f) => ({ ...f, status: e.target.value }))
-                        }
-                      >
-                        <option value="ACTIVE">운영</option>
-                        <option value="FINISHED">종료</option>
-                      </select>
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-bold">담임 교사</label>
-                      <select
-                        className="form-select"
-                        value={editForm.teacherUid}
-                        onChange={(e) =>
-                          setEditForm((f) => ({
-                            ...f,
-                            teacherUid: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="">미배정</option>
-                        {availableTeachers.map((t) => (
-                          <option key={t.uid} value={t.uid}>
-                            {t.displayName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 480, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>학급 정보 수정</h6>
+              <button onClick={() => setShowEdit(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <form onSubmit={handleUpdate}>
+              <div style={{ padding: '20px' }}>
+                <div className="row g-3">
+                  <div className="col-6">
+                    <label className="form-label fw-semibold">학년</label>
+                    <select className="form-select" value={editForm.grade} onChange={(e) => setEditForm((f) => ({ ...f, grade: e.target.value }))}>
+                      <option value="1">1학년</option>
+                      <option value="2">2학년</option>
+                      <option value="3">3학년</option>
+                    </select>
+                  </div>
+                  <div className="col-6">
+                    <label className="form-label fw-semibold">반</label>
+                    <input type="number" className="form-control" value={editForm.classNum} onChange={(e) => setEditForm((f) => ({ ...f, classNum: e.target.value }))} required />
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">운영 상태</label>
+                    <select className="form-select" value={editForm.status} onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}>
+                      <option value="ACTIVE">운영</option>
+                      <option value="FINISHED">종료</option>
+                    </select>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">담임 교사</label>
+                    <select className="form-select" value={editForm.teacherUid} onChange={(e) => setEditForm((f) => ({ ...f, teacherUid: e.target.value }))}>
+                      <option value="">미배정</option>
+                      {availableTeachers.map((t) => (
+                        <option key={t.uid} value={t.uid}>{t.displayName}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowEdit(false)}
-                  >
-                    취소
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    수정 저장
-                  </button>
-                </div>
-              </form>
-            </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '12px 20px', borderTop: '1px solid #e5e7eb' }}>
+                <button type="button" className="btn btn-outline-secondary radius-8" onClick={() => setShowEdit(false)}>취소</button>
+                <button type="submit" className="btn btn-primary-600 radius-8">수정 저장</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

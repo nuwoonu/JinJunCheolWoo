@@ -188,25 +188,16 @@ export default function Assets() {
     <AdminLayout>
       {/* 1. 자산 등록/수정 모달 */}
       {showAssetModal && (
-        <div
-          className="modal d-block"
-          tabIndex={-1}
-          style={{ background: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {assetForm.id !== null ? "기자재 수정" : "기자재 등록"}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowAssetModal(false)}
-                />
-              </div>
-              <form onSubmit={handleAssetSubmit}>
-                <div className="modal-body">
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 600, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white', zIndex: 1 }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
+                {assetForm.id !== null ? "기자재 수정" : "기자재 등록"}
+              </h6>
+              <button onClick={() => setShowAssetModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <form onSubmit={handleAssetSubmit}>
+              <div style={{ padding: '20px' }}>
                   <h6 className="fw-bold text-primary mb-3">모델 정보</h6>
                   <div className="row g-3 mb-3">
                     <div className="col-md-12">
@@ -352,46 +343,30 @@ export default function Assets() {
                       />
                     </div>
                   </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowAssetModal(false)}
-                  >
-                    취소
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    {assetForm.id !== null ? "수정" : "등록"}
-                  </button>
-                </div>
-              </form>
-            </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '12px 20px', borderTop: '1px solid #e5e7eb', position: 'sticky', bottom: 0, background: 'white' }}>
+                <button type="button" className="btn btn-outline-secondary radius-8" onClick={() => setShowAssetModal(false)}>취소</button>
+                <button type="submit" className="btn btn-primary-600 radius-8">
+                  {assetForm.id !== null ? "수정" : "등록"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* 2. 모델 등록/수정 모달 (새로 추가됨) */}
       {showModelModal && (
-        <div
-          className="modal d-block"
-          tabIndex={-1}
-          style={{ background: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {modelForm.id !== null ? "모델 수정" : "모델 등록"}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModelModal(false)}
-                />
-              </div>
-              <form onSubmit={handleModelSubmit}>
-                <div className="modal-body">
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 480, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: 'white', zIndex: 1 }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
+                {modelForm.id !== null ? "모델 수정" : "모델 등록"}
+              </h6>
+              <button onClick={() => setShowModelModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <form onSubmit={handleModelSubmit}>
+              <div style={{ padding: '20px' }}>
                   <div className="mb-3">
                     <label className="form-label fw-bold">모델명</label>
                     <input
@@ -475,58 +450,49 @@ export default function Assets() {
                       }
                     />
                   </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModelModal(false)}
-                  >
-                    취소
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    {modelForm.id !== null ? "수정" : "등록"}
-                  </button>
-                </div>
-              </form>
-            </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '12px 20px', borderTop: '1px solid #e5e7eb', position: 'sticky', bottom: 0, background: 'white' }}>
+                <button type="button" className="btn btn-outline-secondary radius-8" onClick={() => setShowModelModal(false)}>취소</button>
+                <button type="submit" className="btn btn-primary-600 radius-8">
+                  {modelForm.id !== null ? "수정" : "등록"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* 헤더 및 등록 버튼 */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">💻 기자재 관리</h2>
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">기자재 관리</h6>
+          <p className="text-neutral-600 mt-4 mb-0">학교 기자재 및 자산을 관리합니다.</p>
+        </div>
         {currentTab === "assets" ? (
-          <button className="btn btn-primary" onClick={openAssetCreate}>
+          <button className="btn btn-primary-600 radius-8" onClick={openAssetCreate}>
             <i className="bi bi-plus-lg me-1" /> 기자재 등록
           </button>
         ) : (
-          <button className="btn btn-primary" onClick={openModelCreate}>
+          <button className="btn btn-primary-600 radius-8" onClick={openModelCreate}>
             <i className="bi bi-plus-lg me-1" /> 신규 모델 등록
           </button>
         )}
       </div>
 
       {/* 3. 탭 네비게이션 (새로 추가됨) */}
-      <ul className="nav nav-tabs mb-4 border-bottom">
-        <li className="nav-item">
-          <button
-            className={`nav-link border-0 border-bottom border-2 ${currentTab === "assets" ? "active border-primary text-primary fw-bold" : "border-transparent text-muted"}`}
-            onClick={() => setCurrentTab("assets")}
-          >
-            자산 목록 (재고)
+      <div className="d-flex border-bottom border-neutral-200 mb-4">
+        {([['assets', '기자재 목록'], ['models', '모델 관리']] as [string, string][]).map(([key, label]) => (
+          <button key={key} onClick={() => setCurrentTab(key as 'assets' | 'models')}
+            style={{
+              padding: '12px 20px', border: 'none', background: 'none',
+              borderBottom: `2px solid ${currentTab === key ? '#25A194' : 'transparent'}`,
+              color: currentTab === key ? '#25A194' : '#6b7280',
+              fontWeight: currentTab === key ? 600 : 400, fontSize: 14, cursor: 'pointer',
+            }}>
+            {label}
           </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link border-0 border-bottom border-2 ${currentTab === "models" ? "active border-primary text-primary fw-bold" : "border-transparent text-muted"}`}
-            onClick={() => setCurrentTab("models")}
-          >
-            모델 관리 (규격)
-          </button>
-        </li>
-      </ul>
+        ))}
+      </div>
 
       {/* ==================== 자산 목록 탭 콘텐츠 ==================== */}
       {currentTab === "assets" && (
@@ -564,7 +530,7 @@ export default function Assets() {
           )}
 
           {/* 자산 목록 테이블 */}
-          <div className="card shadow-sm border-0">
+          <div className="card">
             <div className="card-header bg-white py-3">
               <div className="row align-items-center">
                 <div className="col">
@@ -708,7 +674,7 @@ export default function Assets() {
 
       {/* ==================== 모델 관리 탭 콘텐츠 (새로 추가됨) ==================== */}
       {currentTab === "models" && (
-        <div className="card shadow-sm border-0">
+        <div className="card">
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0 text-center">

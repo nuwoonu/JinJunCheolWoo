@@ -156,7 +156,7 @@ export default function StudentList() {
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
           </button>
-          <Link to={ADMIN_ROUTES.STUDENTS.CREATE} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.STUDENTS.CREATE} className="btn btn-primary-600 radius-8">
             <i className="bi bi-person-plus-fill" /> 신규 학생 등록
           </Link>
         </div>
@@ -198,7 +198,7 @@ export default function StudentList() {
                   onChange={(e) => setKeyword(e.target.value)}
                   style={{ minWidth: 150 }}
                 />
-                <button className="btn btn-primary" type="submit">
+                <button className="btn btn-primary-600 radius-8" type="submit">
                   <i className="bi bi-search" /> 검색
                 </button>
                 <button
@@ -223,7 +223,7 @@ export default function StudentList() {
                   <th className="text-center" style={{ width: 50 }}>
                     <input
                       type="checkbox"
-                      className="form-check-input"
+                      className="form-check-input" style={{ borderColor: '#6b7280' }}
                       onChange={(e) => toggleAll(e.target.checked)}
                       checked={
                         selected.length > 0 && selected.length === list.length
@@ -246,7 +246,7 @@ export default function StudentList() {
                     <td className="text-center">
                       <input
                         type="checkbox"
-                        className="form-check-input"
+                        className="form-check-input" style={{ borderColor: '#6b7280' }}
                         checked={selected.includes(s.uid)}
                         onChange={() => toggleOne(s.uid)}
                       />

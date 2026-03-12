@@ -108,7 +108,7 @@ export default function ClassCreate() {
           >
             취소
           </button>
-          <button type="submit" className="btn btn-primary px-5">
+          <button type="submit" className="btn btn-primary-600 radius-8 px-5">
             학급 생성
           </button>
         </div>

@@ -66,7 +66,7 @@ export default function NoticeForm() {
         </div>
         <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
           <button type="button" className="btn btn-secondary px-4 me-2" onClick={() => navigate(-1)}>취소</button>
-          <button type="submit" className="btn btn-primary px-5" disabled={saving}>
+          <button type="submit" className="btn btn-primary-600 radius-8 px-5" disabled={saving}>
             {saving ? <><span className="spinner-border spinner-border-sm me-2" />저장 중...</> : (isEdit ? '수정 완료' : '등록 완료')}
           </button>
         </div>

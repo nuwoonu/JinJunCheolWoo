@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { auth } from "../../shared/auth";
+import { ADMIN_ROUTES } from "../../constants/routes";
 
 // [woo] OAuth2 소셜 로그인 콜백 페이지
 // 백엔드가 리다이렉트한 URL: /oauth2/callback?accessToken=...&refreshToken=...&role=...
@@ -43,7 +44,7 @@ export default function OAuth2Callback() {
         window.location.href = "/parent/dashboard";
         break;
       case "ADMIN":
-        window.location.href = "/admin/dashboard";
+        window.location.href = ADMIN_ROUTES.DASHBOARD;
         break;
       default:
         window.location.href = "/select-role";

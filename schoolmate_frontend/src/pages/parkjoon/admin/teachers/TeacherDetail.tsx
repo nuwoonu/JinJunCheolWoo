@@ -83,8 +83,8 @@ export default function TeacherDetail() {
           <div className="card mb-4 text-center py-4">
             <div className="card-body">
               <div
-                className="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center mx-auto mb-3"
-                style={{ width: 100, height: 100 }}
+                className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                style={{ width: 100, height: 100, background: '#e0f2f1' }}
               >
                 <span className="text-primary fw-bold" style={{ fontSize: 36 }}>
                   {teacher.name?.[0] ?? '?'}
@@ -118,19 +118,19 @@ export default function TeacherDetail() {
 
         {/* 우측 탭 카드 */}
         <div className="col-md-8">
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-white p-0">
-              <ul className="nav nav-tabs card-header-tabs">
-                <li className="nav-item">
-                  <button className={`nav-link${activeTab === 'info' ? ' active' : ''}`} onClick={() => setActiveTab('info')}>기본 정보</button>
-                </li>
-                <li className="nav-item">
-                  <button className={`nav-link${activeTab === 'noti' ? ' active' : ''}`} onClick={() => setActiveTab('noti')}>알림 이력</button>
-                </li>
-                <li className="nav-item">
-                  <button className={`nav-link${activeTab === 'role' ? ' active' : ''}`} onClick={() => setActiveTab('role')}>권한 관리</button>
-                </li>
-              </ul>
+          <div className="card">
+            <div className="d-flex border-bottom border-neutral-200">
+              {[['info', '기본 정보'], ['noti', '알림 이력'], ['role', '권한 관리']].map(([key, label]) => (
+                <button key={key} onClick={() => setActiveTab(key)}
+                  style={{
+                    padding: '12px 20px', border: 'none', background: 'none',
+                    borderBottom: `2px solid ${activeTab === key ? '#25A194' : 'transparent'}`,
+                    color: activeTab === key ? '#25A194' : '#6b7280',
+                    fontWeight: activeTab === key ? 600 : 400, fontSize: 14, cursor: 'pointer',
+                  }}>
+                  {label}
+                </button>
+              ))}
             </div>
 
             {activeTab === 'info' && (
@@ -177,8 +177,8 @@ export default function TeacherDetail() {
                     </div>
                   </div>
                 </div>
-                <div className="card-footer bg-white border-top p-4 text-end">
-                  <button type="submit" className="btn btn-primary px-5" disabled={saving}>
+                <div className="px-24 py-16 border-top border-neutral-200 text-end">
+                  <button type="submit" className="btn btn-primary-600 radius-8 px-5" disabled={saving}>
                     {saving ? <><span className="spinner-border spinner-border-sm me-2" />저장 중...</> : '정보 수정 저장'}
                   </button>
                 </div>
@@ -194,23 +194,23 @@ export default function TeacherDetail() {
 
             {activeTab === 'role' && (
               <div className="card-body p-4">
-                <h6 className="fw-bold mb-3">부여된 시스템 권한</h6>
+                <h6 className="fw-semibold mb-3">부여된 시스템 권한</h6>
                 {roles.length === 0 && <p className="text-muted">부여된 권한이 없습니다.</p>}
                 <div className="d-flex flex-wrap gap-2 mb-4">
                   {roles.map(r => (
-                    <span key={r} className="badge bg-primary fs-6 d-flex align-items-center gap-2 px-3 py-2">
+                    <span key={r} className="d-inline-flex align-items-center gap-2 px-3 py-2 radius-8 fs-6" style={{ background: '#e0f2f1', color: '#25A194', fontWeight: 500 }}>
                       {ROLE_LABEL[r] ?? r}
-                      <button type="button" className="btn-close btn-close-white" style={{ fontSize: '0.6rem' }} onClick={() => removeRole(r)} />
+                      <button type="button" onClick={() => removeRole(r)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#25A194', fontSize: '0.7rem', padding: 0, lineHeight: 1 }}>✕</button>
                     </span>
                   ))}
                 </div>
-                <h6 className="fw-bold mb-2">권한 추가</h6>
+                <h6 className="fw-semibold mb-2">권한 추가</h6>
                 <div className="input-group" style={{ maxWidth: 400 }}>
                   <select className="form-select" value={newRole} onChange={e => setNewRole(e.target.value)}>
                     <option value="">권한 선택</option>
                     {SYSTEM_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
-                  <button className="btn btn-primary" type="button" onClick={addRole}>추가</button>
+                  <button className="btn btn-primary-600 radius-8" type="button" onClick={addRole}>추가</button>
                 </div>
               </div>
             )}

@@ -71,51 +71,49 @@ export default function ParentDetail() {
   return (
     <AdminLayout>
       {showModal && (
-        <div className="modal d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">자녀 추가</h5>
-                <button type="button" className="btn-close" onClick={() => { setShowModal(false); setSearchResults([]); setPendingStudent(null) }} />
-              </div>
-              <div className="modal-body">
-                {!pendingStudent ? (
-                  <>
-                    <div className="input-group mb-3">
-                      <input className="form-control" placeholder="학생 이름 또는 학번 검색..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchStudents()} />
-                      <button className="btn btn-primary" onClick={searchStudents}>검색</button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 480, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>자녀 추가</h6>
+              <button onClick={() => { setShowModal(false); setSearchResults([]); setPendingStudent(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              {!pendingStudent ? (
+                <>
+                  <div className="input-group mb-3">
+                    <input className="form-control" placeholder="학생 이름 또는 학번 검색..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchStudents()} />
+                    <button className="btn btn-primary-600 radius-8" onClick={searchStudents}>검색</button>
+                  </div>
+                  {searchResults.length > 0 && (
+                    <div className="list-group" style={{ maxHeight: 250, overflowY: 'auto' }}>
+                      {searchResults.map((s: any) => (
+                        <div key={s.uid} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                          <span><strong>{s.name}</strong> <small className="text-muted ms-2">{s.code}</small></span>
+                          <button className="btn btn-sm btn-outline-secondary radius-8" onClick={() => selectStudent(s)}>선택</button>
+                        </div>
+                      ))}
                     </div>
-                    {searchResults.length > 0 && (
-                      <div className="list-group" style={{ maxHeight: 250, overflowY: 'auto' }}>
-                        {searchResults.map((s: any) => (
-                          <div key={s.uid} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <span><strong>{s.name}</strong> <small className="text-muted ms-2">{s.code}</small></span>
-                            <button className="btn btn-sm btn-outline-primary" onClick={() => selectStudent(s)}>선택</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p className="mb-3">선택한 학생: <strong>{pendingStudent.name}</strong> ({pendingStudent.code})</p>
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold">관계 선택</label>
-                      <select className="form-select" value={relationship} onChange={e => setRelationship(e.target.value)}>
-                        <option value="FATHER">부</option>
-                        <option value="MOTHER">모</option>
-                        <option value="GRANDFATHER">조부</option>
-                        <option value="GRANDMOTHER">조모</option>
-                        <option value="OTHER">기타</option>
-                      </select>
-                    </div>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-secondary flex-fill" onClick={() => setPendingStudent(null)}>다시 검색</button>
-                      <button className="btn btn-primary flex-fill" onClick={addChild}>연결 추가</button>
-                    </div>
-                  </>
-                )}
-              </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="mb-3">선택한 학생: <strong>{pendingStudent.name}</strong> ({pendingStudent.code})</p>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">관계 선택</label>
+                    <select className="form-select" value={relationship} onChange={e => setRelationship(e.target.value)}>
+                      <option value="FATHER">부</option>
+                      <option value="MOTHER">모</option>
+                      <option value="GRANDFATHER">조부</option>
+                      <option value="GRANDMOTHER">조모</option>
+                      <option value="OTHER">기타</option>
+                    </select>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button className="btn btn-outline-secondary radius-8 flex-fill" onClick={() => setPendingStudent(null)}>다시 검색</button>
+                    <button className="btn btn-primary-600 radius-8 flex-fill" onClick={addChild}>연결 추가</button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -134,8 +132,8 @@ export default function ParentDetail() {
           <div className="card mb-4 text-center py-4">
             <div className="card-body">
               <div
-                className="rounded-circle bg-success-subtle d-flex align-items-center justify-content-center mx-auto mb-3"
-                style={{ width: 100, height: 100 }}
+                className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                style={{ width: 100, height: 100, background: '#f0fdf4' }}
               >
                 <span className="text-success fw-bold" style={{ fontSize: 36 }}>
                   {parent.name?.[0] ?? '?'}
@@ -165,19 +163,19 @@ export default function ParentDetail() {
 
         {/* 우측 탭 카드 */}
         <div className="col-md-8">
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-white p-0">
-              <ul className="nav nav-tabs card-header-tabs">
-                <li className="nav-item">
-                  <button className={`nav-link${activeTab === 'info' ? ' active' : ''}`} onClick={() => setActiveTab('info')}>기본 정보</button>
-                </li>
-                <li className="nav-item">
-                  <button className={`nav-link${activeTab === 'children' ? ' active' : ''}`} onClick={() => setActiveTab('children')}>자녀 관리</button>
-                </li>
-                <li className="nav-item">
-                  <button className={`nav-link${activeTab === 'noti' ? ' active' : ''}`} onClick={() => setActiveTab('noti')}>알림 이력</button>
-                </li>
-              </ul>
+          <div className="card">
+            <div className="d-flex border-bottom border-neutral-200">
+              {[['info', '기본 정보'], ['children', '자녀 관리'], ['noti', '알림 이력']].map(([key, label]) => (
+                <button key={key} onClick={() => setActiveTab(key)}
+                  style={{
+                    padding: '12px 20px', border: 'none', background: 'none',
+                    borderBottom: `2px solid ${activeTab === key ? '#25A194' : 'transparent'}`,
+                    color: activeTab === key ? '#25A194' : '#6b7280',
+                    fontWeight: activeTab === key ? 600 : 400, fontSize: 14, cursor: 'pointer',
+                  }}>
+                  {label}
+                </button>
+              ))}
             </div>
 
             {activeTab === 'info' && (
@@ -207,8 +205,8 @@ export default function ParentDetail() {
                     </div>
                   </div>
                 </div>
-                <div className="card-footer bg-white border-top p-4 text-end">
-                  <button type="submit" className="btn btn-primary px-5" disabled={saving}>
+                <div className="px-24 py-16 border-top border-neutral-200 text-end">
+                  <button type="submit" className="btn btn-primary-600 radius-8 px-5" disabled={saving}>
                     {saving ? <><span className="spinner-border spinner-border-sm me-2" />저장 중...</> : '정보 수정 저장'}
                   </button>
                 </div>
@@ -217,9 +215,9 @@ export default function ParentDetail() {
 
             {activeTab === 'children' && (
               <>
-                <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center border-top">
-                  <h6 className="mb-0">자녀 목록 <span className="badge bg-light text-dark border ms-2">{children.length}명</span></h6>
-                  <button className="btn btn-sm btn-primary" onClick={() => setShowModal(true)}>
+                <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+                  <h6 className="fw-semibold mb-0">자녀 목록 <span className="badge bg-light text-dark border ms-2">{children.length}명</span></h6>
+                  <button className="btn btn-sm btn-primary-600 radius-8" onClick={() => setShowModal(true)}>
                     <i className="bi bi-plus-lg" /> 자녀 추가
                   </button>
                 </div>

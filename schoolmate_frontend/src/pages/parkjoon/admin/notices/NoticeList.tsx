@@ -38,7 +38,7 @@ export default function NoticeList() {
           <p className="text-neutral-600 mt-4 mb-0">전체 공지사항을 관리합니다.</p>
         </div>
         <div className="d-flex gap-2">
-          <Link to={ADMIN_ROUTES.NOTICES.CREATE} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.NOTICES.CREATE} className="btn btn-primary-600 radius-8">
             <i className="bi bi-pencil-fill" /> 공지 작성
           </Link>
         </div>
@@ -57,7 +57,7 @@ export default function NoticeList() {
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                 />
-                <button className="btn btn-primary" type="submit">
+                <button className="btn btn-primary-600 radius-8" type="submit">
                   <i className="bi bi-search" />
                 </button>
                 <button

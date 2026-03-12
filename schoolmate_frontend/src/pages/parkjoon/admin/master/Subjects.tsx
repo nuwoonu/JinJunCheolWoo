@@ -45,45 +45,44 @@ export default function Subjects() {
   return (
     <AdminLayout>
       {showModal && (
-        <div className="modal d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{isEdit ? '과목 수정' : '과목 등록'}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)} />
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  {isEdit && (
-                    <input type="hidden" value={form.originCode} />
-                  )}
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">과목 코드</label>
-                    <input className="form-control" required value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} placeholder="예: MATH01" />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">과목명</label>
-                    <input className="form-control" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="예: 수학" />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>취소</button>
-                  <button type="submit" className="btn btn-primary">{isEdit ? '수정' : '등록'}</button>
-                </div>
-              </form>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 440, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>{isEdit ? '과목 수정' : '과목 등록'}</h6>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
             </div>
+            <form onSubmit={handleSubmit}>
+              <div style={{ padding: '20px' }}>
+                {isEdit && <input type="hidden" value={form.originCode} />}
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">과목 코드</label>
+                  <input className="form-control" required value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} placeholder="예: MATH01" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">과목명</label>
+                  <input className="form-control" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="예: 수학" />
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '12px 20px', borderTop: '1px solid #e5e7eb' }}>
+                <button type="button" className="btn btn-outline-secondary radius-8" onClick={() => setShowModal(false)}>취소</button>
+                <button type="submit" className="btn btn-primary-600 radius-8">{isEdit ? '수정' : '등록'}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">과목 관리</h2>
-        <button className="btn btn-primary" onClick={openCreateModal}>
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">과목 관리</h6>
+          <p className="text-neutral-600 mt-4 mb-0">교과목 코드 및 과목명을 관리합니다.</p>
+        </div>
+        <button className="btn btn-primary-600 radius-8" onClick={openCreateModal}>
           <i className="bi bi-plus-lg" /> 과목 등록
         </button>
       </div>
 
-      <div className="card shadow-sm border-0">
+      <div className="card">
         <div className="card-body p-0">
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">

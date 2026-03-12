@@ -87,68 +87,69 @@ export default function Rooms() {
   return (
     <AdminLayout>
       {showModal && (
-        <div className="modal d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{form.id !== null ? '시설 수정' : '시설 등록'}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)} />
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">시설명</label>
-                      <input className="form-control" required value={form.name} onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">유형</label>
-                      <select className="form-select" value={form.type} onChange={e => setForm((f: any) => ({ ...f, type: e.target.value }))}>
-                        {FACILITY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">수용 인원</label>
-                      <input type="number" className="form-control" min={0} value={form.capacity} onChange={e => setForm((f: any) => ({ ...f, capacity: Number(e.target.value) }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">위치</label>
-                      <input className="form-control" value={form.location} onChange={e => setForm((f: any) => ({ ...f, location: e.target.value }))} placeholder="예: 본관 3층" />
-                    </div>
-                    <div className="col-md-12">
-                      <label className="form-label fw-bold">상태</label>
-                      <select className="form-select" value={form.status} onChange={e => setForm((f: any) => ({ ...f, status: e.target.value }))}>
-                        {FACILITY_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-md-12">
-                      <label className="form-label fw-bold">편의시설</label>
-                      <input className="form-control" value={form.amenities} onChange={e => setForm((f: any) => ({ ...f, amenities: e.target.value }))} placeholder="예: 프로젝터, 에어컨" />
-                    </div>
-                    <div className="col-md-12">
-                      <label className="form-label fw-bold">비고</label>
-                      <textarea className="form-control" rows={2} value={form.description} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} />
-                    </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 560, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>{form.id !== null ? '시설 수정' : '시설 등록'}</h6>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div style={{ padding: '20px' }}>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">시설명</label>
+                    <input className="form-control" required value={form.name} onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">유형</label>
+                    <select className="form-select" value={form.type} onChange={e => setForm((f: any) => ({ ...f, type: e.target.value }))}>
+                      {FACILITY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">수용 인원</label>
+                    <input type="number" className="form-control" min={0} value={form.capacity} onChange={e => setForm((f: any) => ({ ...f, capacity: Number(e.target.value) }))} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">위치</label>
+                    <input className="form-control" value={form.location} onChange={e => setForm((f: any) => ({ ...f, location: e.target.value }))} placeholder="예: 본관 3층" />
+                  </div>
+                  <div className="col-md-12">
+                    <label className="form-label fw-semibold">상태</label>
+                    <select className="form-select" value={form.status} onChange={e => setForm((f: any) => ({ ...f, status: e.target.value }))}>
+                      {FACILITY_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="col-md-12">
+                    <label className="form-label fw-semibold">편의시설</label>
+                    <input className="form-control" value={form.amenities} onChange={e => setForm((f: any) => ({ ...f, amenities: e.target.value }))} placeholder="예: 프로젝터, 에어컨" />
+                  </div>
+                  <div className="col-md-12">
+                    <label className="form-label fw-semibold">비고</label>
+                    <textarea className="form-control" rows={2} value={form.description} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} />
                   </div>
                 </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>취소</button>
-                  <button type="submit" className="btn btn-primary">{form.id !== null ? '수정' : '등록'}</button>
-                </div>
-              </form>
-            </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '12px 20px', borderTop: '1px solid #e5e7eb' }}>
+                <button type="button" className="btn btn-outline-secondary radius-8" onClick={() => setShowModal(false)}>취소</button>
+                <button type="submit" className="btn btn-primary-600 radius-8">{form.id !== null ? '수정' : '등록'}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">시설 관리</h2>
-        <button className="btn btn-primary" onClick={openCreate}>
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">시설 관리</h6>
+          <p className="text-neutral-600 mt-4 mb-0">강의실 및 특별실 등 학교 시설을 관리합니다.</p>
+        </div>
+        <button className="btn btn-primary-600 radius-8" onClick={openCreate}>
           <i className="bi bi-plus-lg" /> 시설 등록
         </button>
       </div>
 
-      <div className="card shadow-sm border-0">
+      <div className="card">
         <div className="card-body p-0">
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">

@@ -149,7 +149,7 @@ export default function ClassList() {
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
           </button>
-          <Link to={ADMIN_ROUTES.CLASSES.CREATE} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.CLASSES.CREATE} className="btn btn-primary-600 radius-8">
             <i className="bi bi-plus-lg" /> 학급 생성
           </Link>
         </div>
@@ -190,7 +190,7 @@ export default function ClassList() {
                   <option value="ACTIVE">활성</option>
                   <option value="FINISHED">종료</option>
                 </select>
-                <button className="btn btn-primary" type="submit">
+                <button className="btn btn-primary-600 radius-8" type="submit">
                   <i className="bi bi-search" /> 검색
                 </button>
                 <button
@@ -214,7 +214,7 @@ export default function ClassList() {
                 <th className="text-center" style={{ width: 50 }}>
                   <input
                     type="checkbox"
-                    className="form-check-input"
+                    className="form-check-input" style={{ borderColor: '#6b7280' }}
                     onChange={(e) => toggleAll(e.target.checked)}
                   />
                 </th>
@@ -233,7 +233,7 @@ export default function ClassList() {
                   <td className="text-center">
                     <input
                       type="checkbox"
-                      className="form-check-input"
+                      className="form-check-input" style={{ borderColor: '#6b7280' }}
                       checked={selected.includes(c.cid)}
                       onChange={() => toggleOne(c.cid)}
                     />

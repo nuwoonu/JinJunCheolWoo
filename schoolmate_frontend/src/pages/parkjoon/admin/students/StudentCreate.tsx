@@ -124,31 +124,29 @@ export default function StudentCreate() {
         </div>
         <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
           <button type="button" className="btn btn-secondary px-4 me-2" onClick={() => navigate(-1)}>취소</button>
-          <button type="submit" className="btn btn-primary px-5">등록 완료</button>
+          <button type="submit" className="btn btn-primary-600 radius-8 px-5">등록 완료</button>
         </div>
       </form>
 
       {/* 보호자 검색 모달 */}
       {showModal && (
-        <div className="modal fade show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">보호자 검색</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)} />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 480, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>보호자 검색</h6>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <div className="input-group mb-3">
+                <input className="form-control" placeholder="보호자 이름 입력" value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)} onKeyUp={e => e.key === 'Enter' && searchParents()} />
+                <button className="btn btn-primary-600 radius-8" type="button" onClick={searchParents}>검색</button>
               </div>
-              <div className="modal-body">
-                <div className="input-group mb-3">
-                  <input className="form-control" placeholder="보호자 이름 입력" value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)} onKeyUp={e => e.key === 'Enter' && searchParents()} />
-                  <button className="btn btn-primary" type="button" onClick={searchParents}>검색</button>
-                </div>
-                <div className="list-group" style={{ maxHeight: 300, overflowY: 'auto' }}>
-                  {searchResult.map((p: any) => (
-                    <button key={p.id ?? p.uid} type="button" className="list-group-item list-group-item-action" onClick={() => addGuardian(p)}>
-                      {p.name} ({p.email})
-                    </button>
-                  ))}
-                </div>
+              <div className="list-group" style={{ maxHeight: 300, overflowY: 'auto' }}>
+                {searchResult.map((p: any) => (
+                  <button key={p.id ?? p.uid} type="button" className="list-group-item list-group-item-action" onClick={() => addGuardian(p)}>
+                    {p.name} ({p.email})
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -157,27 +155,25 @@ export default function StudentCreate() {
 
       {/* 관계 선택 모달 */}
       {relModal && (
-        <div className="modal fade show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-sm">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">관계 설정</h5>
-                <button type="button" className="btn-close" onClick={() => setRelModal(null)} />
-              </div>
-              <div className="modal-body">
-                <p className="mb-2 text-center fw-bold">{relModal.name}</p>
-                <label className="form-label small text-muted">관계 선택</label>
-                <select className="form-select" value={relation} onChange={e => setRelation(e.target.value)}>
-                  <option value="FATHER">부</option>
-                  <option value="MOTHER">모</option>
-                  <option value="GRANDFATHER">조부</option>
-                  <option value="GRANDMOTHER">조모</option>
-                  <option value="OTHER">기타</option>
-                </select>
-              </div>
-              <div className="modal-footer justify-content-center">
-                <button type="button" className="btn btn-primary w-100" onClick={confirmRelation}>확인</button>
-              </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 360, margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>관계 설정</h6>
+              <button onClick={() => setRelModal(null)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <p className="mb-2 text-center fw-bold">{relModal.name}</p>
+              <label className="form-label small text-muted">관계 선택</label>
+              <select className="form-select" value={relation} onChange={e => setRelation(e.target.value)}>
+                <option value="FATHER">부</option>
+                <option value="MOTHER">모</option>
+                <option value="GRANDFATHER">조부</option>
+                <option value="GRANDMOTHER">조모</option>
+                <option value="OTHER">기타</option>
+              </select>
+            </div>
+            <div style={{ padding: '0 20px 20px' }}>
+              <button type="button" className="btn btn-primary-600 radius-8 w-100" onClick={confirmRelation}>확인</button>
             </div>
           </div>
         </div>

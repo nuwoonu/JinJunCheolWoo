@@ -30,35 +30,33 @@ export default function NoticeDetail() {
         <h6 className="fw-semibold mb-0">공지사항 상세</h6>
       </div>
 
-      <div className="card shadow-sm">
-        <div className="card-header bg-white p-4">
-          <div className="d-flex align-items-start justify-content-between">
-            <div>
-              <h4 className="mb-2 fw-bold">
-                {notice.important && <span className="badge bg-danger me-2">중요</span>}
-                {notice.title}
-              </h4>
-              <p className="mb-0 text-muted small">
-                작성자: <strong>{notice.writerName}</strong> ·
-                작성일: {notice.createdDate?.split('T')[0]} ·
-                조회수: {notice.viewCount}
-              </p>
-            </div>
-            <div className="d-flex gap-2">
-              <button className="btn btn-outline-primary btn-sm" onClick={() => navigate(ADMIN_ROUTES.NOTICES.EDIT(id!))}>
-                <i className="bi bi-pencil" /> 수정
-              </button>
-              <button className="btn btn-outline-danger btn-sm" onClick={handleDelete}>
-                <i className="bi bi-trash" /> 삭제
-              </button>
-            </div>
+      <div className="card">
+        <div className="d-flex align-items-start justify-content-between px-20 py-16 border-bottom border-neutral-200">
+          <div>
+            <h5 className="mb-2 fw-bold">
+              {notice.important && <span className="badge bg-danger me-2">중요</span>}
+              {notice.title}
+            </h5>
+            <p className="mb-0 text-muted small">
+              작성자: <strong>{notice.writerName}</strong> ·
+              작성일: {notice.createdDate?.split('T')[0]} ·
+              조회수: {notice.viewCount}
+            </p>
+          </div>
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary btn-sm radius-8" onClick={() => navigate(ADMIN_ROUTES.NOTICES.EDIT(id!))}>
+              <i className="bi bi-pencil" /> 수정
+            </button>
+            <button className="btn btn-outline-danger btn-sm radius-8" onClick={handleDelete}>
+              <i className="bi bi-trash" /> 삭제
+            </button>
           </div>
         </div>
-        <div className="card-body p-4">
+        <div className="card-body p-24">
           <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '1rem' }}>{notice.content}</pre>
         </div>
-        <div className="card-footer bg-light p-3 text-start">
-          <button className="btn btn-outline-secondary" onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}>
+        <div className="px-20 py-16 border-top border-neutral-200">
+          <button className="btn btn-outline-secondary radius-8" onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}>
             <i className="bi bi-list" /> 목록으로
           </button>
         </div>

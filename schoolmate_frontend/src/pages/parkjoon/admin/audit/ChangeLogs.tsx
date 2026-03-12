@@ -71,10 +71,13 @@ export default function ChangeLogs() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">정보 변경 이력</h2>
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">정보 변경 이력</h6>
+          <p className="text-neutral-600 mt-4 mb-0">관리자에 의한 데이터 변경 내역을 조회합니다.</p>
+        </div>
         <button
-          className="btn btn-outline-success btn-sm"
+          className="btn btn-outline-success radius-8 btn-sm"
           onClick={downloadCsv}
           disabled={downloading}
         >
@@ -83,7 +86,7 @@ export default function ChangeLogs() {
         </button>
       </div>
 
-      <div className="card shadow-sm border-0 mb-3">
+      <div className="card mb-3">
         <div className="card-body py-3">
           <form className="row g-2 align-items-end" onSubmit={search}>
             <div className="col-md-3">
@@ -123,7 +126,7 @@ export default function ChangeLogs() {
               />
             </div>
             <div className="col-md-auto">
-              <button type="submit" className="btn btn-primary btn-sm me-2">
+              <button type="submit" className="btn btn-primary-600 radius-8 btn-sm me-2">
                 <i className="bi bi-search" /> 검색
               </button>
               <button
@@ -144,7 +147,7 @@ export default function ChangeLogs() {
         </div>
       </div>
 
-      <div className="card shadow-sm border-0">
+      <div className="card">
         <div className="card-body p-0">
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">

@@ -72,7 +72,7 @@ export default function TeacherCreate() {
         </div>
         <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
           <button type="button" className="btn btn-secondary px-4 me-2" onClick={() => navigate(-1)}>취소</button>
-          <button type="submit" className="btn btn-primary px-5">등록 완료</button>
+          <button type="submit" className="btn btn-primary-600 radius-8 px-5">등록 완료</button>
         </div>
       </form>
     </AdminLayout>
