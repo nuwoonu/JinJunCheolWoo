@@ -112,6 +112,7 @@ lerna-debug.log*
 
 ### Claude AI ###
 .claude/settings.local.json
-
+schoolmate_backend/src/main/resources/application-oauth.properties
+schoolmate_backend/src/main/resources/application.properties
 schoolmate_backend/src/main/resources/application-secret.properties
 schoolmate_backend/.vscode/tasks.json

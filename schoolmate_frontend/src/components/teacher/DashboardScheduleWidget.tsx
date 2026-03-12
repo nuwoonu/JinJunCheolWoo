@@ -203,10 +203,10 @@ export default function DashboardScheduleWidget() {
       <div style={css.card}>
         {/* 헤더 */}
         <div style={css.cardHeader}>
-          <h6 style={css.cardTitle}>
+          <div style={css.cardTitle}>
             <span style={{ marginRight: 6 }}></span>
             {label}
-          </h6>
+          </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button onClick={openAdd} style={css.addBtn}>
               + 일정 추가
@@ -295,7 +295,7 @@ function ScheduleCard({
           {s.className && <span style={{ marginLeft: 8 }}>| {s.className}</span>}
           {s.location && <span style={{ marginLeft: 6 }}>| {s.location}</span>}
         </div>
-        {s.memo && <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 3 }}>📝 {s.memo}</div>}
+        {s.memo && <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 3 }}>{s.memo}</div>}
       </div>
       <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
         <button onClick={onEdit} style={css.editIconBtn} title="수정">
@@ -489,7 +489,7 @@ const css: Record<string, React.CSSProperties> = {
     background: "white",
     borderRadius: 12,
     border: "1px solid #e5e7eb",
-    height: "100%",
+    height: 480,
     display: "flex",
     flexDirection: "column",
   },
