@@ -1,8 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import api from '../../api/auth'
+import { useAuth } from '../../contexts/AuthContext'
 import '../../styles/login.css'
 
+const roleRedirects: Record<string, string> = {
+  ADMIN: '/parkjoon/admin/dashboard',
+  TEACHER: '/teacher/dashboard',
+  STUDENT: '/student/dashboard',
+  PARENT: '/parent/dashboard',
+}
+
 export default function Login() {
+  // [woo] 이미 로그인된 상태면 해당 대시보드로 자동 리다이렉트
+  const { user, loading: authLoading } = useAuth()
+  useEffect(() => {
+    if (!authLoading && user?.authenticated && user.role) {
+      window.location.href = roleRedirects[user.role] ?? '/'
+    }
+  }, [user, authLoading])
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
