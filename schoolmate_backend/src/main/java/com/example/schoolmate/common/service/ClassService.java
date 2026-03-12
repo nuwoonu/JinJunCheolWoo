@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.schoolmate.common.entity.log.ClassroomHistory;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import com.example.schoolmate.common.dto.ClassDTO;
@@ -26,10 +25,12 @@ import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.repository.classroom.ClassroomHistoryRepository;
+
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.domain.log.entity.ClassroomHistory;
+import com.example.schoolmate.domain.log.repository.ClassroomHistoryRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -138,6 +139,35 @@ public class ClassService {
         return allTeachers.stream()
                 .filter(t -> !assignedTeacherUids.contains(t.getUid()))
                 .map(ClassDTO.TeacherSelectResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClassDTO.StudentSummary> getUnassignedStudents(int year, String keyword) {
+        // 모든 사용자 조회 후 학생인 경우만 필터링 (Repository 메서드가 없으므로 인메모리 필터링 사용)
+        List<User> allUsers = userRepository.findAll();
+
+        return allUsers.stream()
+                .filter(u -> u.getInfo(StudentInfo.class) != null) // 학생 정보가 있는 유저만
+                .filter(u -> {
+                    // 키워드 검색 (이름 또는 학번)
+                    if (keyword == null || keyword.isBlank())
+                        return true;
+                    String k = keyword.trim();
+                    StudentInfo info = u.getInfo(StudentInfo.class);
+                    return u.getName().contains(k) || (info.getCode() != null && info.getCode().contains(k));
+                })
+                .filter(u -> {
+                    // 해당 학년도에 배정된 기록이 없는지 확인
+                    StudentInfo info = u.getInfo(StudentInfo.class);
+                    return info.getAssignments().stream()
+                            .noneMatch(a -> a.getSchoolYear() == year);
+                })
+                .map(u -> {
+                    StudentInfo info = u.getInfo(StudentInfo.class);
+                    return new ClassDTO.StudentSummary(
+                            u.getUid(), u.getName(), info.getCode(), null, "-", info.getStatus().getDescription());
+                })
                 .collect(Collectors.toList());
     }
 

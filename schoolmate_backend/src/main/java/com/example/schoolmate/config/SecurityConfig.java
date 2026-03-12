@@ -2,9 +2,13 @@ package com.example.schoolmate.config;
 
 import com.example.schoolmate.common.service.CustomOAuth2UserService;
 import com.example.schoolmate.config.jwt.JwtAuthFilter;
+// [woo] 로그 서비스 복구 (backup 코드 참조)
+import com.example.schoolmate.domain.log.entity.AccessLog;
+import com.example.schoolmate.domain.log.service.LogService;
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +35,7 @@ public class SecurityConfig {
 
         private final CustomOAuth2UserService customOAuth2UserService;
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+        private final LogService logService; // [woo] 접속 로그 서비스 주입
         private final JwtAuthFilter jwtAuthFilter;
         @Qualifier("corsConfigurationSource")
         private final CorsConfigurationSource corsConfigurationSource;
@@ -74,7 +79,7 @@ public class SecurityConfig {
                                                 // [woo] NEIS 공개 API - 인증 불필요
                                                 .requestMatchers("/api/calendar/**", "/api/meals/**").permitAll()
                                                 // 관리자 전용
-                                                .requestMatchers("/api/admin/**", "/parkjoon/admin/**").hasRole("ADMIN")
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                                 // 교사 관리(추가/수정/삭제) - ADMIN만
                                                 .requestMatchers("/api/teacher/add", "/api/teacher/edit",
                                                                 "/api/teacher/delete")
@@ -100,7 +105,15 @@ public class SecurityConfig {
                                                 .loginPage("/login")
                                                 .userInfoEndpoint(userInfo -> userInfo
                                                                 .userService(customOAuth2UserService))
-                                                .successHandler(oAuth2LoginSuccessHandler))
+                                                .successHandler((request, response, authentication) -> {
+                                                        // [woo] OAuth2 로그인 성공 시 로그 기록 (backup 코드 기능 복구)
+                                                        logService.logAccess(authentication.getName(),
+                                                                        getClientIp(request),
+                                                                        request.getHeader("User-Agent"),
+                                                                        AccessLog.AccessType.LOGIN);
+                                                        oAuth2LoginSuccessHandler.onAuthenticationSuccess(request,
+                                                                        response, authentication);
+                                                }))
                                 .exceptionHandling(exception -> exception
                                                 .accessDeniedHandler(accessDeniedHandler()))
                                 // JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 등록
@@ -122,5 +135,20 @@ public class SecurityConfig {
         @Bean
         public PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
+        }
+
+        // [woo] 클라이언트 IP 추출 헬퍼 메서드 (backup 코드 복구)
+        private String getClientIp(HttpServletRequest request) {
+                String ip = request.getHeader("X-Forwarded-For");
+                if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+                        ip = request.getHeader("Proxy-Client-IP");
+                }
+                if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+                        ip = request.getHeader("WL-Proxy-Client-IP");
+                }
+                if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+                        ip = request.getRemoteAddr();
+                }
+                return ip;
         }
 }

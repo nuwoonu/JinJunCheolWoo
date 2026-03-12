@@ -128,7 +128,7 @@ public class StudentDTO {
         private String email;
         private String code;
         private String latestClass;
-        private String status;
+        private String statusName;
 
         public SummaryResponse(User user) {
             this.uid = user.getUid();
@@ -137,7 +137,7 @@ public class StudentDTO {
             StudentInfo info = user.getInfo(StudentInfo.class);
             if (info != null) {
                 this.code = info.getCode();
-                this.status = info.getStatus() != null ? info.getStatus().getDescription() : "-";
+                this.statusName = info.getStatus() != null ? info.getStatus().name() : null;
                 if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getClassroom() != null) {
                     StudentAssignment a = info.getCurrentAssignment();
                     this.latestClass = a.getSchoolYear() + "년 " + a.getGrade() + "-" + a.getClassNum() + "-"
@@ -162,7 +162,6 @@ public class StudentDTO {
         private String email;
         private String code;
         private String statusName;
-        private String statusDescription;
         private String basicHabits;
         private String specialNotes;
         private List<AssignmentInfo> assignments;
@@ -176,7 +175,6 @@ public class StudentDTO {
             if (info != null) {
                 this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : "";
-                this.statusDescription = info.getStatus() != null ? info.getStatus().getDescription() : "";
                 this.basicHabits = info.getBasicHabits();
                 this.specialNotes = info.getSpecialNotes();
                 this.assignments = info.getAssignments().stream()
@@ -219,7 +217,7 @@ public class StudentDTO {
         public LinkedGuardian(com.example.schoolmate.common.entity.info.FamilyRelation relation) {
             this.parentId = relation.getParentInfo().getId();
             this.name = relation.getParentInfo().getParentName();
-            this.phone = relation.getParentInfo().getPhoneNumber();
+            this.phone = relation.getParentInfo().getPhone();
             this.relationship = relation.getRelationship().getDescription();
             this.relationshipCode = relation.getRelationship().name();
         }

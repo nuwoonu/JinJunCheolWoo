@@ -13,8 +13,6 @@ import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
-import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
-import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
@@ -41,8 +39,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
-    private final StudentInfoRepository studentInfoRepository;
-    private final TeacherInfoRepository teacherInfoRepository;
     private final ParentInfoRepository parentInfoRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
@@ -152,7 +148,7 @@ public class UserService {
         ParentInfo parentInfo = new ParentInfo();
         parentInfo.setUser(user);
         parentInfo.setParentName(dto.getName());
-        parentInfo.setPhoneNumber(dto.getPhoneNumber());
+        parentInfo.setPhone(dto.getPhoneNumber());
         parentInfo.setStatus(ParentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
 
         // ========== [변경] 중복 code 체크 추가 (2025-01-29 woo) ==========
@@ -323,7 +319,7 @@ public class UserService {
         ParentInfo parentInfo = user.getInfo(ParentInfo.class);
         if (parentInfo != null) {
             builder.role(UserRole.PARENT)
-                    .phoneNumber(parentInfo.getPhoneNumber());
+                    .phoneNumber(parentInfo.getPhone());
         }
 
         // 기본 역할 설정 (Info가 없는 경우)

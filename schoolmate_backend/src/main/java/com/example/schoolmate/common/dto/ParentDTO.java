@@ -3,7 +3,6 @@ package com.example.schoolmate.common.dto;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
-import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
@@ -94,7 +93,6 @@ public class ParentDTO {
         private String name;
         private String code;
         private String phone;
-        private String status;
         private String statusName;
         private String email;
         private boolean linked;
@@ -104,8 +102,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
-            this.status = entity.getStatus().getDescription();
+            this.phone = entity.getPhone();
             this.statusName = entity.getStatus().name();
             this.linked = entity.getUser() != null;
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";
@@ -157,7 +154,6 @@ public class ParentDTO {
         private String code;
         private String email;
         private String phone;
-        private String status;
         private String statusName;
         private List<LinkedStudent> children;
         private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
@@ -166,8 +162,7 @@ public class ParentDTO {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
-            this.phone = entity.getPhoneNumber();
-            this.status = entity.getStatus().getDescription();
+            this.phone = entity.getPhone();
             this.statusName = entity.getStatus().name();
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";
             this.children = entity.getChildrenRelations().stream()
