@@ -1,8 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import api from '../../api/auth'
+import { useAuth } from '../../contexts/AuthContext'
 import '../../styles/register.css'
 
+const roleRedirects: Record<string, string> = {
+  ADMIN: '/parkjoon/admin/dashboard',
+  TEACHER: '/teacher/dashboard',
+  STUDENT: '/student/dashboard',
+  PARENT: '/parent/dashboard',
+}
+
 export default function Register() {
+  // [woo] 이미 로그인된 상태면 해당 대시보드로 자동 리다이렉트
+  const { user, loading: authLoading } = useAuth()
+  useEffect(() => {
+    // [woo] authLoading 완료 후 체크 (로딩 중엔 user가 null이라 오탐 방지)
+    // [woo] 로그인 상태로 /register 접근 시 대시보드로 튕김
+    if (!authLoading && user?.authenticated && user.role) {
+      window.location.href = roleRedirects[user.role] ?? '/'
+    }
+  }, [user, authLoading])
   const [showEmailForm, setShowEmailForm] = useState(false)
   const [form, setForm] = useState({
     name: '',

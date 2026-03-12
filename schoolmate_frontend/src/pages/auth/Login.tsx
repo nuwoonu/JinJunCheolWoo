@@ -14,6 +14,8 @@ export default function Login() {
   // [woo] 이미 로그인된 상태면 해당 대시보드로 자동 리다이렉트
   const { user, loading: authLoading } = useAuth()
   useEffect(() => {
+    // [woo] authLoading 완료 후 체크 (로딩 중엔 user가 null이라 오탐 방지)
+    // [woo] 로그아웃 후 /login 접근 시: 토큰 없음 → getMe() unauthenticated → 조건 미충족 → 리다이렉트 안 함
     if (!authLoading && user?.authenticated && user.role) {
       window.location.href = roleRedirects[user.role] ?? '/'
     }
