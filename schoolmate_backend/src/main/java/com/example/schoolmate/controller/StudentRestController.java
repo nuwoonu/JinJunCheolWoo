@@ -38,11 +38,11 @@ public class StudentRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 학생 정보 조회 (UID)
-    // GET /api/students/{uid}
+    // 학생 정보 조회 (ID)
+    // GET /api/students/{id}
     @GetMapping("/{id}")
     public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
-        StudentResponseDTO response = studentService.getStudentByUid(id);
+        StudentResponseDTO response = studentService.getStudentById(id);
         return ResponseEntity.ok(response);
     }
 
@@ -90,28 +90,28 @@ public class StudentRestController {
     }
 
     // 학생 정보 수정
-    // PUT /api/students/{uid}
-    @PutMapping("/{uid}")
+    // PUT /api/students/{id}
+    @PutMapping("/{id}")
     public ResponseEntity<StudentResponseDTO> updateStudent(
-            @PathVariable Long uid,
+            @PathVariable Long id,
             @Validated @RequestBody StudentUpdateDTO updateDTO) {
-        StudentResponseDTO response = studentService.updateStudent(uid, updateDTO);
+        StudentResponseDTO response = studentService.updateStudent(id, updateDTO);
         return ResponseEntity.ok(response);
     }
 
     // 학생 삭제 (소프트 삭제 - status를 INACTIVE로 변경)
-    // DELETE /api/students/{uid}
-    @DeleteMapping("/{uid}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long uid) {
-        studentService.deleteStudent(uid);
+    // DELETE /api/students/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+        studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
 
     // 학생 완전 삭제 (물리적 삭제)
-    // DELETE /api/students/{uid}/permanent
-    @DeleteMapping("/{uid}/permanent")
-    public ResponseEntity<Void> permanentDeleteStudent(@PathVariable Long uid) {
-        studentService.permanentDeleteStudent(uid);
+    // DELETE /api/students/{id}/permanent
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> permanentDeleteStudent(@PathVariable Long id) {
+        studentService.permanentDeleteStudent(id);
         return ResponseEntity.noContent().build();
     }
 }
