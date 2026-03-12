@@ -113,7 +113,8 @@ export default function AdminLayout({ children, msg, error }: {
               type="button"
               className="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center"
               onClick={() => {
-                localStorage.clear()
+                localStorage.removeItem('accessToken')
+                localStorage.removeItem('refreshToken')
                 document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
                 window.location.href = '/login'
               }}

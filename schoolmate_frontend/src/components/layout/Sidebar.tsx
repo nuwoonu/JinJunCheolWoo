@@ -120,7 +120,8 @@ export default function Sidebar() {
                       /* ignore */
                     }
                     // [woo] 2. localStorage의 accessToken, refreshToken 제거
-                    localStorage.clear();
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken");
                     // [woo] 3. JS 쿠키 삭제 (서버 응답 실패 시 보험용)
                     document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
                     // [woo] 4. /login으로 이동 - Main/Login/Register 모두 로그인 상태 감지 시 대시보드로 튕기지만
