@@ -1,66 +1,68 @@
-import { useEffect, useState } from 'react'
-import { auth } from '../../shared/auth'
+import { useEffect, useState } from "react";
+import { auth } from "../../shared/auth";
 
 // [woo] OAuth2 소셜 로그인 콜백 페이지
 // 백엔드가 리다이렉트한 URL: /oauth2/callback?accessToken=...&refreshToken=...&role=...
 export default function OAuth2Callback() {
-  const [status, setStatus] = useState<'processing' | 'error'>('processing')
-  const [errorMsg, setErrorMsg] = useState('')
+  const [status, setStatus] = useState<"processing" | "error">("processing");
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const accessToken = params.get('accessToken')
-    const refreshToken = params.get('refreshToken')
-    const role = params.get('role')
-    const error = params.get('error')
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get("accessToken");
+    const refreshToken = params.get("refreshToken");
+    const role = params.get("role");
+    const error = params.get("error");
 
     if (error) {
-      setErrorMsg('소셜 로그인 중 오류가 발생했습니다: ' + error)
-      setStatus('error')
-      return
+      setErrorMsg("소셜 로그인 중 오류가 발생했습니다: " + error);
+      setStatus("error");
+      return;
     }
 
     if (!accessToken || !refreshToken || !role) {
-      setErrorMsg('로그인 정보가 올바르지 않습니다.')
-      setStatus('error')
-      return
+      setErrorMsg("로그인 정보가 올바르지 않습니다.");
+      setStatus("error");
+      return;
     }
 
-    auth.setTokens(accessToken, refreshToken)
+    auth.setTokens(accessToken, refreshToken);
 
     // [woo] 역할별 대시보드로 이동
     switch (role) {
-      case 'GUEST':
-        window.location.href = '/select-role'
-        break
-      case 'TEACHER':
-        window.location.href = '/teacher/dashboard'
-        break
-      case 'STUDENT':
-        window.location.href = '/student/dashboard'
-        break
-      case 'PARENT':
-        window.location.href = '/parent/dashboard'
-        break
-      case 'ADMIN':
-        window.location.href = '/parkjoon/admin/dashboard'
-        break
+      case "GUEST":
+        window.location.href = "/select-role";
+        break;
+      case "TEACHER":
+        window.location.href = "/teacher/dashboard";
+        break;
+      case "STUDENT":
+        window.location.href = "/student/dashboard";
+        break;
+      case "PARENT":
+        window.location.href = "/parent/dashboard";
+        break;
+      case "ADMIN":
+        window.location.href = "/admin/dashboard";
+        break;
       default:
-        window.location.href = '/select-role'
+        window.location.href = "/select-role";
     }
-  }, [])
+  }, []);
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
           <h2 style={styles.title}>로그인 실패</h2>
           <p style={styles.message}>{errorMsg}</p>
-          <a href="/login" style={styles.btn}>로그인 페이지로 이동</a>
+          <a href="/login" style={styles.btn}>
+            로그인 페이지로 이동
+          </a>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -70,30 +72,45 @@ export default function OAuth2Callback() {
         <p style={styles.message}>로그인 처리 중...</p>
       </div>
     </div>
-  )
+  );
 }
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    minHeight: '100vh', background: '#f3f4f6',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "100vh",
+    background: "#f3f4f6",
   },
   card: {
-    background: 'white', borderRadius: 12, padding: '48px 40px',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.08)', textAlign: 'center',
-    maxWidth: 400, width: '100%',
+    background: "white",
+    borderRadius: 12,
+    padding: "48px 40px",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+    textAlign: "center",
+    maxWidth: 400,
+    width: "100%",
   },
-  title: { color: '#111827', marginBottom: 8, fontSize: 20 },
-  message: { color: '#6b7280', marginBottom: 24, fontSize: 15 },
+  title: { color: "#111827", marginBottom: 8, fontSize: 20 },
+  message: { color: "#6b7280", marginBottom: 24, fontSize: 15 },
   spinner: {
-    width: 40, height: 40, border: '3px solid #e5e7eb',
-    borderTop: '3px solid #25A194', borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-    margin: '0 auto 20px',
+    width: 40,
+    height: 40,
+    border: "3px solid #e5e7eb",
+    borderTop: "3px solid #25A194",
+    borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+    margin: "0 auto 20px",
   },
   btn: {
-    display: 'inline-block', background: '#25A194', color: 'white',
-    padding: '10px 24px', borderRadius: 8, textDecoration: 'none',
-    fontSize: 14, fontWeight: 600,
+    display: "inline-block",
+    background: "#25A194",
+    color: "white",
+    padding: "10px 24px",
+    borderRadius: 8,
+    textDecoration: "none",
+    fontSize: 14,
+    fontWeight: 600,
   },
-}
+};

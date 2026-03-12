@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 
 // [joon] 학생 등록
-
-const BASE = '/parkjoon/admin'
 const RELATION_LABEL: Record<string, string> = { FATHER: '부', MOTHER: '모', GRANDFATHER: '조부', GRANDMOTHER: '조모', OTHER: '기타' }
 
 export default function StudentCreate() {
@@ -51,7 +50,7 @@ export default function StudentCreate() {
       classroomId: form.classroomId || null,
       guardians: guardians.map(g => ({ parentId: g.parentId, relationship: g.relation }))
     })
-    navigate(`${BASE}/students`)
+    navigate(ADMIN_ROUTES.STUDENTS.LIST)
   }
 
   return (

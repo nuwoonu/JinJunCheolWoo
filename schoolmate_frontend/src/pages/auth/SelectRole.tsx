@@ -33,7 +33,7 @@ export default function SelectRole() {
     STUDENT: '/student/dashboard',
     TEACHER: '/teacher/dashboard',
     PARENT: '/parent/dashboard',
-    ADMIN: '/parkjoon/admin/dashboard',
+    ADMIN: '/admin/dashboard',
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

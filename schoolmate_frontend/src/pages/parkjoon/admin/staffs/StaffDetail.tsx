@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
 import { STAFF_STATUS, EMPLOYMENT_TYPE, STATUS_DEFAULT } from '../../../../constants/statusConfig'
-
-const BASE = '/parkjoon/admin'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 const DEPARTMENTS = ['행정실', '시설관리실', '급식실', '전산실', '당직실', '기타']
 
 const SYSTEM_ROLES = [
@@ -80,7 +79,7 @@ export default function StaffDetail() {
   return (
     <AdminLayout>
       <div className="mb-4">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`${BASE}/staffs`)}>
+        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(ADMIN_ROUTES.STAFFS.LIST)}>
           <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
         </button>
       </div>

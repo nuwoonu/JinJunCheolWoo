@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
-
-const BASE = "/parkjoon/admin";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 export default function ClassCreate() {
   const navigate = useNavigate();
@@ -25,7 +24,7 @@ export default function ClassCreate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await admin.post("/classes", form);
-    navigate(`${BASE}/classes`);
+    navigate(ADMIN_ROUTES.CLASSES.LIST);
   };
 
   return (

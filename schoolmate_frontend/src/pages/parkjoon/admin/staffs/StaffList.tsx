@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
 import { STAFF_STATUS, EMPLOYMENT_TYPE, STATUS_DEFAULT } from "../../../../constants/statusConfig";
-
-const BASE = "/parkjoon/admin";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 export default function StaffList() {
   const [page, setPage] = useState<any>(null);
@@ -192,7 +191,7 @@ export default function StaffList() {
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
           </button>
-          <Link to={`${BASE}/staffs/create`} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.STAFFS.CREATE} className="btn btn-primary">
             <i className="bi bi-person-plus-fill" /> 신규 직원 등록
           </Link>
         </div>
@@ -310,7 +309,7 @@ export default function StaffList() {
                   <td className="ps-4 text-secondary">{s.code}</td>
                   <td>
                     <Link
-                      to={`${BASE}/staffs/${s.uid}`}
+                      to={ADMIN_ROUTES.STAFFS.DETAIL(s.uid)}
                       className="fw-bold text-decoration-none text-dark"
                     >
                       {s.name}
@@ -334,7 +333,7 @@ export default function StaffList() {
                   <td>{(() => { const cfg = STAFF_STATUS[s.statusName] ?? STATUS_DEFAULT; return <span className={`badge ${cfg.badge}`}>{cfg.label}</span> })()}</td>
                   <td className="text-end pe-4">
                     <Link
-                      to={`${BASE}/staffs/${s.uid}`}
+                      to={ADMIN_ROUTES.STAFFS.DETAIL(s.uid)}
                       className="btn btn-sm btn-outline-primary"
                     >
                       상세보기

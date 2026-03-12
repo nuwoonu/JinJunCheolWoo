@@ -41,7 +41,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString(exclude = { "assignments", "familyRelations", "currentAssignment" })
-public class StudentInfo extends BaseInfo {
+public class StudentInfo extends SchoolMemberInfo {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "current_assignment_id")
     private StudentAssignment currentAssignment;

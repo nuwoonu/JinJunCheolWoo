@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
-
-const BASE = '/parkjoon/admin'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 const DEPARTMENTS = ['교무부', '학생부', '연구부', '진로진학부', '환경부', '체육부']
 const POSITIONS = ['교장', '교감', '수석교사', '부장교사', '평교사', '기간제교사']
 
@@ -14,7 +13,7 @@ export default function TeacherCreate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await admin.post('/teachers', form)
-    navigate(`${BASE}/teachers`)
+    navigate(ADMIN_ROUTES.TEACHERS.LIST)
   }
 
   return (
