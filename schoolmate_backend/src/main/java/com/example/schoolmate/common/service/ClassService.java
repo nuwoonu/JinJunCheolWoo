@@ -143,6 +143,35 @@ public class ClassService {
     }
 
     @Transactional(readOnly = true)
+    public List<ClassDTO.StudentSummary> getUnassignedStudents(int year, String keyword) {
+        // 모든 사용자 조회 후 학생인 경우만 필터링 (Repository 메서드가 없으므로 인메모리 필터링 사용)
+        List<User> allUsers = userRepository.findAll();
+
+        return allUsers.stream()
+                .filter(u -> u.getInfo(StudentInfo.class) != null) // 학생 정보가 있는 유저만
+                .filter(u -> {
+                    // 키워드 검색 (이름 또는 학번)
+                    if (keyword == null || keyword.isBlank())
+                        return true;
+                    String k = keyword.trim();
+                    StudentInfo info = u.getInfo(StudentInfo.class);
+                    return u.getName().contains(k) || (info.getCode() != null && info.getCode().contains(k));
+                })
+                .filter(u -> {
+                    // 해당 학년도에 배정된 기록이 없는지 확인
+                    StudentInfo info = u.getInfo(StudentInfo.class);
+                    return info.getAssignments().stream()
+                            .noneMatch(a -> a.getSchoolYear() == year);
+                })
+                .map(u -> {
+                    StudentInfo info = u.getInfo(StudentInfo.class);
+                    return new ClassDTO.StudentSummary(
+                            u.getUid(), u.getName(), info.getCode(), null, "-", info.getStatus().getDescription());
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<ClassDTO.TeacherSelectResponse> getAvailableTeachers(int year, Long currentCid) {
         // 1. 전체 재직 교사 조회
         TeacherDTO.TeacherSearchCondition cond = new TeacherDTO.TeacherSearchCondition();

@@ -80,7 +80,7 @@ public class SecurityConfig {
                                                 // [woo] NEIS 공개 API - 인증 불필요
                                                 .requestMatchers("/api/calendar/**", "/api/meals/**").permitAll()
                                                 // 관리자 전용
-                                                .requestMatchers("/api/admin/**", "/parkjoon/admin/**").hasRole("ADMIN")
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                                 // 교사 관리(추가/수정/삭제) - ADMIN만
                                                 .requestMatchers("/api/teacher/add", "/api/teacher/edit",
                                                                 "/api/teacher/delete")

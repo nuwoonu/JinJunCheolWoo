@@ -21,11 +21,6 @@ export default defineConfig({
         target: "http://localhost:8080",
         changeOrigin: true,
       },
-      // parkjoon 어드민 REST API만 Spring Boot로 전달
-      "/parkjoon/admin/api": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
     },
   },
 });

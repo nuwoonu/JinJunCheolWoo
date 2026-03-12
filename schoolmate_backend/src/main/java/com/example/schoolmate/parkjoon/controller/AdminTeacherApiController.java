@@ -38,16 +38,11 @@ public class AdminTeacherApiController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> create(@RequestBody TeacherDTO.CreateRequest request) {
+    public ResponseEntity<Void> create(@RequestBody TeacherDTO.CreateRequest request) {
         try {
             teacherService.createTeacher(request);
-            // 이메일로 uid 조회
-            return ResponseEntity.ok(teacherService.getTeacherDetail(
-                    teacherService.getTeacherList(null, Pageable.unpaged())
-                            .stream().filter(t -> t.getEmail() != null && t.getEmail().equals(request.getEmail()))
-                            .findFirst().map(TeacherDTO.DetailResponse::getUid).orElse(0L))
-                    .getUid());
-        } catch (Exception e) {
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }

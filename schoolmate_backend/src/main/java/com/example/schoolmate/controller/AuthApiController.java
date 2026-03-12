@@ -5,8 +5,11 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
+import com.example.schoolmate.domain.log.entity.AccessLog;
+import com.example.schoolmate.domain.log.service.LogService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +22,10 @@ import java.util.Map;
 /**
  * JWT 기반 인증 REST API
  * - POST /api/auth/register : 이메일 회원가입 → 가입 즉시 JWT 발급
- * - POST /api/auth/login    : 이메일/비밀번호 로그인 → JWT 발급
- * - POST /api/auth/refresh  : Refresh Token으로 새 Access Token 발급
- * - POST /api/auth/logout   : 로그아웃 (Refresh Token 삭제)
- * - GET  /api/auth/me       : 현재 로그인 사용자 정보 반환
+ * - POST /api/auth/login : 이메일/비밀번호 로그인 → JWT 발급
+ * - POST /api/auth/refresh : Refresh Token으로 새 Access Token 발급
+ * - POST /api/auth/logout : 로그아웃 (Refresh Token 삭제)
+ * - GET /api/auth/me : 현재 로그인 사용자 정보 반환
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -33,12 +36,12 @@ public class AuthApiController {
     private final AuthService authService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final LogService logService;
 
     /**
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
      */
     @PostMapping("/register")
-    @Transactional
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         String name = body.get("name");
         String email = body.get("email");
@@ -68,8 +71,8 @@ public class AuthApiController {
             return ResponseEntity.ok(result);
 
         } catch (IllegalStateException e) {
-            // 이메일 중복
-            return ResponseEntity.status(409).body(Map.of("message", e.getMessage()));
+            // [woo] 이메일 중복 - @Transactional 제거 후 IllegalStateException 정상 전파되도록 수정
+            return ResponseEntity.status(409).body(Map.of("message", "중복된 이메일입니다. 다른 이메일을 입력해주세요."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
@@ -79,7 +82,7 @@ public class AuthApiController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpServletRequest request) {
         String email = body.get("email");
         String password = body.get("password");
 
@@ -89,8 +92,12 @@ public class AuthApiController {
 
         try {
             Map<String, Object> result = authService.login(email, password);
+            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"),
+                    AccessLog.AccessType.LOGIN);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
+            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"),
+                    AccessLog.AccessType.LOGIN_FAIL);
             return ResponseEntity.status(401).body(Map.of("message", "이메일 또는 비밀번호가 올바르지 않습니다."));
         }
     }
@@ -112,11 +119,27 @@ public class AuthApiController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal AuthUserDTO user) {
+    public ResponseEntity<?> logout(@AuthenticationPrincipal AuthUserDTO user, HttpServletRequest request) {
         if (user != null) {
             authService.logout(user.getUsername());
+            logService.logAccess(user.getUsername(), getClientIp(request), request.getHeader("User-Agent"),
+                    AccessLog.AccessType.LOGOUT);
         }
         return ResponseEntity.ok(Map.of("message", "로그아웃되었습니다."));
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
     }
 
     @GetMapping("/me")
@@ -134,8 +157,7 @@ public class AuthApiController {
                 "uid", user.getCustomUserDTO().getUid(),
                 "email", user.getUsername(),
                 "name", name != null ? name : "소셜사용자",
-                "role", roleName
-        ));
+                "role", roleName));
     }
 
     /**
@@ -174,8 +196,7 @@ public class AuthApiController {
             return ResponseEntity.ok(Map.of(
                     "accessToken", tokens.get("accessToken"),
                     "refreshToken", tokens.get("refreshToken"),
-                    "role", userRole.name()
-            ));
+                    "role", userRole.name()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {

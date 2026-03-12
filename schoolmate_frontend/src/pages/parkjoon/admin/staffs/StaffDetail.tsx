@@ -2,15 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
+import { STAFF_STATUS, EMPLOYMENT_TYPE, STATUS_DEFAULT } from '../../../../constants/statusConfig'
 
 const BASE = '/parkjoon/admin'
 const DEPARTMENTS = ['행정실', '시설관리실', '급식실', '전산실', '당직실', '기타']
-const EMPLOYMENT_TYPES = [
-  { value: 'PERMANENT', label: '정규직' },
-  { value: 'INDEFINITE_CONTRACT', label: '무기계약직' },
-  { value: 'FIXED_TERM', label: '기간제/계약직' },
-  { value: 'PART_TIME', label: '시간제/단기' },
-]
+
 const SYSTEM_ROLES = [
   { value: 'STAFF', label: '교직원' },
   { value: 'ADMIN', label: '관리자' },
@@ -81,11 +77,6 @@ export default function StaffDetail() {
 
   const roles: string[] = staff.roles ?? []
 
-  const statusBtnClass = (s: string) =>
-    s === 'EMPLOYED' ? 'btn-success' : s === 'LEAVE' ? 'btn-warning' : 'btn-secondary'
-  const statusLabel = (s: string) =>
-    s === 'EMPLOYED' ? '재직' : s === 'LEAVE' ? '휴직' : '퇴직'
-
   return (
     <AdminLayout>
       <div className="mb-4">
@@ -109,9 +100,11 @@ export default function StaffDetail() {
               </div>
               <h5 className="mb-1 fw-bold">{staff.name}</h5>
               <p className="text-muted small mb-2">{staff.email}</p>
-              <button type="button" className={`btn ${statusBtnClass(staff.statusName)} w-100 rounded-pill mb-3`} style={{ pointerEvents: 'none' }}>
-                {statusLabel(staff.statusName)}
-              </button>
+              {(() => { const cfg = STAFF_STATUS[staff.statusName] ?? STATUS_DEFAULT; return (
+                <button type="button" className={`btn ${cfg.btn} w-100 rounded-pill mb-3`} style={{ pointerEvents: 'none' }}>
+                  {cfg.label}
+                </button>
+              ) })()}
               <hr />
               <div className="text-start px-2">
                 <div className="mb-2">
@@ -124,9 +117,7 @@ export default function StaffDetail() {
                 </div>
                 <div>
                   <small className="text-muted d-block">고용형태</small>
-                  <span className={`badge ${staff.employmentType === 'PERMANENT' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-info-subtle text-info border border-info-subtle'}`}>
-                    {EMPLOYMENT_TYPES.find(t => t.value === staff.employmentType)?.label ?? staff.employmentType ?? '-'}
-                  </span>
+                  {(() => { const cfg = EMPLOYMENT_TYPE[staff.employmentType]; return <span className={`badge ${cfg?.badge ?? 'bg-secondary-subtle text-secondary'}`}>{cfg?.label ?? staff.employmentType ?? '-'}</span> })()}
                 </div>
               </div>
             </div>
@@ -173,9 +164,9 @@ export default function StaffDetail() {
                     <div className="col-md-6">
                       <label className="form-label fw-bold">상태</label>
                       <select className="form-select" value={form.statusName} onChange={e => setForm(f => ({ ...f, statusName: e.target.value }))}>
-                        <option value="EMPLOYED">재직</option>
-                        <option value="LEAVE">휴직</option>
-                        <option value="RETIRED">퇴직</option>
+                        {Object.entries(STAFF_STATUS).map(([value, { label }]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="col-md-6">
@@ -196,7 +187,9 @@ export default function StaffDetail() {
                     <div className="col-md-6">
                       <label className="form-label fw-bold">고용형태</label>
                       <select className="form-select" value={form.employmentType} onChange={e => setForm(f => ({ ...f, employmentType: e.target.value }))}>
-                        {EMPLOYMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        {Object.entries(EMPLOYMENT_TYPE).map(([value, { label }]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
                       </select>
                     </div>
                     {form.employmentType === 'FIXED_TERM' && (
