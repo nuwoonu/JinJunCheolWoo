@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
-
-const BASE = "/parkjoon/admin";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 export default function NoticeList() {
   const navigate = useNavigate();
@@ -35,7 +34,7 @@ export default function NoticeList() {
     <AdminLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">공지사항 관리</h2>
-        <Link to={`${BASE}/notices/create`} className="btn btn-primary">
+        <Link to={ADMIN_ROUTES.NOTICES.CREATE} className="btn btn-primary">
           <i className="bi bi-pencil-fill" /> 공지 작성
         </Link>
       </div>
@@ -103,7 +102,7 @@ export default function NoticeList() {
                   </td>
                   <td>
                     <Link
-                      to={`${BASE}/notices/${n.id}`}
+                      to={ADMIN_ROUTES.NOTICES.DETAIL(n.id)}
                       className="fw-bold text-decoration-none text-dark"
                     >
                       {n.title}

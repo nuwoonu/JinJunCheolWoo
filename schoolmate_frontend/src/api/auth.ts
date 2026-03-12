@@ -1,4 +1,5 @@
 import axios from "axios";
+import { auth } from "../shared/auth";
 
 const api = axios.create({
   baseURL: "/api",
@@ -7,7 +8,7 @@ const api = axios.create({
 
 // localStorage의 JWT를 Authorization 헤더에 자동 추가
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const token = auth.getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

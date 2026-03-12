@@ -2,9 +2,9 @@ package com.example.schoolmate.common.entity.info;
 
 import java.time.LocalDate;
 
+import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.Gender;
-import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,7 +34,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(exclude = "user")
-public abstract class BaseInfo extends SchoolBaseEntity {
+public abstract class BaseInfo extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

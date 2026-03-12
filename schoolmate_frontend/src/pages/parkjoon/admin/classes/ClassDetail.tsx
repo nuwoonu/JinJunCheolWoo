@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 // [joon] 학급 상세
-
-const BASE = "/parkjoon/admin";
 
 interface Student {
   uid: number;
@@ -99,7 +98,7 @@ export default function ClassDetail() {
       return;
     try {
       await admin.delete(`/classes/${cid}`);
-      navigate(`${BASE}/classes`);
+      navigate(ADMIN_ROUTES.CLASSES.LIST);
     } catch (err: any) {
       setMsg(err.response?.data ?? "삭제 실패");
     }
@@ -162,7 +161,7 @@ export default function ClassDetail() {
       <div className="mb-4">
         <button
           className="btn btn-outline-secondary btn-sm"
-          onClick={() => navigate(`${BASE}/classes`)}
+          onClick={() => navigate(ADMIN_ROUTES.CLASSES.LIST)}
         >
           <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
         </button>
@@ -360,7 +359,7 @@ export default function ClassDetail() {
                               <td>{s.attendanceNum ?? "-"}</td>
                               <td>
                                 <Link
-                                  to={`${BASE}/students/${s.uid}`}
+                                  to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
                                   className="text-primary fw-semibold text-decoration-none"
                                 >
                                   {s.name}

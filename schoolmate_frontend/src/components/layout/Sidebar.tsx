@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSidebar } from "../../contexts/SidebarContext";
+import { ADMIN_ROUTES } from "../../constants/routes";
 
 // [woo] 사이드바 서브메뉴 열림 상태 관리
 // CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전 + 배경색
@@ -36,28 +37,55 @@ function useProfileDropdown() {
 }
 
 export default function Sidebar() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { open, toggle } = useSubmenu();
   const { isOpen, isCollapsed, closeSidebar, toggleCollapse } = useSidebar();
   const profile = useProfileDropdown();
   const role = user?.role ?? "";
-  const ROLE_LABEL: Record<string, string> = { STUDENT: "학생", TEACHER: "선생님", PARENT: "학부모", ADMIN: "관리자" };
+  const ROLE_LABEL: Record<string, string> = {
+    STUDENT: "학생",
+    TEACHER: "선생님",
+    PARENT: "학부모",
+    ADMIN: "관리자",
+  };
 
   const has = (...roles: string[]) => roles.includes(role);
 
   return (
     // [woo] isOpen → sidebar-open (모바일 슬라이드), isCollapsed → active (데스크탑 접힘)
-    <aside className={`sidebar${isOpen ? " sidebar-open" : ""}${isCollapsed ? " active" : ""}`}>
-      <button type="button" className="sidebar-close-btn" onClick={closeSidebar}>
+    <aside
+      className={`sidebar${isOpen ? " sidebar-open" : ""}${isCollapsed ? " active" : ""}`}
+    >
+      <button
+        type="button"
+        className="sidebar-close-btn"
+        onClick={closeSidebar}
+      >
         <iconify-icon icon="radix-icons:cross-2" />
       </button>
 
       <div>
         <div className="sidebar-logo d-flex align-items-center justify-content-between">
           <a href="/main">
-            <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
-            <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="173" height="40" />
-            <img src="/images/schoolmateLogo.png" alt="홈" className="logo-icon" />
+            <img
+              src="/images/schoolmateLogo.png"
+              alt="홈"
+              className="light-logo"
+              width="173"
+              height="40"
+            />
+            <img
+              src="/images/schoolmateLogo.png"
+              alt="홈"
+              className="dark-logo"
+              width="173"
+              height="40"
+            />
+            <img
+              src="/images/schoolmateLogo.png"
+              alt="홈"
+              className="logo-icon"
+            />
           </a>
           {/* [woo] 데스크탑 접기 버튼 → toggleCollapse */}
           <button
@@ -88,15 +116,23 @@ export default function Sidebar() {
                   className="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
                 />
                 <span className="profile-dropdown__contents">
-                  <span className="h6 mb-0 text-md d-block text-primary-light">{user.name ?? user.email}</span>
-                  <span className="text-secondary-light text-sm mb-0 d-block">{ROLE_LABEL[role] ?? role}</span>
+                  <span className="h6 mb-0 text-md d-block text-primary-light">
+                    {user.name ?? user.email}
+                  </span>
+                  <span className="text-secondary-light text-sm mb-0 d-block">
+                    {ROLE_LABEL[role] ?? role}
+                  </span>
                 </span>
               </span>
               <span className="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
-                <i className={`ri-arrow-${profile.isOpen ? "down" : "right"}-s-line`} />
+                <i
+                  className={`ri-arrow-${profile.isOpen ? "down" : "right"}-s-line`}
+                />
               </span>
             </button>
-            <ul className={`dropdown-menu dropdown-menu-lg-end border p-12${profile.isOpen ? " show" : ""}`}>
+            <ul
+              className={`dropdown-menu dropdown-menu-lg-end border p-12${profile.isOpen ? " show" : ""}`}
+            >
               <li>
                 <Link
                   to="/user/profile"
@@ -109,11 +145,7 @@ export default function Sidebar() {
                 <button
                   type="button"
                   className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6 w-100 border-0 bg-transparent"
-                  onClick={() => {
-                    localStorage.clear();
-                    document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-                    window.location.href = "/login";
-                  }}
+                  onClick={signOut}
                 >
                   <i className="ri-shut-down-line" /> 로그아웃
                 </button>
@@ -162,17 +194,20 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/teacher/myclass">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 현황
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급
+                    현황
                   </Link>
                 </li>
                 <li>
                   <Link to="/teacher/myclass/students">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학생
+                    관리
                   </Link>
                 </li>
                 <li>
                   <Link to="/student/list">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생 리스트
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학생
+                    리스트
                   </Link>
                 </li>
               </ul>
@@ -205,13 +240,15 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/student/list">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생 리스트
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학생
+                    리스트
                   </Link>
                 </li>
                 {/* [cheol] 학생 본인 정보 페이지 */}
                 <li>
                   <Link to="/student/myinfo">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
+                    <i className="ri-circle-fill circle-icon w-auto" />{" "}
+                    학생세부사항
                   </Link>
                 </li>
               </ul>
@@ -234,12 +271,14 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/parent/children/status">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 출결 현황
+                    <i className="ri-circle-fill circle-icon w-auto" /> 출결
+                    현황
                   </Link>
                 </li>
                 <li>
                   <Link to="/parent/dashboard">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적
+                    조회
                   </Link>
                 </li>
               </ul>
@@ -262,7 +301,8 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/teacher/list">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 교직원 목록
+                    <i className="ri-circle-fill circle-icon w-auto" /> 교직원
+                    목록
                   </Link>
                 </li>
               </ul>
@@ -285,13 +325,15 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/teacher/parent/list">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 목록
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모
+                    목록
                   </Link>
                 </li>
                 {has("TEACHER") && (
                   <li>
                     <Link to="/consultation">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 학부모 상담
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학부모
+                      상담
                     </Link>
                   </li>
                 )}
@@ -315,7 +357,8 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/board/school-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학교 공지
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학교
+                    공지
                   </Link>
                 </li>
               </ul>
@@ -338,14 +381,20 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 {/* [cheol] 학생 본인 학년으로 이동, TEACHER/ADMIN은 1학년 기본 */}
                 <li>
-                  <Link to={role === "STUDENT" ? `/board/grade/1` : "/board/grade/1"}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학년 게시판
+                  <Link
+                    to={
+                      role === "STUDENT" ? `/board/grade/1` : "/board/grade/1"
+                    }
+                  >
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학년
+                    게시판
                   </Link>
                 </li>
                 {has("TEACHER", "ADMIN") && (
                   <li>
                     <Link to="/board/teacher">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 교직원 게시판
+                      <i className="ri-circle-fill circle-icon w-auto" /> 교직원
+                      게시판
                     </Link>
                   </li>
                 )}
@@ -356,7 +405,7 @@ export default function Sidebar() {
           {/* [joon] ADMIN 전용 관리 메뉴 */}
           {has("ADMIN") && (
             <li>
-              <Link to="/parkjoon/admin/dashboard">
+              <Link to={ADMIN_ROUTES.DASHBOARD}>
                 <i className="ri-layout-grid-line" />
                 <span>관리자 대시보드</span>
               </Link>
@@ -376,23 +425,27 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/parkjoon/admin/students">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
+                  <Link to={ADMIN_ROUTES.STUDENTS.LIST}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학생
+                    관리
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parkjoon/admin/teachers">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 교사 관리
+                  <Link to={ADMIN_ROUTES.TEACHERS.LIST}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 교사
+                    관리
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parkjoon/admin/parents">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 관리
+                  <Link to={ADMIN_ROUTES.PARENTS.LIST}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모
+                    관리
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parkjoon/admin/staffs">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 교직원 관리
+                  <Link to={ADMIN_ROUTES.STAFFS.LIST}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 교직원
+                    관리
                   </Link>
                 </li>
               </ul>
@@ -412,13 +465,15 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/parkjoon/admin/classes">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 목록
+                  <Link to={ADMIN_ROUTES.CLASSES.LIST}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급
+                    목록
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parkjoon/admin/classes/create">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 생성
+                  <Link to={ADMIN_ROUTES.CLASSES.CREATE}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급
+                    생성
                   </Link>
                 </li>
               </ul>
@@ -426,7 +481,7 @@ export default function Sidebar() {
           )}
           {has("ADMIN") && (
             <li>
-              <Link to="/parkjoon/admin/notices">
+              <Link to={ADMIN_ROUTES.NOTICES.LIST}>
                 <i className="ri-megaphone-line" />
                 <span>공지사항 관리</span>
               </Link>
@@ -446,13 +501,15 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/parkjoon/admin/facilities">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 시설 관리
+                  <Link to={ADMIN_ROUTES.FACILITIES}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 시설
+                    관리
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parkjoon/admin/assets">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 기자재 관리
+                  <Link to={ADMIN_ROUTES.ASSETS}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 기자재
+                    관리
                   </Link>
                 </li>
               </ul>
@@ -472,18 +529,20 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/parkjoon/admin/master/schedule">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학사 일정
+                  <Link to={ADMIN_ROUTES.MASTER.SCHEDULE}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학사
+                    일정
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parkjoon/admin/master/subjects">
+                  <Link to={ADMIN_ROUTES.MASTER.SUBJECTS}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 교과목
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parkjoon/admin/master/settings">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 시스템 설정
+                  <Link to={ADMIN_ROUTES.MASTER.SETTINGS}>
+                    <i className="ri-circle-fill circle-icon w-auto" /> 시스템
+                    설정
                   </Link>
                 </li>
               </ul>
@@ -507,17 +566,20 @@ export default function Sidebar() {
                 {/* [cheol] 성적/시험 관련 React 페이지 */}
                 <li>
                   <Link to="/exam">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적
+                    조회
                   </Link>
                 </li>
                 <li>
                   <Link to="/exam/schedule">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
+                    <i className="ri-circle-fill circle-icon w-auto" /> 시험
+                    일정
                   </Link>
                 </li>
                 <li>
                   <Link to="/exam/result">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적
+                    결과
                   </Link>
                 </li>
               </ul>
@@ -540,12 +602,14 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/attendance/student">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생 출결
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학생
+                    출결
                   </Link>
                 </li>
                 <li>
                   <Link to="/attendance/teacher">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 교사 출결
+                    <i className="ri-circle-fill circle-icon w-auto" /> 교사
+                    출결
                   </Link>
                 </li>
               </ul>
@@ -568,27 +632,32 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/board/parent-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 가정통신문
+                    <i className="ri-circle-fill circle-icon w-auto" />{" "}
+                    가정통신문
                   </Link>
                 </li>
                 <li>
                   <Link to="/board/school-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학교 공지
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학교
+                    공지
                   </Link>
                 </li>
                 <li>
                   <Link to="/board/grade/1">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 공지
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급
+                    공지
                   </Link>
                 </li>
                 <li>
                   <Link to="/school/gallery">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학교 갤러리
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학교
+                    갤러리
                   </Link>
                 </li>
                 <li>
                   <Link to="/school/schedule">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학교 일정
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학교
+                    일정
                   </Link>
                 </li>
               </ul>
@@ -611,7 +680,8 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/consultation/reservation">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 상담 신청
+                    <i className="ri-circle-fill circle-icon w-auto" /> 상담
+                    신청
                   </Link>
                 </li>
               </ul>
@@ -634,12 +704,14 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/board/parent-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 공지
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모
+                    공지
                   </Link>
                 </li>
                 <li>
                   <Link to="/board/parent">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 게시판
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모
+                    게시판
                   </Link>
                 </li>
               </ul>

@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
 import { TEACHER_STATUS, STATUS_DEFAULT } from "../../../../constants/statusConfig";
-
-const BASE = "/parkjoon/admin";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 export default function TeacherList() {
   const [page, setPage] = useState<any>(null);
@@ -134,7 +133,7 @@ export default function TeacherList() {
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 교사 등록
           </button>
-          <Link to={`${BASE}/teachers/create`} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.TEACHERS.CREATE} className="btn btn-primary">
             <i className="bi bi-person-plus-fill" /> 신규 교사 등록
           </Link>
         </div>
@@ -234,7 +233,7 @@ export default function TeacherList() {
                     <td className="ps-4 text-secondary">{t.code}</td>
                     <td>
                       <Link
-                        to={`${BASE}/teachers/${t.uid}`}
+                        to={ADMIN_ROUTES.TEACHERS.DETAIL(t.uid)}
                         className="fw-bold text-decoration-none text-dark"
                       >
                         {t.name}
@@ -255,7 +254,7 @@ export default function TeacherList() {
                     </td>
                     <td className="text-end pe-4">
                       <Link
-                        to={`${BASE}/teachers/${t.uid}`}
+                        to={ADMIN_ROUTES.TEACHERS.DETAIL(t.uid)}
                         className="btn btn-sm btn-outline-primary"
                       >
                         상세보기

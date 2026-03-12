@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
-
-const BASE = "/parkjoon/admin";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 const DEPARTMENTS = ["행정실", "시설관리실", "급식실", "전산실", "당직실", "기타"];
 
 export default function StaffCreate() {
@@ -25,7 +24,7 @@ export default function StaffCreate() {
     const payload: any = { ...form };
     if (form.employmentType !== "FIXED_TERM") delete payload.contractEndDate;
     await admin.post("/staffs", payload);
-    navigate(`${BASE}/staffs`);
+    navigate(ADMIN_ROUTES.STAFFS.LIST);
   };
 
   return (

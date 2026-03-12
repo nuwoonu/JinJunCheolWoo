@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../../components/layout/AdminLayout";
 import admin from "../../../api/adminApi";
+import { ADMIN_ROUTES } from '../../../constants/routes';
 
 // [joon] 관리자 대시보드
-
-const BASE = "/parkjoon/admin";
 
 // 1. 상태 관리를 위한 TypeScript 인터페이스 정의
 interface DashboardStats {
@@ -130,7 +129,7 @@ export default function AdminDashboard() {
               </div>
               <div className="h5 mb-0 fw-bold">
                 <Link
-                  to={`${BASE}/master/schedule`}
+                  to={ADMIN_ROUTES.MASTER.SCHEDULE}
                   className="text-decoration-none text-dark"
                 >
                   일정 확인 →

@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
-
-const BASE = '/parkjoon/admin'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 
 export default function NoticeDetail() {
   const { id } = useParams<{ id: string }>()
@@ -17,7 +16,7 @@ export default function NoticeDetail() {
   const handleDelete = async () => {
     if (!confirm('이 공지사항을 삭제하시겠습니까?')) return
     await admin.delete(`/notices/${id}`)
-    navigate(`${BASE}/notices`)
+    navigate(ADMIN_ROUTES.NOTICES.LIST)
   }
 
   if (!notice) return <AdminLayout><div className="text-center py-5"><div className="spinner-border" /></div></AdminLayout>
@@ -25,7 +24,7 @@ export default function NoticeDetail() {
   return (
     <AdminLayout>
       <div className="mb-4">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`${BASE}/notices`)}>
+        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}>
           <i className="bi bi-arrow-left me-1" /> 목록으로 돌아가기
         </button>
       </div>
@@ -45,7 +44,7 @@ export default function NoticeDetail() {
               </p>
             </div>
             <div className="d-flex gap-2">
-              <button className="btn btn-outline-primary btn-sm" onClick={() => navigate(`${BASE}/notices/${id}/edit`)}>
+              <button className="btn btn-outline-primary btn-sm" onClick={() => navigate(ADMIN_ROUTES.NOTICES.EDIT(id!))}>
                 <i className="bi bi-pencil" /> 수정
               </button>
               <button className="btn btn-outline-danger btn-sm" onClick={handleDelete}>
@@ -58,7 +57,7 @@ export default function NoticeDetail() {
           <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '1rem' }}>{notice.content}</pre>
         </div>
         <div className="card-footer bg-light p-3 text-start">
-          <button className="btn btn-outline-secondary" onClick={() => navigate(`${BASE}/notices`)}>
+          <button className="btn btn-outline-secondary" onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}>
             <i className="bi bi-list" /> 목록으로
           </button>
         </div>

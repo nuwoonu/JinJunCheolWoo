@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../../../components/layout/AdminLayout";
 import admin from "../../../../api/adminApi";
-
-const BASE = "/parkjoon/admin";
+import { ADMIN_ROUTES } from '../../../../constants/routes';
 
 export default function ClassList() {
   const [page, setPage] = useState<any>(null);
@@ -147,7 +146,7 @@ export default function ClassList() {
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
           </button>
-          <Link to={`${BASE}/classes/create`} className="btn btn-primary">
+          <Link to={ADMIN_ROUTES.CLASSES.CREATE} className="btn btn-primary">
             <i className="bi bi-plus-lg" /> 학급 생성
           </Link>
         </div>
@@ -262,7 +261,7 @@ export default function ClassList() {
                   </td>
                   <td className="text-end pe-4">
                     <Link
-                      to={`${BASE}/classes/${c.cid}`}
+                      to={ADMIN_ROUTES.CLASSES.DETAIL(c.cid)}
                       className="btn btn-sm btn-outline-primary"
                     >
                       상세보기

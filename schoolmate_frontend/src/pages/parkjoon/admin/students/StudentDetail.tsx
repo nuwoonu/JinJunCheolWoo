@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../../../../components/layout/AdminLayout'
 import admin from '../../../../api/adminApi'
+import { ADMIN_ROUTES } from '../../../../constants/routes'
 
 // [joon] 학생 상세
-
-const BASE = '/parkjoon/admin'
 
 export default function StudentDetail() {
   const { uid } = useParams<{ uid: string }>()
@@ -78,7 +77,7 @@ export default function StudentDetail() {
   return (
     <AdminLayout msg={msg}>
       <div className="mb-4">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`${BASE}/students`)}>
+        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(ADMIN_ROUTES.STUDENTS.LIST)}>
           <i className="bi bi-arrow-left" /> 목록으로 돌아가기
         </button>
       </div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 
 // [woo] 사이드바 모바일 열림 / 데스크탑 접힘 상태를 React state로 관리
 interface SidebarContextType {

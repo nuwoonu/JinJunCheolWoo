@@ -23,7 +23,7 @@ import lombok.Setter;
 @DiscriminatorValue("STAFF")
 @Getter
 @Setter
-public class StaffInfo extends BaseInfo {
+public class StaffInfo extends SchoolMemberInfo {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private StaffStatus status = StaffStatus.EMPLOYED;
