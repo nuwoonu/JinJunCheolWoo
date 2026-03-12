@@ -182,7 +182,16 @@ export default function AdminLayout({
             <button
               type="button"
               className="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center"
+<<<<<<< HEAD
               onClick={signOut}
+=======
+              onClick={() => {
+                localStorage.removeItem('accessToken')
+                localStorage.removeItem('refreshToken')
+                document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+                window.location.href = '/login'
+              }}
+>>>>>>> developMerge
             >
               <i className="bi bi-box-arrow-right me-2" /> 로그아웃
             </button>

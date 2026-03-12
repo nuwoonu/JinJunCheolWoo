@@ -145,7 +145,28 @@ export default function Sidebar() {
                 <button
                   type="button"
                   className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6 w-100 border-0 bg-transparent"
+<<<<<<< HEAD
                   onClick={signOut}
+=======
+                  // 로그아웃을 클릭하면
+                  onClick={async () => {
+                    // [woo] 1. 백엔드 logout API 호출 → 응답의 Set-Cookie 헤더로 accessToken 쿠키 서버 측 만료
+                    // 더블 체크 개념으로 1번에서 서버측 삭제 에러발생시 JS로 쿠키 삭제 한다 (이런 경우 브라우저 quirk로 실패할 수 있어 서버 측 삭제가 더 신뢰성 높음)
+                    try {
+                      await apiLogout();
+                    } catch {
+                      /* ignore */
+                    }
+                    // [woo] 2. localStorage의 accessToken, refreshToken 제거
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken");
+                    // [woo] 3. JS 쿠키 삭제 (서버 응답 실패 시 보험용)
+                    document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+                    // [woo] 4. /login으로 이동 - Main/Login/Register 모두 로그인 상태 감지 시 대시보드로 튕기지만
+                    //        위 1~3 완료 후엔 getMe()가 unauthenticated 반환하므로 리다이렉트 발생 안 함
+                    window.location.href = "/login";
+                  }}
+>>>>>>> developMerge
                 >
                   <i className="ri-shut-down-line" /> 로그아웃
                 </button>
