@@ -327,7 +327,8 @@ public class TeacherService {
 
         if (updateDTO.getClassroomId() != null) {
             Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
-                    .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
             if (student.getCurrentAssignment() != null) {
                 student.getCurrentAssignment().setClassroom(classroom);
             }
@@ -397,7 +398,7 @@ public class TeacherService {
         log.info("성적 입력 - 교사: {}, 학생: {}, 과목: {}",
                 teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectCode());
 
-        TeacherInfo teacher = teacherInfoRepository.findById(teacherId)
+        teacherInfoRepository.findById(teacherId)
                 .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
 
         Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())

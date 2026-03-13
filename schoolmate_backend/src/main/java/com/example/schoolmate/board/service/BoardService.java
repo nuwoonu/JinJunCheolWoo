@@ -7,8 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.board.dto.BoardRequestDTO;
-import com.example.schoolmate.board.dto.BoardResponseDTO;
+import com.example.schoolmate.board.dto.BoardDTO;
 import com.example.schoolmate.board.entity.Board;
 import com.example.schoolmate.board.entity.BoardType;
 import com.example.schoolmate.board.repository.BoardRepository;
@@ -42,88 +41,100 @@ public class BoardService {
     /**
      * 학교 공지 목록
      */
-    public Page<BoardResponseDTO> getSchoolNotices(Pageable pageable) {
-        return boardRepository.findByBoardType(BoardType.SCHOOL_NOTICE, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+    public Page<BoardDTO.Response> getSchoolNotices(String keyword, Pageable pageable) {
+        if (keyword != null && !keyword.isBlank()) {
+            return boardRepository.findByBoardTypeAndKeywordOrderByImportantDesc(BoardType.SCHOOL_NOTICE, keyword, pageable)
+                    .map(BoardDTO.Response::fromEntityForList);
+        }
+        return boardRepository.findByBoardTypeOrderByImportantDesc(BoardType.SCHOOL_NOTICE, pageable)
+                .map(BoardDTO.Response::fromEntityForList);
+    }
+
+    /**
+     * 학급 공지 목록
+     */
+    public Page<BoardDTO.Response> getClassNotices(Long classroomId, Pageable pageable) {
+        return boardRepository.findByBoardTypeAndTargetClassroomId(BoardType.CLASS_NOTICE, classroomId, pageable)
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학년 게시판 목록
      */
-    public Page<BoardResponseDTO> getGradeBoard(int grade, Pageable pageable) {
+    public Page<BoardDTO.Response> getGradeBoard(int grade, Pageable pageable) {
         return boardRepository.findByBoardTypeAndTargetGrade(BoardType.GRADE_BOARD, grade, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학급 게시판 목록
      */
-    public Page<BoardResponseDTO> getClassBoard(Long classroomId, Pageable pageable) {
+    public Page<BoardDTO.Response> getClassBoard(Long classroomId, Pageable pageable) {
         return boardRepository.findByBoardTypeAndTargetClassroomId(BoardType.CLASS_BOARD, classroomId, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 교직원 게시판 목록
      */
-    public Page<BoardResponseDTO> getTeacherBoard(Pageable pageable) {
+    public Page<BoardDTO.Response> getTeacherBoard(Pageable pageable) {
         return boardRepository.findTeacherBoard(BoardType.TEACHER_BOARD, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학부모 공지 목록 (전체)
      */
-    public Page<BoardResponseDTO> getParentNotices(Pageable pageable) {
+    public Page<BoardDTO.Response> getParentNotices(Pageable pageable) {
         return boardRepository.findByBoardType(BoardType.PARENT_NOTICE, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학부모 공지 목록 (학년별)
      */
-    public Page<BoardResponseDTO> getParentNoticesByGrade(int grade, Pageable pageable) {
+    public Page<BoardDTO.Response> getParentNoticesByGrade(int grade, Pageable pageable) {
         return boardRepository.findParentBoardByGrade(BoardType.PARENT_NOTICE, grade, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학부모 공지 목록 (학급별)
      */
-    public Page<BoardResponseDTO> getParentNoticesByClassroom(Long classroomId, int grade, Pageable pageable) {
+    public Page<BoardDTO.Response> getParentNoticesByClassroom(Long classroomId, int grade, Pageable pageable) {
         return boardRepository.findParentBoardByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학부모 게시판 목록 (전체)
      */
-    public Page<BoardResponseDTO> getParentBoard(Pageable pageable) {
+    public Page<BoardDTO.Response> getParentBoard(Pageable pageable) {
         return boardRepository.findByBoardType(BoardType.PARENT_BOARD, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학부모 게시판 목록 (학년별)
      */
-    public Page<BoardResponseDTO> getParentBoardByGrade(int grade, Pageable pageable) {
+    public Page<BoardDTO.Response> getParentBoardByGrade(int grade, Pageable pageable) {
         return boardRepository.findParentBoardByGrade(BoardType.PARENT_BOARD, grade, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 학부모 게시판 목록 (학급별)
      */
-    public Page<BoardResponseDTO> getParentBoardByClassroom(Long classroomId, int grade, Pageable pageable) {
+    public Page<BoardDTO.Response> getParentBoardByClassroom(Long classroomId, int grade, Pageable pageable) {
         return boardRepository.findParentBoardByClassroom(BoardType.PARENT_BOARD, classroomId, grade, pageable)
-                .map(BoardResponseDTO::fromEntityForList);
+                .map(BoardDTO.Response::fromEntityForList);
     }
 
     /**
      * 게시물 상세 조회 (조회수 증가)
      */
     @Transactional
-    public BoardResponseDTO getBoard(Long boardId) {
+    public BoardDTO.Response getBoard(Long boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다: " + boardId));
 
@@ -132,14 +143,14 @@ public class BoardService {
         }
 
         board.incrementViewCount();
-        return BoardResponseDTO.fromEntity(board);
+        return BoardDTO.Response.fromEntity(board);
     }
 
     /**
      * [woo] 게시물 상세 조회 - 읽기전용 (조회수 증가 없음, React GET용)
      */
     @Transactional(readOnly = true)
-    public BoardResponseDTO getBoardReadOnly(Long boardId) {
+    public BoardDTO.Response getBoardReadOnly(Long boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다: " + boardId));
 
@@ -147,7 +158,7 @@ public class BoardService {
             throw new IllegalArgumentException("삭제된 게시물입니다.");
         }
 
-        return BoardResponseDTO.fromEntity(board);
+        return BoardDTO.Response.fromEntity(board);
     }
 
     /**
@@ -166,11 +177,11 @@ public class BoardService {
     /**
      * 최근 게시물 (대시보드용)
      */
-    public List<BoardResponseDTO> getRecentBoards(BoardType type, int limit) {
+    public List<BoardDTO.Response> getRecentBoards(BoardType type, int limit) {
         return boardRepository.findTop5ByBoardTypeAndIsDeletedFalseOrderByCreateDateDesc(type)
                 .stream()
                 .limit(limit)
-                .map(BoardResponseDTO::fromEntityForList)
+                .map(BoardDTO.Response::fromEntityForList)
                 .toList();
     }
 
@@ -180,7 +191,7 @@ public class BoardService {
      * 게시물 작성
      */
     @Transactional
-    public BoardResponseDTO createBoard(BoardRequestDTO request, CustomUserDTO userDTO) {
+    public BoardDTO.Response createBoard(BoardDTO.Request request, CustomUserDTO userDTO) {
         // 작성 권한 체크
         validateWritePermission(request.getBoardType(), userDTO, request.getTargetGrade(),
                 request.getTargetClassroomId());
@@ -202,12 +213,14 @@ public class BoardService {
                 .targetGrade(request.getTargetGrade())
                 .targetClassroom(targetClassroom)
                 .isPinned(request.isPinned())
+                .isImportant(request.isImportant())
+                .attachmentUrl(request.getAttachmentUrl())
                 .build();
 
         Board saved = boardRepository.save(board);
         log.info("게시물 작성 완료: {} - {} by {}", saved.getBoardType(), saved.getTitle(), writer.getName());
 
-        return BoardResponseDTO.fromEntity(saved);
+        return BoardDTO.Response.fromEntity(saved);
     }
 
     // ========== 게시물 수정 ==========
@@ -216,7 +229,7 @@ public class BoardService {
      * 게시물 수정
      */
     @Transactional
-    public BoardResponseDTO updateBoard(Long boardId, BoardRequestDTO request, CustomUserDTO userDTO) {
+    public BoardDTO.Response updateBoard(Long boardId, BoardDTO.Request request, CustomUserDTO userDTO) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
 
@@ -225,6 +238,8 @@ public class BoardService {
 
         board.changeTitle(request.getTitle());
         board.changeContent(request.getContent());
+        board.changeImportant(request.isImportant());
+        board.setAttachmentUrl(request.getAttachmentUrl());
 
         // ADMIN만 상단 고정 변경 가능
         if (isAdmin(userDTO)) {
@@ -234,7 +249,7 @@ public class BoardService {
         }
 
         log.info("게시물 수정 완료: {} by {}", boardId, userDTO.getName());
-        return BoardResponseDTO.fromEntity(board);
+        return BoardDTO.Response.fromEntity(board);
     }
 
     // ========== 게시물 삭제 ==========
@@ -288,6 +303,13 @@ public class BoardService {
             case SCHOOL_NOTICE:
                 // ADMIN만 작성 가능
                 throw new SecurityException("학교 공지는 관리자만 작성할 수 있습니다.");
+
+            case CLASS_NOTICE:
+                // 교사만 작성 가능
+                if (!isTeacher(userDTO)) {
+                    throw new SecurityException("학급 공지는 교사만 작성할 수 있습니다.");
+                }
+                break;
 
             case GRADE_BOARD:
                 // 교사만 작성 가능
@@ -372,6 +394,7 @@ public class BoardService {
                 }
                 return false;
 
+            case CLASS_NOTICE:
             case CLASS_BOARD:
                 // 해당 반 학생/담임만 열람
                 if (isTeacher(userDTO)) {

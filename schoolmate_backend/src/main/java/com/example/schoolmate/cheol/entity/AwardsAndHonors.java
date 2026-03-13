@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -26,7 +28,7 @@ import lombok.ToString;
 @Table
 @Entity
 @Builder
-public class AwardsAndHonors {
+public class AwardsAndHonors extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;

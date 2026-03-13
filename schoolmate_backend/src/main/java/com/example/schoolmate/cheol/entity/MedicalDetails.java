@@ -1,6 +1,6 @@
 package com.example.schoolmate.cheol.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 
 import jakarta.persistence.Entity;
@@ -22,7 +22,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-public class MedicalDetails extends BaseEntity {
+public class MedicalDetails extends SchoolBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

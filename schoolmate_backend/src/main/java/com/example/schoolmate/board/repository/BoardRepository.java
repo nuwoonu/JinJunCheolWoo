@@ -21,6 +21,13 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
            "ORDER BY b.isPinned DESC, b.createDate DESC")
     Page<Board> findByBoardType(@Param("type") BoardType type, Pageable pageable);
 
+    // 학교 공지 - 중요 공지 우선, 최신순
+    @Query("SELECT b FROM Board b WHERE b.boardType = :type AND b.isDeleted = false ORDER BY b.isImportant DESC, b.id DESC")
+    Page<Board> findByBoardTypeOrderByImportantDesc(@Param("type") BoardType type, Pageable pageable);
+
+    @Query("SELECT b FROM Board b WHERE b.boardType = :type AND b.isDeleted = false AND (b.title LIKE %:keyword% OR b.content LIKE %:keyword%) ORDER BY b.isImportant DESC, b.id DESC")
+    Page<Board> findByBoardTypeAndKeywordOrderByImportantDesc(@Param("type") BoardType type, @Param("keyword") String keyword, Pageable pageable);
+
     // ========== 학년 게시판 ==========
     // 특정 학년 게시판 목록
     @Query("SELECT b FROM Board b WHERE b.boardType = :type AND b.targetGrade = :grade " +

@@ -9,7 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Setter
 public class LogSearchCondition {
     private String keyword;
-    private String type; // AccessLog: AccessType, AdminLog: actionType
+    private String type; // ACCESS: accessType(LOGIN/LOGOUT/LOGIN_FAIL), ADMIN: actionType
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate startDate;

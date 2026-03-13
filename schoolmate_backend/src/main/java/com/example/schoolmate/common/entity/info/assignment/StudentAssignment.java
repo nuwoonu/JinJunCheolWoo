@@ -14,11 +14,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class StudentAssignment {
+public class StudentAssignment extends SchoolBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -2,7 +2,7 @@ package com.example.schoolmate.soojin.entity;
 
 import java.time.LocalDate;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.soojin.entity.constant.EventType;
 
 import jakarta.persistence.Column;
@@ -26,7 +26,7 @@ import lombok.ToString;
 @Getter
 @Table(name = "school_calendar_tbl")
 @Entity
-public class SchoolCalendar extends BaseEntity {
+public class SchoolCalendar extends SchoolBaseEntity {
 
     // # 학사 일정
 

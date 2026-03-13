@@ -1,6 +1,6 @@
 package com.example.schoolmate.soojin.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.soojin.entity.constant.DayOfWeek;
 
@@ -26,7 +26,7 @@ import lombok.ToString;
 @Getter
 @Table(name = "student_timetable_tbl")
 @Entity
-public class StudentTimetable extends BaseEntity {
+public class StudentTimetable extends SchoolBaseEntity {
 
     // # 시간표
 

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import api from '../../api/auth'
 import { useAuth } from '../../contexts/AuthContext'
+import { ADMIN_ROUTES } from '../../constants/routes'
 import '../../styles/login.css'
 
 const roleRedirects: Record<string, string> = {
-  ADMIN: '/parkjoon/admin/dashboard',
+  ADMIN: ADMIN_ROUTES.DASHBOARD,
   TEACHER: '/teacher/dashboard',
   STUDENT: '/student/dashboard',
   PARENT: '/parent/dashboard',
@@ -45,7 +46,7 @@ export default function Login() {
       document.cookie = `accessToken=${accessToken}; path=/; SameSite=Strict`
 
       const roleRedirects: Record<string, string> = {
-        ADMIN: '/admin/dashboard',
+        ADMIN: ADMIN_ROUTES.DASHBOARD,
         TEACHER: '/teacher/dashboard',
         STUDENT: '/student/dashboard',
         PARENT: '/parent/dashboard',

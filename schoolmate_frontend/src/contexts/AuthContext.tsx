@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  // 로그아웃: 백엔드 refresh token 삭제 → 클라이언트 토큰 정리 → 로그인 페이지 이동
+  // [joon] 로그아웃: 백엔드 refresh token 삭제 → 클라이언트 토큰 정리 → 로그인 페이지 이동
   const signOut = useCallback(() => {
     apiLogout()
       .catch(() => {})

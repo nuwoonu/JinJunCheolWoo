@@ -1,6 +1,6 @@
 package com.example.schoolmate.board.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.Classroom;
 
@@ -33,7 +33,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Board extends BaseEntity {
+public class Board extends SchoolBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,6 +75,14 @@ public class Board extends BaseEntity {
     @Column(nullable = false)
     private boolean isPinned = false;
 
+    // 중요 공지 상단 고정 (SCHOOL_NOTICE 전용)
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean isImportant = false;
+
+    // 첨부파일 URL (CLASS_NOTICE, PARENT_NOTICE 전용)
+    private String attachmentUrl;
+
     // 삭제 여부 (soft delete)
     @Builder.Default
     @Column(nullable = false)
@@ -103,5 +111,9 @@ public class Board extends BaseEntity {
     // soft delete
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void changeImportant(boolean isImportant) {
+        this.isImportant = isImportant;
     }
 }

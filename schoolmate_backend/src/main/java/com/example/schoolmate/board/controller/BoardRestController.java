@@ -1,9 +1,11 @@
 package com.example.schoolmate.board.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,9 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.schoolmate.board.dto.BoardRequestDTO;
-import com.example.schoolmate.board.dto.BoardResponseDTO;
-import com.example.schoolmate.board.entity.BoardType;
+import com.example.schoolmate.board.dto.BoardDTO;
 import com.example.schoolmate.board.service.BoardService;
 import com.example.schoolmate.dto.AuthUserDTO;
 
@@ -50,31 +50,50 @@ public class BoardRestController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<BoardResponseDTO> result = boardService.getGradeBoard(grade, PageRequest.of(page, size));
+        Page<BoardDTO.Response> result = boardService.getGradeBoard(grade, PageRequest.of(page, size));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
                 "totalPages", result.getTotalPages(),
-                "currentPage", result.getNumber()
-        ));
+                "currentPage", result.getNumber()));
     }
 
     /**
      * 학교 공지 목록 (React /board/school-notice)
-     * GET /api/board/school-notice?page=0&size=10
+     * GET /api/board/school-notice?keyword=&page=0&size=10
      */
     @GetMapping("/school-notice")
     public ResponseEntity<Map<String, Object>> getSchoolNotices(
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<BoardResponseDTO> result = boardService.getSchoolNotices(PageRequest.of(page, size));
+        Page<BoardDTO.Response> result = boardService.getSchoolNotices(keyword,
+                PageRequest.of(page, size, Sort.by("createDate").descending()));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
                 "totalPages", result.getTotalPages(),
-                "currentPage", result.getNumber()
-        ));
+                "currentPage", result.getNumber()));
+    }
+
+    /**
+     * 학급 공지 목록 (React /board/class-notice/:classroomId)
+     * GET /api/board/class-notice/{classroomId}?page=0&size=10
+     */
+    @GetMapping("/class-notice/{classroomId}")
+    public ResponseEntity<Map<String, Object>> getClassNotices(
+            @PathVariable Long classroomId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<BoardDTO.Response> result = boardService.getClassNotices(classroomId,
+                PageRequest.of(page, size, Sort.by("createDate").descending()));
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", result.getContent());
+        response.put("totalPages", result.getTotalPages());
+        response.put("totalElements", result.getTotalElements());
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -82,8 +101,8 @@ public class BoardRestController {
      * GET /api/board/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<BoardResponseDTO> getBoard(@PathVariable Long id) {
-        BoardResponseDTO board = boardService.getBoardReadOnly(id);
+    public ResponseEntity<BoardDTO.Response> getBoard(@PathVariable Long id) {
+        BoardDTO.Response board = boardService.getBoardReadOnly(id);
         return ResponseEntity.ok(board);
     }
 
@@ -106,13 +125,12 @@ public class BoardRestController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<BoardResponseDTO> result = boardService.getParentNotices(PageRequest.of(page, size));
+        Page<BoardDTO.Response> result = boardService.getParentNotices(PageRequest.of(page, size));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
                 "totalPages", result.getTotalPages(),
-                "currentPage", result.getNumber()
-        ));
+                "currentPage", result.getNumber()));
     }
 
     /**
@@ -124,13 +142,12 @@ public class BoardRestController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<BoardResponseDTO> result = boardService.getParentBoard(PageRequest.of(page, size));
+        Page<BoardDTO.Response> result = boardService.getParentBoard(PageRequest.of(page, size));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
                 "totalPages", result.getTotalPages(),
-                "currentPage", result.getNumber()
-        ));
+                "currentPage", result.getNumber()));
     }
 
     /**
@@ -138,11 +155,11 @@ public class BoardRestController {
      */
     @PostMapping
     public ResponseEntity<?> createBoard(
-            @Valid @RequestBody BoardRequestDTO request,
+            @Valid @RequestBody BoardDTO.Request request,
             @AuthenticationPrincipal AuthUserDTO authUser) {
 
         try {
-            BoardResponseDTO response = boardService.createBoard(request, authUser.getCustomUserDTO());
+            BoardDTO.Response response = boardService.createBoard(request, authUser.getCustomUserDTO());
             return ResponseEntity.ok(response);
         } catch (SecurityException e) {
             log.warn("게시물 작성 권한 없음: {}", e.getMessage());
@@ -159,11 +176,11 @@ public class BoardRestController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBoard(
             @PathVariable Long id,
-            @Valid @RequestBody BoardRequestDTO request,
+            @Valid @RequestBody BoardDTO.Request request,
             @AuthenticationPrincipal AuthUserDTO authUser) {
 
         try {
-            BoardResponseDTO response = boardService.updateBoard(id, request, authUser.getCustomUserDTO());
+            BoardDTO.Response response = boardService.updateBoard(id, request, authUser.getCustomUserDTO());
             return ResponseEntity.ok(response);
         } catch (SecurityException e) {
             log.warn("게시물 수정 권한 없음: {}", e.getMessage());

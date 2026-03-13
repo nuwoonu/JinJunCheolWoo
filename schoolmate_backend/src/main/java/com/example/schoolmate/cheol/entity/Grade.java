@@ -1,6 +1,6 @@
 package com.example.schoolmate.cheol.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
@@ -30,7 +30,7 @@ import lombok.ToString;
 @Builder
 @Table(name = "grades")
 @ToString(exclude = { "student", "subject" })
-public class Grade extends BaseEntity {
+public class Grade extends SchoolBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
