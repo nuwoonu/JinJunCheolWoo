@@ -157,28 +157,28 @@ export default function ChangeLogs() {
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">
               <tr>
-                <th className="ps-4">일시</th>
-                <th>작업자</th>
-                <th>작업 유형</th>
-                <th>대상</th>
-                <th>상세 내용</th>
+                <th className="px-4 py-3" style={{ width: 160 }}>일시</th>
+                <th className="px-3 py-3" style={{ width: 160 }}>작업자</th>
+                <th className="px-3 py-3" style={{ width: 120 }}>작업 유형</th>
+                <th className="px-3 py-3" style={{ width: 160 }}>대상</th>
+                <th className="px-3 py-3">상세 내용</th>
               </tr>
             </thead>
             <tbody>
               {list.map((log: any) => (
                 <tr key={log.id}>
-                  <td className="ps-4 text-muted small">
-                    {log.createdAt?.replace("T", " ").substring(0, 19)}
+                  <td className="px-4 py-3 text-muted small" style={{ whiteSpace: "nowrap" }}>
+                    {log.createDate?.replace("T", " ").substring(0, 19)}
                   </td>
-                  <td className="fw-bold">{log.adminName}</td>
-                  <td>
+                  <td className="px-3 py-3 fw-semibold">{log.actorName}</td>
+                  <td className="px-3 py-3">
                     <span className={`badge ${actionBadge(log.actionType)}`}>
                       {log.actionType}
                     </span>
                   </td>
-                  <td>{log.target}</td>
+                  <td className="px-3 py-3">{log.target}</td>
                   <td
-                    className="text-muted small"
+                    className="px-3 py-3 text-muted small"
                     style={{
                       maxWidth: 350,
                       overflow: "hidden",
