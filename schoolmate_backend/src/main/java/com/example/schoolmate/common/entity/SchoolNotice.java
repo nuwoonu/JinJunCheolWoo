@@ -1,6 +1,7 @@
 package com.example.schoolmate.common.entity;
 
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +11,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchoolNotice extends BaseEntity {
+public class SchoolNotice extends SchoolBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

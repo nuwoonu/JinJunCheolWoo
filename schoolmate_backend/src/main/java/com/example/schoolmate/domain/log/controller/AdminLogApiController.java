@@ -32,14 +32,14 @@ public class AdminLogApiController {
     // 접속 기록 조회
     @GetMapping("/access")
     public ResponseEntity<Page<AccessLog>> accessLogs(LogSearchCondition condition,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(logService.getAccessLogs(condition, pageable));
     }
 
     // 변경 이력 조회
     @GetMapping("/changes")
     public ResponseEntity<Page<AdminLog>> changeLogs(LogSearchCondition condition,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(logService.getAdminLogs(condition, pageable));
     }
 
@@ -55,8 +55,8 @@ public class AdminLogApiController {
             writer.println("일시,사용자,유형,IP 주소,브라우저 정보");
             for (AccessLog log : logs) {
                 writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
-                        log.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                        log.getUsername(),
+                        log.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                        log.getActorName(),
                         log.getType().name(),
                         log.getIpAddress(),
                         log.getUserAgent() != null ? log.getUserAgent().replace("\"", "\"\"") : "");
@@ -76,8 +76,8 @@ public class AdminLogApiController {
             writer.println("일시,작업자,작업 유형,대상,상세 내용");
             for (AdminLog log : logs) {
                 writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
-                        log.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                        log.getAdminName(),
+                        log.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                        log.getActorName(),
                         log.getActionType(),
                         log.getTarget(),
                         log.getDescription() != null ? log.getDescription().replace("\"", "\"\"") : "");

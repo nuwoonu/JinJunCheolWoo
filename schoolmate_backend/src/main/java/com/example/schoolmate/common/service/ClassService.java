@@ -29,7 +29,7 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.domain.log.entity.ClassroomHistory;
+import com.example.schoolmate.domain.log.entity.ClassroomHistoryLog;
 import com.example.schoolmate.domain.log.repository.ClassroomHistoryRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -94,7 +94,7 @@ public class ClassService {
         response.setStudents(studentSummaries);
 
         // 이력 조회
-        List<ClassroomHistory> histories = classroomHistoryRepository.findByClassroomIdOrderByCreatedAtDesc(cid);
+        List<ClassroomHistoryLog> histories = classroomHistoryRepository.findByClassroomIdOrderByCreateDateDesc(cid);
         response.setHistories(histories.stream().map(ClassDTO.HistoryResponse::from).toList());
 
         return response;
@@ -486,11 +486,11 @@ public class ClassService {
     // --- History Log ---
     private void logChange(Long cid, String action, String desc) {
         String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
-        ClassroomHistory history = ClassroomHistory.builder()
+        ClassroomHistoryLog history = ClassroomHistoryLog.builder()
                 .classroomId(cid)
                 .actionType(action)
                 .description(desc)
-                .createdBy(adminName)
+                .actorName(adminName)
                 .build();
         classroomHistoryRepository.save(history);
     }

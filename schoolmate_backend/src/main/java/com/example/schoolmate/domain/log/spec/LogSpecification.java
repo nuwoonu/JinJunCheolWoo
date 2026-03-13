@@ -15,7 +15,7 @@ public class LogSpecification {
             List<Predicate> predicates = new ArrayList<>();
             if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
                 predicates.add(cb.or(
-                        cb.like(root.get("adminName"), "%" + condition.getKeyword() + "%"),
+                        cb.like(root.get("actorName"), "%" + condition.getKeyword() + "%"),
                         cb.like(root.get("target"), "%" + condition.getKeyword() + "%"),
                         cb.like(root.get("description"), "%" + condition.getKeyword() + "%")));
             }
@@ -23,10 +23,10 @@ public class LogSpecification {
                 predicates.add(cb.equal(root.get("actionType"), condition.getType()));
             }
             if (condition.getStartDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), condition.getStartDate().atStartOfDay()));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createDate"), condition.getStartDate().atStartOfDay()));
             }
             if (condition.getEndDate() != null) {
-                predicates.add(cb.lessThan(root.get("createdAt"), condition.getEndDate().plusDays(1).atStartOfDay()));
+                predicates.add(cb.lessThan(root.get("createDate"), condition.getEndDate().plusDays(1).atStartOfDay()));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -37,7 +37,7 @@ public class LogSpecification {
             List<Predicate> predicates = new ArrayList<>();
             if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
                 predicates.add(cb.or(
-                        cb.like(root.get("username"), "%" + condition.getKeyword() + "%"),
+                        cb.like(root.get("actorName"), "%" + condition.getKeyword() + "%"),
                         cb.like(root.get("ipAddress"), "%" + condition.getKeyword() + "%")));
             }
             if (condition.getType() != null && !condition.getType().isBlank()) {
@@ -49,10 +49,10 @@ public class LogSpecification {
                 }
             }
             if (condition.getStartDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), condition.getStartDate().atStartOfDay()));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createDate"), condition.getStartDate().atStartOfDay()));
             }
             if (condition.getEndDate() != null) {
-                predicates.add(cb.lessThan(root.get("createdAt"), condition.getEndDate().plusDays(1).atStartOfDay()));
+                predicates.add(cb.lessThan(root.get("createDate"), condition.getEndDate().plusDays(1).atStartOfDay()));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };

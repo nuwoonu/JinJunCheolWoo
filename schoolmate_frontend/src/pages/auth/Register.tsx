@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import api from '../../api/auth'
 import { useAuth } from '../../contexts/AuthContext'
+import { ADMIN_ROUTES } from '../../constants/routes'
 import '../../styles/register.css'
 
 const roleRedirects: Record<string, string> = {
-  ADMIN: '/parkjoon/admin/dashboard',
+  ADMIN: ADMIN_ROUTES.DASHBOARD,
   TEACHER: '/teacher/dashboard',
   STUDENT: '/student/dashboard',
   PARENT: '/parent/dashboard',
@@ -68,7 +69,7 @@ export default function Register() {
         TEACHER: '/teacher/dashboard',
         STUDENT: '/student/dashboard',
         PARENT: '/parent/dashboard',
-        ADMIN: '/admin/dashboard',
+        ADMIN: ADMIN_ROUTES.DASHBOARD,
       }
       setTimeout(() => { window.location.href = roleRedirects[role] ?? '/login' }, 1000)
 

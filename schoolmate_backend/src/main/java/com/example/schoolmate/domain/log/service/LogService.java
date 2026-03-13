@@ -28,7 +28,7 @@ public class LogService {
     // --- Admin Log (작업 이력) ---
     public void logAction(String adminName, String actionType, String target, String description) {
         AdminLog log = AdminLog.builder()
-                .adminName(adminName)
+                .actorName(adminName)
                 .actionType(actionType)
                 .target(target)
                 .description(description)
@@ -45,7 +45,7 @@ public class LogService {
     @Transactional(readOnly = true)
     public List<AdminLog> getAllAdminLogs(LogSearchCondition condition) {
         Specification<AdminLog> spec = LogSpecification.searchAdminLogs(condition);
-        return adminLogRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return adminLogRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "createDate"));
     }
 
     @Transactional(readOnly = true)
@@ -60,7 +60,7 @@ public class LogService {
     // --- Access Log (접속 이력) ---
     public void logAccess(String username, String ip, String userAgent, AccessLog.AccessType type) {
         AccessLog log = AccessLog.builder()
-                .username(username)
+                .actorName(username)
                 .ipAddress(ip)
                 .userAgent(userAgent)
                 .type(type)
@@ -77,6 +77,6 @@ public class LogService {
     @Transactional(readOnly = true)
     public List<AccessLog> getAllAccessLogs(LogSearchCondition condition) {
         Specification<AccessLog> spec = LogSpecification.searchAccessLogs(condition);
-        return accessLogRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return accessLogRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "createDate"));
     }
 }

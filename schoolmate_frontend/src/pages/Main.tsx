@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { ADMIN_ROUTES } from '../constants/routes'
 
 const roleRedirects: Record<string, string> = {
-  ADMIN: '/parkjoon/admin/dashboard',
+  ADMIN: ADMIN_ROUTES.DASHBOARD,
   TEACHER: '/teacher/dashboard',
   STUDENT: '/student/dashboard',
   PARENT: '/parent/dashboard',

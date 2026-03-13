@@ -17,13 +17,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+
 @Getter
 @Builder
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Subject {
+public class Subject extends SchoolBaseEntity {
     @Id
     @Column(nullable = false, unique = true)
     private String code; // 과목 코드
