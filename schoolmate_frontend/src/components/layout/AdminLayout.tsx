@@ -1,10 +1,21 @@
-import { type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 import { SidebarProvider, useSidebar } from '../../contexts/SidebarContext'
+import { useSchool } from '../../context/SchoolContext'
+import { ADMIN_ROUTES } from '../../constants/routes'
 
 function Layout({ children, msg, error }: { children: ReactNode; msg?: string; error?: string }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
+  const { selectedSchool } = useSchool()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!selectedSchool) {
+      navigate(ADMIN_ROUTES.SCHOOL_SELECT, { replace: true })
+    }
+  }, [selectedSchool, navigate])
 
   return (
     <>

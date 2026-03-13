@@ -50,6 +50,7 @@ import ConsultationReservation from "./pages/jin/consultation/ConsultationReserv
 import SchoolSchedule from "./pages/jin/school/SchoolSchedule";
 import SchoolGallery from "./pages/jin/school/SchoolGallery";
 // [parkjoon] 관리자 페이지
+import JoonSchoolSelect from "./pages/admin/school/SchoolSelect";
 import JoonDashboard from "./pages/admin/Dashboard";
 import JoonStudentList from "./pages/admin/students/StudentList";
 import JoonStudentCreate from "./pages/admin/students/StudentCreate";
@@ -376,6 +377,14 @@ function App() {
       />
 
       {/* [joon] parkjoon 관리자 페이지 - /admin/... */}
+      <Route
+        path={ADMIN_ROUTES.SCHOOL_SELECT}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <JoonSchoolSelect />
+          </PrivateRoute>
+        }
+      />
       <Route
         path={ADMIN_ROUTES.DASHBOARD}
         element={

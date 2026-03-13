@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/layout/AdminLayout";
 import admin from "../../api/adminApi";
 import { ADMIN_ROUTES } from "../../constants/routes";
+import { useSchool } from "../../context/SchoolContext";
 
 // [joon] 관리자 대시보드
 
@@ -14,59 +15,21 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
+  const { selectedSchool } = useSchool();
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     totalTeachers: 0,
     totalStaffs: 0,
     pendingParents: 0,
   });
-  const [syncRunning, setSyncRunning] = useState<boolean>(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const today = new Date().toISOString().split("T")[0];
-
-  const checkSyncStatus = () => {
-    admin
-      .get("/schools/sync/status")
-      .then((r) => setSyncRunning(r.data.syncing ?? false))
-      .catch(() => {});
-  };
 
   useEffect(() => {
     admin
       .get("/dashboard/stats")
       .then((r) => setStats(r.data))
       .catch(() => {});
-
-    // 컴포넌트 마운트 시 현재 동기화 상태 즉시 확인
-    checkSyncStatus();
-
-    // 3초마다 상태 폴링
-    pollRef.current = setInterval(checkSyncStatus, 3000);
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
   }, []);
-
-  const handleSync = async () => {
-    if (
-      !window.confirm(
-        "학교 정보(NEIS) 동기화를 시작하시겠습니까?\n(데이터가 많아 완료까지 몇 분 정도 소요될 수 있습니다.)",
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await admin.post("/schools/sync");
-      // 시작 직후 상태 반영
-      checkSyncStatus();
-    } catch (error: any) {
-      if (error.response?.status !== 409) {
-        alert("동기화 요청 중 오류가 발생했습니다.");
-      }
-      // 409는 이미 실행 중 — 폴링이 버튼 상태를 알아서 반영
-    }
-  };
 
   return (
     <AdminLayout>
@@ -74,20 +37,20 @@ export default function AdminDashboard() {
         <div>
           <h6 className="fw-semibold mb-0">관리자 대시보드</h6>
           <p className="text-neutral-600 mt-4 mb-0">
-            학교 관리 시스템 현황을 한눈에 확인합니다.
+            {selectedSchool ? (
+              <>
+                <span className="fw-semibold">{selectedSchool.name}</span>
+                <span className="text-muted ms-1 small">
+                  ({selectedSchool.schoolKind} · {selectedSchool.officeOfEducation})
+                </span>
+              </>
+            ) : (
+              "학교 관리 시스템 현황을 한눈에 확인합니다."
+            )}
           </p>
         </div>
         <div className="d-flex align-items-center gap-3">
           <span className="text-muted">{today}</span>
-          {/* 동기화 버튼 */}
-          <button
-            className="btn btn-sm btn-outline-primary"
-            onClick={handleSync}
-            disabled={syncRunning}
-          >
-            <i className="bi bi-arrow-repeat me-2"></i>
-            {syncRunning ? "동기화 진행 중..." : "학교 정보 동기화 (NEIS)"}
-          </button>
         </div>
       </div>
 
