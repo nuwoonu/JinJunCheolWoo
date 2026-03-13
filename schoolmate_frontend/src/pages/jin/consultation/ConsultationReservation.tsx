@@ -1,7 +1,18 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import api from "../../../api/auth";
 import { useAuth } from "../../../contexts/AuthContext";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
+import {
+  TIME_SLOTS,
+  TIME_MAP,
+  TIME_LABEL,
+  CONSULTATION_TYPE_LABEL,
+  normalizeTime,
+  getMonday,
+  addDays,
+  fmt,
+  fmtDisplay,
+} from "./consultationUtils";
 
 // [soojin] 상담 예약 캘린더
 // PARENT: 상담 신청 캘린더 + 폼 + 하단 예약 목록
@@ -30,6 +41,7 @@ interface ReservationItem {
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
   studentName?: string;
   studentNumber?: string;
+  consultationType?: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
@@ -47,71 +59,6 @@ interface ChildInfo {
   number: number | null;
 }
 
-const TIME_SLOTS = [
-  "오전 9시",
-  "오전 10시",
-  "오전 11시",
-  "오후 12시",
-  "오후 1시",
-  "오후 2시",
-  "오후 3시",
-  "오후 4시",
-  "오후 5시",
-  "오후 6시",
-];
-const TIME_MAP: Record<string, string> = {
-  "오전 9시": "09:00",
-  "오전 10시": "10:00",
-  "오전 11시": "11:00",
-  "오후 12시": "12:00",
-  "오후 1시": "13:00",
-  "오후 2시": "14:00",
-  "오후 3시": "15:00",
-  "오후 4시": "16:00",
-  "오후 5시": "17:00",
-  "오후 6시": "18:00",
-};
-const TIME_LABEL: Record<string, string> = {
-  "09:00": "오전 9시",
-  "10:00": "오전 10시",
-  "11:00": "오전 11시",
-  "12:00": "오후 12시",
-  "13:00": "오후 1시",
-  "14:00": "오후 2시",
-  "15:00": "오후 3시",
-  "16:00": "오후 4시",
-  "17:00": "오후 5시",
-  "18:00": "오후 6시",
-};
-const DAY_LABELS = ["월", "화", "수", "목", "금"];
-
-function normalizeTime(t: string): string {
-  return t ? t.substring(0, 5) : t;
-}
-
-function getMonday(d: Date): Date {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  date.setDate(date.getDate() + diff);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function addDays(d: Date, n: number): Date {
-  const r = new Date(d);
-  r.setDate(r.getDate() + n);
-  return r;
-}
-
-function fmt(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function fmtDisplay(d: Date): string {
-  return `${d.getMonth() + 1}. ${d.getDate()}. (${DAY_LABELS[d.getDay() - 1] ?? ""})`;
-}
-
 function endTimeOf(startTime: string): string {
   const [h, m] = startTime.split(":").map(Number);
   return `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
@@ -126,6 +73,7 @@ export default function ConsultationReservation() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [selected, setSelected] = useState<{ date: string; time: string } | null>(null);
   const [content, setContent] = useState("");
+  const [consultationType, setConsultationType] = useState<"VISIT" | "PHONE">("VISIT");
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -150,7 +98,7 @@ export default function ConsultationReservation() {
   const startStr = fmt(monday);
   const endStr = fmt(addDays(monday, 4));
 
-  const fetchMyList = () => {
+  const fetchMyList = useCallback(() => {
     if (!isParent) return;
     setListLoading(true);
     api
@@ -167,7 +115,7 @@ export default function ConsultationReservation() {
       })
       .catch(() => setMyItems([]))
       .finally(() => setListLoading(false));
-  };
+  }, [isParent]);
 
   const handleCancel = async (id: number) => {
     if (!confirm("상담 일정을 취소하시겠습니까?")) return;
@@ -180,7 +128,7 @@ export default function ConsultationReservation() {
     }
   };
 
-  const fetchReservations = () => {
+  const fetchReservations = useCallback(() => {
     api
       .get(`/consultation/reservations?startDate=${startStr}&endDate=${endStr}`)
       .then((res) => {
@@ -194,15 +142,15 @@ export default function ConsultationReservation() {
         );
       })
       .catch(() => {});
-  };
-
-  useEffect(() => {
-    fetchReservations();
   }, [startStr, endStr]);
 
   useEffect(() => {
+    fetchReservations();
+  }, [fetchReservations]);
+
+  useEffect(() => {
     fetchMyList();
-  }, [isParent]);
+  }, [fetchMyList]);
 
   useEffect(() => {
     if (!isParent) return;
@@ -299,27 +247,18 @@ export default function ConsultationReservation() {
     }
     setSaving(true);
 
-    const newReservation: Reservation = {
-      date: selected.date,
-      startTime: selected.time,
-      endTime: endTimeOf(selected.time),
-      writerName: user?.name ?? "나",
-      content,
-      status: "PENDING",
-      local: true,
-    };
-
     try {
       await api.post("/consultation/reservations", {
-        date: newReservation.date,
-        startTime: newReservation.startTime,
-        endTime: newReservation.endTime,
-        content: newReservation.content,
+        date: selected.date,
+        startTime: selected.time,
+        endTime: endTimeOf(selected.time),
+        content,
         studentInfoId: selectedChildId,
+        consultationType,
       });
-      setReservations((prev) => [...prev, newReservation]);
       setSelected(null);
       setContent("");
+      setConsultationType("VISIT");
       setSuccessMsg("신청이 완료되었습니다!");
       setTimeout(() => setSuccessMsg(""), 3000);
       fetchReservations();
@@ -349,10 +288,6 @@ export default function ConsultationReservation() {
             : "linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%)",
         }}
       >
-        <i
-          className={isTeacher ? "ri-calendar-schedule-line text-primary" : "ri-calendar-check-line text-success-600"}
-          style={{ fontSize: 32 }}
-        />
         <div>
           <h5 className="fw-bold mb-4">{isTeacher ? "상담 일정" : "상담 신청"}</h5>
           <p className="text-secondary-light text-sm mb-0">
@@ -415,27 +350,22 @@ export default function ConsultationReservation() {
         <div className={isTeacher ? "col-12" : "col-lg-8 d-flex"}>
           <div className="card border-0 shadow-sm w-100" style={{ borderRadius: 16 }}>
             <div className="card-body p-24">
-              <h6 className="fw-semibold mb-16">
-                <i className="ri-calendar-line text-success-600 me-8" />
-                상담 일정
-              </h6>
+              <h6 className="fw-semibold mb-16">상담 일정</h6>
 
               <div className="d-flex align-items-center justify-content-between mb-16">
                 <div className="d-flex align-items-center gap-8">
-                  <button className="btn btn-sm btn-outline-secondary px-10 py-4" onClick={prevWeek}>
-                    ‹
-                  </button>
-                  <button className="btn btn-sm btn-outline-secondary px-10 py-4" onClick={nextWeek}>
-                    ›
-                  </button>
                   <button className="btn btn-sm btn-outline-secondary px-12 py-4" onClick={goToday}>
                     오늘
                   </button>
                 </div>
                 <span className="fw-semibold text-lg">{rangeLabel}</span>
                 <div className="d-flex gap-2">
-                  <button className="btn btn-sm btn-success px-12 py-4">주</button>
-                  <button className="btn btn-sm btn-outline-secondary px-12 py-4">일</button>
+                  <button className="btn btn-sm btn-outline-secondary px-10 py-4" onClick={prevWeek}>
+                    ‹
+                  </button>
+                  <button className="btn btn-sm btn-outline-secondary px-10 py-4" onClick={nextWeek}>
+                    ›
+                  </button>
                 </div>
               </div>
 
@@ -475,7 +405,7 @@ export default function ConsultationReservation() {
                             if (reservation) {
                               const label = isTeacher
                                 ? `${reservation.studentName ?? reservation.writerName} 학부모`
-                                : reservation.writerName;
+                                : reservation.studentName;
                               return (
                                 <td
                                   key={i}
@@ -529,7 +459,7 @@ export default function ConsultationReservation() {
                       display: "inline-block",
                     }}
                   />
-                  지난 시간
+                  신청 불가
                 </span>
                 <span className="d-flex align-items-center gap-6">
                   <span
@@ -547,7 +477,7 @@ export default function ConsultationReservation() {
                   <span
                     style={{ width: 16, height: 16, background: "#2ecc71", borderRadius: 4, display: "inline-block" }}
                   />
-                  {isTeacher ? "확정됨" : "신청됨"}
+                  {isTeacher ? "확정" : "신청"}
                 </span>
                 {isParent && (
                   <span className="d-flex align-items-center gap-6">
@@ -561,7 +491,7 @@ export default function ConsultationReservation() {
                         display: "inline-block",
                       }}
                     />
-                    선택됨
+                    선택
                   </span>
                 )}
               </div>
@@ -574,14 +504,11 @@ export default function ConsultationReservation() {
           <div className="col-lg-4 d-flex">
             <div className="card border-0 shadow-sm w-100" style={{ borderRadius: 16 }}>
               <div className="card-body p-24 d-flex flex-column">
-                <h6 className="fw-semibold mb-20">
-                  <i className="ri-calendar-check-line text-success-600 me-8" />
-                  신청 정보
-                </h6>
+                <h6 className="fw-semibold mb-20">신청 정보</h6>
 
                 {children.length > 0 && (
                   <div className="mb-16">
-                    <label className="form-label text-sm fw-medium">자녀 선택</label>
+                    <label className="form-label text-sm fw-medium">자녀 정보</label>
                     <select
                       className="form-select"
                       value={selectedChildId ?? ""}
@@ -603,7 +530,7 @@ export default function ConsultationReservation() {
                     type="text"
                     className="form-control"
                     readOnly
-                    placeholder="yyyy/mm/dd"
+                    placeholder="날짜 선택"
                     value={selected?.date?.replace(/-/g, "/") ?? ""}
                   />
                 </div>
@@ -628,6 +555,32 @@ export default function ConsultationReservation() {
                       placeholder="--:--"
                       value={selected ? endTimeOf(selected.time) : ""}
                     />
+                  </div>
+                </div>
+
+                <div className="mb-16">
+                  <label className="form-label text-sm fw-semibold">상담 유형</label>
+                  <div className="d-flex gap-8 mt-4">
+                    {(["VISIT", "PHONE"] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setConsultationType(type)}
+                        style={{
+                          padding: "6px 18px",
+                          borderRadius: 20,
+                          fontSize: 13,
+                          border: `1.5px solid ${consultationType === type ? "#2ecc71" : "#dee2e6"}`,
+                          background: consultationType === type ? "#2ecc71" : "#fff",
+                          color: consultationType === type ? "#fff" : "#555",
+                          cursor: "pointer",
+                          fontWeight: consultationType === type ? 600 : 400,
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        {CONSULTATION_TYPE_LABEL[type]}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -659,10 +612,7 @@ export default function ConsultationReservation() {
       {isParent && (
         <div className="mt-32">
           <div className="d-flex align-items-center mb-16">
-            <h5 className="fw-bold mb-0">
-              <i className="ri-list-check me-8" style={{ color: "#2ecc71" }} />
-              상담 예약 확인
-            </h5>
+            <h5 className="fw-bold mb-0">상담 신청 확인</h5>
           </div>
 
           {/* 필터 카드 */}
@@ -731,7 +681,7 @@ export default function ConsultationReservation() {
                         <div className="card-body p-20">
                           <div className="d-flex align-items-start justify-content-between">
                             <div className="d-flex gap-16">
-                              <div
+                              {/* <div
                                 className="text-center flex-shrink-0"
                                 style={{ width: 56, padding: "8px 0", background: "#f0faf0", borderRadius: 10 }}
                               >
@@ -739,7 +689,7 @@ export default function ConsultationReservation() {
                                   {dateObj.getDate()}
                                 </div>
                                 <div className="text-xs text-secondary-light">{dateObj.getMonth() + 1}월</div>
-                              </div>
+                              </div> */}
                               <div>
                                 <div className="d-flex align-items-center gap-8 mb-6">
                                   <span className="fw-semibold">{dateDisplay}</span>
@@ -749,6 +699,14 @@ export default function ConsultationReservation() {
                                   >
                                     {st.label}
                                   </span>
+                                  {item.consultationType && (
+                                    <span
+                                      className="badge px-8 py-4 rounded-pill text-xs"
+                                      style={{ background: "#e3f2fd", color: "#1565c0" }}
+                                    >
+                                      {CONSULTATION_TYPE_LABEL[item.consultationType] ?? item.consultationType}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="text-sm text-secondary-light mb-6">
                                   <i className="ri-time-line me-4" />
@@ -869,6 +827,7 @@ export default function ConsultationReservation() {
                       setAdjEnd(`${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
                     }}
                   >
+                    <option value="09:00">오전 9시</option>
                     <option value="10:00">오전 10시</option>
                     <option value="11:00">오전 11시</option>
                     <option value="12:00">오후 12시</option>
@@ -877,6 +836,7 @@ export default function ConsultationReservation() {
                     <option value="15:00">오후 3시</option>
                     <option value="16:00">오후 4시</option>
                     <option value="17:00">오후 5시</option>
+                    <option value="18:00">오후 6시</option>
                   </select>
                 </div>
                 <div className="col-6">
