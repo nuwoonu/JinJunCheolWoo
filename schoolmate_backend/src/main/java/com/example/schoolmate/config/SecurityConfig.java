@@ -2,8 +2,6 @@ package com.example.schoolmate.config;
 
 import com.example.schoolmate.common.service.CustomOAuth2UserService;
 import com.example.schoolmate.config.jwt.JwtAuthFilter;
-// [woo] 로그 서비스 복구 (backup 코드 참조)
-import com.example.schoolmate.domain.log.entity.AccessLog;
 import com.example.schoolmate.domain.log.service.LogService;
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
@@ -114,7 +112,7 @@ public class SecurityConfig {
                                                         logService.logAccess(authentication.getName(),
                                                                         getClientIp(request),
                                                                         request.getHeader("User-Agent"),
-                                                                        AccessLog.AccessType.LOGIN);
+                                                                        "LOGIN");
                                                         oAuth2LoginSuccessHandler.onAuthenticationSuccess(request,
                                                                         response, authentication);
                                                 }))

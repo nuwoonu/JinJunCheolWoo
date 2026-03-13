@@ -1,9 +1,6 @@
 package com.example.schoolmate.controller.api;
 
-import com.example.schoolmate.board.dto.ParentBoardDTO;
-import com.example.schoolmate.board.service.ParentBoardService;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
-import com.example.schoolmate.common.dto.NoticeDTO;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
@@ -14,7 +11,8 @@ import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.student.StudentAssignmentRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.common.service.NoticeService;
+import com.example.schoolmate.board.entity.BoardType;
+import com.example.schoolmate.board.service.BoardService;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
@@ -39,8 +37,7 @@ public class DashboardApiController {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
-    private final NoticeService noticeService;
-    private final ParentBoardService parentBoardService;
+    private final BoardService boardService;
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
     private final SystemSettingService systemSettingService;
@@ -67,7 +64,7 @@ public class DashboardApiController {
             }
         }
 
-        data.put("notices", noticeService.getRecentList(5));
+        data.put("notices", boardService.getRecentBoards(BoardType.SCHOOL_NOTICE, 5));
         return ResponseEntity.ok(data);
     }
 
@@ -76,7 +73,7 @@ public class DashboardApiController {
         Long uid = getUid(authentication);
         Map<String, Object> data = new HashMap<>();
 
-        data.put("notices", noticeService.getRecentList(5));
+        data.put("notices", boardService.getRecentBoards(BoardType.SCHOOL_NOTICE, 5));
 
         if (uid == null) {
             data.put("teacherName", "선생님");

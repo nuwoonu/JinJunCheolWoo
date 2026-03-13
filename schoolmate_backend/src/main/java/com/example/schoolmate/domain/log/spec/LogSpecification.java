@@ -1,59 +1,50 @@
 package com.example.schoolmate.domain.log.spec;
 
 import com.example.schoolmate.domain.log.dto.LogSearchCondition;
-import com.example.schoolmate.domain.log.entity.AccessLog;
-import com.example.schoolmate.domain.log.entity.AdminLog;
+import com.example.schoolmate.domain.log.entity.LogType;
+import com.example.schoolmate.domain.log.entity.SchoolmateLog;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class LogSpecification {
 
-    public static Specification<AdminLog> searchAdminLogs(LogSearchCondition condition) {
+    public static Specification<SchoolmateLog> search(LogType logType, LogSearchCondition condition) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
-                predicates.add(cb.or(
-                        cb.like(root.get("actorName"), "%" + condition.getKeyword() + "%"),
-                        cb.like(root.get("target"), "%" + condition.getKeyword() + "%"),
-                        cb.like(root.get("description"), "%" + condition.getKeyword() + "%")));
-            }
-            if (condition.getType() != null && !condition.getType().isBlank()) {
-                predicates.add(cb.equal(root.get("actionType"), condition.getType()));
-            }
-            if (condition.getStartDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createDate"), condition.getStartDate().atStartOfDay()));
-            }
-            if (condition.getEndDate() != null) {
-                predicates.add(cb.lessThan(root.get("createDate"), condition.getEndDate().plusDays(1).atStartOfDay()));
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-    }
+            predicates.add(cb.equal(root.get("logType"), logType));
 
-    public static Specification<AccessLog> searchAccessLogs(LogSearchCondition condition) {
-        return (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
             if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
-                predicates.add(cb.or(
-                        cb.like(root.get("actorName"), "%" + condition.getKeyword() + "%"),
-                        cb.like(root.get("ipAddress"), "%" + condition.getKeyword() + "%")));
+                String likeKeyword = "%" + condition.getKeyword() + "%";
+                List<Predicate> keywordOr = new ArrayList<>();
+                keywordOr.add(cb.like(root.get("actorName"), likeKeyword));
+                if (logType == LogType.ADMIN) {
+                    keywordOr.add(cb.like(root.get("target"), likeKeyword));
+                    keywordOr.add(cb.like(root.get("description"), likeKeyword));
+                } else if (logType == LogType.ACCESS) {
+                    keywordOr.add(cb.like(root.get("ipAddress"), likeKeyword));
+                }
+                predicates.add(cb.or(keywordOr.toArray(new Predicate[0])));
             }
+
             if (condition.getType() != null && !condition.getType().isBlank()) {
-                try {
-                    AccessLog.AccessType accessType = AccessLog.AccessType.valueOf(condition.getType());
-                    predicates.add(cb.equal(root.get("type"), accessType));
-                } catch (IllegalArgumentException e) {
-                    // Ignore invalid type
+                if (logType == LogType.ADMIN) {
+                    predicates.add(cb.equal(root.get("actionType"), condition.getType()));
+                } else if (logType == LogType.ACCESS) {
+                    predicates.add(cb.equal(root.get("accessType"), condition.getType()));
                 }
             }
+
             if (condition.getStartDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createDate"), condition.getStartDate().atStartOfDay()));
+                predicates
+                        .add(cb.greaterThanOrEqualTo(root.get("createDate"), condition.getStartDate().atStartOfDay()));
             }
             if (condition.getEndDate() != null) {
                 predicates.add(cb.lessThan(root.get("createDate"), condition.getEndDate().plusDays(1).atStartOfDay()));
             }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

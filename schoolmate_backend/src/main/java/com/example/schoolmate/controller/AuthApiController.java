@@ -5,7 +5,6 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
-import com.example.schoolmate.domain.log.entity.AccessLog;
 import com.example.schoolmate.domain.log.service.LogService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
@@ -94,12 +93,10 @@ public class AuthApiController {
 
         try {
             Map<String, Object> result = authService.login(email, password);
-            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"),
-                    AccessLog.AccessType.LOGIN);
+            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"), "LOGIN");
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"),
-                    AccessLog.AccessType.LOGIN_FAIL);
+            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"), "LOGIN_FAIL");
             return ResponseEntity.status(401).body(Map.of("message", "이메일 또는 비밀번호가 올바르지 않습니다."));
         }
     }
@@ -125,8 +122,7 @@ public class AuthApiController {
                                     HttpServletRequest request, HttpServletResponse response) {
         if (user != null) {
             authService.logout(user.getUsername());
-            logService.logAccess(user.getUsername(), getClientIp(request), request.getHeader("User-Agent"),
-                    AccessLog.AccessType.LOGOUT);
+            logService.logAccess(user.getUsername(), getClientIp(request), request.getHeader("User-Agent"), "LOGOUT");
         }
         // [woo] 응답 헤더로 accessToken 쿠키 만료 - JS 쿠키 삭제보다 신뢰성 높음
         Cookie expiredCookie = new Cookie("accessToken", "");

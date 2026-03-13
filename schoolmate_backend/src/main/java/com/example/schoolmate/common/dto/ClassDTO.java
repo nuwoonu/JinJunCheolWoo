@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.domain.log.entity.ClassroomHistoryLog;
+import com.example.schoolmate.domain.log.entity.SchoolmateLog;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 
 import lombok.AllArgsConstructor;
@@ -201,7 +201,7 @@ public class ClassDTO {
         private String createdBy;
         private LocalDateTime createdAt;
 
-        public static HistoryResponse from(ClassroomHistoryLog history) {
+        public static HistoryResponse from(SchoolmateLog history) {
             return HistoryResponse.builder()
                     .actionType(history.getActionType())
                     .description(history.getDescription())
