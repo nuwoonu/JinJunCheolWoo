@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../../../api/auth";
 import Header from "../../../components/layout/Header";
 import { SidebarProvider } from "../../../contexts/SidebarContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 // [soojin] 학부모 대시보드 - 사이드바 없는 2컬럼 레이아웃
 
@@ -30,7 +31,7 @@ interface ParentDashboardData {
 export default function ParentDashboard() {
   const [data, setData] = useState<ParentDashboardData>({ children: [], parentProfile: null });
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   useEffect(() => {
     api
@@ -39,12 +40,6 @@ export default function ParentDashboard() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    window.location.href = "/login";
-  };
 
   const getInitial = (name: string) => name.charAt(0);
 
@@ -153,9 +148,9 @@ export default function ParentDashboard() {
                   </div>
                 </div>
 
-                {/* 로그아웃 버튼 */}
+                {/* [woo] 로그아웃 버튼 - 기존 handleLogout은 쿠키 삭제 시 path=/ 누락으로 토큰이 남아 대시보드로 재진입되는 버그 존재, AuthContext signOut으로 교체 */}
                 <button
-                  onClick={handleLogout}
+                  onClick={signOut}
                   style={{
                     width: "100%",
                     padding: "8px",
