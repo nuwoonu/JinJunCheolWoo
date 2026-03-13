@@ -11,8 +11,8 @@ import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.student.StudentAssignmentRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.board.entity.BoardType;
-import com.example.schoolmate.board.service.BoardService;
+import com.example.schoolmate.domain.board.entity.BoardType;
+import com.example.schoolmate.domain.board.service.BoardService;
 import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
@@ -121,10 +121,12 @@ public class DashboardApiController {
             Map<String, Object> profile = new HashMap<>();
             // name: User.name 우선, 없으면 ParentInfo.parentName
             String name = parentUser.getName();
-            if ((name == null || name.isBlank()) && parentInfo != null) name = parentInfo.getParentName();
+            if ((name == null || name.isBlank()) && parentInfo != null)
+                name = parentInfo.getParentName();
             // phone: ParentInfo.phone 우선, 없으면 User.phoneNumber
             String phone = parentInfo != null ? parentInfo.getPhone() : null;
-            if (phone == null || phone.isBlank()) phone = parentUser.getPhoneNumber();
+            if (phone == null || phone.isBlank())
+                phone = parentUser.getPhoneNumber();
             profile.put("name", name);
             profile.put("email", parentUser.getEmail());
             profile.put("phone", phone);
@@ -151,7 +153,8 @@ public class DashboardApiController {
     // --- 헬퍼 ---
 
     private Long getUid(Authentication authentication) {
-        if (authentication == null) return null;
+        if (authentication == null)
+            return null;
         Object principal = authentication.getPrincipal();
         if (principal instanceof AuthUserDTO dto) {
             return dto.getCustomUserDTO().getUid();

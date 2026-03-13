@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { ADMIN_ROUTES } from '../constants/routes'
 
@@ -7,18 +8,21 @@ const roleRedirects: Record<string, string> = {
   TEACHER: '/teacher/dashboard',
   STUDENT: '/student/dashboard',
   PARENT: '/parent/dashboard',
+  GUEST: '/select-role',
 }
 
 export default function Main() {
-  // [woo] 이미 로그인된 상태면 해당 대시보드로 자동 리다이렉트
   const { user, loading } = useAuth()
+  const navigate = useNavigate()
+
   useEffect(() => {
-    // [woo] authLoading 완료 후 체크 (로딩 중엔 user가 null이라 오탐 방지)
-    // [woo] 로그인 상태로 /main 접근 시 대시보드로 튕김
-    if (!loading && user?.authenticated && user.role) {
-      window.location.href = roleRedirects[user.role] ?? '/'
+    if (loading || !user?.authenticated || !user.role) return
+    const target = roleRedirects[user.role]
+    if (target) {
+      navigate(target, { replace: true })
     }
-  }, [user, loading])
+    // 알 수 없는 role이면 /main에 그대로 머물러 무한 루프 방지
+  }, [user, loading, navigate])
 
   return (
     <>

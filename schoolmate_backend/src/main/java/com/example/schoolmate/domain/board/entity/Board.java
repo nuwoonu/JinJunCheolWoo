@@ -1,4 +1,4 @@
-package com.example.schoolmate.board.entity;
+package com.example.schoolmate.domain.board.entity;
 
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.user.User;

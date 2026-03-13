@@ -116,7 +116,7 @@ export default function NoticeList() {
                   </td>
                   <td className="text-center text-muted">{n.writerName}</td>
                   <td className="text-center text-muted">
-                    {n.createdDate?.split("T")[0]}
+                    {n.createDate?.split("T")[0]}
                   </td>
                   <td className="text-center text-muted">{n.viewCount}</td>
                 </tr>

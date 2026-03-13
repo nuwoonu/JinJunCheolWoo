@@ -1,4 +1,4 @@
-package com.example.schoolmate.board.controller;
+package com.example.schoolmate.domain.board.controller;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.schoolmate.board.dto.BoardDTO;
-import com.example.schoolmate.board.service.BoardService;
+import com.example.schoolmate.domain.board.dto.BoardDTO;
+import com.example.schoolmate.domain.board.service.BoardService;
 import com.example.schoolmate.dto.AuthUserDTO;
 
 import jakarta.validation.Valid;
