@@ -1,4 +1,4 @@
-package com.example.schoolmate.board.service;
+package com.example.schoolmate.domain.board.service;
 
 import java.util.List;
 
@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.board.dto.BoardDTO;
-import com.example.schoolmate.board.entity.Board;
-import com.example.schoolmate.board.entity.BoardType;
-import com.example.schoolmate.board.repository.BoardRepository;
+import com.example.schoolmate.domain.board.dto.BoardDTO;
+import com.example.schoolmate.domain.board.entity.Board;
+import com.example.schoolmate.domain.board.entity.BoardType;
+import com.example.schoolmate.domain.board.repository.BoardRepository;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
@@ -43,7 +43,8 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getSchoolNotices(String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
-            return boardRepository.findByBoardTypeAndKeywordOrderByImportantDesc(BoardType.SCHOOL_NOTICE, keyword, pageable)
+            return boardRepository
+                    .findByBoardTypeAndKeywordOrderByImportantDesc(BoardType.SCHOOL_NOTICE, keyword, pageable)
                     .map(BoardDTO.Response::fromEntityForList);
         }
         return boardRepository.findByBoardTypeOrderByImportantDesc(BoardType.SCHOOL_NOTICE, pageable)

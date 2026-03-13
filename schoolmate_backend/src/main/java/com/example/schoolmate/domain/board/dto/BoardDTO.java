@@ -1,12 +1,12 @@
-package com.example.schoolmate.board.dto;
+package com.example.schoolmate.domain.board.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.example.schoolmate.board.entity.Board;
-import com.example.schoolmate.board.entity.BoardType;
+import com.example.schoolmate.domain.board.entity.Board;
+import com.example.schoolmate.domain.board.entity.BoardType;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -86,7 +86,8 @@ public class BoardDTO {
                     .writerName(board.getWriter().getName())
                     .targetGrade(board.getTargetGrade())
                     .targetClassroomId(board.getTargetClassroom() != null ? board.getTargetClassroom().getCid() : null)
-                    .targetClassroomName(board.getTargetClassroom() != null ? board.getTargetClassroom().getClassName() : null)
+                    .targetClassroomName(
+                            board.getTargetClassroom() != null ? board.getTargetClassroom().getClassName() : null)
                     .viewCount(board.getViewCount())
                     .isPinned(board.isPinned())
                     .isImportant(board.isImportant())
@@ -107,7 +108,8 @@ public class BoardDTO {
                     .writerName(board.getWriter().getName())
                     .targetGrade(board.getTargetGrade())
                     .targetClassroomId(board.getTargetClassroom() != null ? board.getTargetClassroom().getCid() : null)
-                    .targetClassroomName(board.getTargetClassroom() != null ? board.getTargetClassroom().getClassName() : null)
+                    .targetClassroomName(
+                            board.getTargetClassroom() != null ? board.getTargetClassroom().getClassName() : null)
                     .viewCount(board.getViewCount())
                     .isPinned(board.isPinned())
                     .isImportant(board.isImportant())
@@ -120,12 +122,12 @@ public class BoardDTO {
         private static String getBoardTypeName(BoardType type) {
             return switch (type) {
                 case SCHOOL_NOTICE -> "학교 공지";
-                case CLASS_NOTICE  -> "학급 공지";
-                case GRADE_BOARD   -> "학년 게시판";
-                case CLASS_BOARD   -> "학급 게시판";
+                case CLASS_NOTICE -> "학급 공지";
+                case GRADE_BOARD -> "학년 게시판";
+                case CLASS_BOARD -> "학급 게시판";
                 case TEACHER_BOARD -> "교직원 게시판";
                 case PARENT_NOTICE -> "가정통신문";
-                case PARENT_BOARD  -> "학부모 게시판";
+                case PARENT_BOARD -> "학부모 게시판";
             };
         }
     }
@@ -173,8 +175,10 @@ public class BoardDTO {
             this.prev = start > 1;
             this.next = totalCount > (long) end * pageRequest.getSize();
 
-            if (prev) this.prevPage = start - 1;
-            if (next) this.nextPage = end + 1;
+            if (prev)
+                this.prevPage = start - 1;
+            if (next)
+                this.nextPage = end + 1;
 
             this.pageNumList = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
             this.totalPage = this.pageNumList.size();

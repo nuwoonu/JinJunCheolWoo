@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/layout/AdminLayout";
 import admin from "../../api/adminApi";
@@ -6,7 +6,6 @@ import { ADMIN_ROUTES } from "../../constants/routes";
 
 // [joon] 관리자 대시보드
 
-// 1. 상태 관리를 위한 TypeScript 인터페이스 정의
 interface DashboardStats {
   totalStudents: number;
   totalTeachers: number;
@@ -15,24 +14,39 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  // 2. useState에 제네릭 타입 적용
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     totalTeachers: 0,
     totalStaffs: 0,
     pendingParents: 0,
   });
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [syncRunning, setSyncRunning] = useState<boolean>(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const today = new Date().toISOString().split("T")[0];
+
+  const checkSyncStatus = () => {
+    admin
+      .get("/schools/sync/status")
+      .then((r) => setSyncRunning(r.data.syncing ?? false))
+      .catch(() => {});
+  };
 
   useEffect(() => {
     admin
       .get("/dashboard/stats")
       .then((r) => setStats(r.data))
       .catch(() => {});
+
+    // 컴포넌트 마운트 시 현재 동기화 상태 즉시 확인
+    checkSyncStatus();
+
+    // 3초마다 상태 폴링
+    pollRef.current = setInterval(checkSyncStatus, 3000);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, []);
 
-  // 3. 백그라운드 비동기 처리에 맞춘 동기화 함수
   const handleSync = async () => {
     if (
       !window.confirm(
@@ -42,21 +56,15 @@ export default function AdminDashboard() {
       return;
     }
 
-    setIsSyncing(true);
     try {
-      // url 매핑: 컨트롤러의 SchoolmateUrls.ADMIN_SCHOOLS + "/sync"
-      const response = await admin.post("/schools/sync");
-      alert(response.data); // 백엔드의 성공 메시지 출력
+      await admin.post("/schools/sync");
+      // 시작 직후 상태 반영
+      checkSyncStatus();
     } catch (error: any) {
-      // 409 Conflict (이미 실행 중) 처리
-      if (error.response && error.response.status === 409) {
-        alert("⚠️ " + error.response.data); // "이미 동기화 작업이 백그라운드에서 실행 중입니다..."
-      } else {
-        console.error("동기화 요청 실패:", error);
-        alert("❌ 동기화 요청 중 오류가 발생했습니다.");
+      if (error.response?.status !== 409) {
+        alert("동기화 요청 중 오류가 발생했습니다.");
       }
-    } finally {
-      setIsSyncing(false); // 요청이 서버에 전달되었으므로 바로 로딩 해제
+      // 409는 이미 실행 중 — 폴링이 버튼 상태를 알아서 반영
     }
   };
 
@@ -75,18 +83,10 @@ export default function AdminDashboard() {
           <button
             className="btn btn-sm btn-outline-primary"
             onClick={handleSync}
-            disabled={isSyncing}
+            disabled={syncRunning}
           >
-            {isSyncing ? (
-              <span
-                className="spinner-border spinner-border-sm me-2"
-                role="status"
-                aria-hidden="true"
-              ></span>
-            ) : (
-              <i className="bi bi-arrow-repeat me-2"></i>
-            )}
-            {isSyncing ? "요청 중..." : "학교 정보 동기화 (NEIS)"}
+            <i className="bi bi-arrow-repeat me-2"></i>
+            {syncRunning ? "동기화 진행 중..." : "학교 정보 동기화 (NEIS)"}
           </button>
         </div>
       </div>
