@@ -1,6 +1,6 @@
 package com.example.schoolmate.board.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.user.User;  // Joon님 경로로 변경
 
 import jakarta.persistence.Column;
@@ -25,7 +25,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Table(name = "notice")
 @Entity
-public class Notice extends BaseEntity {
+public class Notice extends SchoolBaseEntity {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

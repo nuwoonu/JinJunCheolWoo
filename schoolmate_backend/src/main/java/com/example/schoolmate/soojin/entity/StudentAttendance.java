@@ -22,13 +22,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "studentInfo")
 @Getter
 @Table(name = "student_attendance_tbl")
 @Entity
-public class StudentAttendance {
+public class StudentAttendance extends SchoolBaseEntity {
 
     // # 학생 출결 정보 - 선생님(담임), 관리자 접근
 

@@ -1,6 +1,6 @@
 package com.example.schoolmate.soojin.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.user.User;
 
 import jakarta.persistence.Column;
@@ -25,7 +25,7 @@ import lombok.ToString;
 @Getter
 @Table(name = "classnoticetbl")
 @Entity
-public class ClassNotice extends BaseEntity {
+public class ClassNotice extends SchoolBaseEntity {
 
     // 학급 공지 - 선생님 작성
 

@@ -2,7 +2,7 @@ package com.example.schoolmate.soojin.entity;
 
 import java.time.LocalDate;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.soojin.entity.constant.MealTargetType;
 import com.example.schoolmate.soojin.entity.constant.MealType;
 
@@ -27,7 +27,7 @@ import lombok.ToString;
 @Getter
 @Table(name = "school_meal_tbl")
 @Entity
-public class SchoolMeal extends BaseEntity {
+public class SchoolMeal extends SchoolBaseEntity {
 
     // # 급식 - 교직원(or 영양사)
 
