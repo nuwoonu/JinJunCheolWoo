@@ -34,7 +34,7 @@ export default function SelectRole() {
     STUDENT: '/student/dashboard',
     TEACHER: '/teacher/dashboard',
     PARENT: '/parent/dashboard',
-    ADMIN: ADMIN_ROUTES.DASHBOARD,
+    ADMIN: ADMIN_ROUTES.SCHOOL_SELECT,
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

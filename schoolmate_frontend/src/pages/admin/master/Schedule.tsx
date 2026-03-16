@@ -190,7 +190,7 @@ export default function Schedule() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 480,
@@ -204,7 +204,7 @@ export default function Schedule() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
@@ -217,7 +217,7 @@ export default function Schedule() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕
@@ -320,7 +320,7 @@ export default function Schedule() {
                   justifyContent: "flex-end",
                   gap: 8,
                   padding: "12px 20px",
-                  borderTop: "1px solid #e5e7eb",
+                  borderTop: "1px solid var(--border-color)",
                 }}
               >
                 {editId !== null && (
@@ -432,7 +432,7 @@ export default function Schedule() {
 
           {/* 2. 중앙 (현재 년/월 타이틀) */}
           <div className="text-center" style={{ flex: 1 }}>
-            <h5 className="mb-0 fw-bold fs-5 text-dark">
+            <h5 className="mb-0 fw-bold fs-5 text-primary-light">
               {year}년 {month}월
             </h5>
           </div>
@@ -464,7 +464,7 @@ export default function Schedule() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(7, 1fr)",
-                borderBottom: "1px solid #dee2e6",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               {DAYS.map((d, i) => (
@@ -526,12 +526,12 @@ export default function Schedule() {
                         style={{
                           fontSize: "0.8rem",
                           color: isToday
-                            ? "#212529"
+                            ? "var(--text-primary-light)"
                             : dow === 0
                               ? "#dc3545"
                               : dow === 6
                                 ? "#0d6efd"
-                                : "#212529",
+                                : "var(--text-primary-light)",
                         }}
                         onClick={(e) => {
                           e.preventDefault();
@@ -582,7 +582,7 @@ export default function Schedule() {
           <div className="card-body p-4">
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
-                <thead className="table-light">
+                <thead className="table-heading-dark-mode">
                   <tr>
                     <th className="ps-3">제목</th>
                     <th>유형</th>

@@ -1,10 +1,21 @@
-import { type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 import { SidebarProvider, useSidebar } from '../../contexts/SidebarContext'
+import { useSchool } from '../../context/SchoolContext'
+import { ADMIN_ROUTES } from '../../constants/routes'
 
 function Layout({ children, msg, error }: { children: ReactNode; msg?: string; error?: string }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
+  const { selectedSchool } = useSchool()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!selectedSchool) {
+      navigate(ADMIN_ROUTES.SCHOOL_SELECT, { replace: true })
+    }
+  }, [selectedSchool, navigate])
 
   return (
     <>
@@ -17,7 +28,7 @@ function Layout({ children, msg, error }: { children: ReactNode; msg?: string; e
             <div
               className="alert alert-dismissible mb-24 px-20 py-12 radius-8"
               role="alert"
-              style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#15803d' }}
+              style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', color: 'var(--text-primary-light)' }}
             >
               {msg}
               <button
@@ -31,7 +42,7 @@ function Layout({ children, msg, error }: { children: ReactNode; msg?: string; e
             <div
               className="alert alert-dismissible mb-24 px-20 py-12 radius-8"
               role="alert"
-              style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626' }}
+              style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#dc2626' }}
             >
               {error}
               <button

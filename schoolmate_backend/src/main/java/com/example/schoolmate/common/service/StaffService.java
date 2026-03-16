@@ -25,6 +25,8 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
 import com.example.schoolmate.common.repository.notice.NotificationRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,7 @@ public class StaffService {
     private final UserRepository userRepository;
     private final StaffInfoRepository staffInfoRepository;
     private final NotificationRepository notificationRepository;
+    private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
@@ -67,7 +70,7 @@ public class StaffService {
     }
 
     public void createStaff(StaffDTO.CreateRequest request) {
-        if (request.getCode() != null && staffInfoRepository.existsByCode(request.getCode())) {
+        if (request.getCode() != null && codeExistsForStaff(request.getCode())) {
             throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
         }
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -94,6 +97,12 @@ public class StaffService {
         info.setStatus(StaffStatus.EMPLOYED);
         info.setUser(user);
 
+        // 학교 소속 설정 (X-School-Id 헤더 기반)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(info::setSchool);
+        }
+
         user.getInfos().add(info);
         userRepository.save(user);
     }
@@ -107,7 +116,7 @@ public class StaffService {
         StaffInfo info = user.getInfo(StaffInfo.class);
         if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-                if (staffInfoRepository.existsByCode(request.getCode())) {
+                if (codeExistsForStaff(request.getCode())) {
                     throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());
@@ -133,13 +142,17 @@ public class StaffService {
                     .parse();
 
             for (StaffDTO.CsvImportRequest csvReq : beans) {
-                try {
-                    StaffDTO.CreateRequest createReq = new StaffDTO.CreateRequest(csvReq);
-                    createStaff(createReq);
-                } catch (Exception e) {
-                    log.error("교직원 CSV 등록 실패: {}", csvReq.getEmail(), e);
-                    throw e;
+                // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
+                if (csvReq.getEmail() != null && userRepository.existsByEmail(csvReq.getEmail())) {
+                    throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
                 }
+                // 사번 중복은 학교 범위 내에서만 체크 - 중복 행은 건너뜀
+                if (csvReq.getCode() != null && codeExistsForStaff(csvReq.getCode())) {
+                    log.warn("이미 존재하는 사번 건너뜀: {}", csvReq.getCode());
+                    continue;
+                }
+                StaffDTO.CreateRequest createReq = new StaffDTO.CreateRequest(csvReq);
+                createStaff(createReq);
             }
         }
     }
@@ -152,6 +165,14 @@ public class StaffService {
             if (info != null)
                 info.setStatus(status);
         }
+    }
+
+    /** 학교 범위 내 교직원 사번 중복 여부 확인 (schoolId가 없으면 전역 체크) */
+    private boolean codeExistsForStaff(String code) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        return (schoolId != null)
+                ? staffInfoRepository.existsByCodeAndSchoolId(code, schoolId)
+                : staffInfoRepository.existsByCode(code);
     }
 
     public void addRole(Long uid, String roleName) {

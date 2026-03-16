@@ -22,6 +22,8 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,6 +37,9 @@ import lombok.ToString;
  * - 학적 상태(재학, 휴학 등) 및 학급 배정 이력(assignments)
  */
 @Entity
+@Table(name = "student_info", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_student_code_school", columnNames = { "code", "school_id" })
+})
 @DiscriminatorValue("STUDENT")
 @Getter
 @Setter

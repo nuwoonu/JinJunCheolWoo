@@ -25,15 +25,17 @@ public class JwtUtil {
         this.refreshTokenExpiry = refreshTokenExpiry;
     }
 
-    public String generateAccessToken(Long uid, String email, String role) {
-        return Jwts.builder()
+    public String generateAccessToken(Long uid, String email, String role, Long schoolId) {
+        JwtBuilder builder = Jwts.builder()
                 .subject(email)
                 .claim("uid", uid)
                 .claim("role", role)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiry))
-                .signWith(key)
-                .compact();
+                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiry));
+        if (schoolId != null) {
+            builder.claim("schoolId", schoolId);
+        }
+        return builder.signWith(key).compact();
     }
 
     public String generateRefreshToken(String email) {
@@ -72,6 +74,10 @@ public class JwtUtil {
 
     public Long getUid(String token) {
         return parseToken(token).get("uid", Long.class);
+    }
+
+    public Long getSchoolId(String token) {
+        return parseToken(token).get("schoolId", Long.class);
     }
 
     public long getRefreshTokenExpiry() {

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { ADMIN_ROUTES } from '../constants/routes'
 
 const roleRedirects: Record<string, string> = {
-  ADMIN: ADMIN_ROUTES.DASHBOARD,
+  ADMIN: ADMIN_ROUTES.SCHOOL_SELECT,
   TEACHER: '/teacher/dashboard',
   STUDENT: '/student/dashboard',
   PARENT: '/parent/dashboard',

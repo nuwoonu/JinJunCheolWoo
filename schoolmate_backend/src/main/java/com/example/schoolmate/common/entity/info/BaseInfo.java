@@ -44,7 +44,8 @@ public abstract class BaseInfo extends BaseEntity {
     @JoinColumn(name = "uid") // User의 uid를 참조
     private User user;
 
-    @Column(nullable = false, unique = true)
+    // unique 제약은 각 구현체 @Table uniqueConstraints로 관리 (학교별 범위 적용)
+    @Column(nullable = false)
     private String code;
 
     // 공통 인적 사항 (User에서 분리되어 이곳으로 통합)

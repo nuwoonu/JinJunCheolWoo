@@ -212,7 +212,7 @@ export default function TeacherList() {
           </div>
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
+              <thead className="table-heading-dark-mode">
                 <tr>
                   <th className="text-center" style={{ width: 50 }}>
                     <input
@@ -249,7 +249,7 @@ export default function TeacherList() {
                     <td>
                       <Link
                         to={ADMIN_ROUTES.TEACHERS.DETAIL(t.uid)}
-                        className="fw-bold text-decoration-none text-dark"
+                        className="fw-bold text-decoration-none text-primary-light"
                       >
                         {t.name}
                       </Link>
@@ -260,7 +260,7 @@ export default function TeacherList() {
                       <span className="small text-muted">{t.position}</span>
                     </td>
                     <td>
-                      <span className="badge rounded-pill bg-light text-dark border">
+                      <span className="badge rounded-pill bg-neutral-100 text-neutral-600 border border-neutral-200">
                         {t.subject}
                       </span>
                     </td>
@@ -297,7 +297,7 @@ export default function TeacherList() {
           </div>
         </div>
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-white py-16">
+          <div className="card-footer border-0 bg-base py-16">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

@@ -32,7 +32,7 @@ export default function OAuth2Callback() {
     // [woo] 역할별 대시보드로 이동
     switch (role) {
       case "GUEST":
-        window.location.href = "/select-role";
+        window.location.href = "/select-info?source=sns";
         break;
       case "TEACHER":
         window.location.href = "/teacher/dashboard";
@@ -47,7 +47,7 @@ export default function OAuth2Callback() {
         window.location.href = ADMIN_ROUTES.DASHBOARD;
         break;
       default:
-        window.location.href = "/select-role";
+        window.location.href = "/select-info?source=sns";
     }
   }, []);
 

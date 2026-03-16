@@ -110,7 +110,7 @@ export default function Rooms() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 560,
@@ -124,7 +124,7 @@ export default function Rooms() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
@@ -137,7 +137,7 @@ export default function Rooms() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕
@@ -254,7 +254,7 @@ export default function Rooms() {
                   justifyContent: "flex-end",
                   gap: 8,
                   padding: "12px 20px",
-                  borderTop: "1px solid #e5e7eb",
+                  borderTop: "1px solid var(--border-color)",
                 }}
               >
                 <button
@@ -288,7 +288,7 @@ export default function Rooms() {
       <div className="card">
         <div className="card-body p-0">
           <table className="table table-hover align-middle mb-0">
-            <thead className="table-light">
+            <thead className="table-heading-dark-mode">
               <tr>
                 <th className="ps-4">시설명</th>
                 <th>유형</th>
