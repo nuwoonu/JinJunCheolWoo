@@ -448,7 +448,7 @@ export default function SchoolSelect() {
                           padding: "12px 16px",
                           fontWeight: 600,
                           color: theme.isDark ? "#d1d5db" : "#374151",
-                          width: 90,
+                          width: 100,
                           borderBottom: `1px solid ${theme.isDark ? "#444" : "#f3f4f6"}`,
                           background: "transparent",
                         }}
@@ -483,7 +483,7 @@ export default function SchoolSelect() {
                           padding: "12px 16px",
                           fontWeight: 600,
                           color: theme.isDark ? "#d1d5db" : "#374151",
-                          width: 80,
+                          width: 90,
                           textAlign: "center",
                           borderBottom: `1px solid ${theme.isDark ? "#444" : "#f3f4f6"}`,
                           background: "transparent",

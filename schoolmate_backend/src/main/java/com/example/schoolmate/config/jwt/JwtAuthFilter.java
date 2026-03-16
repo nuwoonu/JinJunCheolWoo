@@ -1,6 +1,7 @@
 package com.example.schoolmate.config.jwt;
 
 import com.example.schoolmate.common.service.CustomUserDetailsService;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -61,6 +62,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String email = jwtUtil.getEmail(token);
 
+        // JWT에서 schoolId를 꺼내 SchoolContextHolder에 세팅 (일반 유저용)
+        // 어드민 경로(/api/admin/**)는 SchoolInterceptor가 X-School-Id 헤더로 덮어씀
+        Long schoolId = jwtUtil.getSchoolId(token);
+        if (schoolId != null) {
+            SchoolContextHolder.setSchoolId(schoolId);
+        }
+
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -75,6 +83,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            // 비어드민 경로는 SchoolInterceptor가 없으므로 여기서 직접 정리
+            SchoolContextHolder.clear();
+        }
     }
 }

@@ -13,6 +13,7 @@ import com.example.schoolmate.common.entity.info.QParentInfo;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -40,7 +41,8 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
                 .leftJoin(relation.studentInfo, student)
                 .leftJoin(student.user, studentUser)
                 .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser),
-                        statusFilter(cond.getStatus(), parent))
+                        statusFilter(cond.getStatus(), parent),
+                        schoolFilter(student))
                 .distinct()
                 .orderBy(parent.id.desc());
 
@@ -69,9 +71,20 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
                 .leftJoin(relation.studentInfo, student)
                 .leftJoin(student.user, studentUser)
                 .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser),
-                        statusFilter(cond.getStatus(), parent));
+                        statusFilter(cond.getStatus(), parent),
+                        schoolFilter(student));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 학부모는 school_id가 없으므로, 자녀(StudentInfo)의 school로 범위를 제한합니다.
+     * schoolId가 null이면 전체 조회 (필터 미적용)
+     */
+    private BooleanExpression schoolFilter(QStudentInfo student) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId == null) return null;
+        return student.school.id.eq(schoolId);
     }
 
     private BooleanExpression statusFilter(String status, QParentInfo parent) {
@@ -97,6 +110,20 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
     @Override
     public long countByStatus(ParentStatus status) {
         QParentInfo parent = QParentInfo.parentInfo;
+        Long schoolId = SchoolContextHolder.getSchoolId();
+
+        if (schoolId != null) {
+            QFamilyRelation relation = QFamilyRelation.familyRelation;
+            QStudentInfo student = QStudentInfo.studentInfo;
+            Long count = query.select(parent.countDistinct())
+                    .from(parent)
+                    .join(parent.childrenRelations, relation)
+                    .join(relation.studentInfo, student)
+                    .where(parent.status.eq(status), student.school.id.eq(schoolId))
+                    .fetchOne();
+            return count != null ? count : 0L;
+        }
+
         Long count = query.select(parent.count())
                 .from(parent)
                 .where(parent.status.eq(status))

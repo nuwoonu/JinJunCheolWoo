@@ -10,6 +10,8 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +22,9 @@ import lombok.Setter;
  * - 부서, 직함, 근무지, 고용 형태 및 계약 만료일
  */
 @Entity
+@Table(name = "staff_info", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_staff_code_school", columnNames = { "code", "school_id" })
+})
 @DiscriminatorValue("STAFF")
 @Getter
 @Setter

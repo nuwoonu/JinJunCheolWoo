@@ -2,16 +2,17 @@ package com.example.schoolmate.domain.resources.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.Sort;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.schoolmate.common.service.FileService;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.resources.constant.FacilityStatus;
 import com.example.schoolmate.domain.resources.dto.FacilityDTO;
 import com.example.schoolmate.domain.resources.entity.SchoolFacility;
 import com.example.schoolmate.domain.resources.repository.SchoolFacilityRepository;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,10 +22,11 @@ import lombok.RequiredArgsConstructor;
 public class FacilityService {
     private final SchoolFacilityRepository facilityRepository;
     private final FileService fileService;
+    private final SchoolRepository schoolRepository;
 
     @Transactional(readOnly = true)
     public List<FacilityDTO.Response> getAllFacilities() {
-        return facilityRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+        return facilityRepository.findAllByCurrentSchool().stream()
                 .map(FacilityDTO.Response::from)
                 .collect(Collectors.toList());
     }
@@ -49,6 +51,11 @@ public class FacilityService {
         facility.setLocationDesc(request.getLocation()); // BaseResource.locationDesc
         facility.setDescription(request.getDescription()); // BaseResource.description
         facility.setImageFilename(filename);
+
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(facility::setSchool);
+        }
 
         facilityRepository.save(facility);
     }
