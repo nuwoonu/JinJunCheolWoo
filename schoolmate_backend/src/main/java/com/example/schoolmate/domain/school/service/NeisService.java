@@ -19,7 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
-import com.example.schoolmate.domain.log.service.LogService;
+import com.example.schoolmate.common.util.LogHelper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -32,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 public class NeisService {
 
     private final SchoolRepository schoolRepository;
-    private final LogService logService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 연결 5초 / 읽기 30초 타임아웃
@@ -59,7 +58,7 @@ public class NeisService {
             return;
         }
 
-        logService.logAction(requesterName, "SYNC_START", "School", "NEIS 학교 정보 동기화 시작");
+        LogHelper.action(requesterName, "SYNC_START", "School", "NEIS 학교 정보 동기화 시작");
 
         int pIndex = 1;
         final int pSize = 1000; // NEIS API 최대 허용값
@@ -179,11 +178,11 @@ public class NeisService {
             }
 
             log.info("학교 데이터 동기화 완료: 총 {}건 처리", savedCount);
-            logService.logAction(requesterName, "SYNC_COMPLETE", "School", "동기화 완료 (총 " + savedCount + "건 처리)");
+            LogHelper.action(requesterName, "SYNC_COMPLETE", "School", "동기화 완료 (총 " + savedCount + "건 처리)");
 
         } catch (Exception e) {
             log.error("학교 데이터 동기화 중 오류 발생", e);
-            logService.logAction(requesterName, "SYNC_FAIL", "School", "동기화 실패: " + e.getMessage());
+            LogHelper.action(requesterName, "SYNC_FAIL", "School", "동기화 실패: " + e.getMessage());
         } finally {
             isSyncing.set(false);
         }

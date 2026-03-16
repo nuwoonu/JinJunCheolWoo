@@ -34,5 +34,7 @@ public class Notification extends SchoolBaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User receiver; // 수신자 (학부모, 학생)
 
-    private boolean isRead; // 읽음 여부
+    private boolean isRead;    // 읽음 여부
+
+    private boolean isDeleted; // 논리 삭제 여부
 }

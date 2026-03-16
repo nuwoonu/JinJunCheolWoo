@@ -16,8 +16,7 @@ public class NotificationDTO {
     @AllArgsConstructor
     @Builder
     public static class SendRequest {
-        private Long senderUid; // 발신자 UID (테스트용, 실제로는 로그인한 관리자 ID 사용)
-        private Long receiverUid; // 수신자 UID (학부모 등)
+        private Long receiverUid; // 수신자 UID
         private String title;
         private String content;
     }

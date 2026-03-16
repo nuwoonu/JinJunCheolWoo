@@ -30,7 +30,7 @@ import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.config.school.SchoolContextHolder;
-import com.example.schoolmate.domain.log.service.LogService;
+import com.example.schoolmate.common.util.LogHelper;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -54,7 +54,6 @@ public class ClassService {
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final SchoolRepository schoolRepository;
-    private final LogService logService;
 
     @Transactional(readOnly = true)
     public Page<ClassDTO.DetailResponse> getClassList(ClassDTO.SearchCondition cond, Pageable pageable) {
@@ -493,7 +492,7 @@ public class ClassService {
     // --- History Log ---
     private void logChange(Long cid, String action, String desc) {
         String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
-        logService.logClassroomChange(cid, adminName, action, desc);
+        LogHelper.classroom(cid, adminName, action, desc);
     }
 
     // --- Roster Export ---
