@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DormitoryData, Building, Room, Bed, Student } from "../types/dormitory";
+import type { DormitoryData, Building, Room, Bed, Student } from "../types/dormitory";
 
 const STORAGE_KEY = "dormitory_data";
 

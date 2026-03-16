@@ -82,6 +82,17 @@ public class DormitoryController {
     }
 
     /**
+     * 학생의 기숙사 배정 정보 조회
+     * GET /api/dormitories/students/{studentInfoId}
+     */
+    @GetMapping("/students/{studentInfoId}")
+    public ResponseEntity<DormitoryDTO> getDormitoryByStudent(@PathVariable Long studentInfoId) {
+        return dormitoryService.getDormitoryByStudentInfoId(studentInfoId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    /**
      * 기숙사 배정 해제
      * DELETE /api/dormitories/students/{studentId}
      */

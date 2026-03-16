@@ -7,16 +7,16 @@ export default function RoomView() {
   const navigate = useNavigate();
   const { buildingId, roomNumber } = useParams<{ buildingId: string; roomNumber: string }>();
   const { getBuilding, getRoom, assignStudent, unassignStudent, updateRoomBeds } = useDormitory();
-  
+
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [selectedBed, setSelectedBed] = useState<number | null>(null);
   const [studentName, setStudentName] = useState("");
   const [showBedSettings, setShowBedSettings] = useState(false);
   const [bedCount, setBedCount] = useState(2);
-  
+
   const building = getBuilding(buildingId || "");
   const room = getRoom(buildingId || "", roomNumber || "");
-  
+
   if (!building || !room) {
     return (
       <div className="size-full flex items-center justify-center">
@@ -35,7 +35,7 @@ export default function RoomView() {
       alert("학생 이름을 입력하세요.");
       return;
     }
-    
+
     if (selectedBed !== null) {
       assignStudent(buildingId || "", roomNumber || "", selectedBed, {
         id: `${buildingId}-${roomNumber}-${selectedBed}-${Date.now()}`,
@@ -168,71 +168,81 @@ export default function RoomView() {
         <div className="bg-white rounded-2xl shadow-2xl p-12">
           <div className="space-y-8">
             {room.beds.map((bed) => (
-              <div key={bed.bedNumber} className="flex items-center gap-8">
-                {/* 침대 (옆면) */}
-                <div className="relative">
-                  {/* 침대 프레임 */}
-                  <div
-                    className="w-80 h-32 rounded-lg shadow-lg relative"
-                    style={{ backgroundColor: `${building.color}30` }}
-                  >
-                    {/* 침대 매트리스 */}
+                <div key={bed.bedNumber} className="flex items-center gap-8">
+                  {/* 침대 (옆면) */}
+                  <div className="relative">
+                    {/* 침대 프레임 */}
                     <div
-                      className="absolute top-2 left-2 right-2 h-20 rounded"
-                      style={{ backgroundColor: building.color }}
+                      className="w-80 h-32 rounded-lg shadow-lg relative"
+                      style={{ backgroundColor: `${building.color}30` }}
                     >
-                      {/* 베개 */}
-                      <div className="absolute -top-1 left-4 w-16 h-10 bg-white rounded-md border-2" style={{ borderColor: building.color }} />
-                      
-                      {/* 침대 패턴 */}
-                      <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-30">
-                        <div className="w-1 h-full bg-white rounded" />
-                        <div className="w-1 h-full bg-white rounded" />
-                        <div className="w-1 h-full bg-white rounded" />
+                      {/* 침대 매트리스 */}
+                      <div
+                        className="absolute top-2 left-2 right-2 h-20 rounded"
+                        style={{ backgroundColor: building.color }}
+                      >
+                        {/* 베개 */}
+                        <div
+                          className="absolute -top-1 left-4 w-16 h-10 bg-white rounded-md border-2"
+                          style={{ borderColor: building.color }}
+                        />
+
+                        {/* 침대 패턴 */}
+                        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-30">
+                          <div className="w-1 h-full bg-white rounded" />
+                          <div className="w-1 h-full bg-white rounded" />
+                          <div className="w-1 h-full bg-white rounded" />
+                        </div>
                       </div>
+
+                      {/* 침대 다리 */}
+                      <div
+                        className="absolute -bottom-4 left-4 w-3 h-6 rounded-b"
+                        style={{ backgroundColor: building.color }}
+                      />
+                      <div
+                        className="absolute -bottom-4 right-4 w-3 h-6 rounded-b"
+                        style={{ backgroundColor: building.color }}
+                      />
                     </div>
-                    
-                    {/* 침대 다리 */}
-                    <div className="absolute -bottom-4 left-4 w-3 h-6 rounded-b" style={{ backgroundColor: building.color }} />
-                    <div className="absolute -bottom-4 right-4 w-3 h-6 rounded-b" style={{ backgroundColor: building.color }} />
+
+                    {/* 침대 번호 */}
+                    <div className="absolute -top-3 -left-3 w-10 h-10 bg-slate-700 text-white rounded-full flex items-center justify-center font-bold">
+                      {bed.bedNumber}
+                    </div>
                   </div>
 
-                  {/* 침대 번호 */}
-                  <div className="absolute -top-3 -left-3 w-10 h-10 bg-slate-700 text-white rounded-full flex items-center justify-center font-bold">
-                    {bed.bedNumber}
-                  </div>
+                  {/* 학생 정보 또는 배정 버튼 */}
+                  {bed.student ? (
+                    <div className="flex-1 flex items-center gap-4">
+                      <button
+                        className="flex-1 max-w-xs px-8 py-6 rounded-xl text-white text-2xl font-semibold shadow-lg flex items-center justify-center gap-3"
+                        style={{ backgroundColor: building.color }}
+                      >
+                        <User className="w-6 h-6" />
+                        {bed.student.name}
+                      </button>
+                      <button
+                        onClick={() => handleUnassign(bed.bedNumber)}
+                        className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2"
+                      >
+                        <UserMinus className="w-5 h-5" />
+                        해제
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleAssign(bed.bedNumber)}
+                      className="flex-1 max-w-xs px-8 py-6 rounded-xl border-2 border-dashed text-slate-400 text-xl font-semibold hover:border-current hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-3"
+                      style={{ borderColor: building.color, color: building.color }}
+                    >
+                      <UserPlus className="w-6 h-6" />
+                      학생 배정
+                    </button>
+                  )}
                 </div>
-
-                {/* 학생 정보 또는 배정 버튼 */}
-                {bed.student ? (
-                  <div className="flex-1 flex items-center gap-4">
-                    <button
-                      className="flex-1 max-w-xs px-8 py-6 rounded-xl text-white text-2xl font-semibold shadow-lg flex items-center justify-center gap-3"
-                      style={{ backgroundColor: building.color }}
-                    >
-                      <User className="w-6 h-6" />
-                      {bed.student.name}
-                    </button>
-                    <button
-                      onClick={() => handleUnassign(bed.bedNumber)}
-                      className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2"
-                    >
-                      <UserMinus className="w-5 h-5" />
-                      해제
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleAssign(bed.bedNumber)}
-                    className="flex-1 max-w-xs px-8 py-6 rounded-xl border-2 border-dashed text-slate-400 text-xl font-semibold hover:border-current hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-3"
-                    style={{ borderColor: building.color, color: building.color }}
-                  >
-                    <UserPlus className="w-6 h-6" />
-                    학생 배정
-                  </button>
-                )}
-              </div>
-            ))}
+              ),
+            )}
           </div>
 
           {/* 방 정보 */}
@@ -248,7 +258,8 @@ export default function RoomView() {
                 <span className="font-semibold">침대 수:</span> {room.beds.length}개
               </div>
               <div>
-                <span className="font-semibold">배정 현황:</span> {room.beds.filter(b => b.student !== null).length}/{room.beds.length}
+                <span className="font-semibold">배정 현황:</span> {room.beds.filter((b) => b.student !== null).length}/
+                {room.beds.length}
               </div>
               <div>
                 <span className="font-semibold">층:</span> {room.floor}층

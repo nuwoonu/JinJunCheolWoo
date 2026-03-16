@@ -426,6 +426,7 @@ public class StudentService {
     }
 
     // 승철님 작업물 - student_info.id(PK)로 조회 (edit 컨트롤러용)
+    // 안쓰는 코드
     @Transactional(readOnly = true)
     public StudentResponseDTO getStudentById(Long id) {
         StudentInfo student = studentInfoRepository.findById(id)
@@ -511,6 +512,14 @@ public class StudentService {
 
         // @Transactional로 인해 변경 감지되어 자동 저장됨
         return convertToResponseDTO(student);
+    }
+
+    // user.uid(FK)로 student_info 조회 후 수정 (로그인 학생 본인 수정용)
+    @Transactional
+    public StudentResponseDTO updateStudentByUserUid(Long userUid, StudentUpdateDTO updateDTO) {
+        StudentInfo student = studentInfoRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + userUid));
+        return updateStudent(student.getId(), updateDTO);
     }
 
     // 승철님 작업물

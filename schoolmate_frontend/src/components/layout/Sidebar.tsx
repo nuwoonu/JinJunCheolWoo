@@ -214,6 +214,12 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
                   </Link>
                 </li>
+                {/* [cheol] 기숙사 */}
+                <li>
+                  <Link to="/student/dormitory">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
+                  </Link>
+                </li>
               </ul>
             </li>
           )}

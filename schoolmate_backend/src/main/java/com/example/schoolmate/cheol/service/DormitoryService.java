@@ -151,6 +151,15 @@ public class DormitoryService {
     }
 
     /**
+     * 특정 학생의 기숙사 배정 정보 조회
+     */
+    public java.util.Optional<DormitoryDTO> getDormitoryByStudentInfoId(Long studentInfoId) {
+        return studentInfoRepository.findById(studentInfoId)
+                .filter(StudentInfo::hasDormitory)
+                .map(s -> DormitoryDTO.from(s.getDormitory()));
+    }
+
+    /**
      * 기숙사 배정 해제
      */
     @Transactional

@@ -1,6 +1,6 @@
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { useDormitoryData } from "../hooks/useDormitoryData";
-import { DormitoryData, Student } from "../types/dormitory";
+import type { DormitoryData, Building, Room, Student } from "../types/dormitory";
 
 interface DormitoryContextType {
   data: DormitoryData;
@@ -9,8 +9,8 @@ interface DormitoryContextType {
   updateRoomBeds: (buildingId: string, roomNumber: string, bedCount: number) => void;
   assignStudent: (buildingId: string, roomNumber: string, bedNumber: number, student: Student) => void;
   unassignStudent: (buildingId: string, roomNumber: string, bedNumber: number) => void;
-  getBuilding: (buildingId: string) => any;
-  getRoom: (buildingId: string, roomNumber: string) => any;
+  getBuilding: (buildingId: string) => Building | undefined;
+  getRoom: (buildingId: string, roomNumber: string) => Room | undefined;
 }
 
 const DormitoryContext = createContext<DormitoryContextType | null>(null);
@@ -18,11 +18,7 @@ const DormitoryContext = createContext<DormitoryContextType | null>(null);
 export function DormitoryProvider({ children }: { children: ReactNode }) {
   const dormitoryData = useDormitoryData();
 
-  return (
-    <DormitoryContext.Provider value={dormitoryData}>
-      {children}
-    </DormitoryContext.Provider>
-  );
+  return <DormitoryContext.Provider value={dormitoryData}>{children}</DormitoryContext.Provider>;
 }
 
 export function useDormitory() {

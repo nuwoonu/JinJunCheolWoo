@@ -38,11 +38,11 @@ public class StudentRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 학생 정보 조회 (ID)
-    // GET /api/students/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
-        StudentResponseDTO response = studentService.getStudentById(id);
+    // 학생 정보 조회 (user.uid)
+    // GET /api/students/{uid}
+    @GetMapping("/{uid}")
+    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long uid) {
+        StudentResponseDTO response = studentService.getStudentByUserUid(uid);
         return ResponseEntity.ok(response);
     }
 
@@ -89,13 +89,13 @@ public class StudentRestController {
         return ResponseEntity.ok(students);
     }
 
-    // 학생 정보 수정
-    // PUT /api/students/{id}
-    @PutMapping("/{id}")
+    // 학생 정보 수정 (user.uid)
+    // PUT /api/students/{uid}
+    @PutMapping("/{uid}")
     public ResponseEntity<StudentResponseDTO> updateStudent(
-            @PathVariable Long id,
+            @PathVariable Long uid,
             @Validated @RequestBody StudentUpdateDTO updateDTO) {
-        StudentResponseDTO response = studentService.updateStudent(id, updateDTO);
+        StudentResponseDTO response = studentService.updateStudentByUserUid(uid, updateDTO);
         return ResponseEntity.ok(response);
     }
 
