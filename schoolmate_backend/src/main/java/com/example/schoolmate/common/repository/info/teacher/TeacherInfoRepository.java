@@ -12,6 +12,9 @@ public interface TeacherInfoRepository extends JpaRepository<TeacherInfo, Long>,
 
     boolean existsByCode(String code);
 
+    // 학교 범위 내 사번 중복 체크
+    boolean existsByCodeAndSchoolId(String code, Long schoolId);
+
     // User ID로 교사 정보 조회
     Optional<TeacherInfo> findByUserUid(Long uid);
 }

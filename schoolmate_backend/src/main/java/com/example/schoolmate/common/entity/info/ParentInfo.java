@@ -11,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +24,9 @@ import lombok.Setter;
  * - 실명, 연락처, 계정 상태(승인대기, 활성 등)
  */
 @Entity
+@Table(name = "parent_info", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_parent_code", columnNames = { "code" })
+})
 @DiscriminatorValue("PARENT")
 @Getter
 @Setter

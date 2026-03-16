@@ -2,8 +2,6 @@ package com.example.schoolmate.config;
 
 import com.example.schoolmate.common.service.CustomOAuth2UserService;
 import com.example.schoolmate.config.jwt.JwtAuthFilter;
-// [woo] 로그 서비스 복구 (backup 코드 참조)
-import com.example.schoolmate.domain.log.entity.AccessLog;
 import com.example.schoolmate.domain.log.service.LogService;
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
@@ -62,6 +60,9 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
+                                                                // [woo] /me는 컨트롤러가 직접 인증 여부 판단 (미인증 시
+                                                                // authenticated:false 반환)
+                                                                "/api/auth/me",
                                                                 "/oauth2/**",
                                                                 "/login/oauth2/**",
                                                                 "/login",
@@ -111,17 +112,17 @@ public class SecurityConfig {
                                                         logService.logAccess(authentication.getName(),
                                                                         getClientIp(request),
                                                                         request.getHeader("User-Agent"),
-                                                                        AccessLog.AccessType.LOGIN);
+                                                                        "LOGIN");
                                                         oAuth2LoginSuccessHandler.onAuthenticationSuccess(request,
                                                                         response, authentication);
                                                 }))
                                 .exceptionHandling(exception -> exception
                                                 .accessDeniedHandler(accessDeniedHandler())
-                                                // REST API: 인증 실패 시 /login 리다이렉트 대신 401 JSON 반환
+                                                // API 요청은 /login redirect 대신 401 JSON 반환 (CORS 우회 방지)
                                                 .authenticationEntryPoint((request, response, authException) -> {
                                                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                                                         response.setContentType("application/json;charset=UTF-8");
-                                                        response.getWriter().write("{\"message\":\"인증이 필요합니다.\"}");
+                                                        response.getWriter().write("{\"authenticated\":false}");
                                                 }))
                                 // JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 등록
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

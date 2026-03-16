@@ -1,14 +1,27 @@
 // [joon] 관리자 API - /api/admin/* 호출 (vite proxy: /api → 8080)
 import axios from "axios";
+import { auth } from "../shared/auth";
 
 const BASE = "/api/admin";
 
-// axios 인스턴스 - localStorage JWT 자동 첨부
+// axios 인스턴스 - auth 유틸리티를 통한 JWT 자동 첨부
 const admin = axios.create({ baseURL: BASE });
 
 admin.interceptors.request.use((cfg) => {
-  const token = localStorage.getItem("accessToken");
+  const token = auth.getAccessToken();
   if (token) cfg.headers.Authorization = `Bearer ${token}`;
+
+  // 선택된 학교 ID를 모든 요청 헤더에 자동 첨부
+  try {
+    const raw = localStorage.getItem("admin_selected_school");
+    if (raw) {
+      const school = JSON.parse(raw) as { id?: number };
+      if (school?.id) cfg.headers["X-School-Id"] = String(school.id);
+    }
+  } catch {
+    /* 무시 */
+  }
+
   return cfg;
 });
 
@@ -16,18 +29,18 @@ admin.interceptors.response.use(
   (r) => r,
   async (err) => {
     if (err.response?.status === 401) {
-      const refresh = localStorage.getItem("refreshToken");
+      const refresh = auth.getRefreshToken();
       if (refresh) {
         try {
           const res = await axios.post("/api/auth/refresh", {
             refreshToken: refresh,
           });
           const newToken = res.data.accessToken;
-          localStorage.setItem("accessToken", newToken);
+          auth.setTokens(newToken, res.data.refreshToken || refresh);
           err.config.headers.Authorization = `Bearer ${newToken}`;
           return admin.request(err.config);
         } catch {
-          localStorage.clear();
+          auth.clearTokens();
           window.location.href = "/login";
         }
       }

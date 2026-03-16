@@ -5,11 +5,12 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
-import com.example.schoolmate.domain.log.entity.AccessLog;
 import com.example.schoolmate.domain.log.service.LogService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -92,12 +93,10 @@ public class AuthApiController {
 
         try {
             Map<String, Object> result = authService.login(email, password);
-            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"),
-                    AccessLog.AccessType.LOGIN);
+            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"), "LOGIN");
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"),
-                    AccessLog.AccessType.LOGIN_FAIL);
+            logService.logAccess(email, getClientIp(request), request.getHeader("User-Agent"), "LOGIN_FAIL");
             return ResponseEntity.status(401).body(Map.of("message", "이메일 또는 비밀번호가 올바르지 않습니다."));
         }
     }
@@ -119,12 +118,17 @@ public class AuthApiController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal AuthUserDTO user, HttpServletRequest request) {
+    public ResponseEntity<?> logout(@AuthenticationPrincipal AuthUserDTO user,
+                                    HttpServletRequest request, HttpServletResponse response) {
         if (user != null) {
             authService.logout(user.getUsername());
-            logService.logAccess(user.getUsername(), getClientIp(request), request.getHeader("User-Agent"),
-                    AccessLog.AccessType.LOGOUT);
+            logService.logAccess(user.getUsername(), getClientIp(request), request.getHeader("User-Agent"), "LOGOUT");
         }
+        // [woo] 응답 헤더로 accessToken 쿠키 만료 - JS 쿠키 삭제보다 신뢰성 높음
+        Cookie expiredCookie = new Cookie("accessToken", "");
+        expiredCookie.setMaxAge(0);
+        expiredCookie.setPath("/");
+        response.addCookie(expiredCookie);
         return ResponseEntity.ok(Map.of("message", "로그아웃되었습니다."));
     }
 
@@ -145,7 +149,7 @@ public class AuthApiController {
     @GetMapping("/me")
     public ResponseEntity<?> me(@AuthenticationPrincipal AuthUserDTO user) {
         if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("authenticated", false));
+            return ResponseEntity.ok(Map.of("authenticated", false));
         }
         // [woo] getPrimaryRole()이 null일 수 있음 (OAuth2 신규 GUEST 유저 - DB에 roles 없음)
         UserRole primaryRole = user.getPrimaryRole();

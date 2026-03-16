@@ -40,6 +40,8 @@ import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.notice.NotificationRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.woo.dto.teacherdto.TeacherResponseDTO;
@@ -68,6 +70,7 @@ public class TeacherService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationRepository notificationRepository;
+    private final SchoolRepository schoolRepository;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========
@@ -103,7 +106,7 @@ public class TeacherService {
      */
     @Transactional
     public void createTeacher(TeacherDTO.CreateRequest request) {
-        if (request.getCode() != null && teacherInfoRepository.existsByCode(request.getCode())) {
+        if (request.getCode() != null && codeExistsForTeacher(request.getCode())) {
             throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
         }
 
@@ -122,6 +125,12 @@ public class TeacherService {
         info.setStatus(TeacherStatus.EMPLOYED);
         info.setUser(user);
 
+        // 학교 소속 설정 (X-School-Id 헤더 기반)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(info::setSchool);
+        }
+
         user.getInfos().add(info);
         userRepository.save(user);
     }
@@ -139,7 +148,7 @@ public class TeacherService {
         TeacherInfo info = user.getInfo(TeacherInfo.class);
         if (info != null && request.getStatusName() != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-                if (teacherInfoRepository.existsByCode(request.getCode())) {
+                if (codeExistsForTeacher(request.getCode())) {
                     throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());
@@ -164,12 +173,13 @@ public class TeacherService {
             log.info("파싱된 데이터 개수: {}", beans.size());
             for (TeacherDTO.CsvImportRequest csvReq : beans) {
                 try {
+                    // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
                     if (userRepository.existsByEmail(csvReq.getEmail())) {
-                        log.warn("이미 존재하는 이메일 건너뜀: {}", csvReq.getEmail());
-                        continue;
+                        throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
                     }
-                    if (teacherInfoRepository.existsByCode(csvReq.getCode())) {
-                        log.warn("이미 존재하는 사번 건너뜀: {}", csvReq.getCode());
+                    // 교사 코드 중복은 학교 범위 내에서만 체크 - 중복 행은 건너뜀
+                    if (codeExistsForTeacher(csvReq.getCode())) {
+                        log.warn("이미 존재하는 교사 코드 건너뜀: {}", csvReq.getCode());
                         continue;
                     }
                     this.createTeacher(new TeacherDTO.CreateRequest(csvReq));
@@ -327,7 +337,8 @@ public class TeacherService {
 
         if (updateDTO.getClassroomId() != null) {
             Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
-                    .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + updateDTO.getClassroomId()));
             if (student.getCurrentAssignment() != null) {
                 student.getCurrentAssignment().setClassroom(classroom);
             }
@@ -397,7 +408,7 @@ public class TeacherService {
         log.info("성적 입력 - 교사: {}, 학생: {}, 과목: {}",
                 teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectCode());
 
-        TeacherInfo teacher = teacherInfoRepository.findById(teacherId)
+        teacherInfoRepository.findById(teacherId)
                 .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
 
         Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())
@@ -673,6 +684,14 @@ public class TeacherService {
             throw new IllegalArgumentException("교사의 사용자 정보가 없습니다. ID: " + teacherId);
         }
         return teacher.getUser().getUid();
+    }
+
+    /** 학교 범위 내 교사 사번 중복 여부 확인 (schoolId가 없으면 전역 체크) */
+    private boolean codeExistsForTeacher(String code) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        return (schoolId != null)
+                ? teacherInfoRepository.existsByCodeAndSchoolId(code, schoolId)
+                : teacherInfoRepository.existsByCode(code);
     }
 
     private GradeDTO entityToDto(Grade grade) {

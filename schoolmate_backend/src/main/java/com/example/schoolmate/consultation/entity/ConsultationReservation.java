@@ -3,7 +3,7 @@ package com.example.schoolmate.consultation.entity;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.user.User;
 
@@ -18,7 +18,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "consultation_reservation")
-public class ConsultationReservation extends BaseEntity {
+public class ConsultationReservation extends SchoolBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,4 +45,8 @@ public class ConsultationReservation extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status = ReservationStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "consultation_type")
+    private ConsultationType consultationType;
 }

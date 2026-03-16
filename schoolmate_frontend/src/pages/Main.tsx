@@ -1,4 +1,29 @@
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { ADMIN_ROUTES } from '../constants/routes'
+
+const roleRedirects: Record<string, string> = {
+  ADMIN: ADMIN_ROUTES.SCHOOL_SELECT,
+  TEACHER: '/teacher/dashboard',
+  STUDENT: '/student/dashboard',
+  PARENT: '/parent/dashboard',
+  GUEST: '/select-role',
+}
+
 export default function Main() {
+  const { user, loading } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (loading || !user?.authenticated || !user.role) return
+    const target = roleRedirects[user.role]
+    if (target) {
+      navigate(target, { replace: true })
+    }
+    // 알 수 없는 role이면 /main에 그대로 머물러 무한 루프 방지
+  }, [user, loading, navigate])
+
   return (
     <>
       <style>{`

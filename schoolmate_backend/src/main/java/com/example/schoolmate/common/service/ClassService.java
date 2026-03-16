@@ -29,8 +29,9 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.domain.log.entity.ClassroomHistory;
-import com.example.schoolmate.domain.log.repository.ClassroomHistoryRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.log.service.LogService;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -52,7 +53,8 @@ public class ClassService {
     private final UserRepository userRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
-    private final ClassroomHistoryRepository classroomHistoryRepository;
+    private final SchoolRepository schoolRepository;
+    private final LogService logService;
 
     @Transactional(readOnly = true)
     public Page<ClassDTO.DetailResponse> getClassList(ClassDTO.SearchCondition cond, Pageable pageable) {
@@ -94,8 +96,7 @@ public class ClassService {
         response.setStudents(studentSummaries);
 
         // 이력 조회
-        List<ClassroomHistory> histories = classroomHistoryRepository.findByClassroomIdOrderByCreatedAtDesc(cid);
-        response.setHistories(histories.stream().map(ClassDTO.HistoryResponse::from).toList());
+        response.setHistories(logService.getClassroomHistory(cid).stream().map(ClassDTO.HistoryResponse::from).toList());
 
         return response;
     }
@@ -209,6 +210,12 @@ public class ClassService {
         classroom.setYear(request.getYear());
         classroom.setGrade(request.getGrade());
         classroom.setClassNum(request.getClassNum());
+
+        // 학교 소속 설정 (X-School-Id 헤더 기반)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
+        }
 
         if (request.getTeacherUid() != null) {
             User teacher = userRepository.findById(request.getTeacherUid())
@@ -486,13 +493,7 @@ public class ClassService {
     // --- History Log ---
     private void logChange(Long cid, String action, String desc) {
         String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
-        ClassroomHistory history = ClassroomHistory.builder()
-                .classroomId(cid)
-                .actionType(action)
-                .description(desc)
-                .createdBy(adminName)
-                .build();
-        classroomHistoryRepository.save(history);
+        logService.logClassroomChange(cid, adminName, action, desc);
     }
 
     // --- Roster Export ---

@@ -13,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,10 +25,13 @@ import lombok.Setter;
  * - 담당 과목, 소속 부서, 직책, 재직 상태
  */
 @Entity
+@Table(name = "teacher_info", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_teacher_code_school", columnNames = { "code", "school_id" })
+})
 @DiscriminatorValue("TEACHER")
 @Getter
 @Setter
-public class TeacherInfo extends BaseInfo {
+public class TeacherInfo extends SchoolMemberInfo {
     private String subject; // 담당 과목
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

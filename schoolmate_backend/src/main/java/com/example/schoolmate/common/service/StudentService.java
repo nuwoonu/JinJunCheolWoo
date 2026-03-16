@@ -35,6 +35,8 @@ import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -57,6 +59,7 @@ public class StudentService {
     private final StudentInfoRepository studentInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final ClassroomRepository classroomRepository;
+    private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -118,6 +121,12 @@ public class StudentService {
         info.setStatus(StudentStatus.ENROLLED);
         info.setUser(user);
         user.getInfos().add(info);
+
+        // 학교 소속 설정 (X-School-Id 헤더 기반)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(info::setSchool);
+        }
 
         // 3. 학급 배정 정보(선택 사항) 처리
         if (request.getClassroomId() != null) {
@@ -245,12 +254,14 @@ public class StudentService {
             log.info("파싱된 데이터 개수: {}", beans.size());
 
             for (StudentDTO.CsvImportRequest csvReq : beans) {
-                // 1. 중복 체크
+                // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
                 if (userRepository.existsByEmail(csvReq.getEmail())) {
                     throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
                 }
+                // 학번 중복은 학교 범위 내에서만 체크 - 중복 행은 건너뜀
                 if (studentInfoRepository.existsByCode(csvReq.getCode())) {
-                    throw new IllegalArgumentException("이미 존재하는 학번입니다: " + csvReq.getCode());
+                    log.warn("이미 존재하는 학번 건너뜀: {}", csvReq.getCode());
+                    continue;
                 }
 
                 // 2. DTO 변환 및 생성 로직 재사용

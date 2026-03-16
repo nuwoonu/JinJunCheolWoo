@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import api from '../../../api/auth'
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import NeisEventsWidget from '../../../components/NeisEventsWidget'
@@ -56,9 +57,12 @@ const MEAL_TYPE_CLASS: Record<string, string> = {
 
 
 export default function ParentChildrenStatus() {
+  const location = useLocation()
   const [children, setChildren] = useState<Child[]>([])
   const [boards, setBoards] = useState<Board[]>([])
-  const [selectedChildId, setSelectedChildId] = useState<number | null>(null)
+  const [selectedChildId, setSelectedChildId] = useState<number | null>(
+    (location.state as { childId?: number } | null)?.childId ?? null
+  )
   const [todayEvents, setTodayEvents] = useState<CalendarEvent[]>([])
   const [meals, setMeals] = useState<Meal[]>([])
   const [timetable, setTimetable] = useState<TimetableItem[]>([])
@@ -69,7 +73,11 @@ export default function ParentChildrenStatus() {
       const d: ParentDashboardData = res.data
       setChildren(d.children ?? [])
       setBoards(d.boards ?? [])
-      if (d.children && d.children.length > 0) setSelectedChildId(d.children[0].id)
+      if (d.children && d.children.length > 0) {
+        const fromState = (location.state as { childId?: number } | null)?.childId
+        const valid = fromState && d.children.some(c => c.id === fromState)
+        setSelectedChildId(valid ? fromState : d.children[0].id)
+      }
     }).catch(() => {})
 
     // [woo] 오늘의 학사일정 (NEIS) - 오늘 날짜만 필터

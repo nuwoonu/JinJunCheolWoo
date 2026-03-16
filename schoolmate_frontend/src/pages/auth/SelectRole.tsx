@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import api from '../../api/auth'
 import { auth } from '../../shared/auth'
+import { ADMIN_ROUTES } from '../../constants/routes'
 
 // [woo] OAuth2 소셜 로그인 후 역할 선택 페이지 (GUEST 유저 전용)
 export default function SelectRole() {
@@ -33,7 +34,7 @@ export default function SelectRole() {
     STUDENT: '/student/dashboard',
     TEACHER: '/teacher/dashboard',
     PARENT: '/parent/dashboard',
-    ADMIN: '/parkjoon/admin/dashboard',
+    ADMIN: ADMIN_ROUTES.SCHOOL_SELECT,
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

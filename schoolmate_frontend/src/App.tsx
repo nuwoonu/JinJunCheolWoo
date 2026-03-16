@@ -9,6 +9,14 @@ import OAuth2Callback from "./pages/auth/OAuth2Callback";
 import SelectRole from "./pages/auth/SelectRole";
 import Main from "./pages/Main";
 import UserProfile from "./pages/user/Profile";
+import NotFound from "./pages/error/NotFound";
+import Unauthorized from "./pages/error/Unauthorized";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import OAuth2Callback from "./pages/auth/OAuth2Callback";
+import SelectRole from "./pages/auth/SelectRole";
+import Main from "./pages/Main";
+import UserProfile from "./pages/user/Profile";
 // [cheol] 학생 관련
 import StudentDashboard from "./pages/cheol/student/Dashboard";
 import StudentList from "./pages/cheol/student/StudentList";
@@ -32,7 +40,23 @@ import TeacherScheduleAdd from "./pages/woo/teacher/ScheduleAdd";
 import TeacherScheduleEdit from "./pages/woo/teacher/ScheduleEdit";
 import TeacherList from "./pages/woo/teacher/TeacherList";
 import ParentList from "./pages/woo/teacher/ParentList";
+import TeacherDashboard from "./pages/woo/teacher/Dashboard";
+import TeacherMyClass from "./pages/woo/teacher/MyClass";
+import TeacherMyClassStudents from "./pages/woo/teacher/MyClassStudents";
+import TeacherSchedulePage from "./pages/woo/teacher/SchedulePage";
+import TeacherScheduleAdd from "./pages/woo/teacher/ScheduleAdd";
+import TeacherScheduleEdit from "./pages/woo/teacher/ScheduleEdit";
+import TeacherList from "./pages/woo/teacher/TeacherList";
+import ParentList from "./pages/woo/teacher/ParentList";
 // [woo] 게시판
+import SchoolNotice from "./pages/woo/board/SchoolNotice";
+import SchoolNoticeDetail from "./pages/woo/board/SchoolNoticeDetail";
+import ParentNotice from "./pages/woo/board/ParentNotice";
+import ParentNoticeDetail from "./pages/woo/board/ParentNoticeDetail";
+import ParentBoard from "./pages/woo/board/ParentBoard";
+import ParentBoardDetail from "./pages/woo/board/ParentBoardDetail";
+import TeacherBoard from "./pages/woo/board/TeacherBoard";
+import TeacherBoardDetail from "./pages/woo/board/TeacherBoardDetail";
 import SchoolNotice from "./pages/woo/board/SchoolNotice";
 import SchoolNoticeDetail from "./pages/woo/board/SchoolNoticeDetail";
 import ParentNotice from "./pages/woo/board/ParentNotice";
@@ -44,13 +68,21 @@ import TeacherBoardDetail from "./pages/woo/board/TeacherBoardDetail";
 // [woo] 출결
 import StudentAttendance from "./pages/woo/attendance/StudentAttendance";
 import TeacherAttendance from "./pages/woo/attendance/TeacherAttendance";
+import StudentAttendance from "./pages/woo/attendance/StudentAttendance";
+import TeacherAttendance from "./pages/woo/attendance/TeacherAttendance";
 // [jin] 학부모 관련
+import ParentDashboard from "./pages/jin/parent/Dashboard";
+import ParentChildrenStatus from "./pages/jin/parent/ChildrenStatus";
 import ParentDashboard from "./pages/jin/parent/Dashboard";
 import ParentChildrenStatus from "./pages/jin/parent/ChildrenStatus";
 // [jin] 상담
 import ConsultationList from "./pages/jin/consultation/ConsultationList";
 import ConsultationReservation from "./pages/jin/consultation/ConsultationReservation";
+import ConsultationList from "./pages/jin/consultation/ConsultationList";
+import ConsultationReservation from "./pages/jin/consultation/ConsultationReservation";
 // [jin] 학교 일정/갤러리
+import SchoolSchedule from "./pages/jin/school/SchoolSchedule";
+import SchoolGallery from "./pages/jin/school/SchoolGallery";
 import SchoolSchedule from "./pages/jin/school/SchoolSchedule";
 import SchoolGallery from "./pages/jin/school/SchoolGallery";
 // [parkjoon] 관리자 페이지
@@ -102,7 +134,23 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/student/dashboard"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "ADMIN"]}>
+            <StudentDashboard />
+          </PrivateRoute>
+        }
+      />
       {/* [woo] 학생 리스트 - STUDENT, TEACHER, ADMIN 공용 */}
+      <Route
+        path="/student/list"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <StudentList />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/student/list"
         element={
@@ -135,6 +183,30 @@ function App() {
       </Route>
 
       {/* [cheol] 성적/시험 */}
+      <Route
+        path="/exam"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <StudentGrades />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/exam/schedule"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <StudentExamSchedule />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/exam/result"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <StudentExamResult />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/exam"
         element={
@@ -201,7 +273,55 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/teacher/dashboard"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherDashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/myclass"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherMyClass />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/myclass/students"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherMyClassStudents />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/schedule"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherSchedulePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/list"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherList />
+          </PrivateRoute>
+        }
+      />
       {/* [woo] 학부모 목록 (교사/관리자용) */}
+      <Route
+        path="/teacher/parent/list"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <ParentList />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/teacher/parent/list"
         element={
@@ -263,7 +383,39 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/board/parent-notice"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "TEACHER", "ADMIN"]}>
+            <ParentNotice />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/board/parent-notice/:id"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "TEACHER", "ADMIN"]}>
+            <ParentNoticeDetail />
+          </PrivateRoute>
+        }
+      />
       {/* [woo] 학부모 자유게시판 */}
+      <Route
+        path="/board/parent"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "TEACHER", "ADMIN"]}>
+            <ParentBoard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/board/parent/:id"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "TEACHER", "ADMIN"]}>
+            <ParentBoardDetail />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/board/parent"
         element={
@@ -290,7 +442,23 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/parent/dashboard"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ParentDashboard />
+          </PrivateRoute>
+        }
+      />
       {/* [woo] 학부모 자녀현황 - soojin/mychildren/status 마이그레이션 */}
+      <Route
+        path="/parent/children/status"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ParentChildrenStatus />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/parent/children/status"
         element={
@@ -327,8 +495,40 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/board/teacher"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherBoard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/board/teacher/:id"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherBoardDetail />
+          </PrivateRoute>
+        }
+      />
 
       {/* [woo] 수업 일정 추가/수정 (TimetableApp 링크) */}
+      <Route
+        path="/teacher/schedule/add"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherScheduleAdd />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/schedule/edit/:id"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherScheduleEdit />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/teacher/schedule/add"
         element={
@@ -363,6 +563,22 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/attendance/student"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <StudentAttendance />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/attendance/teacher"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherAttendance />
+          </PrivateRoute>
+        }
+      />
 
       {/* [soojin] 상담 신청 예약 (캘린더) */}
       <Route
@@ -373,7 +589,23 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/consultation/reservation"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "PARENT", "ADMIN"]}>
+            <ConsultationReservation />
+          </PrivateRoute>
+        }
+      />
       {/* [soojin] 상담 예약 목록 */}
+      <Route
+        path="/consultation"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "PARENT", "ADMIN"]}>
+            <ConsultationList />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/consultation"
         element={
@@ -642,6 +874,8 @@ function App() {
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
+  );
 }
 
+export default App;
 export default App;

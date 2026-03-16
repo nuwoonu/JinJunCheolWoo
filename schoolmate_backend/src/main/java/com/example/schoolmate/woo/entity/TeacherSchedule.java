@@ -3,7 +3,7 @@ package com.example.schoolmate.woo.entity;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.soojin.entity.constant.DayOfWeek;
 import com.example.schoolmate.woo.entity.constant.RepeatType;
@@ -37,7 +37,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeacherSchedule extends BaseEntity {
+public class TeacherSchedule extends SchoolBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

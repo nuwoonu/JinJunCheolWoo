@@ -1,6 +1,7 @@
 package com.example.schoolmate.config.jwt;
 
 import com.example.schoolmate.common.service.CustomUserDetailsService;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -60,14 +62,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String email = jwtUtil.getEmail(token);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        // JWT에서 schoolId를 꺼내 SchoolContextHolder에 세팅 (일반 유저용)
+        // 어드민 경로(/api/admin/**)는 SchoolInterceptor가 X-School-Id 헤더로 덮어씀
+        Long schoolId = jwtUtil.getSchoolId(token);
+        if (schoolId != null) {
+            SchoolContextHolder.setSchoolId(schoolId);
         }
 
-        filterChain.doFilter(request, response);
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } catch (UsernameNotFoundException e) {
+                // JWT에 명시된 사용자가 DB에 없을 때 (예: ddl-auto=create로 DB 초기화 후)
+                // 예외를 전파하지 않고 인증 없이 계속 진행 → permitAll 엔드포인트 접근 가능
+                log.warn("JWT 사용자 없음 (DB 초기화 또는 탈퇴): {}", email);
+            }
+        }
+
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            // 비어드민 경로는 SchoolInterceptor가 없으므로 여기서 직접 정리
+            SchoolContextHolder.clear();
+        }
     }
 }
