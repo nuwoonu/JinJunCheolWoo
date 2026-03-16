@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AdminLayout from "../../../components/layout/AdminLayout";
+import ParentAdminLayout from "../../../components/layout/ParentAdminLayout";
 import admin from "../../../api/adminApi";
 import { PARENT_STATUS, STATUS_DEFAULT } from "../../../constants/statusConfig";
 import { ADMIN_ROUTES } from "../../../constants/routes";
@@ -84,17 +84,17 @@ export default function ParentDetail() {
 
   if (!parent)
     return (
-      <AdminLayout>
+      <ParentAdminLayout requireSchool={false}>
         <div className="text-center py-5">
           <div className="spinner-border" />
         </div>
-      </AdminLayout>
+      </ParentAdminLayout>
     );
 
   const children: any[] = parent.children ?? [];
 
   return (
-    <AdminLayout>
+    <ParentAdminLayout>
       {showModal && (
         <div
           style={{
@@ -460,6 +460,6 @@ export default function ParentDetail() {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </ParentAdminLayout>
   );
 }

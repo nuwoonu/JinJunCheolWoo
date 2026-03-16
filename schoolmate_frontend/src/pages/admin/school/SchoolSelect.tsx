@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import admin from "../../../api/adminApi";
 import { ADMIN_ROUTES } from "../../../constants/routes";
 import { useSchool, type SelectedSchool } from "../../../context/SchoolContext";
@@ -170,21 +170,33 @@ export default function SchoolSelect() {
           transition: "background 0.3s, border-color 0.3s",
         }}
       >
-        <a style={{ display: "flex" }}>
-          {/* 다크모드 여부에 따라 기존 css 클래스(light-logo/dark-logo) 활용 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <Link
+            to={ADMIN_ROUTES.MAIN}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 13,
+              color: theme.isDark ? "#9ca3af" : "#6b7280",
+              textDecoration: "none",
+              padding: "4px 8px",
+              borderRadius: 8,
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = theme.isDark ? "#2d2d2d" : "#f3f4f6")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+          >
+            <i className="ri-arrow-left-line" style={{ fontSize: 16 }} />
+            <span>관리자 메뉴</span>
+          </Link>
+          <div style={{ width: 1, height: 20, background: theme.isDark ? "#444" : "#e5e7eb" }} />
           <img
             src="/images/schoolmateLogo.png"
             alt="SchoolMate"
-            className={theme.isDark ? "d-none" : "light-logo"}
             style={{ height: 32, width: "auto" }}
           />
-          <img
-            src="/images/schoolmateLogo.png"
-            alt="SchoolMate"
-            className={theme.isDark ? "dark-logo" : "d-none"}
-            style={{ height: 32, width: "auto" }}
-          />
-        </a>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* 다크모드 토글 버튼 추가 */}
           <button

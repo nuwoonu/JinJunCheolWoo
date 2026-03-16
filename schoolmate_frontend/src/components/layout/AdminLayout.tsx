@@ -6,16 +6,16 @@ import { SidebarProvider, useSidebar } from '../../contexts/SidebarContext'
 import { useSchool } from '../../context/SchoolContext'
 import { ADMIN_ROUTES } from '../../constants/routes'
 
-function Layout({ children, msg, error }: { children: ReactNode; msg?: string; error?: string }) {
+function Layout({ children, msg, error, requireSchool = true }: { children: ReactNode; msg?: string; error?: string; requireSchool?: boolean }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
   const { selectedSchool } = useSchool()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!selectedSchool) {
+    if (requireSchool && !selectedSchool) {
       navigate(ADMIN_ROUTES.SCHOOL_SELECT, { replace: true })
     }
-  }, [selectedSchool, navigate])
+  }, [requireSchool, selectedSchool, navigate])
 
   return (
     <>
@@ -66,10 +66,10 @@ function Layout({ children, msg, error }: { children: ReactNode; msg?: string; e
   )
 }
 
-export default function AdminLayout({ children, msg, error }: { children: ReactNode; msg?: string; error?: string }) {
+export default function AdminLayout({ children, msg, error, requireSchool = true }: { children: ReactNode; msg?: string; error?: string; requireSchool?: boolean }) {
   return (
     <SidebarProvider>
-      <Layout msg={msg} error={error}>{children}</Layout>
+      <Layout msg={msg} error={error} requireSchool={requireSchool}>{children}</Layout>
     </SidebarProvider>
   )
 }

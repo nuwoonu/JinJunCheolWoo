@@ -175,12 +175,6 @@ export default function AdminSidebar() {
                 </Link>
               </li>
               <li>
-                <Link to={ADMIN_ROUTES.PARENTS.LIST}>
-                  <i className="ri-circle-fill circle-icon w-auto" /> 학부모
-                  관리
-                </Link>
-              </li>
-              <li>
                 <Link to={ADMIN_ROUTES.STAFFS.LIST}>
                   <i className="ri-circle-fill circle-icon w-auto" /> 교직원
                   관리

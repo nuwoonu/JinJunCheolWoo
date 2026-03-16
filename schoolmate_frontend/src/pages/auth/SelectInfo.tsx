@@ -94,7 +94,7 @@ export default function SelectInfo() {
             </h1>
             <p style={{ color: '#666', fontSize: 14, margin: 0 }}>
               {source === 'email'
-                ? '1단계 · 사용자 유형을 선택해 주세요.'
+                ? '사용자 유형을 선택해 주세요.'
                 : '사용자 유형을 선택해 주세요.'}
             </p>
           </div>

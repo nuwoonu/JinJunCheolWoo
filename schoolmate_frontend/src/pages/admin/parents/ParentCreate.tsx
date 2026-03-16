@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminLayout from "../../../components/layout/AdminLayout";
+import ParentAdminLayout from "../../../components/layout/ParentAdminLayout";
 import admin from "../../../api/adminApi";
 import { ADMIN_ROUTES } from "../../../constants/routes";
 
@@ -23,7 +23,7 @@ export default function ParentCreate() {
   };
 
   return (
-    <AdminLayout>
+    <ParentAdminLayout requireSchool={false}>
       <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
         <button
           type="button"
@@ -123,6 +123,6 @@ export default function ParentCreate() {
           </button>
         </div>
       </form>
-    </AdminLayout>
+    </ParentAdminLayout>
   );
 }

@@ -139,7 +139,7 @@ export default function Register() {
             )}
           </div>
 
-          <h2 className="register-title">3단계 · 기본 정보 입력</h2>
+          <h2 className="register-title">기본 정보 입력</h2>
 
           {error && <div className="alert alert-danger">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}

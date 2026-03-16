@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import AdminLayout from "../../../components/layout/AdminLayout";
+import ParentAdminLayout from "../../../components/layout/ParentAdminLayout";
 import admin from "../../../api/adminApi";
 import { PARENT_STATUS, STATUS_DEFAULT } from "../../../constants/statusConfig";
 import { ADMIN_ROUTES } from "../../../constants/routes";
@@ -77,7 +77,7 @@ export default function ParentList() {
   };
 
   return (
-    <AdminLayout>
+    <ParentAdminLayout requireSchool={false}>
       {loading && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
@@ -332,6 +332,6 @@ export default function ParentList() {
           </div>
         )}
       </div>
-    </AdminLayout>
+    </ParentAdminLayout>
   );
 }
