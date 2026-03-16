@@ -130,11 +130,11 @@ export default function StaffDetail() {
           onClick={() => navigate(ADMIN_ROUTES.STAFFS.LIST)}
           style={{
             background: "none",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--border-color)",
             borderRadius: 6,
             padding: "4px 10px",
             cursor: "pointer",
-            color: "#6b7280",
+            color: "var(--text-secondary-light)",
           }}
         >
           <i className="bi bi-arrow-left" />
@@ -149,7 +149,7 @@ export default function StaffDetail() {
             <div className="card-body">
               <div
                 className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
-                style={{ width: 100, height: 100, background: "#f3f4f6" }}
+                style={{ width: 100, height: 100, background: "var(--neutral-100)" }}
               >
                 <span
                   className="text-secondary fw-bold"
@@ -219,7 +219,7 @@ export default function StaffDetail() {
                     border: "none",
                     background: "none",
                     borderBottom: `2px solid ${activeTab === key ? "#25A194" : "transparent"}`,
-                    color: activeTab === key ? "#25A194" : "#6b7280",
+                    color: activeTab === key ? "#25A194" : "var(--text-secondary-light)",
                     fontWeight: activeTab === key ? 600 : 400,
                     fontSize: 14,
                     cursor: "pointer",
@@ -412,7 +412,7 @@ export default function StaffDetail() {
                       key={r}
                       className="d-inline-flex align-items-center gap-2 px-3 py-2 radius-8 fs-6"
                       style={{
-                        background: "#e0f2f1",
+                        background: "rgba(37, 161, 148, 0.15)",
                         color: "#25A194",
                         fontWeight: 500,
                       }}

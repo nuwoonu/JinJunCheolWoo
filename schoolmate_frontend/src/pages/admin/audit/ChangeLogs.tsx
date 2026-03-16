@@ -155,7 +155,7 @@ export default function ChangeLogs() {
       <div className="card">
         <div className="card-body p-0">
           <table className="table table-hover align-middle mb-0">
-            <thead className="table-light">
+            <thead className="table-heading-dark-mode">
               <tr>
                 <th className="px-4 py-3" style={{ width: 160 }}>일시</th>
                 <th className="px-3 py-3" style={{ width: 160 }}>작업자</th>
@@ -201,7 +201,7 @@ export default function ChangeLogs() {
           </table>
         </div>
         {page && page.totalPages > 1 && (
-          <div className="card-footer bg-white py-3">
+          <div className="card-footer bg-base py-3">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

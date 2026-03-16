@@ -78,14 +78,14 @@ export default function AdminSidebar() {
               className="logo-icon"
             />
           </a>
-          <button
+          {/* <button
             type="button"
             className="text-xxl d-xl-flex d-none line-height-1 sidebar-toggle text-neutral-500"
             aria-label="Collapse Sidebar"
             onClick={toggleCollapse}
           >
             <i className="ri-contract-left-line" />
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -121,14 +121,14 @@ export default function AdminSidebar() {
             <ul
               className={`dropdown-menu dropdown-menu-lg-end border p-12${profile.isOpen ? " show" : ""}`}
             >
-              <li>
+              {/* <li>
                 <Link
                   to="/user/profile"
                   className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
                 >
                   <i className="ri-user-3-line" /> 나의 프로필
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <button
                   type="button"

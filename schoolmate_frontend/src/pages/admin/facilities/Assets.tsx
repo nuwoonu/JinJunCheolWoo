@@ -201,7 +201,7 @@ export default function Assets() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 600,
@@ -217,10 +217,10 @@ export default function Assets() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
                 position: "sticky",
                 top: 0,
-                background: "white",
+                background: "var(--white)",
                 zIndex: 1,
               }}
             >
@@ -234,7 +234,7 @@ export default function Assets() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕
@@ -390,10 +390,10 @@ export default function Assets() {
                   justifyContent: "flex-end",
                   gap: 8,
                   padding: "12px 20px",
-                  borderTop: "1px solid #e5e7eb",
+                  borderTop: "1px solid var(--border-color)",
                   position: "sticky",
                   bottom: 0,
-                  background: "white",
+                  background: "var(--white)",
                 }}
               >
                 <button
@@ -427,7 +427,7 @@ export default function Assets() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 480,
@@ -443,10 +443,10 @@ export default function Assets() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
                 position: "sticky",
                 top: 0,
-                background: "white",
+                background: "var(--white)",
                 zIndex: 1,
               }}
             >
@@ -460,7 +460,7 @@ export default function Assets() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕
@@ -556,10 +556,10 @@ export default function Assets() {
                   justifyContent: "flex-end",
                   gap: 8,
                   padding: "12px 20px",
-                  borderTop: "1px solid #e5e7eb",
+                  borderTop: "1px solid var(--border-color)",
                   position: "sticky",
                   bottom: 0,
-                  background: "white",
+                  background: "var(--white)",
                 }}
               >
                 <button
@@ -619,7 +619,7 @@ export default function Assets() {
               border: "none",
               background: "none",
               borderBottom: `2px solid ${currentTab === key ? "#25A194" : "transparent"}`,
-              color: currentTab === key ? "#25A194" : "#6b7280",
+              color: currentTab === key ? "#25A194" : "var(--text-secondary-light)",
               fontWeight: currentTab === key ? 600 : 400,
               fontSize: 14,
               cursor: "pointer",
@@ -667,10 +667,10 @@ export default function Assets() {
 
           {/* 자산 목록 테이블 */}
           <div className="card">
-            <div className="card-header bg-white py-3">
+            <div className="card-header bg-base py-3">
               <div className="row align-items-center">
                 <div className="col">
-                  <h5 className="mb-0 text-dark fw-bold">자산 목록</h5>
+                  <h5 className="mb-0 text-primary-light fw-bold">자산 목록</h5>
                 </div>
                 <div className="col-auto">
                   <form
@@ -706,7 +706,7 @@ export default function Assets() {
             <div className="card-body p-0">
               <div className="table-responsive">
                 <table className="table table-hover align-middle mb-0 text-center">
-                  <thead className="table-light">
+                  <thead className="table-heading-dark-mode">
                     <tr>
                       <th className="ps-4 text-start">관리 번호</th>
                       <th>자산명</th>
@@ -767,7 +767,7 @@ export default function Assets() {
             </div>
             {/* 페이지네이션 */}
             {page && page.totalPages > 1 && (
-              <div className="card-footer bg-white py-3">
+              <div className="card-footer bg-base py-3">
                 <nav>
                   <ul className="pagination pagination-sm justify-content-center mb-0">
                     <li
@@ -814,7 +814,7 @@ export default function Assets() {
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0 text-center">
-                <thead className="table-light">
+                <thead className="table-heading-dark-mode">
                   <tr>
                     <th className="ps-4 text-start">모델명</th>
                     <th>사진</th>
@@ -842,7 +842,7 @@ export default function Assets() {
                           />
                         ) : (
                           <div
-                            className="bg-light rounded d-inline-flex align-items-center justify-content-center text-secondary mx-auto"
+                            className="bg-neutral-100 rounded d-inline-flex align-items-center justify-content-center text-secondary mx-auto"
                             style={{ width: "40px", height: "40px" }}
                           >
                             <i className="bi bi-image" />

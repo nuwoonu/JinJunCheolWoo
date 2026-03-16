@@ -164,11 +164,11 @@ export default function ClassDetail() {
           onClick={() => navigate(ADMIN_ROUTES.CLASSES.LIST)}
           style={{
             background: "none",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--border-color)",
             borderRadius: 6,
             padding: "4px 10px",
             cursor: "pointer",
-            color: "#6b7280",
+            color: "var(--text-secondary-light)",
           }}
         >
           <i className="bi bi-arrow-left" />
@@ -236,7 +236,7 @@ export default function ClassDetail() {
                     border: "none",
                     background: "none",
                     borderBottom: `2px solid ${tab === key ? "#25A194" : "transparent"}`,
-                    color: tab === key ? "#25A194" : "#6b7280",
+                    color: tab === key ? "#25A194" : "var(--text-secondary-light)",
                     fontWeight: tab === key ? 600 : 400,
                     fontSize: 14,
                     cursor: "pointer",
@@ -317,7 +317,7 @@ export default function ClassDetail() {
                   )}
                   <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
-                      <thead className="table-light">
+                      <thead className="table-heading-dark-mode">
                         <tr>
                           <th style={{ width: 40 }}>
                             <input
@@ -408,7 +408,7 @@ export default function ClassDetail() {
                   <h6 className="fw-bold mb-3">학급 관리 로그</h6>
                   <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
-                      <thead className="table-light">
+                      <thead className="table-heading-dark-mode">
                         <tr>
                           <th>일시</th>
                           <th>작업</th>
@@ -433,7 +433,7 @@ export default function ClassDetail() {
                                 {h.createdAt}
                               </td>
                               <td>
-                                <span className="badge bg-light text-dark border">
+                                <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
                                   {h.actionType}
                                 </span>
                               </td>
@@ -467,7 +467,7 @@ export default function ClassDetail() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 480,
@@ -481,7 +481,7 @@ export default function ClassDetail() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
@@ -494,7 +494,7 @@ export default function ClassDetail() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕
@@ -570,7 +570,7 @@ export default function ClassDetail() {
                   justifyContent: "flex-end",
                   gap: 8,
                   padding: "12px 20px",
-                  borderTop: "1px solid #e5e7eb",
+                  borderTop: "1px solid var(--border-color)",
                 }}
               >
                 <button
