@@ -6,6 +6,8 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
 import com.example.schoolmate.domain.log.service.LogService;
+import com.example.schoolmate.domain.school.dto.SchoolDTO;
+import com.example.schoolmate.domain.school.service.SchoolService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
 import jakarta.servlet.http.Cookie;
@@ -13,6 +15,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +42,7 @@ public class AuthApiController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final LogService logService;
+    private final SchoolService schoolService;
 
     /**
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
@@ -49,6 +54,7 @@ public class AuthApiController {
         String password = body.get("password");
         String phoneNumber = body.get("phoneNumber");
         String roleStr = body.get("role");
+        String schoolIdStr = body.get("schoolId");
 
         if (name == null || email == null || password == null || roleStr == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "필수 항목이 누락되었습니다."));
@@ -56,12 +62,17 @@ public class AuthApiController {
 
         try {
             UserRole role = UserRole.valueOf(roleStr.toUpperCase());
+            Long schoolId = null;
+            if (schoolIdStr != null && !schoolIdStr.isBlank()) {
+                schoolId = Long.parseLong(schoolIdStr);
+            }
             CustomUserDTO dto = CustomUserDTO.builder()
                     .name(name)
                     .email(email)
                     .password(password)
                     .phoneNumber(phoneNumber)
                     .role(role)
+                    .schoolId(schoolId)
                     .build();
 
             userService.join(dto);
@@ -132,6 +143,19 @@ public class AuthApiController {
         return ResponseEntity.ok(Map.of("message", "로그아웃되었습니다."));
     }
 
+    /**
+     * 회원가입용 학교 검색 (인증 불필요 - public)
+     */
+    @GetMapping("/schools")
+    public ResponseEntity<Page<SchoolDTO.Summary>> searchSchools(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String schoolKind,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                schoolService.searchSchools(name, schoolKind, null, PageRequest.of(page, size)));
+    }
+
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
@@ -191,8 +215,14 @@ public class AuthApiController {
             User dbUser = userRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+            Long schoolId = null;
+            String schoolIdStr = body.get("schoolId");
+            if (schoolIdStr != null && !schoolIdStr.isBlank()) {
+                schoolId = Long.parseLong(schoolIdStr);
+            }
+
             dbUser.addRole(userRole);
-            userService.createSocialUserInfo(dbUser, userRole);
+            userService.createSocialUserInfo(dbUser, userRole, schoolId);
 
             log.info("역할 선택 완료 - email: {}, role: {}", email, userRole);
 

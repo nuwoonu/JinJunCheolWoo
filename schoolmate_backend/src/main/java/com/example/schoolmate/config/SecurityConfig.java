@@ -60,6 +60,8 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
+                                                                "/api/auth/schools",
+                                                                "/api/auth/schools/**",
                                                                 // [woo] /me는 컨트롤러가 직접 인증 여부 판단 (미인증 시
                                                                 // authenticated:false 반환)
                                                                 "/api/auth/me",
@@ -67,9 +69,11 @@ public class SecurityConfig {
                                                                 "/login/oauth2/**",
                                                                 "/login",
                                                                 "/register",
+                                                                "/register/school-select",
                                                                 "/user/register",
                                                                 "/auth/register",
                                                                 "/select-role",
+                                                                "/select-info",
                                                                 "/",
                                                                 "/home")
                                                 .permitAll()
