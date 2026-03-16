@@ -36,11 +36,11 @@ export default function NoticeDetail() {
           onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}
           style={{
             background: "none",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--border-color)",
             borderRadius: 6,
             padding: "4px 10px",
             cursor: "pointer",
-            color: "#6b7280",
+            color: "var(--text-secondary-light)",
           }}
         >
           <i className="bi bi-arrow-left" />
@@ -59,7 +59,7 @@ export default function NoticeDetail() {
             </h5>
             <p className="mb-0 text-muted small">
               작성자: <strong>{notice.writerName}</strong> · 작성일:{" "}
-              {notice.createdDate?.split("T")[0]} · 조회수: {notice.viewCount}
+              {notice.createDate?.split("T")[0]} · 조회수: {notice.viewCount}
             </p>
           </div>
           <div className="d-flex gap-2">

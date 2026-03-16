@@ -214,7 +214,7 @@ export default function ClassList() {
             </div>
           </div>
           <table className="table table-hover align-middle mb-0">
-            <thead className="table-light">
+            <thead className="table-heading-dark-mode">
               <tr>
                 <th className="text-center" style={{ width: 50 }}>
                   <input
@@ -254,7 +254,7 @@ export default function ClassList() {
                     )}
                   </td>
                   <td>
-                    <span className="badge bg-light text-dark border">
+                    <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
                       {c.studentCount ?? 0}명
                     </span>
                   </td>
@@ -286,7 +286,7 @@ export default function ClassList() {
           </table>
         </div>
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-white py-16">
+          <div className="card-footer border-0 bg-base py-16">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

@@ -13,6 +13,7 @@ import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -32,11 +33,12 @@ public class StaffInfoRepositoryImpl implements StaffInfoRepositoryCustom {
         BooleanExpression searchFilter = searchPredicate(cond.getType(), cond.getKeyword());
         BooleanExpression statusFilter = statusFilter(cond.getStatus());
         BooleanExpression employmentTypeFilter = employmentTypeFilter(cond.getEmploymentType());
+        BooleanExpression schoolFilter = schoolFilter(info);
 
         JPAQuery<User> contentQuery = query
                 .selectFrom(user).distinct()
                 .leftJoin(info).on(info.user.eq(user))
-                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter)
+                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter, schoolFilter)
                 .orderBy(user.uid.desc());
 
         if (pageable.isPaged()) {
@@ -49,9 +51,15 @@ public class StaffInfoRepositoryImpl implements StaffInfoRepositoryCustom {
                 .select(user.countDistinct())
                 .from(user)
                 .leftJoin(info).on(info.user.eq(user))
-                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter);
+                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter, schoolFilter);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression schoolFilter(QStaffInfo info) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId == null) return null;
+        return info.school.id.eq(schoolId);
     }
 
     private BooleanExpression statusFilter(String status) {
@@ -88,10 +96,15 @@ public class StaffInfoRepositoryImpl implements StaffInfoRepositoryCustom {
     @Override
     public long countByStatus(StaffStatus status) {
         QStaffInfo info = QStaffInfo.staffInfo;
-        Long count = query.select(info.count())
+        Long schoolId = SchoolContextHolder.getSchoolId();
+
+        JPAQuery<Long> q = query.select(info.count())
                 .from(info)
-                .where(info.status.eq(status))
-                .fetchOne();
+                .where(info.status.eq(status));
+        if (schoolId != null) {
+            q.where(info.school.id.eq(schoolId));
+        }
+        Long count = q.fetchOne();
         return count != null ? count : 0L;
     }
 }

@@ -69,6 +69,19 @@ public class ConsultationReservationController {
         return ResponseEntity.ok(reservationService.confirm(id, req));
     }
 
+    // [soojin] 예약 완료 처리 (교사)
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<ReservationDTO.Response> complete(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.complete(id));
+    }
+
+    // [soojin] 교사 취소 (지난 예약 정리용)
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<Void> teacherCancel(@PathVariable Long id) {
+        reservationService.teacherCancel(id);
+        return ResponseEntity.ok().build();
+    }
+
     // 학부모의 자녀 목록
     @GetMapping("/children")
     public ResponseEntity<List<ReservationDTO.ChildInfo>> getChildren(Authentication auth) {

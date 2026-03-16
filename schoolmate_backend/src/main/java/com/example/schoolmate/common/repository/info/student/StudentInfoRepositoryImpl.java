@@ -17,6 +17,7 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -40,7 +41,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
-                        statusFilter(cond.getStatus(), info))
+                        statusFilter(cond.getStatus(), info),
+                        schoolFilter(info))
                 .orderBy(user.uid.desc());
 
         if (pageable.isPaged()) {
@@ -56,9 +58,16 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
-                        statusFilter(cond.getStatus(), info));
+                        statusFilter(cond.getStatus(), info),
+                        schoolFilter(info));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression schoolFilter(QStudentInfo info) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId == null) return null;
+        return info.school.id.eq(schoolId);
     }
 
     private BooleanExpression statusFilter(String status, QStudentInfo info) {
@@ -92,7 +101,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .leftJoin(assign.classroom, classroom).fetchJoin()
                 .where(
                         info.code.eq(code),
-                        user.roles.contains(UserRole.STUDENT))
+                        user.roles.contains(UserRole.STUDENT),
+                        schoolFilter(info))
                 .fetchOne();
 
         return Optional.ofNullable(result).map(StudentInfo::getUser);
@@ -104,7 +114,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         Integer fetchOne = query
                 .selectOne()
                 .from(info)
-                .where(info.code.eq(code))
+                .where(info.code.eq(code), schoolFilter(info))
                 .fetchFirst();
         return fetchOne != null;
     }
@@ -122,7 +132,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .join(assign.classroom, classroom)
                 .where(classroom.year.eq(year)
                         .and(classroom.grade.eq(grade))
-                        .and(classroom.classNum.eq(classNum)))
+                        .and(classroom.classNum.eq(classNum)),
+                        schoolFilter(info))
                 .fetch();
     }
 
@@ -137,6 +148,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         info.status.eq(StudentStatus.ENROLLED),
+                        schoolFilter(info),
                         query.selectOne().from(assign)
                                 .where(assign.studentInfo.eq(info).and(assign.schoolYear.eq(year)))
                                 .notExists())
@@ -166,10 +178,15 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     @Override
     public long countByStatus(StudentStatus status) {
         QStudentInfo info = QStudentInfo.studentInfo;
-        Long count = query.select(info.count())
+        Long schoolId = SchoolContextHolder.getSchoolId();
+
+        JPAQuery<Long> q = query.select(info.count())
                 .from(info)
-                .where(info.status.eq(status))
-                .fetchOne();
+                .where(info.status.eq(status));
+        if (schoolId != null) {
+            q.where(info.school.id.eq(schoolId));
+        }
+        Long count = q.fetchOne();
         return count != null ? count : 0L;
     }
 

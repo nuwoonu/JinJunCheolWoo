@@ -14171,7 +14171,9 @@ table.dataTable > thead > tr > th {
 }
 
 .table-heading-dark-mode tr th {
-  background: #EEEEEE;
+  background-color: var(--neutral-50);
+  color: var(--text-primary-light);
+  border-color: var(--neutral-200);
 }
 
 .dt-container.dt-empty-footer tbody > tr:last-child > * {
@@ -14323,6 +14325,7 @@ table.dataTable td.dt-type-date {
 
 [data-theme=dark] .table-heading-dark-mode tr th {
   background: var(--neutral-50) !important;
+  color: var(--text-primary-light) !important;
   border-color: var(--neutral-300) !important;
 }
 

@@ -102,10 +102,10 @@ export default function Settings() {
         </div>
       </form>
 
-      <div className="card" style={{ border: "1px solid #fde68a" }}>
+      <div className="card" style={{ border: "1px solid var(--border-color)" }}>
         <div
           className="d-flex align-items-center px-20 py-16 border-bottom"
-          style={{ borderColor: "#fde68a", background: "#fffbeb" }}
+          style={{ borderColor: "var(--border-color)", background: "var(--neutral-50)" }}
         >
           <h6 className="fw-semibold mb-0" style={{ color: "#d97706" }}>
             <i className="bi bi-exclamation-triangle-fill me-2" />

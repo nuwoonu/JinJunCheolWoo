@@ -11,6 +11,7 @@ import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.QClassroom;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.QUser;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -27,11 +28,12 @@ public class ClassroomRepositoryImpl implements ClassroomRepositoryCustom {
         QUser teacher = QUser.user;
 
         BooleanExpression filter = searchFilter(cond.getYear(), cond.getGrade(), cond.getStatus());
+        BooleanExpression schoolFilter = schoolFilter(classroom);
 
         JPAQuery<Classroom> contentQuery = query
                 .selectFrom(classroom)
                 .leftJoin(classroom.teacher, teacher).fetchJoin()
-                .where(filter)
+                .where(filter, schoolFilter)
                 .orderBy(classroom.year.desc(), classroom.grade.asc(), classroom.classNum.asc());
 
         if (pageable.isPaged()) {
@@ -43,9 +45,15 @@ public class ClassroomRepositoryImpl implements ClassroomRepositoryCustom {
         JPAQuery<Long> countQuery = query
                 .select(classroom.count())
                 .from(classroom)
-                .where(filter);
+                .where(filter, schoolFilter);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression schoolFilter(QClassroom classroom) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId == null) return null;
+        return classroom.school.id.eq(schoolId);
     }
 
     private BooleanExpression searchFilter(Integer year, Integer grade, String status) {

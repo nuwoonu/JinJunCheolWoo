@@ -15,6 +15,7 @@ import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class UserService {
     private final ParentInfoRepository parentInfoRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
+    private final SchoolRepository schoolRepository;
 
     /**
      * 회원가입 - 새 엔티티 구조 (User + Info)
@@ -87,7 +89,10 @@ public class UserService {
     private void createStudentInfo(User user, CustomUserDTO dto) {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
-        studentInfo.setStatus(StudentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
+        studentInfo.setStatus(StudentStatus.PENDING);
+        if (dto.getSchoolId() != null) {
+            schoolRepository.findById(dto.getSchoolId()).ifPresent(studentInfo::setSchool);
+        }
 
         // studentInfo.setCode(dto.getStudentIdentityNum() != null
         // ? dto.getStudentIdentityNum()
@@ -125,7 +130,10 @@ public class UserService {
     private void createTeacherInfo(User user, CustomUserDTO dto) {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
-        teacherInfo.setStatus(TeacherStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
+        teacherInfo.setStatus(TeacherStatus.PENDING);
+        if (dto.getSchoolId() != null) {
+            schoolRepository.findById(dto.getSchoolId()).ifPresent(teacherInfo::setSchool);
+        }
 
         // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
         // 사번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
@@ -167,13 +175,16 @@ public class UserService {
      * 소셜 로그인 역할 선택 후 Info 엔티티 생성 (승인대기 상태로)
      * - LoginController.postSelectRole()에서 호출
      */
-    public void createSocialUserInfo(User user, UserRole role) {
+    public void createSocialUserInfo(User user, UserRole role, Long schoolId) {
         switch (role) {
             case STUDENT -> {
                 StudentInfo studentInfo = new StudentInfo();
                 studentInfo.setUser(user);
                 studentInfo.setStatus(StudentStatus.PENDING);
                 studentInfo.setCode(java.util.UUID.randomUUID().toString());
+                if (schoolId != null) {
+                    schoolRepository.findById(schoolId).ifPresent(studentInfo::setSchool);
+                }
                 user.getInfos().add(studentInfo);
             }
             case TEACHER -> {
@@ -181,6 +192,9 @@ public class UserService {
                 teacherInfo.setUser(user);
                 teacherInfo.setStatus(TeacherStatus.PENDING);
                 teacherInfo.setCode(java.util.UUID.randomUUID().toString());
+                if (schoolId != null) {
+                    schoolRepository.findById(schoolId).ifPresent(teacherInfo::setSchool);
+                }
                 user.getInfos().add(teacherInfo);
             }
             case PARENT -> {

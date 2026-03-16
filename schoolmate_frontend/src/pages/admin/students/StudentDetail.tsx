@@ -6,6 +6,16 @@ import { ADMIN_ROUTES } from "../../../constants/routes";
 
 // [joon] 학생 상세
 
+const STATUS_CFG: Record<string, { label: string; badge: string; color: string }> = {
+  PENDING:          { label: "승인대기", badge: "bg-info-subtle text-info border border-info-subtle",           color: "#0ea5e9" },
+  ENROLLED:         { label: "재학",    badge: "bg-success-subtle text-success border border-success-subtle",  color: "#25A194" },
+  LEAVE_OF_ABSENCE: { label: "휴학",    badge: "bg-warning-subtle text-warning border border-warning-subtle",  color: "#d97706" },
+  GRADUATED:        { label: "졸업",    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle", color: "#6b7280" },
+  DROPOUT:          { label: "자퇴",    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle", color: "#6b7280" },
+  EXPELLED:         { label: "제적",    badge: "bg-danger-subtle text-danger border border-danger-subtle",     color: "#ef4444" },
+  TRANSFERRED:      { label: "전학",    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle", color: "#6b7280" },
+};
+
 export default function StudentDetail() {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
@@ -98,11 +108,11 @@ export default function StudentDetail() {
           onClick={() => navigate(ADMIN_ROUTES.STUDENTS.LIST)}
           style={{
             background: "none",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--border-color)",
             borderRadius: 6,
             padding: "4px 10px",
             cursor: "pointer",
-            color: "#6b7280",
+            color: "var(--text-secondary-light)",
           }}
         >
           <i className="bi bi-arrow-left" />
@@ -112,34 +122,58 @@ export default function StudentDetail() {
 
       <div className="row">
         <div className="col-md-4">
-          <div className="card mb-4 text-center py-4">
-            <div
-              className="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-              style={{ width: 100, height: 100, background: "#e0f2f1" }}
-            >
-              <span className="fs-1 text-primary fw-bold">
-                {student.name?.[0]}
-              </span>
-            </div>
-            <h4 className="fw-bold mb-1">{student.name}</h4>
-            <p className="text-muted small mb-3">{student.code}</p>
-            <div className="px-4">
-              <span
-                className={`badge w-100 py-2 fs-6 ${
-                  student.statusName === "ENROLLED"
-                    ? "bg-success"
-                    : student.statusName === "LEAVE_OF_ABSENCE"
-                      ? "bg-warning text-dark"
-                      : "bg-secondary"
-                }`}
+          <div className="card mb-4">
+            <div className="card-body px-20 py-24 text-center">
+              {/* 프로필 아이콘 */}
+              <div
+                className="rounded-circle mx-auto mb-12 d-flex align-items-center justify-content-center"
+                style={{ width: 80, height: 80, background: "rgba(37,161,148,0.12)" }}
               >
-                {student.statusDescription || student.statusName || "미설정"}
-              </span>
+                <span style={{ fontSize: 32, color: "#25A194", fontWeight: 700 }}>
+                  {student.name?.[0]}
+                </span>
+              </div>
+              <h5 className="fw-bold text-primary-light mb-4">{student.name}</h5>
+              <p className="text-secondary-light mb-12" style={{ fontSize: 13 }}>
+                학번 {student.code ?? "-"}
+              </p>
+              {/* 상태 뱃지 */}
+              {(() => {
+                const cfg = STATUS_CFG[student.statusName] ?? STATUS_CFG.ENROLLED;
+                return (
+                  <span className={`badge px-12 py-6 ${cfg.badge}`} style={{ fontSize: 12 }}>
+                    {student.statusDescription || cfg.label}
+                  </span>
+                );
+              })()}
             </div>
-            <hr className="mx-4 my-4" />
-            <div className="text-start px-4">
-              <p className="mb-1 small text-muted">계정 이메일</p>
-              <p className="fw-medium">{student.email}</p>
+            {/* 구분선 */}
+            <div className="border-top border-neutral-200" />
+            {/* 추가 정보 */}
+            <div className="px-20 py-16">
+              <div className="d-flex align-items-start gap-10 mb-12">
+                <i className="ri-mail-line text-neutral-400 mt-1" style={{ fontSize: 15 }} />
+                <div className="min-w-0">
+                  <p className="text-neutral-400 mb-2" style={{ fontSize: 11 }}>계정 이메일</p>
+                  <p className="text-primary-light fw-medium mb-0" style={{ fontSize: 13, wordBreak: "break-all" }}>
+                    {student.email}
+                  </p>
+                </div>
+              </div>
+              {student.assignments?.length > 0 && (
+                <div className="d-flex align-items-start gap-10">
+                  <i className="ri-building-2-line text-neutral-400 mt-1" style={{ fontSize: 15 }} />
+                  <div>
+                    <p className="text-neutral-400 mb-2" style={{ fontSize: 11 }}>최근 소속</p>
+                    <p className="text-primary-light fw-medium mb-0" style={{ fontSize: 13 }}>
+                      {(() => {
+                        const a = student.assignments[student.assignments.length - 1];
+                        return `${a.schoolYear}년 ${a.grade}학년 ${a.classNum}반`;
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -160,7 +194,7 @@ export default function StudentDetail() {
                     border: "none",
                     background: "none",
                     borderBottom: `2px solid ${tab === key ? "#25A194" : "transparent"}`,
-                    color: tab === key ? "#25A194" : "#6b7280",
+                    color: tab === key ? "#25A194" : "var(--text-secondary-light)",
                     fontWeight: tab === key ? 600 : 400,
                     fontSize: 14,
                     cursor: "pointer",
@@ -170,7 +204,7 @@ export default function StudentDetail() {
                 </button>
               ))}
             </div>
-            <div className="card-body p-4">
+            <div className="card-body px-24 py-20">
               {tab === "basic" && (
                 <form onSubmit={saveBasic}>
                   <div className="row g-3">
@@ -263,9 +297,12 @@ export default function StudentDetail() {
 
               {tab === "history" && (
                 <>
-                  <h6 className="fw-bold mb-3">학년도별 학급 배정 이력</h6>
+                  <div className="d-flex align-items-center gap-8 mb-16">
+                    <i className="ri-history-line text-neutral-400" style={{ fontSize: 16 }} />
+                    <h6 className="fw-semibold text-primary-light mb-0">학년도별 학급 배정 이력</h6>
+                  </div>
                   <table className="table table-hover align-middle">
-                    <thead className="table-light">
+                    <thead className="table-heading-dark-mode">
                       <tr>
                         <th>학년도</th>
                         <th>소속 (학년-반-번호)</th>
@@ -306,8 +343,11 @@ export default function StudentDetail() {
 
               {tab === "parent" && (
                 <>
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h6 className="fw-bold mb-0">연동된 보호자 목록</h6>
+                  <div className="d-flex justify-content-between align-items-center mb-16">
+                    <div className="d-flex align-items-center gap-8">
+                      <i className="ri-user-heart-line text-neutral-400" style={{ fontSize: 16 }} />
+                      <h6 className="fw-semibold text-primary-light mb-0">연동된 보호자 목록</h6>
+                    </div>
                     <button
                       className="btn btn-sm btn-primary"
                       onClick={() => setShowParentModal(true)}
@@ -316,7 +356,7 @@ export default function StudentDetail() {
                     </button>
                   </div>
                   <table className="table table-hover align-middle">
-                    <thead className="table-light">
+                    <thead className="table-heading-dark-mode">
                       <tr>
                         <th>보호자명</th>
                         <th>연락처</th>
@@ -330,7 +370,7 @@ export default function StudentDetail() {
                           <td className="fw-bold">{g.name}</td>
                           <td>{g.phone}</td>
                           <td>
-                            <span className="badge bg-light text-dark border">
+                            <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
                               {g.relationship}
                             </span>
                           </td>
@@ -377,7 +417,7 @@ export default function StudentDetail() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 480,
@@ -391,7 +431,7 @@ export default function StudentDetail() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
@@ -404,7 +444,7 @@ export default function StudentDetail() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕

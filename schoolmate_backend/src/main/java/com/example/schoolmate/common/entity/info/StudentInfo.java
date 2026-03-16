@@ -10,19 +10,20 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
-import com.example.schoolmate.domain.school.entity.School;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,14 +37,18 @@ import lombok.ToString;
  * - 학적 상태(재학, 휴학 등) 및 학급 배정 이력(assignments)
  */
 @Entity
+@Table(name = "student_info", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_student_code_school", columnNames = { "code", "school_id" })
+})
 @DiscriminatorValue("STUDENT")
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString(exclude = { "assignments", "familyRelations", "currentAssignment" })
 public class StudentInfo extends SchoolMemberInfo {
+    // FK 제약조건 없음: StudentAssignment.student_info_id ↔ student_info.current_assignment_id 순환 참조 방지
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "current_assignment_id")
+    @JoinColumn(name = "current_assignment_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private StudentAssignment currentAssignment;
 
     // 전체 학번 생성 메서드 (표시용)
@@ -61,9 +66,7 @@ public class StudentInfo extends SchoolMemberInfo {
     @Enumerated(EnumType.STRING)
     private StudentStatus status = StudentStatus.ENROLLED;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_id")
-    private School school;
+    // school 필드는 SchoolMemberInfo에서 상속 (중복 선언 제거)
 
     // 학년별 이력 정보 리스트 (최신순 정렬 등 활용)
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -14,10 +14,43 @@ const STATUSES = [
   { value: "TRANSFERRED", label: "전학", danger: true },
 ];
 
-function statusBadge(status: string) {
-  if (status === "재학") return "bg-success-subtle text-success";
-  if (status === "휴학") return "bg-warning-subtle text-warning";
-  return "bg-secondary-subtle text-secondary";
+const STATUS_CFG: Record<string, { label: string; badge: string }> = {
+  PENDING: {
+    label: "승인대기",
+    badge: "bg-info-subtle text-info border border-info-subtle",
+  },
+  ENROLLED: {
+    label: "재학",
+    badge: "bg-success-subtle text-success border border-success-subtle",
+  },
+  LEAVE_OF_ABSENCE: {
+    label: "휴학",
+    badge: "bg-warning-subtle text-warning border border-warning-subtle",
+  },
+  GRADUATED: {
+    label: "졸업",
+    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle",
+  },
+  DROPOUT: {
+    label: "자퇴",
+    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle",
+  },
+  EXPELLED: {
+    label: "제적",
+    badge: "bg-danger-subtle text-danger border border-danger-subtle",
+  },
+  TRANSFERRED: {
+    label: "전학",
+    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle",
+  },
+};
+
+function formatClass(raw: string | null | undefined) {
+  if (!raw || raw === "-") return "-";
+  // 백엔드 형식: "2026년 1학년 1반" (이미 변환된 경우) 또는 "2026년 1-1-1" (레거시)
+  const legacy = raw.match(/^(\d+)년\s*(\d+)-(\d+)(?:-\d+)?$/);
+  if (legacy) return `${legacy[1]}년 ${legacy[2]}학년 ${legacy[3]}반`;
+  return raw;
 }
 
 export default function StudentList() {
@@ -156,7 +189,7 @@ export default function StudentList() {
             className="btn btn-outline-success"
             onClick={() => csvRef.current?.click()}
           >
-            <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
+            <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
           </button>
           <Link
             to={ADMIN_ROUTES.STUDENTS.CREATE}
@@ -223,7 +256,7 @@ export default function StudentList() {
           </div>
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
+              <thead className="table-heading-dark-mode">
                 <tr>
                   <th className="text-center" style={{ width: 50 }}>
                     <input
@@ -262,18 +295,25 @@ export default function StudentList() {
                     <td>
                       <Link
                         to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
-                        className="fw-bold text-decoration-none text-dark"
+                        className="fw-bold text-decoration-none text-primary-light"
                       >
                         {s.name}
                       </Link>
                     </td>
                     <td>{s.email}</td>
                     <td>
-                      <small className="text-muted">{s.latestClass}</small>
+                      <small className="text-muted">
+                        {formatClass(s.latestClass)}
+                      </small>
                     </td>
                     <td>
-                      <span className={`badge ${statusBadge(s.status)}`}>
-                        {s.status}
+                      <span
+                        className={`badge ${(STATUS_CFG[s.statusName] ?? STATUS_CFG.ENROLLED).badge}`}
+                      >
+                        {
+                          (STATUS_CFG[s.statusName] ?? { label: s.statusName })
+                            .label
+                        }
                       </span>
                     </td>
                     <td className="text-end pe-4">
@@ -298,7 +338,7 @@ export default function StudentList() {
           </div>
         </div>
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-white py-16">
+          <div className="card-footer border-0 bg-base py-16">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

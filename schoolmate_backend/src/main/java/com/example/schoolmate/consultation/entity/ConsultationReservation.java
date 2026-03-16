@@ -45,4 +45,8 @@ public class ConsultationReservation extends SchoolBaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status = ReservationStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "consultation_type")
+    private ConsultationType consultationType;
 }

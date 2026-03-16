@@ -109,7 +109,7 @@ export default function ParentDetail() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 480,
@@ -123,7 +123,7 @@ export default function ParentDetail() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
@@ -140,7 +140,7 @@ export default function ParentDetail() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕
@@ -236,11 +236,11 @@ export default function ParentDetail() {
           onClick={() => navigate(ADMIN_ROUTES.PARENTS.LIST)}
           style={{
             background: "none",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--border-color)",
             borderRadius: 6,
             padding: "4px 10px",
             cursor: "pointer",
-            color: "#6b7280",
+            color: "var(--text-secondary-light)",
           }}
         >
           <i className="bi bi-arrow-left" />
@@ -255,7 +255,7 @@ export default function ParentDetail() {
             <div className="card-body">
               <div
                 className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
-                style={{ width: 100, height: 100, background: "#f0fdf4" }}
+                style={{ width: 100, height: 100, background: "var(--neutral-100)" }}
               >
                 <span className="text-success fw-bold" style={{ fontSize: 36 }}>
                   {parent.name?.[0] ?? "?"}
@@ -283,7 +283,7 @@ export default function ParentDetail() {
                 </div>
                 <div>
                   <small className="text-muted d-block">자녀 수</small>
-                  <span className="badge bg-light text-dark border">
+                  <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
                     {children.length}명
                   </span>
                 </div>
@@ -309,7 +309,7 @@ export default function ParentDetail() {
                     border: "none",
                     background: "none",
                     borderBottom: `2px solid ${activeTab === key ? "#25A194" : "transparent"}`,
-                    color: activeTab === key ? "#25A194" : "#6b7280",
+                    color: activeTab === key ? "#25A194" : "var(--text-secondary-light)",
                     fontWeight: activeTab === key ? 600 : 400,
                     fontSize: 14,
                     cursor: "pointer",
@@ -396,7 +396,7 @@ export default function ParentDetail() {
                 <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
                   <h6 className="fw-semibold mb-0">
                     자녀 목록{" "}
-                    <span className="badge bg-light text-dark border ms-2">
+                    <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200 ms-2">
                       {children.length}명
                     </span>
                   </h6>
@@ -409,7 +409,7 @@ export default function ParentDetail() {
                 </div>
                 <div className="card-body p-0">
                   <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
+                    <thead className="table-heading-dark-mode">
                       <tr>
                         <th className="ps-4">이름</th>
                         <th>학번</th>

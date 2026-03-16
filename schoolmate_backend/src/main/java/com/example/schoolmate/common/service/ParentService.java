@@ -126,6 +126,15 @@ public class ParentService {
                     .parse();
 
             for (ParentDTO.CsvImportRequest csvReq : beans) {
+                // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
+                if (csvReq.getEmail() != null && userRepository.existsByEmail(csvReq.getEmail())) {
+                    throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
+                }
+                // 학부모 코드 중복은 건너뜀
+                if (csvReq.getCode() != null && parentInfoRepository.existsByCode(csvReq.getCode())) {
+                    log.warn("이미 존재하는 학부모 코드 건너뜀: {}", csvReq.getCode());
+                    continue;
+                }
                 ParentDTO.CreateRequest req = new ParentDTO.CreateRequest(csvReq);
                 // 자녀 연동 정보는 CSV에서 받지 않으므로 빈 리스트로 초기화
                 req.setStudents(new ArrayList<>());

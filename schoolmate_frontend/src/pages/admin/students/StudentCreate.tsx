@@ -84,11 +84,11 @@ export default function StudentCreate() {
           onClick={() => navigate(-1)}
           style={{
             background: "none",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--border-color)",
             borderRadius: 6,
             padding: "4px 10px",
             cursor: "pointer",
-            color: "#6b7280",
+            color: "var(--text-secondary-light)",
           }}
         >
           <i className="bi bi-arrow-left" />
@@ -208,7 +208,7 @@ export default function StudentCreate() {
               </button>
             </div>
             <div
-              className="border rounded p-2 bg-light"
+              className="border rounded p-2 bg-neutral-100"
               style={{ minHeight: 50 }}
             >
               {guardians.length === 0 ? (
@@ -264,7 +264,7 @@ export default function StudentCreate() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 480,
@@ -278,7 +278,7 @@ export default function StudentCreate() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
@@ -291,7 +291,7 @@ export default function StudentCreate() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕
@@ -349,7 +349,7 @@ export default function StudentCreate() {
         >
           <div
             style={{
-              background: "white",
+              background: "var(--white)",
               borderRadius: 12,
               width: "100%",
               maxWidth: 360,
@@ -363,7 +363,7 @@ export default function StudentCreate() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
@@ -376,7 +376,7 @@ export default function StudentCreate() {
                   border: "none",
                   fontSize: 18,
                   cursor: "pointer",
-                  color: "#6b7280",
+                  color: "var(--text-secondary-light)",
                 }}
               >
                 ✕

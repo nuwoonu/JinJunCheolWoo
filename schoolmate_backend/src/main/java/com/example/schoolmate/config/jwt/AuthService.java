@@ -1,6 +1,11 @@
 package com.example.schoolmate.config.jwt;
 
+import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.StaffInfo;
+import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -20,13 +25,16 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
 
     public AuthService(JwtUtil jwtUtil,
                        RefreshTokenRepository refreshTokenRepository,
-                       @Lazy AuthenticationManager authenticationManager) {
+                       @Lazy AuthenticationManager authenticationManager,
+                       UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
         this.refreshTokenRepository = refreshTokenRepository;
         this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -43,7 +51,10 @@ public class AuthService {
         String role = primaryRole != null ? primaryRole.name() : "GUEST";
         Long uid = userDTO.getCustomUserDTO().getUid();
 
-        String accessToken = jwtUtil.generateAccessToken(uid, email, role);
+        User user = userRepository.findById(uid).orElse(null);
+        Long schoolId = extractSchoolId(user, primaryRole);
+
+        String accessToken = jwtUtil.generateAccessToken(uid, email, role, schoolId);
         String refreshToken = jwtUtil.generateRefreshToken(email);
 
         saveRefreshToken(email, refreshToken);
@@ -78,8 +89,12 @@ public class AuthService {
         String role = jwtUtil.getRole(refreshToken);
         Long uid = jwtUtil.getUid(refreshToken);
 
+        User user = userRepository.findByEmail(email).orElse(null);
+        UserRole userRole = role != null ? UserRole.valueOf(role) : null;
+        Long schoolId = extractSchoolId(user, userRole);
+
         // 새 AccessToken + RefreshToken 재발급 (Rotation)
-        String newAccessToken = jwtUtil.generateAccessToken(uid, email, role);
+        String newAccessToken = jwtUtil.generateAccessToken(uid, email, role, schoolId);
         String newRefreshToken = jwtUtil.generateRefreshToken(email);
         saveRefreshToken(email, newRefreshToken);
 
@@ -103,10 +118,37 @@ public class AuthService {
      */
     @Transactional
     public Map<String, String> issueTokensForOAuth2(Long uid, String email, String role) {
-        String accessToken = jwtUtil.generateAccessToken(uid, email, role);
+        User user = userRepository.findById(uid).orElse(null);
+        UserRole userRole = role != null && !role.equals("GUEST") ? UserRole.valueOf(role) : null;
+        Long schoolId = extractSchoolId(user, userRole);
+        String accessToken = jwtUtil.generateAccessToken(uid, email, role, schoolId);
         String refreshToken = jwtUtil.generateRefreshToken(email);
         saveRefreshToken(email, refreshToken);
         return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
+    }
+
+    /**
+     * 유저의 소속 학교 ID 추출 (TEACHER, STUDENT, STAFF만 학교 소속)
+     * ADMIN은 X-School-Id 헤더로 학교를 선택하므로 null 반환
+     * PARENT는 학교 소속 없으므로 null 반환
+     */
+    private Long extractSchoolId(User user, UserRole role) {
+        if (user == null || role == null) return null;
+        return switch (role) {
+            case TEACHER -> {
+                TeacherInfo info = user.getInfo(TeacherInfo.class);
+                yield (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
+            }
+            case STUDENT -> {
+                StudentInfo info = user.getInfo(StudentInfo.class);
+                yield (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
+            }
+            case STAFF -> {
+                StaffInfo info = user.getInfo(StaffInfo.class);
+                yield (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
+            }
+            default -> null;
+        };
     }
 
     private void saveRefreshToken(String email, String refreshToken) {

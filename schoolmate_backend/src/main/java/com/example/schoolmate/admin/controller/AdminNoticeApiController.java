@@ -7,9 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.schoolmate.board.dto.BoardDTO;
-import com.example.schoolmate.board.entity.BoardType;
-import com.example.schoolmate.board.service.BoardService;
+import com.example.schoolmate.domain.board.dto.BoardDTO;
+import com.example.schoolmate.domain.board.entity.BoardType;
+import com.example.schoolmate.domain.board.service.BoardService;
 import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.dto.AuthUserDTO;
 

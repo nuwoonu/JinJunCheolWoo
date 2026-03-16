@@ -207,7 +207,7 @@ export default function ParentList() {
             </div>
           </div>
           <table className="table table-hover align-middle mb-0">
-            <thead className="table-light">
+            <thead className="table-heading-dark-mode">
               <tr>
                 <th className="text-center" style={{ width: 50 }}>
                   <input
@@ -240,7 +240,7 @@ export default function ParentList() {
                   <td className="ps-4">
                     <Link
                       to={ADMIN_ROUTES.PARENTS.DETAIL(p.id)}
-                      className="fw-bold text-decoration-none text-dark"
+                      className="fw-bold text-decoration-none text-primary-light"
                     >
                       {p.name}
                     </Link>
@@ -248,7 +248,7 @@ export default function ParentList() {
                   <td>{p.email}</td>
                   <td>{p.phone}</td>
                   <td>
-                    <span className="badge bg-light text-dark border">
+                    <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
                       {p.childrenStrings?.length ?? 0}명
                     </span>
                   </td>
@@ -283,7 +283,7 @@ export default function ParentList() {
           </table>
         </div>
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-white py-16">
+          <div className="card-footer border-0 bg-base py-16">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

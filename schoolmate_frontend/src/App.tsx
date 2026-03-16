@@ -8,6 +8,8 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import OAuth2Callback from "./pages/auth/OAuth2Callback";
 import SelectRole from "./pages/auth/SelectRole";
+import SelectInfo from "./pages/auth/SelectInfo";
+import RegisterSchoolSelect from "./pages/auth/RegisterSchoolSelect";
 import Main from "./pages/Main";
 import UserProfile from "./pages/user/Profile";
 // [cheol] 학생 관련
@@ -60,6 +62,7 @@ import ConsultationReservation from "./pages/jin/consultation/ConsultationReserv
 import SchoolSchedule from "./pages/jin/school/SchoolSchedule";
 import SchoolGallery from "./pages/jin/school/SchoolGallery";
 // [parkjoon] 관리자 페이지
+import JoonSchoolSelect from "./pages/admin/school/SchoolSelect";
 import JoonDashboard from "./pages/admin/Dashboard";
 import JoonStudentList from "./pages/admin/students/StudentList";
 import JoonStudentCreate from "./pages/admin/students/StudentCreate";
@@ -96,7 +99,11 @@ function App() {
       {/* [woo] OAuth2 소셜 로그인 콜백 - 토큰 저장 후 역할별 대시보드로 이동 */}
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
       <Route path="/register" element={<Register />} />
-      {/* [woo] OAuth2 GUEST 유저 역할 선택 페이지 */}
+      {/* 회원가입 - 역할 선택 (이메일/SNS 공통) */}
+      <Route path="/select-info" element={<SelectInfo />} />
+      {/* 회원가입 - 학교 선택 (교사/학생) */}
+      <Route path="/register/school-select" element={<RegisterSchoolSelect />} />
+      {/* [woo] OAuth2 GUEST 유저 역할 선택 페이지 (하위 호환 유지) */}
       <Route path="/select-role" element={<SelectRole />} />
 
       {/* 학생 */}
@@ -447,6 +454,14 @@ function App() {
       />
 
       {/* [joon] parkjoon 관리자 페이지 - /admin/... */}
+      <Route
+        path={ADMIN_ROUTES.SCHOOL_SELECT}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <JoonSchoolSelect />
+          </PrivateRoute>
+        }
+      />
       <Route
         path={ADMIN_ROUTES.DASHBOARD}
         element={

@@ -284,7 +284,7 @@ export default function StaffList() {
             className="table table-hover align-middle mb-0"
             style={{ tableLayout: "fixed", width: "100%" }}
           >
-            <thead className="table-light">
+            <thead className="table-heading-dark-mode">
               <tr>
                 <th className="text-center" style={{ width: 60 }}>
                   <input
@@ -324,7 +324,7 @@ export default function StaffList() {
                   <td>
                     <Link
                       to={ADMIN_ROUTES.STAFFS.DETAIL(s.uid)}
-                      className="fw-bold text-decoration-none text-dark"
+                      className="fw-bold text-decoration-none text-primary-light"
                     >
                       {s.name}
                     </Link>
@@ -386,7 +386,7 @@ export default function StaffList() {
           </table>
         </div>
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-white py-16">
+          <div className="card-footer border-0 bg-base py-16">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

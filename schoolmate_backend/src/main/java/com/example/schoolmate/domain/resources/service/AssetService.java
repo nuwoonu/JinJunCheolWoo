@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.schoolmate.common.service.FileService;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.resources.constant.AssetStatus;
 import com.example.schoolmate.domain.resources.dto.AssetDTO;
 import com.example.schoolmate.domain.resources.dto.AssetModelDTO;
@@ -18,6 +19,7 @@ import com.example.schoolmate.domain.resources.entity.AssetModel;
 import com.example.schoolmate.domain.resources.entity.SchoolAsset;
 import com.example.schoolmate.domain.resources.repository.AssetModelRepository;
 import com.example.schoolmate.domain.resources.repository.SchoolAssetRepository;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,22 +30,21 @@ public class AssetService {
     private final SchoolAssetRepository assetRepository;
     private final AssetModelRepository modelRepository;
     private final FileService fileService;
+    private final SchoolRepository schoolRepository;
 
     @Transactional(readOnly = true)
     public Page<AssetDTO.Response> getAssetList(String keyword, Pageable pageable) {
-        if (keyword != null && !keyword.isBlank()) {
-            return assetRepository.findByNameContainingOrAssetCodeContaining(keyword, keyword, pageable)
-                    .map(AssetDTO.Response::from);
-        }
-        return assetRepository.findAll(pageable).map(AssetDTO.Response::from);
+        return assetRepository.search(keyword, pageable).map(AssetDTO.Response::from);
     }
 
     // --- 모델(AssetModel) 관리 ---
     @Transactional(readOnly = true)
     public List<AssetModelDTO.Response> getAllAssetModels() {
-        return modelRepository.findAll().stream()
-                .map(AssetModelDTO.Response::from)
-                .collect(Collectors.toList());
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        List<AssetModel> models = (schoolId != null)
+                ? modelRepository.findBySchoolId(schoolId)
+                : modelRepository.findAll();
+        return models.stream().map(AssetModelDTO.Response::from).collect(Collectors.toList());
     }
 
     public void createAssetModel(AssetModelDTO.Request request) {
@@ -59,6 +60,12 @@ public class AssetService {
                 .description(request.getDescription())
                 .imageFilename(filename)
                 .build();
+
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(model::setSchool);
+        }
+
         modelRepository.save(model);
     }
 
@@ -123,6 +130,11 @@ public class AssetService {
         asset.setLocationDesc(request.getLocation());
         asset.setDescription(model.getDescription()); // BaseResource.description = 모델 설명 (기본값)
 
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(asset::setSchool);
+        }
+
         assetRepository.save(asset);
     }
 
@@ -161,7 +173,7 @@ public class AssetService {
     // 2. 카테고리별 요약 (모델 기준으로 그룹화)
     @Transactional(readOnly = true)
     public List<AssetDTO.Summary> getAssetSummaries() {
-        List<SchoolAsset> allAssets = assetRepository.findAll();
+        List<SchoolAsset> allAssets = assetRepository.findAllByCurrentSchool();
 
         // 모델의 카테고리 별로 그룹화
         Map<String, List<SchoolAsset>> grouped = allAssets.stream()

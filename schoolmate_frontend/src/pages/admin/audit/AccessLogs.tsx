@@ -171,36 +171,37 @@ export default function AccessLogs() {
       <div className="card">
         <div className="card-body p-0">
           <table className="table table-hover align-middle mb-0">
-            <thead className="table-light">
+            <thead className="table-heading-dark-mode">
               <tr>
-                <th className="ps-4">일시</th>
-                <th>사용자</th>
-                <th>유형</th>
-                <th>IP 주소</th>
-                <th>브라우저 정보</th>
+                <th className="px-4 py-3" style={{ width: 160 }}>일시</th>
+                <th className="px-3 py-3" style={{ width: 180 }}>사용자</th>
+                <th className="px-3 py-3" style={{ width: 120 }}>유형</th>
+                <th className="px-3 py-3" style={{ width: 140 }}>IP 주소</th>
+                <th className="px-3 py-3">브라우저 정보</th>
               </tr>
             </thead>
             <tbody>
               {list.map((log: any) => (
                 <tr key={log.id}>
-                  <td className="ps-4 text-muted small">
-                    {log.createdAt?.replace("T", " ").substring(0, 19)}
+                  <td className="px-4 py-3 text-muted small" style={{ whiteSpace: "nowrap" }}>
+                    {log.createDate?.replace("T", " ").substring(0, 19)}
                   </td>
-                  <td className="fw-bold">{log.username}</td>
-                  <td>
-                    <span className={`badge ${typeBadge(log.type)}`}>
-                      {typeLabel(log.type)}
+                  <td className="px-3 py-3 fw-semibold">{log.actorName}</td>
+                  <td className="px-3 py-3">
+                    <span className={`badge ${typeBadge(log.accessType)}`}>
+                      {typeLabel(log.accessType)}
                     </span>
                   </td>
-                  <td className="text-muted small">{log.ipAddress}</td>
+                  <td className="px-3 py-3 text-muted small">{log.ipAddress}</td>
                   <td
-                    className="text-muted small"
+                    className="px-3 py-3 text-muted small"
                     style={{
-                      maxWidth: 300,
+                      maxWidth: 320,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
                     }}
+                    title={log.userAgent}
                   >
                     {log.userAgent}
                   </td>
@@ -217,7 +218,7 @@ export default function AccessLogs() {
           </table>
         </div>
         {page && page.totalPages > 1 && (
-          <div className="card-footer bg-white py-3">
+          <div className="card-footer bg-base py-3">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

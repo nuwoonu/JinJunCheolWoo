@@ -1,4 +1,4 @@
-package com.example.schoolmate.board.service;
+package com.example.schoolmate.domain.board.service;
 
 import java.util.List;
 
@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.board.dto.BoardDTO;
-import com.example.schoolmate.board.entity.Board;
-import com.example.schoolmate.board.entity.BoardType;
-import com.example.schoolmate.board.repository.BoardRepository;
+import com.example.schoolmate.domain.board.dto.BoardDTO;
+import com.example.schoolmate.domain.board.entity.Board;
+import com.example.schoolmate.domain.board.entity.BoardType;
+import com.example.schoolmate.domain.board.repository.BoardRepository;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
@@ -18,6 +18,8 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.common.entity.Classroom;
 
@@ -35,6 +37,7 @@ public class BoardService {
     private final ClassroomRepository classroomRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
+    private final SchoolRepository schoolRepository;
 
     // ========== 게시물 조회 ==========
 
@@ -42,11 +45,7 @@ public class BoardService {
      * 학교 공지 목록
      */
     public Page<BoardDTO.Response> getSchoolNotices(String keyword, Pageable pageable) {
-        if (keyword != null && !keyword.isBlank()) {
-            return boardRepository.findByBoardTypeAndKeywordOrderByImportantDesc(BoardType.SCHOOL_NOTICE, keyword, pageable)
-                    .map(BoardDTO.Response::fromEntityForList);
-        }
-        return boardRepository.findByBoardTypeOrderByImportantDesc(BoardType.SCHOOL_NOTICE, pageable)
+        return boardRepository.findByType(BoardType.SCHOOL_NOTICE, keyword, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -54,7 +53,7 @@ public class BoardService {
      * 학급 공지 목록
      */
     public Page<BoardDTO.Response> getClassNotices(Long classroomId, Pageable pageable) {
-        return boardRepository.findByBoardTypeAndTargetClassroomId(BoardType.CLASS_NOTICE, classroomId, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_NOTICE, classroomId, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -62,7 +61,7 @@ public class BoardService {
      * 학년 게시판 목록
      */
     public Page<BoardDTO.Response> getGradeBoard(int grade, Pageable pageable) {
-        return boardRepository.findByBoardTypeAndTargetGrade(BoardType.GRADE_BOARD, grade, pageable)
+        return boardRepository.findByTypeAndGrade(BoardType.GRADE_BOARD, grade, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -70,7 +69,7 @@ public class BoardService {
      * 학급 게시판 목록
      */
     public Page<BoardDTO.Response> getClassBoard(Long classroomId, Pageable pageable) {
-        return boardRepository.findByBoardTypeAndTargetClassroomId(BoardType.CLASS_BOARD, classroomId, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -78,7 +77,7 @@ public class BoardService {
      * 교직원 게시판 목록
      */
     public Page<BoardDTO.Response> getTeacherBoard(Pageable pageable) {
-        return boardRepository.findTeacherBoard(BoardType.TEACHER_BOARD, pageable)
+        return boardRepository.findByType(BoardType.TEACHER_BOARD, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -86,7 +85,7 @@ public class BoardService {
      * 학부모 공지 목록 (전체)
      */
     public Page<BoardDTO.Response> getParentNotices(Pageable pageable) {
-        return boardRepository.findByBoardType(BoardType.PARENT_NOTICE, pageable)
+        return boardRepository.findByType(BoardType.PARENT_NOTICE, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -94,7 +93,7 @@ public class BoardService {
      * 학부모 공지 목록 (학년별)
      */
     public Page<BoardDTO.Response> getParentNoticesByGrade(int grade, Pageable pageable) {
-        return boardRepository.findParentBoardByGrade(BoardType.PARENT_NOTICE, grade, pageable)
+        return boardRepository.findParentByGrade(BoardType.PARENT_NOTICE, grade, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -102,7 +101,7 @@ public class BoardService {
      * 학부모 공지 목록 (학급별)
      */
     public Page<BoardDTO.Response> getParentNoticesByClassroom(Long classroomId, int grade, Pageable pageable) {
-        return boardRepository.findParentBoardByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, pageable)
+        return boardRepository.findParentByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -110,7 +109,7 @@ public class BoardService {
      * 학부모 게시판 목록 (전체)
      */
     public Page<BoardDTO.Response> getParentBoard(Pageable pageable) {
-        return boardRepository.findByBoardType(BoardType.PARENT_BOARD, pageable)
+        return boardRepository.findByType(BoardType.PARENT_BOARD, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -118,7 +117,7 @@ public class BoardService {
      * 학부모 게시판 목록 (학년별)
      */
     public Page<BoardDTO.Response> getParentBoardByGrade(int grade, Pageable pageable) {
-        return boardRepository.findParentBoardByGrade(BoardType.PARENT_BOARD, grade, pageable)
+        return boardRepository.findParentByGrade(BoardType.PARENT_BOARD, grade, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -126,7 +125,7 @@ public class BoardService {
      * 학부모 게시판 목록 (학급별)
      */
     public Page<BoardDTO.Response> getParentBoardByClassroom(Long classroomId, int grade, Pageable pageable) {
-        return boardRepository.findParentBoardByClassroom(BoardType.PARENT_BOARD, classroomId, grade, pageable)
+        return boardRepository.findParentByClassroom(BoardType.PARENT_BOARD, classroomId, grade, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -178,9 +177,8 @@ public class BoardService {
      * 최근 게시물 (대시보드용)
      */
     public List<BoardDTO.Response> getRecentBoards(BoardType type, int limit) {
-        return boardRepository.findTop5ByBoardTypeAndIsDeletedFalseOrderByCreateDateDesc(type)
+        return boardRepository.findRecentByType(type, limit)
                 .stream()
-                .limit(limit)
                 .map(BoardDTO.Response::fromEntityForList)
                 .toList();
     }
@@ -216,6 +214,11 @@ public class BoardService {
                 .isImportant(request.isImportant())
                 .attachmentUrl(request.getAttachmentUrl())
                 .build();
+
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(board::setSchool);
+        }
 
         Board saved = boardRepository.save(board);
         log.info("게시물 작성 완료: {} - {} by {}", saved.getBoardType(), saved.getTitle(), writer.getName());

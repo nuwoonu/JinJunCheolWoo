@@ -16,6 +16,7 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
 import com.example.schoolmate.consultation.dto.ReservationDTO;
 import com.example.schoolmate.consultation.entity.ConsultationReservation;
+import com.example.schoolmate.consultation.entity.ConsultationType;
 import com.example.schoolmate.consultation.entity.ReservationStatus;
 import com.example.schoolmate.consultation.repository.ConsultationReservationRepository;
 
@@ -63,6 +64,11 @@ public class ConsultationReservationService {
         reservation.setContent(req.getContent());
         reservation.setWriter(writer);
         reservation.setStatus(ReservationStatus.PENDING);
+        if (req.getConsultationType() != null) {
+            try {
+                reservation.setConsultationType(ConsultationType.valueOf(req.getConsultationType()));
+            } catch (IllegalArgumentException ignored) {}
+        }
 
         // 자녀 선택
         if (req.getStudentInfoId() != null) {
@@ -87,6 +93,30 @@ public class ConsultationReservationService {
         }
         if (reservation.getStatus() != ReservationStatus.PENDING) {
             throw new RuntimeException("대기 중인 예약만 취소할 수 있습니다.");
+        }
+        reservation.setStatus(ReservationStatus.CANCELLED);
+    }
+
+    // [soojin] 예약 완료 처리 (교사) - CONFIRMED → COMPLETED
+    @Transactional
+    public ReservationDTO.Response complete(Long id) {
+        ConsultationReservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다."));
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new RuntimeException("확정된 예약만 완료 처리할 수 있습니다.");
+        }
+        reservation.setStatus(ReservationStatus.COMPLETED);
+        return toResponse(reservation);
+    }
+
+    // [soojin] 교사 취소 - PENDING / CONFIRMED → CANCELLED
+    @Transactional
+    public void teacherCancel(Long id) {
+        ConsultationReservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다."));
+        if (reservation.getStatus() != ReservationStatus.PENDING
+                && reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new RuntimeException("대기 중이거나 확정된 예약만 취소할 수 있습니다.");
         }
         reservation.setStatus(ReservationStatus.CANCELLED);
     }
@@ -151,6 +181,7 @@ public class ConsultationReservationService {
                 .studentName(studentName)
                 .studentNumber(studentNumber)
                 .createDate(createDateStr)
+                .consultationType(r.getConsultationType() != null ? r.getConsultationType().name() : null)
                 .build();
     }
 }
