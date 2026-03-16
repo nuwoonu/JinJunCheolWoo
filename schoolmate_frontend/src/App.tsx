@@ -37,6 +37,16 @@ import ParentBoard from "./pages/woo/board/ParentBoard";
 import ParentBoardDetail from "./pages/woo/board/ParentBoardDetail";
 import TeacherBoard from "./pages/woo/board/TeacherBoard";
 import TeacherBoardDetail from "./pages/woo/board/TeacherBoardDetail";
+// [woo] 과제
+import HomeworkList from "./pages/woo/homework/HomeworkList";
+import HomeworkCreate from "./pages/woo/homework/HomeworkCreate";
+import HomeworkDetail from "./pages/woo/homework/HomeworkDetail";
+import HomeworkEdit from "./pages/woo/homework/HomeworkEdit";
+import ParentHomework from "./pages/woo/homework/ParentHomework";
+// [woo] 퀴즈
+import QuizCreate from "./pages/woo/quiz/QuizCreate";
+import QuizDetail from "./pages/woo/quiz/QuizDetail";
+import QuizEdit from "./pages/woo/quiz/QuizEdit";
 // [woo] 출결
 import StudentAttendance from "./pages/woo/attendance/StudentAttendance";
 import TeacherAttendance from "./pages/woo/attendance/TeacherAttendance";
@@ -142,6 +152,77 @@ function App() {
         }
       />
 
+      {/* [woo] 과제 */}
+      <Route
+        path="/homework"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <HomeworkList />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/homework/create"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <HomeworkCreate />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/homework/:id"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <HomeworkDetail />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 과제 수정 (교사/관리자 전용) */}
+      <Route
+        path="/homework/:id/edit"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <HomeworkEdit />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 학부모 자녀 과제 조회 */}
+      <Route
+        path="/parent/homework"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ParentHomework />
+          </PrivateRoute>
+        }
+      />
+
+      {/* [woo] 퀴즈 (목록은 /homework?tab=quiz 탭으로 통합) */}
+      <Route
+        path="/quiz/create"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <QuizCreate />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/quiz/:id"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <QuizDetail />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 퀴즈 수정 (교사/관리자 전용) */}
+      <Route
+        path="/quiz/:id/edit"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <QuizEdit />
+          </PrivateRoute>
+        }
+      />
+
       {/* [woo] 교사 페이지 */}
       <Route
         path="/teacher/dashboard"
@@ -197,9 +278,7 @@ function App() {
       <Route
         path="/board/grade/:grade"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <GradeBoard />
           </PrivateRoute>
         }
@@ -207,9 +286,7 @@ function App() {
       <Route
         path="/board/grade/:grade/:id"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <GradeBoardDetail />
           </PrivateRoute>
         }
@@ -219,9 +296,7 @@ function App() {
       <Route
         path="/board/school-notice"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolNotice />
           </PrivateRoute>
         }
@@ -229,9 +304,7 @@ function App() {
       <Route
         path="/board/school-notice/:id"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolNoticeDetail />
           </PrivateRoute>
         }
@@ -294,9 +367,7 @@ function App() {
       <Route
         path="/user/profile"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <UserProfile />
           </PrivateRoute>
         }
@@ -615,9 +686,7 @@ function App() {
       <Route
         path="/school/schedule"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolSchedule />
           </PrivateRoute>
         }
@@ -625,9 +694,7 @@ function App() {
       <Route
         path="/school/gallery"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolGallery />
           </PrivateRoute>
         }

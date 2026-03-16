@@ -98,6 +98,25 @@ public class SecurityConfig {
                                                 // 학부모 전용
                                                 .requestMatchers("/api/parent/dashboard", "/api/parent/children/**")
                                                 .hasRole("PARENT")
+                                                // [woo] 과제 API - 교사/학생/학부모 역할별 접근 (세부 권한은 Service에서 처리)
+                                                .requestMatchers("/api/homework/teacher/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                .requestMatchers("/api/homework/student/**")
+                                                .hasAnyRole("STUDENT", "ADMIN")
+                                                .requestMatchers("/api/homework/parent/**")
+                                                .hasAnyRole("PARENT", "ADMIN")
+                                                .requestMatchers("/api/homework/**")
+                                                .hasAnyRole("TEACHER", "STUDENT", "PARENT", "ADMIN")
+                                                // [woo] 퀴즈 API - 역할별 접근
+                                                .requestMatchers("/api/quiz/teacher/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                .requestMatchers("/api/quiz/student/**")
+                                                .hasAnyRole("STUDENT", "ADMIN")
+                                                // [woo] 학부모: 자녀 퀴즈 조회 허용
+                                                .requestMatchers("/api/quiz/parent/**")
+                                                .hasAnyRole("PARENT", "ADMIN")
+                                                .requestMatchers("/api/quiz/**")
+                                                .hasAnyRole("TEACHER", "STUDENT", "ADMIN")
                                                 // 나머지 모든 요청은 인증 필요
                                                 .anyRequest().authenticated())
                                 // [woo] OAuth2 소셜 로그인 (성공 시 JWT 발급)
