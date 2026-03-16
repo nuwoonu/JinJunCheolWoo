@@ -14,6 +14,7 @@ import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.consultation.dto.ReservationDTO;
 import com.example.schoolmate.consultation.entity.ConsultationReservation;
 import com.example.schoolmate.consultation.entity.ConsultationType;
@@ -31,20 +32,42 @@ public class ConsultationReservationService {
     private final ConsultationReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final FamilyRelationRepository familyRelationRepository;
+    private final StudentInfoRepository studentInfoRepository;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    // 날짜 범위로 예약 조회 (캘린더 뷰)
-    public List<ReservationDTO.Response> getByDateRange(LocalDate startDate, LocalDate endDate) {
-        return reservationRepository.findByDateBetween(startDate, endDate)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+    // 날짜 범위로 예약 조회 (캘린더 뷰) - 교사: 담당 반만, 학부모: 자녀 반만, 관리자: 전체
+    public List<ReservationDTO.Response> getByDateRange(LocalDate startDate, LocalDate endDate,
+                                                        Long teacherUid, Long studentUserUid, Long parentUid) {
+        List<ConsultationReservation> list;
+        if (teacherUid != null) {
+            list = reservationRepository.findByTeacherUidAndDateBetween(teacherUid, startDate, endDate);
+        } else if (studentUserUid != null) {
+            // 학부모: 자녀의 학급 기준으로 필터
+            StudentInfo si = studentInfoRepository.findByUserUid(studentUserUid).orElse(null);
+            if (si != null && si.getCurrentAssignment() != null
+                    && si.getCurrentAssignment().getClassroom() != null) {
+                Long classroomId = si.getCurrentAssignment().getClassroom().getCid();
+                list = reservationRepository.findByClassroomIdAndDateBetween(classroomId, startDate, endDate);
+            } else {
+                list = List.of();
+            }
+        } else {
+            list = reservationRepository.findByDateBetween(startDate, endDate);
+        }
+        return list.stream().map(r -> toResponse(r, studentUserUid, parentUid)).collect(Collectors.toList());
     }
 
-    // 내 예약 목록 (PARENT: 본인 예약, TEACHER: 전체 예약)
-    public List<ReservationDTO.Response> getMyReservations(Long uid, String role) {
+    // 내 예약 목록
+    // TEACHER: 담당 반 학생 상담만 / PARENT: 선택 자녀(studentInfoId) 상담만 / ADMIN: 전체
+    public List<ReservationDTO.Response> getMyReservations(Long uid, String role, Long studentUserUid) {
         List<ConsultationReservation> list;
-        if ("TEACHER".equals(role) || "ADMIN".equals(role)) {
+        if ("TEACHER".equals(role)) {
+            list = reservationRepository.findByTeacherUidOrderByDateDescStartTimeDesc(uid);
+        } else if ("ADMIN".equals(role)) {
             list = reservationRepository.findAllByOrderByDateDescStartTimeDesc();
+        } else if (studentUserUid != null) {
+            list = reservationRepository.findByStudentInfo_User_UidOrderByDateDescStartTimeDesc(studentUserUid);
         } else {
             list = reservationRepository.findByWriter_UidOrderByDateDescStartTimeDesc(uid);
         }
@@ -70,11 +93,12 @@ public class ConsultationReservationService {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        // 자녀 선택
-        if (req.getStudentInfoId() != null) {
+        // 자녀 선택 (studentUserUid: 자녀의 User uid)
+        if (req.getStudentUserUid() != null) {
             List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(uid);
             relations.stream()
-                    .filter(r -> r.getStudentInfo().getId().equals(req.getStudentInfoId()))
+                    .filter(r -> r.getStudentInfo().getUser() != null
+                            && r.getStudentInfo().getUser().getUid().equals(req.getStudentUserUid()))
                     .findFirst()
                     .ifPresent(r -> reservation.setStudentInfo(r.getStudentInfo()));
         }
@@ -148,7 +172,7 @@ public class ConsultationReservationService {
             User studentUser = si.getUser();
             StudentAssignment ca = si.getCurrentAssignment();
             return ReservationDTO.ChildInfo.builder()
-                    .id(si.getId())
+                    .id(studentUser != null ? studentUser.getUid() : si.getId())
                     .name(studentUser != null ? studentUser.getName() : "-")
                     .grade(ca != null ? ca.getGrade() : null)
                     .classNum(ca != null ? ca.getClassNum() : null)
@@ -158,6 +182,10 @@ public class ConsultationReservationService {
     }
 
     private ReservationDTO.Response toResponse(ConsultationReservation r) {
+        return toResponse(r, null, null);
+    }
+
+    private ReservationDTO.Response toResponse(ConsultationReservation r, Long studentUserUid, Long parentUid) {
         String writerName = r.getWriter() != null ? r.getWriter().getName() : "-";
         String studentName = null;
         String studentNumber = null;
@@ -169,6 +197,15 @@ public class ConsultationReservationService {
         String createDateStr = r.getCreateDate() != null
                 ? r.getCreateDate().format(DATE_FMT)
                 : null;
+
+        // 자녀 uid 일치 또는 작성자(학부모) uid 일치 시 본인 예약으로 판단
+        boolean isMine = (studentUserUid != null
+                && r.getStudentInfo() != null
+                && r.getStudentInfo().getUser() != null
+                && r.getStudentInfo().getUser().getUid().equals(studentUserUid))
+                || (parentUid != null
+                && r.getWriter() != null
+                && r.getWriter().getUid().equals(parentUid));
 
         return ReservationDTO.Response.builder()
                 .id(r.getId())
@@ -182,6 +219,7 @@ public class ConsultationReservationService {
                 .studentNumber(studentNumber)
                 .createDate(createDateStr)
                 .consultationType(r.getConsultationType() != null ? r.getConsultationType().name() : null)
+                .isMine(isMine)
                 .build();
     }
 }

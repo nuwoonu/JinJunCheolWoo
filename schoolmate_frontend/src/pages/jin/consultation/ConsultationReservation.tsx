@@ -29,6 +29,7 @@ interface Reservation {
   studentName?: string;
   studentNumber?: string;
   local?: boolean;
+  isMine?: boolean;
 }
 
 interface ReservationItem {
@@ -77,9 +78,11 @@ export default function ConsultationReservation() {
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
-  // PARENT: 자녀 목록
-  const [children, setChildren] = useState<ChildInfo[]>([]);
-  const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
+  // PARENT: 대시보드에서 선택된 자녀 id
+  const selectedChildId = isParent ? Number(sessionStorage.getItem("selectedChildId")) || null : null;
+
+  // PARENT: 선택된 자녀 정보
+  const [selectedChild, setSelectedChild] = useState<ChildInfo | null>(null);
 
   // PARENT: 예약 목록
   const [myItems, setMyItems] = useState<ReservationItem[]>([]);
@@ -101,8 +104,9 @@ export default function ConsultationReservation() {
   const fetchMyList = useCallback(() => {
     if (!isParent) return;
     setListLoading(true);
+    const params = selectedChildId ? `?studentUserUid=${selectedChildId}` : "";
     api
-      .get("/consultation/reservations/my")
+      .get(`/consultation/reservations/my${params}`)
       .then((res) => {
         const list: ReservationItem[] = Array.isArray(res.data) ? res.data : [];
         setMyItems(
@@ -115,7 +119,7 @@ export default function ConsultationReservation() {
       })
       .catch(() => setMyItems([]))
       .finally(() => setListLoading(false));
-  }, [isParent]);
+  }, [isParent, selectedChildId]);
 
   const handleCancel = async (id: number) => {
     if (!confirm("상담 일정을 취소하시겠습니까?")) return;
@@ -129,8 +133,10 @@ export default function ConsultationReservation() {
   };
 
   const fetchReservations = useCallback(() => {
+    const params = new URLSearchParams({ startDate: startStr, endDate: endStr });
+    if (isParent && selectedChildId) params.append("studentUserUid", String(selectedChildId));
     api
-      .get(`/consultation/reservations?startDate=${startStr}&endDate=${endStr}`)
+      .get(`/consultation/reservations?${params.toString()}`)
       .then((res) => {
         const list: Reservation[] = Array.isArray(res.data) ? res.data : [];
         setReservations(
@@ -142,7 +148,7 @@ export default function ConsultationReservation() {
         );
       })
       .catch(() => {});
-  }, [startStr, endStr]);
+  }, [startStr, endStr, isParent, selectedChildId]);
 
   useEffect(() => {
     fetchReservations();
@@ -152,19 +158,15 @@ export default function ConsultationReservation() {
     fetchMyList();
   }, [fetchMyList]);
 
+  // 선택된 자녀 정보 fetch
   useEffect(() => {
-    if (!isParent) return;
-    api
-      .get("/consultation/reservations/children")
-      .then((res) => {
-        const list: ChildInfo[] = Array.isArray(res.data) ? res.data : [];
-        setChildren(list);
-        if (list.length > 0 && selectedChildId === null) {
-          setSelectedChildId(list[0].id);
-        }
-      })
-      .catch(() => {});
-  }, []);
+    if (!isParent || !selectedChildId) return;
+    api.get("/consultation/reservations/children").then((res) => {
+      const list: ChildInfo[] = Array.isArray(res.data) ? res.data : [];
+      const child = list.find((c) => c.id === selectedChildId) ?? null;
+      setSelectedChild(child);
+    }).catch(() => {});
+  }, [isParent, selectedChildId]);
 
   const prevWeek = () => {
     setMonday((prev) => addDays(prev, -7));
@@ -182,6 +184,7 @@ export default function ConsultationReservation() {
   const reservationMap = useMemo(() => {
     const map: Record<string, Reservation> = {};
     for (const r of reservations) {
+      if (r.status === "CANCELLED") continue; // 취소된 예약은 신청 가능으로 표시
       if (isTeacher && r.status !== "CONFIRMED") continue;
       map[`${r.date}_${r.startTime}`] = r;
     }
@@ -241,10 +244,6 @@ export default function ConsultationReservation() {
       alert("상담 내용을 입력해주세요.");
       return;
     }
-    if (children.length > 0 && !selectedChildId) {
-      alert("자녀를 선택해주세요.");
-      return;
-    }
     setSaving(true);
 
     try {
@@ -253,7 +252,7 @@ export default function ConsultationReservation() {
         startTime: selected.time,
         endTime: endTimeOf(selected.time),
         content,
-        studentInfoId: selectedChildId,
+        studentUserUid: selectedChildId,
         consultationType,
       });
       setSelected(null);
@@ -396,8 +395,23 @@ export default function ConsultationReservation() {
                               slotTime.setHours(parseInt(timeStr.split(":")[0]), 0, 0, 0);
                               const isPastSlot = slotTime < new Date();
 
-                              // [soojin] 3.png 참조: 예약 있으면 셀 전체를 초록색으로 채움
+                              // [soojin] 3.png 참조: 예약 있으면 셀 전체를 채움
                               if (reservation) {
+                                // 학부모: 내 자녀 예약이 아니면 신청 불가 표시
+                                if (isParent && !reservation.isMine) {
+                                  return (
+                                    <td
+                                      key={i}
+                                      style={{
+                                        background: "#f0f0f0",
+                                        height: 48,
+                                        verticalAlign: "middle",
+                                        cursor: "default",
+                                        padding: 0,
+                                      }}
+                                    />
+                                  );
+                                }
                                 const label = isTeacher
                                   ? `${reservation.studentName ?? reservation.writerName} 학부모`
                                   : reservation.studentName;
@@ -501,21 +515,18 @@ export default function ConsultationReservation() {
                 <div className="card-body p-24 d-flex flex-column">
                   <h6 className="fw-semibold mb-20">신청 정보</h6>
 
-                  {children.length > 0 && (
+                  {selectedChild && (
                     <div className="mb-16">
                       <label className="form-label text-sm fw-medium">자녀 정보</label>
-                      <select
-                        className="form-select"
-                        value={selectedChildId ?? ""}
-                        onChange={(e) => setSelectedChildId(Number(e.target.value))}
+                      <div
+                        className="form-control"
+                        style={{ background: "#f8f9fa", color: "#555", cursor: "default" }}
                       >
-                        {children.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                            {c.grade != null ? ` (${c.grade}학년 ${c.classNum}반 ${c.number}번)` : ""}
-                          </option>
-                        ))}
-                      </select>
+                        {selectedChild.name}
+                        {selectedChild.grade != null
+                          ? ` (${selectedChild.grade}학년 ${selectedChild.classNum}반 ${selectedChild.number}번)`
+                          : ""}
+                      </div>
                     </div>
                   )}
 

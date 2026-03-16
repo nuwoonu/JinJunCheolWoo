@@ -82,10 +82,12 @@ export default function ConsultationList() {
   const startStr = fmt(monday);
   const endStr = fmt(addDays(monday, 4));
 
-  const fetchList = () => {
+  const fetchList = useCallback(() => {
     setLoading(true);
+    const childId = isParent ? Number(sessionStorage.getItem("selectedChildId")) || null : null;
+    const params = childId ? `?studentUserUid=${childId}` : "";
     api
-      .get("/consultation/reservations/my")
+      .get(`/consultation/reservations/my${params}`)
       .then((res) => {
         const list: ReservationItem[] = Array.isArray(res.data) ? res.data : [];
         setItems(
@@ -98,7 +100,7 @@ export default function ConsultationList() {
       })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  };
+  }, [isParent]);
 
   const fetchCalendarReservations = useCallback(() => {
     api
@@ -118,7 +120,7 @@ export default function ConsultationList() {
 
   useEffect(() => {
     fetchList();
-  }, []);
+  }, [fetchList]);
 
   useEffect(() => {
     if (!isTeacher) return;
@@ -128,6 +130,27 @@ export default function ConsultationList() {
   useEffect(() => {
     setPage(1);
   }, [filter]);
+
+  const PAGE_SIZE = 6;
+
+  // 대기중 → 확정 → 완료 → 취소 순, 같은 상태 내에서는 날짜 오름차순
+  const sorted = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const statusDiff = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
+      if (statusDiff !== 0) return statusDiff;
+      return a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime);
+    });
+  }, [items]);
+
+  const filtered = filter === "ALL" ? sorted : sorted.filter((i) => i.status === filter);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+  // 취소 등으로 아이템 수 감소 시 현재 페이지가 범위 초과하면 마지막 페이지로 이동
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [totalPages, page]);
 
   const handleCancel = async (id: number) => {
     if (!confirm("상담 일정을 취소하시겠습니까?")) return;
@@ -240,19 +263,6 @@ export default function ConsultationList() {
     return map;
   }, [calendarReservations]);
 
-  const PAGE_SIZE = 6;
-
-  // 대기중 → 확정 → 완료 → 취소 순, 같은 상태 내에서는 날짜 오름차순
-  const sorted = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const statusDiff = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
-      if (statusDiff !== 0) return statusDiff;
-      return a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime);
-    });
-  }, [items]);
-
-  const filtered = filter === "ALL" ? sorted : sorted.filter((i) => i.status === filter);
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const pagedItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const counts = {
@@ -332,7 +342,7 @@ export default function ConsultationList() {
         {/* 예약 목록 */}
         {loading ? (
           <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
-        ) : pagedItems.length === 0 && filtered.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="card border-0 shadow-sm" style={{ borderRadius: 16 }}>
             <div className="card-body text-center py-48">
               <i className="ri-calendar-close-line text-neutral-300" style={{ fontSize: 48 }} />
