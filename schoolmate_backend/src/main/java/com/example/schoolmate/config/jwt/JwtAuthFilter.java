@@ -67,6 +67,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Long schoolId = jwtUtil.getSchoolId(token);
         if (schoolId != null) {
             SchoolContextHolder.setSchoolId(schoolId);
+            log.debug("[JWT] schoolId={} 세팅 (email={}, uri={})", schoolId, email, request.getRequestURI());
+        } else {
+            log.debug("[JWT] schoolId 없음 (email={}, uri={})", email, request.getRequestURI());
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {

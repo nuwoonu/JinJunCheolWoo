@@ -53,6 +53,8 @@ public class CustomUserDTO {
 
     private String phoneNumber;
 
+    private Long schoolId;
+
     public boolean hasRole(UserRole role) {
         return roles != null && roles.contains(role);
     }
