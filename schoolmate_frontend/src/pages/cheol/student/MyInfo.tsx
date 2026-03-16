@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import api from "../../../api/auth";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -153,7 +153,7 @@ function InfoRow({ label, value }: { label: string; value?: string | number | nu
   );
 }
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="shadow-1 radius-12 bg-base h-100 overflow-hidden">
       <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between">
