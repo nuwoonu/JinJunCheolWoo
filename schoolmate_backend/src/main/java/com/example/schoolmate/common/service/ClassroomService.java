@@ -47,7 +47,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Transactional
 @Log4j2
-public class ClassService {
+public class ClassroomService {
 
     private final ClassroomRepository classroomRepository;
     private final UserRepository userRepository;
@@ -95,7 +95,7 @@ public class ClassService {
         response.setStudents(studentSummaries);
 
         // 이력 조회
-        response.setHistories(logService.getClassroomHistory(cid).stream().map(ClassDTO.HistoryResponse::from).toList());
+        response.setHistories(LogHelper.getClassroomHistory(cid).stream().map(ClassDTO.HistoryResponse::from).toList());
 
         return response;
     }

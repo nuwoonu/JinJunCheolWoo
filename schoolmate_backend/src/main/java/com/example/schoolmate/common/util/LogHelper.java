@@ -1,8 +1,11 @@
 package com.example.schoolmate.common.util;
 
+import com.example.schoolmate.domain.log.entity.SchoolmateLog;
 import com.example.schoolmate.domain.log.service.LogService;
 
 import jakarta.annotation.PostConstruct;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
@@ -48,12 +51,21 @@ public class LogHelper {
         instance.logService.logAccess(username, ip, userAgent, accessType);
     }
 
-    /** 학급 변경 이력 */
+    /** 학급 변경 이력 기록 */
     public static void classroom(Long classroomId, String actorName, String actionType, String description) {
         if (instance == null) {
             log.warn("[LogHelper] 아직 초기화되지 않았습니다. 로그 기록 스킵.");
             return;
         }
         instance.logService.logClassroomChange(classroomId, actorName, actionType, description);
+    }
+
+    /** 학급 변경 이력 조회 */
+    public static List<SchoolmateLog> getClassroomHistory(Long classroomId) {
+        if (instance == null) {
+            log.warn("[LogHelper] 아직 초기화되지 않았습니다. 빈 목록 반환.");
+            return Collections.emptyList();
+        }
+        return instance.logService.getClassroomHistory(classroomId);
     }
 }
