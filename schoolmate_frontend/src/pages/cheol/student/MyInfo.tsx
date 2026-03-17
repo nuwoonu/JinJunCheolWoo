@@ -592,13 +592,12 @@ export default function StudentMyInfo() {
       {/* 브레드크럼 */}
       <div className="d-flex align-items-center justify-content-between gap-3 mb-24">
         <div>
-          <h1 className="fw-semibold mb-4 h6 text-primary-light">Student Details</h1>
+          <h1 className="fw-semibold mb-4 h6 text-primary-light">학생</h1>
           <div>
             <Link to="/student/dashboard" className="text-secondary-light hover-text-primary hover-underline">
-              Dashboard{" "}
+              학생 대시보드{" "}
             </Link>
-            <span className="text-secondary-light"> / Student</span>
-            <span className="text-secondary-light"> / Student Details</span>
+            <span className="text-secondary-light">/ 학생 세부사항 </span>
           </div>
         </div>
       </div>
