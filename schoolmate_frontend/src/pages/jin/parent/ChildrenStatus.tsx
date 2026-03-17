@@ -9,6 +9,7 @@ import NeisEventsWidget from '@/components/NeisEventsWidget'
 
 interface Child {
   id: number
+  studentInfoId: number // [woo] 출결 조회용
   name: string
   grade?: number
   classNum?: number
@@ -56,6 +57,14 @@ const MEAL_TYPE_CLASS: Record<string, string> = {
 }
 
 
+// [woo] 학부모 자녀 출결 통계 타입
+interface AttendanceSummary {
+  childName: string
+  studentInfoId: number
+  statusCounts: Record<string, number>
+  totalDays: number
+}
+
 export default function ParentChildrenStatus() {
   const location = useLocation()
   const [children, setChildren] = useState<Child[]>([])
@@ -67,6 +76,8 @@ export default function ParentChildrenStatus() {
   const [meals, setMeals] = useState<Meal[]>([])
   const [timetable, setTimetable] = useState<TimetableItem[]>([])
   const [timetableLoading, setTimetableLoading] = useState(false)
+  // [woo] 출결 통계 state
+  const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceSummary>>({})
 
   useEffect(() => {
     api.get('/dashboard/parent').then(res => {
@@ -93,6 +104,19 @@ export default function ParentChildrenStatus() {
     fetch('/api/meals/daily')
       .then(r => r.ok ? r.json() : [])
       .then(setMeals).catch(() => {})
+
+    // [woo] 학부모 자녀 출결 요약 API 호출
+    const now2 = new Date()
+    const startDate = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, '0')}-01`
+    const lastDay = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).getDate()
+    const endDate = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+    api.get(`/attendance/parent/summary?startDate=${startDate}&endDate=${endDate}`)
+      .then(res => {
+        const map: Record<number, AttendanceSummary> = {}
+        ;(res.data as AttendanceSummary[]).forEach(s => { map[s.studentInfoId] = s })
+        setAttendanceMap(map)
+      })
+      .catch(() => {})
   }, [])
 
   // [woo] 선택된 자녀의 학년/반으로 NEIS 시간표 조회
@@ -164,27 +188,39 @@ export default function ParentChildrenStatus() {
                   {selectedChild.classNum && <>{selectedChild.classNum}반 </>}
                   {selectedChild.attendanceNum && <>{selectedChild.attendanceNum}번</>}
                 </p>
-                <span className="badge bg-success-600 px-16 py-6 rounded-pill fs-13 mx-auto mb-24">출석</span>
+                {/* [woo] 오늘 출결 상태 뱃지 - 출결 데이터 기반 */}
+                {(() => {
+                  const summary = attendanceMap[selectedChild.studentInfoId]
+                  const total = summary?.totalDays ?? 0
+                  if (total === 0) return <span className="badge bg-neutral-300 px-16 py-6 rounded-pill fs-13 mx-auto mb-24">미등록</span>
+                  return <span className="badge bg-success-600 px-16 py-6 rounded-pill fs-13 mx-auto mb-24">출결 {total}일 기록</span>
+                })()}
 
-                {/* [soojin] 출결 현황 서클 */}
+                {/* [woo] 출결 현황 서클 - API 연동 */}
                 <div className="border-top pt-20">
                   <h6 className="fw-bold mb-20 text-sm text-start">
                     <i className="ri-checkbox-circle-line text-success-600 me-2" />출결 현황
                   </h6>
-                  <div className="d-flex justify-content-around text-center">
-                    {[
-                      { label: '출석', color: 'bg-success-600', value: '-' },
-                      { label: '지각', color: 'bg-warning-main', value: '-' },
-                      { label: '결석', color: 'bg-danger-main', value: '-' },
-                    ].map(item => (
-                      <div key={item.label}>
-                        <div className={`w-56-px h-56-px rounded-circle ${item.color} d-flex align-items-center justify-content-center mx-auto mb-8`}>
-                          <span className="text-white fw-bold fs-18">{item.value}</span>
-                        </div>
-                        <span className="text-xs text-secondary-light">{item.label}</span>
+                  {(() => {
+                    const summary = attendanceMap[selectedChild.studentInfoId]
+                    const counts = summary?.statusCounts ?? {}
+                    return (
+                      <div className="d-flex justify-content-around text-center">
+                        {[
+                          { label: '출석', color: 'bg-success-600', key: 'PRESENT' },
+                          { label: '지각', color: 'bg-warning-main', key: 'LATE' },
+                          { label: '결석', color: 'bg-danger-main', key: 'ABSENT' },
+                        ].map(item => (
+                          <div key={item.label}>
+                            <div className={`w-56-px h-56-px rounded-circle ${item.color} d-flex align-items-center justify-content-center mx-auto mb-8`}>
+                              <span className="text-white fw-bold fs-18">{counts[item.key] ?? 0}</span>
+                            </div>
+                            <span className="text-xs text-secondary-light">{item.label}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    )
+                  })()}
                 </div>
               </div>
             </div>

@@ -362,7 +362,16 @@ export default function TeacherDashboard() {
                   <div style={{ fontSize: 16, fontWeight: 600, color: "#111827" }}>바로 가기</div>
                 </div>
                 <div className="p-16" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 12, width: "100%", flex: 1 }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gridTemplateRows: "1fr 1fr",
+                      gap: 12,
+                      width: "100%",
+                      flex: 1,
+                    }}
+                  >
                     {[
                       {
                         label: "학급 관리",
@@ -386,7 +395,7 @@ export default function TeacherDashboard() {
                         bg: "#fffbeb",
                         iconBg: "#fde68a",
                         iconColor: "#d97706",
-                        href: "/exam",
+                        href: "/homework",
                       },
                       {
                         label: "성적 관리",

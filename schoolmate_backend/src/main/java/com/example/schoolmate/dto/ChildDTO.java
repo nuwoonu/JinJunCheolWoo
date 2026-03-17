@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 public class ChildDTO {
     private Long id;
+    private Long studentInfoId; // [woo] 출결 조회용 StudentInfo.id
     private String name;
     private Integer grade; // 학년
     private Integer classNum; // 반

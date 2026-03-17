@@ -10,8 +10,8 @@ import java.util.UUID;
 @Service
 public class FileService {
 
-    // 로컬 개발 환경용 업로드 루트 경로
-    private final String uploadRoot = System.getProperty("user.dir") + "/src/main/resources/static/uploads/";
+    // [woo] 업로드 루트 경로 - src 밖 schoolmate_backend/uploads/ 사용
+    private final String uploadRoot = System.getProperty("user.dir") + "/uploads/";
 
     public String upload(MultipartFile file, String subDirectory) {
         if (file == null || file.isEmpty()) {

@@ -71,17 +71,34 @@ public class ParentDTO {
     }
 
     /**
-     * 학부모 간편 등록 요청 (현재 미사용 가능성 있음)
+     * [woo] 교사용 학부모 간편 등록 요청
+     * 교사가 본인 반 학생의 학부모를 이름 + 전화번호 + 관계만으로 등록
+     * 계정 자동 생성 (이메일: 전화번호, 비밀번호: 전화번호 뒷 4자리)
      */
     @Getter
     @Setter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class QuickRegisterRequest {
-        private Long studentUid;
+        private Long studentInfoId;      // [woo] 학생 StudentInfo ID
+        private String parentName;       // [woo] 학부모 이름
+        private String phoneNumber;      // [woo] 전화번호 (계정 아이디로도 사용)
+        private String relationship;     // [woo] FATHER, MOTHER, GRANDFATHER, GRANDMOTHER, OTHER
+    }
+
+    /**
+     * [woo] 학부모 간편 등록 결과 응답
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class QuickRegisterResponse {
+        private Long parentInfoId;
         private String parentName;
-        private String phoneNumber;
-        private String relationship; // FATHER, MOTHER 등
-        private boolean representative;
+        private String loginEmail;       // [woo] 로그인용 이메일 (전화번호)
+        private String childName;        // [woo] 연결된 자녀 이름
+        private String relationship;     // [woo] 관계
     }
 
     /**
