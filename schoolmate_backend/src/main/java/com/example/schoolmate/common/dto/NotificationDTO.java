@@ -1,6 +1,7 @@
 package com.example.schoolmate.common.dto;
 
 import com.example.schoolmate.common.entity.notification.Notification;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +31,9 @@ public class NotificationDTO {
         private String content;
         private String senderName;
         private String sentDate;
+        @JsonProperty("isRead")
         private boolean isRead;
+        private String actionUrl;
 
         public NotificationHistory(Notification n) {
             this.id = n.getId();
@@ -39,6 +42,7 @@ public class NotificationDTO {
             this.senderName = n.getSender() != null ? n.getSender().getName() : "시스템";
             this.sentDate = n.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
             this.isRead = n.isRead();
+            this.actionUrl = n.getActionUrl();
         }
     }
 }

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import api from '@/api/auth';
+import { useNavigate } from "react-router-dom";
+import api from "@/api/auth";
+import { useSchool } from "@/context/SchoolContext";
 
 interface NotificationItem {
   id: number;
@@ -8,6 +10,7 @@ interface NotificationItem {
   senderName: string;
   sentDate: string;
   isRead: boolean;
+  actionUrl?: string;
 }
 
 export default function NotificationDropdown() {
@@ -15,6 +18,8 @@ export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { setSelectedSchool } = useSchool();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -39,25 +44,60 @@ export default function NotificationDropdown() {
     return () => clearInterval(timer);
   }, [fetchUnreadCount]);
 
+  const MAX_DISPLAY = 50;
+
   useEffect(() => {
     if (!isOpen) return;
     api
       .get("/notifications")
-      .then((res) => setNotifications(Array.isArray(res.data) ? res.data : []))
+      .then((res) => {
+        const data: NotificationItem[] = Array.isArray(res.data) ? res.data : [];
+        setNotifications(data.slice(0, MAX_DISPLAY));
+      })
       .catch(() => setNotifications([]));
   }, [isOpen]);
 
-  function handleRead(id: number, alreadyRead: boolean) {
-    if (alreadyRead) return;
-    api
-      .post(`/notifications/${id}/read`)
-      .then(() => {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      })
-      .catch(() => {});
+  async function handleClick(n: NotificationItem) {
+    // 읽음 처리
+    if (!n.isRead) {
+      api
+        .post(`/notifications/${n.id}/read`)
+        .then(() => {
+          setNotifications((prev) =>
+            prev.map((item) =>
+              item.id === n.id ? { ...item, isRead: true } : item,
+            ),
+          );
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        })
+        .catch(() => {});
+    }
+
+    // actionUrl이 있으면 이동
+    if (n.actionUrl) {
+      setIsOpen(false);
+      const url = new URL(n.actionUrl, window.location.origin);
+      const schoolId = url.searchParams.get("schoolId");
+      const path = url.pathname;
+
+      if (schoolId) {
+        try {
+          const res = await api.get(`/admin/schools/${schoolId}`);
+          const s = res.data;
+          setSelectedSchool({
+            id: s.id,
+            name: s.name,
+            schoolCode: s.schoolCode,
+            schoolKind: s.schoolKind,
+            officeOfEducation: s.officeOfEducation,
+          });
+        } catch {
+          // 학교 정보 조회 실패 시 그냥 이동
+        }
+      }
+
+      navigate(path);
+    }
   }
 
   function handleDelete(e: React.MouseEvent, id: number, isRead: boolean) {
@@ -84,7 +124,21 @@ export default function NotificationDropdown() {
           className="text-primary-light text-xl"
         />
         {unreadCount > 0 && (
-          <span className="w-8-px h-8-px bg-danger-600 position-absolute end-0 top-0 rounded-circle mt-2 me-2" />
+          <span
+            className="position-absolute bg-danger-600 rounded-pill d-flex align-items-center justify-content-center text-white"
+            style={{
+              top: 1,
+              right: 1,
+              minWidth: 16,
+              height: 16,
+              fontSize: 10,
+              fontWeight: 700,
+              lineHeight: 1,
+              padding: "0 4px",
+            }}
+          >
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
         )}
       </button>
 
@@ -103,9 +157,16 @@ export default function NotificationDropdown() {
             <h6 className="text-lg text-primary-light fw-semibold mb-0">
               알림
             </h6>
-            <span className="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
-              {notifications.length}
-            </span>
+            <div className="d-flex align-items-center gap-8">
+              {unreadCount > 0 && (
+                <span className="badge bg-danger-100 text-danger-600 fw-semibold" style={{ fontSize: 12 }}>
+                  미열람 {unreadCount}
+                </span>
+              )}
+              <span className="text-primary-600 fw-semibold text-sm w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
+                전체 {notifications.length}
+              </span>
+            </div>
           </div>
 
           <div className="max-h-400-px overflow-y-auto scroll-sm pe-4">
@@ -119,11 +180,11 @@ export default function NotificationDropdown() {
                   key={n.id}
                   className="px-24 py-12 border-bottom"
                   style={{
-                    cursor: n.isRead ? "default" : "pointer",
+                    cursor: n.actionUrl || !n.isRead ? "pointer" : "default",
                     opacity: n.isRead ? 0.5 : 1,
                     transition: "opacity 0.2s",
                   }}
-                  onClick={() => handleRead(n.id, n.isRead)}
+                  onClick={() => handleClick(n)}
                 >
                   <div className="d-flex align-items-start gap-12">
                     <div className="w-36-px h-36-px rounded-circle bg-primary-100 d-flex align-items-center justify-content-center flex-shrink-0">

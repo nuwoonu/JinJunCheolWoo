@@ -80,6 +80,11 @@ public class NotificationService {
 
     // 내부 알림 생성 헬퍼 (User 객체 직접 사용, sender null = 시스템 알림)
     public void notifyUser(User sender, User receiver, String title, String content) {
+        notifyUser(sender, receiver, title, content, null);
+    }
+
+    // actionUrl 포함 버전 (클릭 시 특정 페이지로 이동)
+    public void notifyUser(User sender, User receiver, String title, String content, String actionUrl) {
         Notification n = new Notification();
         n.setSender(sender);
         n.setReceiver(receiver);
@@ -87,6 +92,7 @@ public class NotificationService {
         n.setContent(content);
         n.setRead(false);
         n.setDeleted(false);
+        n.setActionUrl(actionUrl);
         notificationRepository.save(n);
     }
 

@@ -81,9 +81,11 @@ public class UserService {
         User savedUser = userRepository.save(user);
         log.info("회원가입 완료: {}, ID: {}", savedUser.getEmail(), savedUser.getUid());
 
-        // 교사 가입 시 관리자에게 승인 요청 알림 발송
+        // 교사/학부모 가입 시 관리자에게 승인 요청 알림 발송
         if (dto.getRole() == UserRole.TEACHER) {
             notifyAdminsOfNewTeacher(savedUser);
+        } else if (dto.getRole() == UserRole.PARENT) {
+            notifyAdminsOfNewParent(savedUser);
         }
 
         return savedUser.getUid();
@@ -221,9 +223,11 @@ public class UserService {
         }
         userRepository.save(user);
 
-        // 교사 SNS 가입 시 관리자에게 승인 요청 알림 발송
+        // 교사/학부모 SNS 가입 시 관리자에게 승인 요청 알림 발송
         if (role == UserRole.TEACHER) {
             notifyAdminsOfNewTeacher(user);
+        } else if (role == UserRole.PARENT) {
+            notifyAdminsOfNewParent(user);
         }
     }
 
@@ -299,13 +303,32 @@ public class UserService {
 
     /** 교사 신규 가입 시 ADMIN 역할 보유 유저 전체에 알림 발송 */
     private void notifyAdminsOfNewTeacher(User teacher) {
+        TeacherInfo info = teacher.getInfo(TeacherInfo.class);
+        Long schoolId = (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
+        String actionUrl = "/admin/teachers" + (schoolId != null ? "?schoolId=" + schoolId : "");
+
         List<User> admins = userRepository.findAllByRole(UserRole.ADMIN);
         for (User admin : admins) {
             NotificationHelper.send(
                     teacher,
                     admin,
                     "신규 교사 가입 승인 요청",
-                    teacher.getName() + " 교사가 회원가입을 완료했습니다. 승인 처리를 해주세요."
+                    teacher.getName() + " 교사가 회원가입을 완료했습니다. 승인 처리를 해주세요.",
+                    actionUrl
+            );
+        }
+    }
+
+    /** 학부모 신규 가입 시 ADMIN 역할 보유 유저 전체에 알림 발송 */
+    private void notifyAdminsOfNewParent(User parent) {
+        List<User> admins = userRepository.findAllByRole(UserRole.ADMIN);
+        for (User admin : admins) {
+            NotificationHelper.send(
+                    parent,
+                    admin,
+                    "신규 학부모 가입 승인 요청",
+                    parent.getName() + " 학부모가 회원가입을 완료했습니다. 승인 처리를 해주세요.",
+                    "/admin/parents"
             );
         }
     }

@@ -32,15 +32,25 @@ public class NotificationHelper {
 
     /** 시스템 알림 (발신자 없음) */
     public static void send(User receiver, String title, String content) {
-        send(null, receiver, title, content);
+        send(null, receiver, title, content, null);
     }
 
     /** 발신자 지정 알림 */
     public static void send(User sender, User receiver, String title, String content) {
+        send(sender, receiver, title, content, null);
+    }
+
+    /** 클릭 시 특정 페이지로 이동하는 알림 (발신자 없음) */
+    public static void send(User receiver, String title, String content, String actionUrl) {
+        send(null, receiver, title, content, actionUrl);
+    }
+
+    /** 클릭 시 특정 페이지로 이동하는 알림 (발신자 지정) */
+    public static void send(User sender, User receiver, String title, String content, String actionUrl) {
         if (instance == null) {
             log.warn("[NotificationHelper] 아직 초기화되지 않았습니다. 알림 발송 스킵.");
             return;
         }
-        instance.notificationService.notifyUser(sender, receiver, title, content);
+        instance.notificationService.notifyUser(sender, receiver, title, content, actionUrl);
     }
 }
