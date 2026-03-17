@@ -40,7 +40,7 @@ import lombok.ToString;
  */
 @Entity
 @Table(name = "student_info", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_student_code_school", columnNames = { "code", "school_id" })
+        @UniqueConstraint(name = "uk_student_code_school", columnNames = { "code", "school_id" })
 })
 @DiscriminatorValue("STUDENT")
 @Getter
@@ -48,7 +48,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(exclude = { "assignments", "familyRelations", "currentAssignment" })
 public class StudentInfo extends SchoolMemberInfo {
-    // FK 제약조건 없음: StudentAssignment.student_info_id ↔ student_info.current_assignment_id 순환 참조 방지
+    // FK 제약조건 없음: StudentAssignment.student_info_id ↔
+    // student_info.current_assignment_id 순환 참조 방지
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "current_assignment_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private StudentAssignment currentAssignment;
