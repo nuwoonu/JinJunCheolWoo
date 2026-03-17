@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { ADMIN_ROUTES } from '../constants/routes'
+import { useAuth } from '@/contexts/AuthContext'
+import { ADMIN_ROUTES } from '@/constants/routes'
 
 const roleRedirects: Record<string, string> = {
   ADMIN: ADMIN_ROUTES.SCHOOL_SELECT,

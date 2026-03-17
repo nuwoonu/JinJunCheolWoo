@@ -1,7 +1,7 @@
 // [Joon] 2026-03-13 기능, 디자인 부분 1차 수정 완료
 import { useEffect, useRef, useState } from "react";
-import AdminLayout from "../../../components/layout/AdminLayout";
-import admin from "../../../api/adminApi";
+import AdminLayout from '@/components/layout/admin/AdminLayout';
+import admin from '@/api/adminApi';
 
 const EVENT_TYPES = ["ACADEMIC", "HOLIDAY", "EXAM", "EVENT", "VACATION"];
 const TYPE_LABELS: Record<string, string> = {

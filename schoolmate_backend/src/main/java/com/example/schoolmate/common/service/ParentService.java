@@ -30,6 +30,7 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.notice.NotificationRepository;
+import com.example.schoolmate.common.util.NotificationHelper;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -155,8 +156,39 @@ public class ParentService {
         ParentStatus status = ParentStatus.valueOf(statusName);
         List<ParentInfo> parents = parentInfoRepository.findAllById(ids);
         for (ParentInfo parent : parents) {
+            ParentStatus prev = parent.getStatus();
             parent.setStatus(status);
+            if (parent.getUser() != null && prev != status) {
+                notifyParentStatusChanged(parent.getUser(), status);
+            }
         }
+    }
+
+    private void notifyParentStatusChanged(User parentUser, ParentStatus status) {
+        String title;
+        String content;
+        switch (status) {
+            case ACTIVE -> {
+                title = "학부모 계정 승인 완료";
+                content = "학부모 계정이 승인되어 서비스를 이용하실 수 있습니다.";
+            }
+            case INACTIVE -> {
+                title = "학부모 계정 비활성화";
+                content = "학부모 계정이 비활성화되었습니다. 문의가 있으시면 학교로 연락해주세요.";
+            }
+            case BLOCKED -> {
+                title = "학부모 계정 차단";
+                content = "학부모 계정이 차단되었습니다. 문의가 있으시면 학교로 연락해주세요.";
+            }
+            case PENDING -> {
+                title = "학부모 계정 승인대기";
+                content = "학부모 계정이 승인대기 상태로 변경되었습니다.";
+            }
+            default -> {
+                return;
+            }
+        }
+        NotificationHelper.send(parentUser, title, content);
     }
 
     /**
@@ -168,10 +200,10 @@ public class ParentService {
 
         ParentDTO.DetailResponse response = new ParentDTO.DetailResponse(parent);
 
-        // 계정이 연결되어 있다면 알림 이력 조회
+        // 계정이 연결되어 있다면 알림 이력 조회 (논리 삭제 제외)
         if (parent.getUser() != null) {
             List<Notification> notifications = notificationRepository
-                    .findByReceiverOrderByCreateDateDesc(parent.getUser());
+                    .findActiveByReceiver(parent.getUser());
             response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
         }
         return response;

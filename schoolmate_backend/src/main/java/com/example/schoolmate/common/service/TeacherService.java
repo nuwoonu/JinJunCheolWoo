@@ -40,6 +40,7 @@ import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.notice.NotificationRepository;
+import com.example.schoolmate.common.util.NotificationHelper;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
@@ -93,7 +94,7 @@ public class TeacherService {
 
         TeacherDTO.DetailResponse response = new TeacherDTO.DetailResponse(user);
 
-        List<Notification> notifications = notificationRepository.findByReceiverOrderByCreateDateDesc(user);
+        List<Notification> notifications = notificationRepository.findActiveByReceiver(user);
         response.setNotifications(notifications.stream()
                 .map(NotificationDTO.NotificationHistory::new)
                 .toList());
@@ -155,6 +156,12 @@ public class TeacherService {
             }
             TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
             info.update(request.getSubject(), request.getDepartment(), request.getPosition(), newStatus);
+
+            NotificationHelper.send(
+                    user,
+                    "교사 상태 변경 알림",
+                    "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다."
+            );
         }
     }
 
@@ -204,8 +211,14 @@ public class TeacherService {
         List<User> users = userRepository.findAllById(uids);
         for (User user : users) {
             TeacherInfo info = user.getInfo(TeacherInfo.class);
-            if (info != null)
+            if (info != null) {
                 info.setStatus(status);
+                NotificationHelper.send(
+                        user,
+                        "교사 상태 변경 알림",
+                        "귀하의 교사 상태가 '" + status.getDescription() + "'(으)로 변경되었습니다."
+                );
+            }
         }
     }
 

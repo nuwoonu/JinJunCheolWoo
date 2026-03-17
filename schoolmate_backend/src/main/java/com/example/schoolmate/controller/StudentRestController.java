@@ -54,11 +54,11 @@ public class StudentRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 학생 정보 조회 (User.uid 기준)
+    // 학생 정보 조회 (user.uid)
     // GET /api/students/{uid}
-    @GetMapping("/{id}")
-    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long id) {
-        StudentResponseDTO response = studentService.getStudentByUserUid(id);
+    @GetMapping("/{uid}")
+    public ResponseEntity<StudentResponseDTO> getStudent(@PathVariable Long uid) {
+        StudentResponseDTO response = studentService.getStudentByUserUid(uid);
         return ResponseEntity.ok(response);
     }
 
@@ -152,29 +152,29 @@ public class StudentRestController {
         return ResponseEntity.ok(students);
     }
 
-    // 학생 정보 수정
+    // 학생 정보 수정 (user.uid)
     // PUT /api/students/{uid}
     @PutMapping("/{uid}")
     public ResponseEntity<StudentResponseDTO> updateStudent(
             @PathVariable Long uid,
             @Validated @RequestBody StudentUpdateDTO updateDTO) {
-        StudentResponseDTO response = studentService.updateStudent(uid, updateDTO);
+        StudentResponseDTO response = studentService.updateStudentByUserUid(uid, updateDTO);
         return ResponseEntity.ok(response);
     }
 
     // 학생 삭제 (소프트 삭제 - status를 INACTIVE로 변경)
-    // DELETE /api/students/{uid}
-    @DeleteMapping("/{uid}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long uid) {
-        studentService.deleteStudent(uid);
+    // DELETE /api/students/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+        studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
 
     // 학생 완전 삭제 (물리적 삭제)
-    // DELETE /api/students/{uid}/permanent
-    @DeleteMapping("/{uid}/permanent")
-    public ResponseEntity<Void> permanentDeleteStudent(@PathVariable Long uid) {
-        studentService.permanentDeleteStudent(uid);
+    // DELETE /api/students/{id}/permanent
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> permanentDeleteStudent(@PathVariable Long id) {
+        studentService.permanentDeleteStudent(id);
         return ResponseEntity.noContent().build();
     }
 }

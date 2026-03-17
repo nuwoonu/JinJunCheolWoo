@@ -63,7 +63,7 @@ public class StaffService {
 
         StaffDTO.DetailResponse response = new StaffDTO.DetailResponse(user);
 
-        List<Notification> notifications = notificationRepository.findByReceiverOrderByCreateDateDesc(user);
+        List<Notification> notifications = notificationRepository.findActiveByReceiver(user);
         response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
 
         return response;

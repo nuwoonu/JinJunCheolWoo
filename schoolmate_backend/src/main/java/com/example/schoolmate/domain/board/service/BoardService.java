@@ -16,8 +16,10 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.common.util.NotificationHelper;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
@@ -37,6 +39,7 @@ public class BoardService {
     private final ClassroomRepository classroomRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
     private final SchoolRepository schoolRepository;
 
     // ========== 게시물 조회 ==========
@@ -222,6 +225,11 @@ public class BoardService {
 
         Board saved = boardRepository.save(board);
         log.info("게시물 작성 완료: {} - {} by {}", saved.getBoardType(), saved.getTitle(), writer.getName());
+
+        // 학교 전체 공지 작성 시 해당 학교 소속 교사/학생 전원에게 알림 발송
+        if (request.getBoardType() == BoardType.SCHOOL_NOTICE && schoolId != null) {
+            notifySchoolMembers(writer, schoolId, saved.getTitle());
+        }
 
         return BoardDTO.Response.fromEntity(saved);
     }
@@ -462,5 +470,26 @@ public class BoardService {
                             .orElse(false);
                 })
                 .orElse(false);
+    }
+
+    /** 학교 전체 공지 작성 시 해당 학교 소속 교사/학생 전원에게 알림 발송 (작성자 제외) */
+    private void notifySchoolMembers(User writer, Long schoolId, String noticeTitle) {
+        String title = "새 학교 공지가 등록되었습니다";
+        String content = "공지: " + noticeTitle;
+
+        teacherInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser())
+                .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
+                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+
+        staffInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser())
+                .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
+                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+
+        studentInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser())
+                .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
+                .forEach(u -> NotificationHelper.send(writer, u, title, content));
     }
 }

@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { useSidebar } from "../../contexts/SidebarContext";
-import { ADMIN_ROUTES } from "../../constants/routes";
-import api from "../../api/auth";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { ADMIN_ROUTES } from "@/constants/routes";
+import api from "@/api/auth";
 
 // [woo] 사이드바 서브메뉴 열림 상태 관리
 // CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전 + 배경색
@@ -47,10 +47,14 @@ interface StudentSidebarInfo {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  PENDING: "승인대기", ENROLLED: "재학", LEAVE_OF_ABSENCE: "휴학",
-  DROPOUT: "자퇴", EXPELLED: "제적", GRADUATED: "졸업", TRANSFERRED: "전학",
+  PENDING: "승인대기",
+  ENROLLED: "재학",
+  LEAVE_OF_ABSENCE: "휴학",
+  DROPOUT: "자퇴",
+  EXPELLED: "제적",
+  GRADUATED: "졸업",
+  TRANSFERRED: "전학",
 };
-
 
 export default function Sidebar() {
   const { user, signOut } = useAuth();
@@ -72,15 +76,21 @@ export default function Sidebar() {
 
   useEffect(() => {
     if (role === "STUDENT" && user?.authenticated) {
-      api.get("/dashboard/student").then((res) => {
-        setStudentInfo(res.data?.student ?? null);
-        setProfileImageUrl(res.data?.profileImageUrl ?? null);
-      }).catch(() => {});
+      api
+        .get("/dashboard/student")
+        .then((res) => {
+          setStudentInfo(res.data?.student ?? null);
+          setProfileImageUrl(res.data?.profileImageUrl ?? null);
+        })
+        .catch(() => {});
 
       // [woo] 출결 통계 조회
-      api.get("/attendance/my/summary").then((res) => {
-        setAttendanceCounts(res.data ?? {});
-      }).catch(() => {});
+      api
+        .get("/attendance/my/summary")
+        .then((res) => {
+          setAttendanceCounts(res.data ?? {});
+        })
+        .catch(() => {});
     }
   }, [role, user?.authenticated]);
 
@@ -152,19 +162,25 @@ export default function Sidebar() {
                       <div className="w-32-px h-32-px rounded-circle bg-success-600 d-flex align-items-center justify-content-center mx-auto mb-4">
                         <span className="text-white fw-bold text-xs">{attendanceCounts.PRESENT ?? 0}</span>
                       </div>
-                      <span style={{ fontSize: 10 }} className="text-secondary-light">출석</span>
+                      <span style={{ fontSize: 10 }} className="text-secondary-light">
+                        출석
+                      </span>
                     </div>
                     <div>
                       <div className="w-32-px h-32-px rounded-circle bg-warning-main d-flex align-items-center justify-content-center mx-auto mb-4">
                         <span className="text-white fw-bold text-xs">{attendanceCounts.LATE ?? 0}</span>
                       </div>
-                      <span style={{ fontSize: 10 }} className="text-secondary-light">지각</span>
+                      <span style={{ fontSize: 10 }} className="text-secondary-light">
+                        지각
+                      </span>
                     </div>
                     <div>
                       <div className="w-32-px h-32-px rounded-circle bg-danger-main d-flex align-items-center justify-content-center mx-auto mb-4">
                         <span className="text-white fw-bold text-xs">{attendanceCounts.ABSENT ?? 0}</span>
                       </div>
-                      <span style={{ fontSize: 10 }} className="text-secondary-light">결석</span>
+                      <span style={{ fontSize: 10 }} className="text-secondary-light">
+                        결석
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -303,6 +319,12 @@ export default function Sidebar() {
                 <li>
                   <Link to="/student/myinfo">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
+                  </Link>
+                </li>
+                {/* [cheol] 기숙사 */}
+                <li>
+                  <Link to="/student/dormitory">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
                 </li>
               </ul>
@@ -767,7 +789,6 @@ export default function Sidebar() {
               </ul>
             </li>
           )}
-
         </ul>
       </div>
     </aside>

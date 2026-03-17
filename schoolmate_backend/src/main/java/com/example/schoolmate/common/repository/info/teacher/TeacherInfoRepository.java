@@ -17,4 +17,7 @@ public interface TeacherInfoRepository extends JpaRepository<TeacherInfo, Long>,
 
     // User ID로 교사 정보 조회
     Optional<TeacherInfo> findByUserUid(Long uid);
+
+    // 학교 소속 교사 전체 조회 (공지 알림용)
+    List<TeacherInfo> findBySchoolId(Long schoolId);
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { auth } from "../../shared/auth";
-import { ADMIN_ROUTES } from "../../constants/routes";
+import { auth } from '@/shared/auth';
+import { ADMIN_ROUTES } from '@/constants/routes';
 
 // [woo] OAuth2 소셜 로그인 콜백 페이지
 // 백엔드가 리다이렉트한 URL: /oauth2/callback?accessToken=...&refreshToken=...&role=...

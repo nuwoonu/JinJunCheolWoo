@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import MiniCalendar from './MiniCalendar'
+import MiniCalendar from '@/components/MiniCalendar'
 
 // [woo] NEIS 학교일정 위젯 - 모든 대시보드에서 공용 사용
 // 이번달 + 다음달 일정 조회 → 오늘 이후 5개 표시, 목록↔캘린더 토글

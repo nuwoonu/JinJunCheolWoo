@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import api from '../../api/auth'
-import { auth } from '../../shared/auth'
+import api from '@/api/auth'
+import { auth } from '@/shared/auth'
 
 // 이메일 가입: 학교 선택 후 /register로 이동 (state에 role+schoolId 전달)
 // SNS 가입:   학교 선택 후 POST /auth/select-role → 대시보드로 이동
@@ -121,7 +121,7 @@ export default function RegisterSchoolSelect() {
 
           <div className="text-center mb-4">
             <h1 style={{ fontSize: 24, fontWeight: 700, color: '#333', marginBottom: 8 }}>
-              {source === 'email' ? '2단계 · 학교 선택' : '소속 학교를 선택해 주세요'}
+              {source === 'email' ? '학교 선택' : '소속 학교를 선택해 주세요'}
             </h1>
             <p style={{ color: '#666', fontSize: 14, margin: 0 }}>
               {roleLabels[role]} 역할로 소속될 학교를 검색하여 선택해 주세요.

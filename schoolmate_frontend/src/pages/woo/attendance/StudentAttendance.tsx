@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import api from "../../../api/auth";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
+import api from "@/api/auth";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 // [woo] /attendance/student - 학생 출결 관리 (TEACHER)
 // 담임 반 학생 목록을 보여주고, 교사가 직접 상태를 설정/변경

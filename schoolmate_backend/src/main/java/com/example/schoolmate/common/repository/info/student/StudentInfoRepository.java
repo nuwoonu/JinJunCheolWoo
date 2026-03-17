@@ -55,10 +55,10 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
 
         // [woo] 같은 학교의 승인대기 학생 조회 (교사 학급 배정용)
         @Query("SELECT s FROM StudentInfo s " +
-                "JOIN FETCH s.user " +
-                "WHERE s.school.id = :schoolId " +
-                "AND s.status = :status " +
-                "ORDER BY s.id DESC")
+                        "JOIN FETCH s.user " +
+                        "WHERE s.school.id = :schoolId " +
+                        "AND s.status = :status " +
+                        "ORDER BY s.id DESC")
         List<StudentInfo> findPendingBySchoolId(@Param("schoolId") Long schoolId,
                         @Param("status") com.example.schoolmate.common.entity.info.constant.StudentStatus status);
 
@@ -67,4 +67,7 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
                 return findPendingBySchoolId(schoolId,
                                 com.example.schoolmate.common.entity.info.constant.StudentStatus.PENDING);
         }
+
+        // 학교 소속 학생 전체 조회 (공지 알림용)
+        List<StudentInfo> findBySchoolId(Long schoolId);
 }

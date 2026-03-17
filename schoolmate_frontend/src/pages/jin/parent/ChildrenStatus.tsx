@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
-import NeisEventsWidget from '../../../components/NeisEventsWidget'
+import api from '@/api/auth'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import NeisEventsWidget from '@/components/NeisEventsWidget'
 
 // [soojin] 학부모 자녀현황 - soojin/mychildren/status.html 마이그레이션
 // 레이아웃: 상단 3컬럼(프로필+출결 | 시간표 | 학교일정) + 하단 2컬럼(가정통신문 | 급식) + 알림장

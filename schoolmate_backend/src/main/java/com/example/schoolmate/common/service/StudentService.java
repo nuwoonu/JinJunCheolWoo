@@ -370,11 +370,11 @@ public class StudentService {
     // 승철님 작업물
     // [woo 수정] 기존 코드에서 User 생성 누락 + BaseInfo.code null → DB 제약 위반 에러 수정
     // 변경사항:
-    //   1. classroomId 없으면 grade+classNum으로 학급 조회 (담임 교사 폼 지원)
-    //   2. User 계정 생성 추가 (name/email/password/STUDENT role)
-    //   3. code 자동 생성 (년도+학년+반+번호)
-    //   4. user.addInfo(student)로 양방향 연관관계 설정
-    //   5. studentInfoRepository.save() → userRepository.save(user)로 변경 (cascade)
+    // 1. classroomId 없으면 grade+classNum으로 학급 조회 (담임 교사 폼 지원)
+    // 2. User 계정 생성 추가 (name/email/password/STUDENT role)
+    // 3. code 자동 생성 (년도+학년+반+번호)
+    // 4. user.addInfo(student)로 양방향 연관관계 설정
+    // 5. studentInfoRepository.save() → userRepository.save(user)로 변경 (cascade)
     @Transactional
     public StudentResponseDTO createStudent(StudentCreateDTO createDTO) {
         // 학번 중복 체크
@@ -386,10 +386,12 @@ public class StudentService {
         Classroom classroom;
         if (createDTO.getClassroomId() != null) {
             classroom = classroomRepository.findById(createDTO.getClassroomId())
-                    .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
         } else {
             int year = java.time.LocalDate.now().getYear();
-            classroom = classroomRepository.findByYearAndGradeAndClassNum(year, createDTO.getGrade(), createDTO.getClassNum())
+            classroom = classroomRepository
+                    .findByYearAndGradeAndClassNum(year, createDTO.getGrade(), createDTO.getClassNum())
                     .orElseThrow(() -> new IllegalArgumentException(
                             createDTO.getGrade() + "학년 " + createDTO.getClassNum() + "반 학급을 찾을 수 없습니다."));
         }
@@ -435,10 +437,11 @@ public class StudentService {
     }
 
     // 승철님 작업물 - student_info.id(PK)로 조회 (edit 컨트롤러용)
+    // 안쓰는 코드
     @Transactional(readOnly = true)
-    public StudentResponseDTO getStudentByUid(Long uid) {
-        StudentInfo student = studentInfoRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+    public StudentResponseDTO getStudentById(Long id) {
+        StudentInfo student = studentInfoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + id));
         return convertToResponseDTO(student);
     }
 
@@ -492,10 +495,9 @@ public class StudentService {
 
     // 승철님 작업물
     @Transactional
-    public StudentResponseDTO updateStudent(Long uid, StudentUpdateDTO updateDTO) {
-        // [woo] user.uid(FK)로 조회 - GET과 일관성 유지 (findById는 StudentInfo.id 기준이라 user.uid와 불일치)
-        StudentInfo student = studentInfoRepository.findByUserUid(uid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + uid));
+    public StudentResponseDTO updateStudent(Long id, StudentUpdateDTO updateDTO) {
+        StudentInfo student = studentInfoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + id));
 
         // 업데이트 가능한 필드만 변경 (Dirty Checking 활용)
         if (updateDTO.getClassroomId() != null) {
@@ -523,11 +525,19 @@ public class StudentService {
         return convertToResponseDTO(student);
     }
 
+    // user.uid(FK)로 student_info 조회 후 수정 (로그인 학생 본인 수정용)
+    @Transactional
+    public StudentResponseDTO updateStudentByUserUid(Long userUid, StudentUpdateDTO updateDTO) {
+        StudentInfo student = studentInfoRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UserUID: " + userUid));
+        return updateStudent(student.getId(), updateDTO);
+    }
+
     // 승철님 작업물
     @Transactional
-    public void deleteStudent(Long uid) {
-        StudentInfo student = studentInfoRepository.findById(uid)
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid));
+    public void deleteStudent(Long id) {
+        StudentInfo student = studentInfoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + id));
 
         // 소프트 삭제 - Dirty Checking 활용
         student.setStatus(StudentStatus.DROPOUT);
@@ -535,11 +545,11 @@ public class StudentService {
 
     // 승철님 작업물
     @Transactional
-    public void permanentDeleteStudent(Long uid) {
-        if (!studentInfoRepository.existsById(uid)) {
-            throw new IllegalArgumentException("학생을 찾을 수 없습니다. UID: " + uid);
+    public void permanentDeleteStudent(Long id) {
+        if (!studentInfoRepository.existsById(id)) {
+            throw new IllegalArgumentException("학생을 찾을 수 없습니다. ID: " + id);
         }
-        studentInfoRepository.deleteById(uid);
+        studentInfoRepository.deleteById(id);
     }
 
     /**

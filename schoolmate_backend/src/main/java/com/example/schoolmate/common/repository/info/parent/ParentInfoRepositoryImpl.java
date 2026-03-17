@@ -84,7 +84,8 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
      */
     private BooleanExpression schoolFilter(QStudentInfo student) {
         Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null) return null;
+        if (schoolId == null)
+            return null;
         // [woo] 자녀가 없는 학부모도 목록에 포함되도록 OR 조건
         return student.id.isNull().or(student.school.id.eq(schoolId));
     }

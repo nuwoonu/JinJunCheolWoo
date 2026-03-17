@@ -34,5 +34,10 @@ public class Notification extends SchoolBaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User receiver; // 수신자 (학부모, 학생)
 
-    private boolean isRead; // 읽음 여부
+    private boolean isRead;    // 읽음 여부
+
+    private boolean isDeleted; // 논리 삭제 여부
+
+    @Column(length = 500)
+    private String actionUrl;  // 클릭 시 이동할 프론트엔드 경로 (null이면 단순 읽음 처리)
 }
