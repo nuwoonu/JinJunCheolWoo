@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import type { Schedule, DayKey } from "../../shared/types";
+import type { Schedule, DayKey } from '@/shared/types';
 
 // ── 타입 ─────────────────────────────────────────────────────────────────────
 

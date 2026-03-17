@@ -1,5 +1,5 @@
 import axios from "axios";
-import { auth } from "../shared/auth";
+import { auth } from '@/shared/auth';
 
 const api = axios.create({
   baseURL: "/api",

@@ -6,8 +6,8 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { type AuthUser, getMe, logout as apiLogout } from "../api/auth";
-import { auth } from "../shared/auth";
+import { type AuthUser, getMe, logout as apiLogout } from '@/api/auth';
+import { auth } from '@/shared/auth';
 
 interface AuthContextType {
   user: AuthUser | null;

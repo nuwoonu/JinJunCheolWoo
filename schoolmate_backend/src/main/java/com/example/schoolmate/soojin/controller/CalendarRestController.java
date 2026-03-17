@@ -40,4 +40,5 @@ public class CalendarRestController {
         List<TimetableItemDTO> timetable = neisCalendarService.getTodayTimetable(grade, classNum);
         return ResponseEntity.ok(timetable);
     }
+
 }

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import api from '../../api/auth'
-import { useAuth } from '../../contexts/AuthContext'
-import { auth } from '../../shared/auth'
-import { ADMIN_ROUTES } from '../../constants/routes'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import { auth } from '@/shared/auth'
+import { ADMIN_ROUTES } from '@/constants/routes'
 import '../../styles/register.css'
 
 const roleRedirects: Record<string, string> = {
@@ -139,7 +139,7 @@ export default function Register() {
             )}
           </div>
 
-          <h2 className="register-title">3단계 · 기본 정보 입력</h2>
+          <h2 className="register-title">기본 정보 입력</h2>
 
           {error && <div className="alert alert-danger">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}

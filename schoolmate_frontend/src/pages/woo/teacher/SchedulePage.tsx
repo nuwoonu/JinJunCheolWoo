@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
-import TimetableApp from '../../../components/teacher/TimetableApp'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import TimetableApp from '@/components/teacher/TimetableApp'
 
 // [woo] /teacher/schedule - 수업 일정 페이지 (TimetableApp 래퍼)
 

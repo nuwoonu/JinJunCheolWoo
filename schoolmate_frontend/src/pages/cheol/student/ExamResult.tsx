@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../../../api/auth'
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [cheol] /exam/result - 성적 결과 분석 (cheol/exam/exam-result.html 마이그레이션)
 // 과목별 점수 비교 및 통계 분석

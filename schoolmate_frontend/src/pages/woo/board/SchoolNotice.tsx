@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import api from '../../../api/auth'
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /board/school-notice - 학교 공지 목록 (Thymeleaf woo/teacher/board/school-notice/list.html 마이그레이션)
 

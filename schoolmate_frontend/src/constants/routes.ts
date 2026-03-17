@@ -2,6 +2,7 @@ const ADMIN_BASE = '/admin';
 
 export const ADMIN_ROUTES = {
   BASE: ADMIN_BASE,
+  MAIN: ADMIN_BASE,
   SCHOOL_SELECT: `${ADMIN_BASE}/school-select`,
   DASHBOARD: `${ADMIN_BASE}/dashboard`,
   STUDENTS: {

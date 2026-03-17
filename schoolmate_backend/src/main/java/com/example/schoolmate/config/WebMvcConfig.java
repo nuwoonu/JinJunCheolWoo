@@ -27,11 +27,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 registry.addResourceHandler("/upload/**")
                                 .addResourceLocations("file:" + uploadPath + "/");
 
-                // [추가] 로컬 개발 환경에서 업로드된 파일을 즉시 확인하기 위한 설정 (/uploads/**)
-                // Service에서 저장하는 경로(src/main/resources/static/uploads/)를 직접 매핑하여 지연 없이 표시
+                // [woo] 업로드 파일 제공 - src 밖 schoolmate_backend/uploads/ 매핑
                 registry.addResourceHandler("/uploads/**")
                                 .addResourceLocations(
                                                 "file:///" + System.getProperty("user.dir")
-                                                                + "/src/main/resources/static/uploads/");
+                                                                + "/uploads/");
         }
 }

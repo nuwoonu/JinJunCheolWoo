@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { useSidebar } from "../../contexts/SidebarContext";
-// [soojin] 학생 대시보드 프로필 패널용 API + 타입
-import api from "../../api/auth";
-import { ADMIN_ROUTES } from "../../constants/routes";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { ADMIN_ROUTES } from "@/constants/routes";
+import api from "@/api/auth";
 
 // [woo] 사이드바 서브메뉴 열림 상태 관리
 // CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전 + 배경색
@@ -88,6 +87,31 @@ export default function Sidebar() {
     PARENT: "학부모",
     ADMIN: "관리자",
   };
+
+  // [woo] 학생일 때 대시보드 API에서 프로필 정보 + 출결 통계 가져오기
+  const [studentInfo, setStudentInfo] = useState<StudentSidebarInfo | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (role === "STUDENT" && user?.authenticated) {
+      api
+        .get("/dashboard/student")
+        .then((res) => {
+          setStudentInfo(res.data?.student ?? null);
+          setProfileImageUrl(res.data?.profileImageUrl ?? null);
+        })
+        .catch(() => {});
+
+      // [woo] 출결 통계 조회
+      api
+        .get("/attendance/my/summary")
+        .then((res) => {
+          setAttendanceCounts(res.data ?? {});
+        })
+        .catch(() => {});
+    }
+  }, [role, user?.authenticated]);
 
   const has = (...roles: string[]) => roles.includes(role);
 
@@ -305,7 +329,7 @@ export default function Sidebar() {
             <li>
               <Link to="/teacher/schedule">
                 <i className="ri-calendar-schedule-line" />
-                <span>수업 일정</span>
+                <span>나의 수업 일정</span>
               </Link>
             </li>
           )}
@@ -335,6 +359,12 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
                   </Link>
                 </li>
+                {/* [cheol] 기숙사 */}
+                <li>
+                  <Link to="/student/dormitory">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
+                  </Link>
+                </li>
               </ul>
             </li>
           )}
@@ -361,6 +391,12 @@ export default function Sidebar() {
                 <li>
                   <Link to="/parent/dashboard">
                     <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                  </Link>
+                </li>
+                {/* [woo] 학부모 자녀 과제 조회 */}
+                <li>
+                  <Link to="/parent/homework">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 과제 현황
                   </Link>
                 </li>
               </ul>
@@ -404,6 +440,16 @@ export default function Sidebar() {
                 <span>학부모</span>
               </a>
               <ul className="sidebar-submenu">
+                <li>
+                  <Link to="/board/parent-notice">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 공지
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/board/parent">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 게시판
+                  </Link>
+                </li>
                 <li>
                   <Link to="/teacher/parent/list">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학부모 목록
@@ -611,7 +657,50 @@ export default function Sidebar() {
             </li>
           )}
 
-          {/* 과제 - STUDENT, TEACHER, ADMIN */}
+          {/* [woo] 과제/퀴즈 - STUDENT, TEACHER, ADMIN */}
+          {has("STUDENT", "TEACHER", "ADMIN") && (
+            <li className={dc(open.homework)}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggle("homework");
+                }}
+              >
+                <i className="ri-draft-line" />
+                <span>과제 / 퀴즈</span>
+              </a>
+              <ul className="sidebar-submenu">
+                {/* [woo] 과제 출제 - 교사/관리자만 표시 */}
+                {has("TEACHER", "ADMIN") && (
+                  <li>
+                    <Link to="/homework/create">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 과제 출제
+                    </Link>
+                  </li>
+                )}
+                <li>
+                  <Link to="/homework">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 과제 목록
+                  </Link>
+                </li>
+                {has("TEACHER", "ADMIN") && (
+                  <li>
+                    <Link to="/quiz/create">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 퀴즈 출제
+                    </Link>
+                  </li>
+                )}
+                <li>
+                  <Link to="/homework?tab=quiz">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 퀴즈 목록
+                  </Link>
+                </li>
+              </ul>
+            </li>
+          )}
+
+          {/* [cheol] 시험/성적 - STUDENT, TEACHER, ADMIN */}
           {has("STUDENT", "TEACHER", "ADMIN") && (
             <li className={dc(open.exam)}>
               <a
@@ -621,8 +710,8 @@ export default function Sidebar() {
                   toggle("exam");
                 }}
               >
-                <i className="ri-file-edit-line" />
-                <span>과제</span>
+                <i className="ri-survey-line" />
+                <span>시험/성적</span>
               </a>
               <ul className="sidebar-submenu">
                 {/* [cheol] 성적/시험 관련 React 페이지 */}
@@ -733,34 +822,6 @@ export default function Sidebar() {
                 <li>
                   <Link to="/consultation/reservation">
                     <i className="ri-circle-fill circle-icon w-auto" /> 상담 신청
-                  </Link>
-                </li>
-              </ul>
-            </li>
-          )}
-
-          {/* 학부모 게시판 - PARENT, TEACHER, ADMIN */}
-          {has("PARENT", "TEACHER", "ADMIN") && (
-            <li className={dc(open.parentBoard)}>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggle("parentBoard");
-                }}
-              >
-                <i className="ri-edit-box-line" />
-                <span>학부모 게시판</span>
-              </a>
-              <ul className="sidebar-submenu">
-                <li>
-                  <Link to="/board/parent-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 공지
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/board/parent">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 게시판
                   </Link>
                 </li>
               </ul>

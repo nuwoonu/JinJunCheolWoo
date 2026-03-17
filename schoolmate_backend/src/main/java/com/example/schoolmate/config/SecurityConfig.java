@@ -2,7 +2,7 @@ package com.example.schoolmate.config;
 
 import com.example.schoolmate.common.service.CustomOAuth2UserService;
 import com.example.schoolmate.config.jwt.JwtAuthFilter;
-import com.example.schoolmate.domain.log.service.LogService;
+import com.example.schoolmate.common.util.LogHelper;
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
 
@@ -34,7 +34,6 @@ public class SecurityConfig {
 
         private final CustomOAuth2UserService customOAuth2UserService;
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-        private final LogService logService; // [woo] 접속 로그 서비스 주입
         private final JwtAuthFilter jwtAuthFilter;
         @Qualifier("corsConfigurationSource")
         private final CorsConfigurationSource corsConfigurationSource;
@@ -102,6 +101,33 @@ public class SecurityConfig {
                                                 // 학부모 전용
                                                 .requestMatchers("/api/parent/dashboard", "/api/parent/children/**")
                                                 .hasRole("PARENT")
+                                                // [woo] 과제 API - 교사/학생/학부모 역할별 접근 (세부 권한은 Service에서 처리)
+                                                .requestMatchers("/api/homework/teacher/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                .requestMatchers("/api/homework/student/**")
+                                                .hasAnyRole("STUDENT", "ADMIN")
+                                                .requestMatchers("/api/homework/parent/**")
+                                                .hasAnyRole("PARENT", "ADMIN")
+                                                .requestMatchers("/api/homework/**")
+                                                .hasAnyRole("TEACHER", "STUDENT", "PARENT", "ADMIN")
+                                                // [woo] 퀴즈 API - 역할별 접근
+                                                .requestMatchers("/api/quiz/teacher/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                .requestMatchers("/api/quiz/student/**")
+                                                .hasAnyRole("STUDENT", "ADMIN")
+                                                // [woo] 학부모: 자녀 퀴즈 조회 허용
+                                                .requestMatchers("/api/quiz/parent/**")
+                                                .hasAnyRole("PARENT", "ADMIN")
+                                                .requestMatchers("/api/quiz/**")
+                                                .hasAnyRole("TEACHER", "STUDENT", "ADMIN")
+                                                // [woo] 출결 API - 역할별 접근
+                                                .requestMatchers("/api/attendance/student/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                // [woo] 교사 출근관리 - 관리자 전용
+                                                .requestMatchers("/api/attendance/teacher/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers("/api/attendance/parent/**")
+                                                .hasAnyRole("PARENT", "ADMIN")
                                                 // 나머지 모든 요청은 인증 필요
                                                 .anyRequest().authenticated())
                                 // [woo] OAuth2 소셜 로그인 (성공 시 JWT 발급)
@@ -113,7 +139,7 @@ public class SecurityConfig {
                                                                 .userService(customOAuth2UserService))
                                                 .successHandler((request, response, authentication) -> {
                                                         // [woo] OAuth2 로그인 성공 시 로그 기록 (backup 코드 기능 복구)
-                                                        logService.logAccess(authentication.getName(),
+                                                        LogHelper.access(authentication.getName(),
                                                                         getClientIp(request),
                                                                         request.getHeader("User-Agent"),
                                                                         "LOGIN");

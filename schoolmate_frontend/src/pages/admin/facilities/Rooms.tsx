@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import AdminLayout from "../../../components/layout/AdminLayout";
-import admin from "../../../api/adminApi";
+import AdminLayout from '@/components/layout/admin/AdminLayout';
+import admin from '@/api/adminApi';
 
 // FacilityType enum values
 const FACILITY_TYPES = [

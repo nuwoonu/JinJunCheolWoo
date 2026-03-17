@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
-import MiniCalendar from '../../../components/MiniCalendar'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import MiniCalendar from '@/components/MiniCalendar'
 
 // [cheol] /exam/schedule - 시험 일정 (cheol/exam/exam-schedule.html 마이그레이션)
 // 학사 일정 중 EXAM 타입 이벤트 표시 + 미니 캘린더

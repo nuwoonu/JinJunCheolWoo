@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
+import com.example.schoolmate.cheol.entity.Dormitory;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;

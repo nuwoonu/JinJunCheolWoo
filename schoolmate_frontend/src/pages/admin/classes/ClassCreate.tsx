@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminLayout from "../../../components/layout/AdminLayout";
-import admin from "../../../api/adminApi";
-import { ADMIN_ROUTES } from "../../../constants/routes";
+import AdminLayout from '@/components/layout/admin/AdminLayout';
+import admin from '@/api/adminApi';
+import { ADMIN_ROUTES } from '@/constants/routes';
 
 export default function ClassCreate() {
   const navigate = useNavigate();

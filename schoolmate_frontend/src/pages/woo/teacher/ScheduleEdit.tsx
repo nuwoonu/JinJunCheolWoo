@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /teacher/schedule/edit/:id - 수업 일정 수정 (TimetableApp에서 링크)
 
