@@ -35,6 +35,9 @@ public class StudentResponseDTO {
 
     private Integer classNum;
 
+    // [soojin] 학생 대시보드에서 반 관련 위젯(공지, 게시판, 학급 목표 등)에 classroomId가 필요하여 추가
+    private Long classroomId;
+
     private String fullStudentNumber; // "1-3-05" 형식
 
     private String studentCode; // 고유 학번
@@ -153,7 +156,9 @@ public class StudentResponseDTO {
 
         if (assignment != null && assignment.getClassroom() != null) {
             builder.year(assignment.getClassroom().getGrade())
-                    .classNum(assignment.getClassroom().getClassNum());
+                    .classNum(assignment.getClassroom().getClassNum())
+                    // [soojin] 프론트 대시보드 위젯에서 classroomId를 사용하므로 cid 매핑 추가
+                    .classroomId(assignment.getClassroom().getCid());
         }
         // 의료 정보 매핑 (가장 최근 기록)
         if (student.getMedicalDetails() != null && !student.getMedicalDetails().isEmpty()) {

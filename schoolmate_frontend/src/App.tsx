@@ -13,7 +13,8 @@ import RegisterSchoolSelect from "./pages/auth/RegisterSchoolSelect";
 import Main from "./pages/Main";
 import UserProfile from "./pages/user/Profile";
 // [cheol] 학생 관련
-import StudentDashboard from "./pages/cheol/student/Dashboard";
+// [soojin] StudentDashboard: cheol → jin/student/StudentDashboard 로 라우트 교체 (기존 파일 보존)
+import StudentDashboard from "./pages/jin/student/StudentDashboard";
 import StudentList from "./pages/cheol/student/StudentList";
 import StudentMyInfo from "./pages/cheol/student/MyInfo";
 import StudentGrades from "./pages/cheol/student/Grades";
