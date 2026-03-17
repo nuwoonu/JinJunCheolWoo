@@ -4,7 +4,7 @@
 // - 재발급 실패 시 로그인 페이지로 이동
 
 import axios from 'axios'
-import { auth } from './auth'
+import { auth } from '@/shared/auth'
 
 const api = axios.create({
   baseURL: '/',

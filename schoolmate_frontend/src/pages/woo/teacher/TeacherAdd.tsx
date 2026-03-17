@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /teacher/add - 선생님 추가 (ADMIN 전용)
 

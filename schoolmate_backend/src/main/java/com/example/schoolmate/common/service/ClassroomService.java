@@ -30,7 +30,7 @@ import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.config.school.SchoolContextHolder;
-import com.example.schoolmate.domain.log.service.LogService;
+import com.example.schoolmate.common.util.LogHelper;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -47,14 +47,13 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Transactional
 @Log4j2
-public class ClassService {
+public class ClassroomService {
 
     private final ClassroomRepository classroomRepository;
     private final UserRepository userRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final SchoolRepository schoolRepository;
-    private final LogService logService;
 
     @Transactional(readOnly = true)
     public Page<ClassDTO.DetailResponse> getClassList(ClassDTO.SearchCondition cond, Pageable pageable) {
@@ -96,7 +95,7 @@ public class ClassService {
         response.setStudents(studentSummaries);
 
         // 이력 조회
-        response.setHistories(logService.getClassroomHistory(cid).stream().map(ClassDTO.HistoryResponse::from).toList());
+        response.setHistories(LogHelper.getClassroomHistory(cid).stream().map(ClassDTO.HistoryResponse::from).toList());
 
         return response;
     }
@@ -493,7 +492,7 @@ public class ClassService {
     // --- History Log ---
     private void logChange(Long cid, String action, String desc) {
         String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
-        logService.logClassroomChange(cid, adminName, action, desc);
+        LogHelper.classroom(cid, adminName, action, desc);
     }
 
     // --- Roster Export ---

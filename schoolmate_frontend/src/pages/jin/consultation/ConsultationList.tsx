@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
-import api from "../../../api/auth";
-import { useAuth } from "../../../contexts/AuthContext";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
+import api from '@/api/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   TIME_SLOTS,
   TIME_MAP,
@@ -13,7 +13,7 @@ import {
   addDays,
   fmt,
   fmtDisplay,
-} from "./consultationUtils";
+} from '@/pages/jin/consultation/consultationUtils';
 
 // [soojin] 상담 예약 확인 - PARENT: 내 예약 목록, TEACHER: 전체 예약 관리 (일정 조정 + 확정) + 상담 일정 캘린더
 

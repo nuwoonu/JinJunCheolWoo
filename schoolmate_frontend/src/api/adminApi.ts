@@ -1,6 +1,6 @@
 // [joon] 관리자 API - /api/admin/* 호출 (vite proxy: /api → 8080)
 import axios from "axios";
-import { auth } from "../shared/auth";
+import { auth } from '@/shared/auth';
 
 const BASE = "/api/admin";
 

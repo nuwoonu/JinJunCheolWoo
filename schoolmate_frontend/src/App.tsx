@@ -1,18 +1,20 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import PrivateRoute from "./components/PrivateRoute";
-import { ADMIN_ROUTES } from "./constants/routes";
+import PrivateRoute from '@/components/PrivateRoute';
+import { ADMIN_ROUTES } from '@/constants/routes';
+import { useSchool } from '@/context/SchoolContext';
 // 공통
-import NotFound from "./pages/error/NotFound";
-import Unauthorized from "./pages/error/Unauthorized";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import OAuth2Callback from "./pages/auth/OAuth2Callback";
-import SelectRole from "./pages/auth/SelectRole";
-import SelectInfo from "./pages/auth/SelectInfo";
-import RegisterSchoolSelect from "./pages/auth/RegisterSchoolSelect";
-import Main from "./pages/Main";
-import UserProfile from "./pages/user/Profile";
+import NotFound from '@/pages/error/NotFound';
+import Unauthorized from '@/pages/error/Unauthorized';
+import Login from '@/pages/auth/Login';
+import Register from '@/pages/auth/Register';
+import OAuth2Callback from '@/pages/auth/OAuth2Callback';
+import SelectRole from '@/pages/auth/SelectRole';
+import SelectInfo from '@/pages/auth/SelectInfo';
+import RegisterSchoolSelect from '@/pages/auth/RegisterSchoolSelect';
+import Main from '@/pages/Main';
+import UserProfile from '@/pages/user/Profile';
 // [cheol] 학생 관련
+<<<<<<< HEAD
 import StudentDashboard from "./pages/cheol/student/Dashboard";
 import StudentList from "./pages/cheol/student/StudentList";
 import StudentMyInfo from "./pages/cheol/student/MyInfo";
@@ -26,64 +28,82 @@ import DormitoryRoot from "./pages/cheol/dormitory/app/components/Root";
 import DormitoryBuildingList from "./pages/cheol/dormitory/app/components/BuildingList";
 import DormitoryFloorList from "./pages/cheol/dormitory/app/components/FloorList";
 import DormitoryRoomView from "./pages/cheol/dormitory/app/components/RoomView";
+=======
+import StudentDashboard from '@/pages/cheol/student/Dashboard';
+import StudentList from '@/pages/cheol/student/StudentList';
+import StudentMyInfo from '@/pages/cheol/student/MyInfo';
+import StudentGrades from '@/pages/cheol/student/Grades';
+import StudentExamSchedule from '@/pages/cheol/student/ExamSchedule';
+import StudentExamResult from '@/pages/cheol/student/ExamResult';
+import GradeBoard from '@/pages/cheol/board/GradeBoard';
+import GradeBoardDetail from '@/pages/cheol/board/GradeBoardDetail';
+>>>>>>> developMerge
 // [woo] 교사 관련
-import TeacherDashboard from "./pages/woo/teacher/Dashboard";
-import TeacherMyClass from "./pages/woo/teacher/MyClass";
-import TeacherMyClassStudents from "./pages/woo/teacher/MyClassStudents";
-import TeacherSchedulePage from "./pages/woo/teacher/SchedulePage";
-import TeacherScheduleAdd from "./pages/woo/teacher/ScheduleAdd";
-import TeacherScheduleEdit from "./pages/woo/teacher/ScheduleEdit";
-import TeacherList from "./pages/woo/teacher/TeacherList";
-import ParentList from "./pages/woo/teacher/ParentList";
+import TeacherDashboard from '@/pages/woo/teacher/Dashboard';
+import TeacherMyClass from '@/pages/woo/teacher/MyClass';
+import TeacherMyClassStudents from '@/pages/woo/teacher/MyClassStudents';
+import TeacherSchedulePage from '@/pages/woo/teacher/SchedulePage';
+import TeacherScheduleAdd from '@/pages/woo/teacher/ScheduleAdd';
+import TeacherScheduleEdit from '@/pages/woo/teacher/ScheduleEdit';
+import TeacherList from '@/pages/woo/teacher/TeacherList';
+import ParentList from '@/pages/woo/teacher/ParentList';
 // [woo] 게시판
-import SchoolNotice from "./pages/woo/board/SchoolNotice";
-import SchoolNoticeDetail from "./pages/woo/board/SchoolNoticeDetail";
-import ParentNotice from "./pages/woo/board/ParentNotice";
-import ParentNoticeDetail from "./pages/woo/board/ParentNoticeDetail";
-import ParentBoard from "./pages/woo/board/ParentBoard";
-import ParentBoardDetail from "./pages/woo/board/ParentBoardDetail";
-import TeacherBoard from "./pages/woo/board/TeacherBoard";
-import TeacherBoardDetail from "./pages/woo/board/TeacherBoardDetail";
+import SchoolNotice from '@/pages/woo/board/SchoolNotice';
+import SchoolNoticeDetail from '@/pages/woo/board/SchoolNoticeDetail';
+import ParentNotice from '@/pages/woo/board/ParentNotice';
+import ParentNoticeDetail from '@/pages/woo/board/ParentNoticeDetail';
+import ParentBoard from '@/pages/woo/board/ParentBoard';
+import ParentBoardDetail from '@/pages/woo/board/ParentBoardDetail';
+import TeacherBoard from '@/pages/woo/board/TeacherBoard';
+import TeacherBoardDetail from '@/pages/woo/board/TeacherBoardDetail';
 // [woo] 출결
-import StudentAttendance from "./pages/woo/attendance/StudentAttendance";
-import TeacherAttendance from "./pages/woo/attendance/TeacherAttendance";
+import StudentAttendance from '@/pages/woo/attendance/StudentAttendance';
+import TeacherAttendance from '@/pages/woo/attendance/TeacherAttendance';
 // [jin] 학부모 관련
-import ParentDashboard from "./pages/jin/parent/Dashboard";
-import ParentChildrenStatus from "./pages/jin/parent/ChildrenStatus";
+import ParentDashboard from '@/pages/jin/parent/Dashboard';
+import ParentChildrenStatus from '@/pages/jin/parent/ChildrenStatus';
 // [jin] 상담
-import ConsultationList from "./pages/jin/consultation/ConsultationList";
-import ConsultationReservation from "./pages/jin/consultation/ConsultationReservation";
+import ConsultationList from '@/pages/jin/consultation/ConsultationList';
+import ConsultationReservation from '@/pages/jin/consultation/ConsultationReservation';
 // [jin] 학교 일정/갤러리
-import SchoolSchedule from "./pages/jin/school/SchoolSchedule";
-import SchoolGallery from "./pages/jin/school/SchoolGallery";
+import SchoolSchedule from '@/pages/jin/school/SchoolSchedule';
+import SchoolGallery from '@/pages/jin/school/SchoolGallery';
 // [parkjoon] 관리자 페이지
-import JoonSchoolSelect from "./pages/admin/school/SchoolSelect";
-import JoonDashboard from "./pages/admin/Dashboard";
-import JoonStudentList from "./pages/admin/students/StudentList";
-import JoonStudentCreate from "./pages/admin/students/StudentCreate";
-import JoonStudentDetail from "./pages/admin/students/StudentDetail";
-import JoonTeacherList from "./pages/admin/teachers/TeacherList";
-import JoonTeacherCreate from "./pages/admin/teachers/TeacherCreate";
-import JoonTeacherDetail from "./pages/admin/teachers/TeacherDetail";
-import JoonParentList from "./pages/admin/parents/ParentList";
-import JoonParentCreate from "./pages/admin/parents/ParentCreate";
-import JoonParentDetail from "./pages/admin/parents/ParentDetail";
-import JoonStaffList from "./pages/admin/staffs/StaffList";
-import JoonStaffCreate from "./pages/admin/staffs/StaffCreate";
-import JoonStaffDetail from "./pages/admin/staffs/StaffDetail";
-import JoonClassList from "./pages/admin/classes/ClassList";
-import JoonClassCreate from "./pages/admin/classes/ClassCreate";
-import JoonClassDetail from "./pages/admin/classes/ClassDetail";
-import JoonNoticeList from "./pages/admin/notices/NoticeList";
-import JoonNoticeForm from "./pages/admin/notices/NoticeForm";
-import JoonNoticeDetail from "./pages/admin/notices/NoticeDetail";
-import JoonRooms from "./pages/admin/facilities/Rooms";
-import JoonAssets from "./pages/admin/facilities/Assets";
-import JoonSchedule from "./pages/admin/master/Schedule";
-import JoonSubjects from "./pages/admin/master/Subjects";
-import JoonSettings from "./pages/admin/master/Settings";
-import JoonAccessLogs from "./pages/admin/audit/AccessLogs";
-import JoonChangeLogs from "./pages/admin/audit/ChangeLogs";
+import JoonAdminMain from '@/pages/admin/AdminMain';
+import JoonSchoolSelect from '@/pages/admin/school/SchoolSelect';
+import JoonDashboard from '@/pages/admin/Dashboard';
+import JoonStudentList from '@/pages/admin/students/StudentList';
+import JoonStudentCreate from '@/pages/admin/students/StudentCreate';
+import JoonStudentDetail from '@/pages/admin/students/StudentDetail';
+import JoonTeacherList from '@/pages/admin/teachers/TeacherList';
+import JoonTeacherCreate from '@/pages/admin/teachers/TeacherCreate';
+import JoonTeacherDetail from '@/pages/admin/teachers/TeacherDetail';
+import JoonParentList from '@/pages/admin/parents/ParentList';
+import JoonParentCreate from '@/pages/admin/parents/ParentCreate';
+import JoonParentDetail from '@/pages/admin/parents/ParentDetail';
+import JoonStaffList from '@/pages/admin/staffs/StaffList';
+import JoonStaffCreate from '@/pages/admin/staffs/StaffCreate';
+import JoonStaffDetail from '@/pages/admin/staffs/StaffDetail';
+import JoonClassList from '@/pages/admin/classes/ClassList';
+import JoonClassCreate from '@/pages/admin/classes/ClassCreate';
+import JoonClassDetail from '@/pages/admin/classes/ClassDetail';
+import JoonNoticeList from '@/pages/admin/notices/NoticeList';
+import JoonNoticeForm from '@/pages/admin/notices/NoticeForm';
+import JoonNoticeDetail from '@/pages/admin/notices/NoticeDetail';
+import JoonRooms from '@/pages/admin/facilities/Rooms';
+import JoonAssets from '@/pages/admin/facilities/Assets';
+import JoonSchedule from '@/pages/admin/master/Schedule';
+import JoonSubjects from '@/pages/admin/master/Subjects';
+import JoonSettings from '@/pages/admin/master/Settings';
+import JoonAccessLogs from '@/pages/admin/audit/AccessLogs';
+import JoonChangeLogs from '@/pages/admin/audit/ChangeLogs';
+
+function SchoolSelectGuard() {
+  const { selectedSchool } = useSchool();
+  return selectedSchool
+    ? <Navigate to={ADMIN_ROUTES.DASHBOARD} replace />
+    : <JoonSchoolSelect />;
+}
 
 function App() {
   return (
@@ -393,10 +413,18 @@ function App() {
 
       {/* [joon] parkjoon 관리자 페이지 - /admin/... */}
       <Route
+        path={ADMIN_ROUTES.MAIN}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <JoonAdminMain />
+          </PrivateRoute>
+        }
+      />
+      <Route
         path={ADMIN_ROUTES.SCHOOL_SELECT}
         element={
           <PrivateRoute allowedRoles={["ADMIN"]}>
-            <JoonSchoolSelect />
+            <SchoolSelectGuard />
           </PrivateRoute>
         }
       />

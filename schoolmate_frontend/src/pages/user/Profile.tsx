@@ -1,6 +1,6 @@
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { Link } from 'react-router-dom'
-import DashboardLayout from '../../components/layout/DashboardLayout'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /user/profile - 내 프로필 (전체 역할 공용)
 

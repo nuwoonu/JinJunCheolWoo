@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /board/teacher - 교직원 게시판 (TEACHER, ADMIN)
 

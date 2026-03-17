@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import AdminLayout from "../../../components/layout/AdminLayout";
-import admin from "../../../api/adminApi";
+import AdminLayout from '@/components/layout/admin/AdminLayout';
+import admin from '@/api/adminApi';
 import {
   TEACHER_STATUS,
   STATUS_DEFAULT,
-} from "../../../constants/statusConfig";
-import { ADMIN_ROUTES } from "../../../constants/routes";
+} from '@/constants/statusConfig';
+import { ADMIN_ROUTES } from '@/constants/routes';
 
 export default function TeacherList() {
   const [page, setPage] = useState<any>(null);

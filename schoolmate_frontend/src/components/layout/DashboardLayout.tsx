@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react'
-import Sidebar from './Sidebar'
-import Header from './Header'
-import { SidebarProvider, useSidebar } from '../../contexts/SidebarContext'
+import Sidebar from '@/components/layout/Sidebar'
+import Header from '@/components/layout/Header'
+import { SidebarProvider, useSidebar } from '@/contexts/SidebarContext'
 
 // [woo] SidebarContext를 읽어 body/overlay에 클래스 적용하는 내부 레이아웃
 function Layout({ children }: { children: ReactNode }) {

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AdminLayout from "../../../components/layout/AdminLayout";
-import admin from "../../../api/adminApi";
+import AdminLayout from '@/components/layout/admin/AdminLayout';
+import admin from '@/api/adminApi';
 import {
   STAFF_STATUS,
   EMPLOYMENT_TYPE,
   STATUS_DEFAULT,
-} from "../../../constants/statusConfig";
-import { ADMIN_ROUTES } from "../../../constants/routes";
+} from '@/constants/statusConfig';
+import { ADMIN_ROUTES } from '@/constants/routes';
 const DEPARTMENTS = [
   "행정실",
   "시설관리실",

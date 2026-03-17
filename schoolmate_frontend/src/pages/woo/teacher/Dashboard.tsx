@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import api from "../../../api/auth";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
-import DashboardScheduleWidget from "../../../components/teacher/DashboardScheduleWidget";
-import MiniCalendar from "../../../components/MiniCalendar";
+import api from '@/api/auth';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import DashboardScheduleWidget from '@/components/teacher/DashboardScheduleWidget';
+import MiniCalendar from '@/components/MiniCalendar';
 
 interface Notice {
   title: string;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /attendance/student - 학생 출결 관리 (TEACHER, ADMIN)
 

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import api from '../../../api/auth'
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [cheol] /board/grade/:grade/:id - 학년 게시판 상세 (woo/teacher/board/grade-board/detail.html 마이그레이션)
 

@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.common.dto.ClassDTO;
-import com.example.schoolmate.common.service.ClassService;
+import com.example.schoolmate.common.service.ClassroomService;
 import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminClassApiController {
 
-    private final ClassService classService;
+    private final ClassroomService classService;
     private final SystemSettingService systemSettingService;
 
     @GetMapping

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import AdminLayout from "../../components/layout/AdminLayout";
-import admin from "../../api/adminApi";
-import { ADMIN_ROUTES } from "../../constants/routes";
-import { useSchool } from "../../context/SchoolContext";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Rectangle } from "recharts";
+import AdminLayout from "@/components/layout/admin/AdminLayout";
+import admin from "@/api/adminApi";
+import { ADMIN_ROUTES } from "@/constants/routes";
+import { useSchool } from "@/context/SchoolContext";
 
 // [joon] 관리자 대시보드
 
@@ -12,7 +12,6 @@ interface DashboardStats {
   totalStudents: number;
   totalTeachers: number;
   totalStaffs: number;
-  pendingParents: number;
 }
 
 interface SystemSettings {
@@ -160,9 +159,14 @@ function StatusBarCard({
                 color: "var(--text-primary-light)",
                 fontSize: 12,
               }}
-              formatter={(v) => [`${Number(v).toLocaleString()}${unit}`, ""]}
+              formatter={(v) => [`${Number(v ?? 0).toLocaleString()}${unit}`, ""]}
             />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]} />
+            <Bar
+              dataKey="value"
+              shape={(props: any) => (
+                <Rectangle {...props} fill={data[props.index]?.fill ?? props.fill} radius={[0, 4, 4, 0]} />
+              )}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -178,10 +182,8 @@ export default function AdminDashboard() {
     totalStudents: 0,
     totalTeachers: 0,
     totalStaffs: 0,
-    pendingParents: 0,
   });
   const [settings, setSettings] = useState<SystemSettings | null>(null);
-  const [parentCounts, setParentCounts] = useState<Record<string, number>>({});
   const [studentCounts, setStudentCounts] = useState<Record<string, number>>({});
   const [teacherCounts, setTeacherCounts] = useState<Record<string, number>>({});
   const [staffCounts, setStaffCounts] = useState<Record<string, number>>({});
@@ -202,7 +204,6 @@ export default function AdminDashboard() {
       .catch(() => {});
 
     // 각 구성원 상태별 인원 병렬 조회
-    fetchStatusCounts("parents", ["PENDING", "ACTIVE", "INACTIVE", "BLOCKED"]).then(setParentCounts);
     fetchStatusCounts("students", ["ENROLLED", "LEAVE_OF_ABSENCE", "GRADUATED", "DROPOUT"]).then(setStudentCounts);
     fetchStatusCounts("teachers", ["EMPLOYED", "PENDING", "LEAVE", "RETIRED"]).then(setTeacherCounts);
     fetchStatusCounts("staffs", ["EMPLOYED", "LEAVE", "DISPATCHED", "RETIRED"]).then(setStaffCounts);
@@ -239,18 +240,7 @@ export default function AdminDashboard() {
       .catch(() => {});
   }, [settings]);
 
-  // 학부모 total (totalElements 합산, 없으면 stats 값으로 fallback)
-  const totalParents =
-    Object.values(parentCounts).reduce((s, v) => s + v, 0) || (stats.pendingParents > 0 ? stats.pendingParents : 0);
-
   const g = (counts: Record<string, number>, key: string) => counts[key] ?? 0;
-
-  const parentChartData = [
-    { name: "활성", value: g(parentCounts, "ACTIVE"), fill: STATUS_COLOR.ACTIVE },
-    { name: "승인대기", value: g(parentCounts, "PENDING") || stats.pendingParents, fill: STATUS_COLOR.PENDING },
-    { name: "비활성", value: g(parentCounts, "INACTIVE"), fill: STATUS_COLOR.INACTIVE },
-    { name: "차단", value: g(parentCounts, "BLOCKED"), fill: STATUS_COLOR.BLOCKED },
-  ];
 
   const studentTotal = stats.totalStudents;
   const studentKnown =
@@ -308,18 +298,9 @@ export default function AdminDashboard() {
         </span>
       </div>
 
-      {/* ── 구성원 현황 차트 4개 ── */}
+      {/* ── 구성원 현황 차트 3개 ── */}
       <div className="row g-24 mb-24">
-        <div className="col-xl-3 col-md-6">
-          <StatusBarCard
-            title="학부모 현황"
-            total={totalParents}
-            link={ADMIN_ROUTES.PARENTS.LIST}
-            data={parentChartData}
-            accentColor="#7c3aed"
-          />
-        </div>
-        <div className="col-xl-3 col-md-6">
+        <div className="col-xl-4 col-md-6">
           <StatusBarCard
             title="학생 현황"
             total={stats.totalStudents}
@@ -328,7 +309,7 @@ export default function AdminDashboard() {
             accentColor="#25A194"
           />
         </div>
-        <div className="col-xl-3 col-md-6">
+        <div className="col-xl-4 col-md-6">
           <StatusBarCard
             title="교사 현황"
             total={stats.totalTeachers}
@@ -337,7 +318,7 @@ export default function AdminDashboard() {
             accentColor="#1d4ed8"
           />
         </div>
-        <div className="col-xl-3 col-md-6">
+        <div className="col-xl-4 col-md-6">
           <StatusBarCard
             title="교직원 현황"
             total={stats.totalStaffs}

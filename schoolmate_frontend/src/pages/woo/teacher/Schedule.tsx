@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /teacher/schedule - 수업 일정 페이지
 // API: GET /api/teacher/schedule, POST /api/teacher/schedule, PUT /api/teacher/schedule/{id}, DELETE /api/teacher/schedule/{id}

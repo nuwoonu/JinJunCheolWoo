@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../../../api/auth'
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [woo] /board/parent-notice - 학부모 공지 목록
 

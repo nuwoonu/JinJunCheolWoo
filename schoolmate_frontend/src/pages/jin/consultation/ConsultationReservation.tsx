@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import api from "../../../api/auth";
-import { useAuth } from "../../../contexts/AuthContext";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
+import api from '@/api/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   TIME_SLOTS,
   TIME_MAP,
@@ -12,7 +12,7 @@ import {
   addDays,
   fmt,
   fmtDisplay,
-} from "./consultationUtils";
+} from '@/pages/jin/consultation/consultationUtils';
 
 // [soojin] 상담 예약 캘린더
 // PARENT: 상담 신청 캘린더 + 폼 + 하단 예약 목록

@@ -2,7 +2,7 @@ package com.example.schoolmate.config;
 
 import com.example.schoolmate.common.service.CustomOAuth2UserService;
 import com.example.schoolmate.config.jwt.JwtAuthFilter;
-import com.example.schoolmate.domain.log.service.LogService;
+import com.example.schoolmate.common.util.LogHelper;
 import com.example.schoolmate.handler.CustomAccessDeniedHandler;
 import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
 
@@ -34,7 +34,6 @@ public class SecurityConfig {
 
         private final CustomOAuth2UserService customOAuth2UserService;
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-        private final LogService logService; // [woo] 접속 로그 서비스 주입
         private final JwtAuthFilter jwtAuthFilter;
         @Qualifier("corsConfigurationSource")
         private final CorsConfigurationSource corsConfigurationSource;
@@ -113,7 +112,7 @@ public class SecurityConfig {
                                                                 .userService(customOAuth2UserService))
                                                 .successHandler((request, response, authentication) -> {
                                                         // [woo] OAuth2 로그인 성공 시 로그 기록 (backup 코드 기능 복구)
-                                                        logService.logAccess(authentication.getName(),
+                                                        LogHelper.access(authentication.getName(),
                                                                         getClientIp(request),
                                                                         request.getHeader("User-Agent"),
                                                                         "LOGIN");

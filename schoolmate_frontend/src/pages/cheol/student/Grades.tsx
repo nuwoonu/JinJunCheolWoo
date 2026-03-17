@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../../../api/auth'
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [cheol] /exam - 성적 조회 (cheol/exam/exam.html 마이그레이션)
 // 학생 본인의 성적을 학년/학기별로 조회
