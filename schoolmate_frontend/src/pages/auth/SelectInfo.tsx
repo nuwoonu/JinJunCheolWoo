@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import api from '../../api/auth'
-import { auth } from '../../shared/auth'
+import api from '@/api/auth'
+import { auth } from '@/shared/auth'
 
 // 이메일 가입: /select-info?source=email → 역할 선택 → 학교 선택 or 폼 입력
 // SNS 가입:   /select-info?source=sns  → 역할 선택 → 학교 선택 or 가입 완료

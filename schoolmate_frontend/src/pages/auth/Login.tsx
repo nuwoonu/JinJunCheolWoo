@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import api from '../../api/auth'
-import { useAuth } from '../../contexts/AuthContext'
-import { ADMIN_ROUTES } from '../../constants/routes'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import { ADMIN_ROUTES } from '@/constants/routes'
 import '../../styles/login.css'
 
 const roleRedirects: Record<string, string> = {

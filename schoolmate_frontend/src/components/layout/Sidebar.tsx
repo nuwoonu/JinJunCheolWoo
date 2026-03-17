@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { useSidebar } from "../../contexts/SidebarContext";
-import { ADMIN_ROUTES } from "../../constants/routes";
+import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
+import { ADMIN_ROUTES } from '@/constants/routes';
 
 // [woo] 사이드바 서브메뉴 열림 상태 관리
 // CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전 + 배경색

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
-import NeisEventsWidget from '../../../components/NeisEventsWidget'
+import api from '@/api/auth'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import NeisEventsWidget from '@/components/NeisEventsWidget'
 
 // [cheol] 학생 대시보드 - cheol/student-dashboard.html 마이그레이션
 

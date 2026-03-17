@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AdminLayout from "../../../components/layout/AdminLayout";
-import admin from "../../../api/adminApi";
+import AdminLayout from '@/components/layout/admin/AdminLayout';
+import admin from '@/api/adminApi';
 import {
   TEACHER_STATUS,
   STATUS_DEFAULT,
-} from "../../../constants/statusConfig";
-import { ADMIN_ROUTES } from "../../../constants/routes";
+} from '@/constants/statusConfig';
+import { ADMIN_ROUTES } from '@/constants/routes';
 
 // [joon] 교사 상세
 const DEPARTMENTS = [

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import admin from "../../../api/adminApi";
-import { ADMIN_ROUTES } from "../../../constants/routes";
-import { useSchool, type SelectedSchool } from "../../../context/SchoolContext";
-import { useAuth } from "../../../contexts/AuthContext";
+import admin from '@/api/adminApi';
+import { ADMIN_ROUTES } from '@/constants/routes';
+import { useSchool, type SelectedSchool } from '@/context/SchoolContext';
+import { useAuth } from '@/contexts/AuthContext';
+import NotificationDropdown from '@/components/fragments/NotificationDropdown';
 
 // [joon] 관리 학교 선택 — 사이드바 없는 독립 페이지
 
@@ -210,7 +211,7 @@ export default function SchoolSelect() {
               className="text-primary-light text-xl"
             />
           </button>
-
+          <NotificationDropdown />
           <button
             className="btn btn-sm btn-outline-secondary"
             onClick={handleSync}

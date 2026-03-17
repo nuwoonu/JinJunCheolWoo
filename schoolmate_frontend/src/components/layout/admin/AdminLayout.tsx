@@ -1,10 +1,10 @@
 import { useEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AdminSidebar from './AdminSidebar'
-import AdminHeader from './AdminHeader'
-import { SidebarProvider, useSidebar } from '../../contexts/SidebarContext'
-import { useSchool } from '../../context/SchoolContext'
-import { ADMIN_ROUTES } from '../../constants/routes'
+import AdminSidebar from '@/components/layout/admin/AdminSidebar'
+import AdminHeader from '@/components/layout/admin/AdminHeader'
+import { SidebarProvider, useSidebar } from '@/contexts/SidebarContext'
+import { useSchool } from '@/context/SchoolContext'
+import { ADMIN_ROUTES } from '@/constants/routes'
 
 function Layout({ children, msg, error, requireSchool = true }: { children: ReactNode; msg?: string; error?: string; requireSchool?: boolean }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
@@ -19,10 +19,10 @@ function Layout({ children, msg, error, requireSchool = true }: { children: Reac
 
   return (
     <>
+      <AdminHeader />
       <div className={`body-overlay${isOpen ? ' show' : ''}`} onClick={closeSidebar} />
       <AdminSidebar />
-      <main className={`dashboard-main${isCollapsed ? ' active' : ''}`}>
-        <AdminHeader />
+      <main className={`dashboard-main${isCollapsed ? ' active' : ''}`} style={{ paddingTop: '4.5rem' }}>
         <div className="dashboard-main-body">
           {msg && (
             <div

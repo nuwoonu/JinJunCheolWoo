@@ -10,10 +10,10 @@ import {
   ResponsiveContainer,
   Rectangle,
 } from "recharts";
-import AdminLayout from "../../components/layout/AdminLayout";
-import admin from "../../api/adminApi";
-import { ADMIN_ROUTES } from "../../constants/routes";
-import { useSchool } from "../../context/SchoolContext";
+import AdminLayout from '@/components/layout/admin/AdminLayout';
+import admin from '@/api/adminApi';
+import { ADMIN_ROUTES } from '@/constants/routes';
+import { useSchool } from '@/context/SchoolContext';
 
 // [joon] 관리자 대시보드
 

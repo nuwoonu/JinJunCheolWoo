@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 // [soojin] /school/gallery - 학교 갤러리
 

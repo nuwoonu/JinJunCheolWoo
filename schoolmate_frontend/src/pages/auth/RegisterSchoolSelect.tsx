@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import api from '../../api/auth'
-import { auth } from '../../shared/auth'
+import api from '@/api/auth'
+import { auth } from '@/shared/auth'
 
 // 이메일 가입: 학교 선택 후 /register로 이동 (state에 role+schoolId 전달)
 // SNS 가입:   학교 선택 후 POST /auth/select-role → 대시보드로 이동

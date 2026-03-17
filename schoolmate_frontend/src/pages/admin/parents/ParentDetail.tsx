@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ParentAdminLayout from "../../../components/layout/ParentAdminLayout";
-import admin from "../../../api/adminApi";
-import { PARENT_STATUS, STATUS_DEFAULT } from "../../../constants/statusConfig";
-import { ADMIN_ROUTES } from "../../../constants/routes";
+import ParentAdminLayout from '@/components/layout/admin/ParentAdminLayout';
+import admin from '@/api/adminApi';
+import { PARENT_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
+import { ADMIN_ROUTES } from '@/constants/routes';
 
 export default function ParentDetail() {
   const { id } = useParams<{ id: string }>();

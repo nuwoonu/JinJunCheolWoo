@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import api from "../../../api/auth";
-import { useAuth } from "../../../contexts/AuthContext";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
+import api from '@/api/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 // [cheol] /board/grade
 

@@ -1,0 +1,78 @@
+import { type ReactNode } from "react";
+import AdminTopBar from '@/components/layout/admin/AdminTopBar';
+import { ADMIN_ROUTES } from '@/constants/routes';
+
+interface ParentAdminLayoutProps {
+  children: ReactNode;
+  msg?: string;
+  error?: string;
+}
+
+const SCHOOL_QUICK_LINK = {
+  to: ADMIN_ROUTES.DASHBOARD,
+  icon: "ri-building-2-line",
+  label: "학교 관리",
+};
+
+export default function ParentAdminLayout({ children, msg, error }: ParentAdminLayoutProps) {
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--body-bg, #f8fafc)" }}>
+      <AdminTopBar
+        position="sticky"
+        sectionBadge="학부모 관리"
+        quickLink={SCHOOL_QUICK_LINK}
+      />
+
+      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+        {msg && (
+          <div
+            className="alert alert-dismissible mb-24 px-20 py-12 radius-8"
+            role="alert"
+            style={{
+              background: "rgba(16,185,129,0.1)",
+              border: "1px solid rgba(16,185,129,0.3)",
+              color: "var(--text-primary-light)",
+            }}
+          >
+            {msg}
+            <button
+              type="button"
+              className="btn-close"
+              onClick={(e) => (e.currentTarget.closest(".alert") as HTMLElement)?.remove()}
+            />
+          </div>
+        )}
+        {error && (
+          <div
+            className="alert alert-dismissible mb-24 px-20 py-12 radius-8"
+            role="alert"
+            style={{
+              background: "rgba(239,68,68,0.1)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              color: "#dc2626",
+            }}
+          >
+            {error}
+            <button
+              type="button"
+              className="btn-close"
+              onClick={(e) => (e.currentTarget.closest(".alert") as HTMLElement)?.remove()}
+            />
+          </div>
+        )}
+        {children}
+      </main>
+
+      <footer
+        style={{
+          textAlign: "center",
+          padding: "24px",
+          color: "var(--text-secondary-light)",
+          fontSize: 12,
+        }}
+      >
+        Copyright 2026 SchoolMate. All Rights Reserved.
+      </footer>
+    </div>
+  );
+}

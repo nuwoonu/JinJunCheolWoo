@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import api from '../../api/auth'
-import { useAuth } from '../../contexts/AuthContext'
-import { auth } from '../../shared/auth'
-import { ADMIN_ROUTES } from '../../constants/routes'
+import api from '@/api/auth'
+import { useAuth } from '@/contexts/AuthContext'
+import { auth } from '@/shared/auth'
+import { ADMIN_ROUTES } from '@/constants/routes'
 import '../../styles/register.css'
 
 const roleRedirects: Record<string, string> = {

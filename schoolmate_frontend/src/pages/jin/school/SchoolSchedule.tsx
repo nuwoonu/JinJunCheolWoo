@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
-import MiniCalendar from '../../../components/MiniCalendar'
-import NeisEventsWidget from '../../../components/NeisEventsWidget'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import MiniCalendar from '@/components/MiniCalendar'
+import NeisEventsWidget from '@/components/NeisEventsWidget'
 
 // [soojin] /school/schedule - 학교 일정 (NEIS 연동 캘린더)
 

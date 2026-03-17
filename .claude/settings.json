@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"from ''\\\\.\\\\.\" \"c:/git/JinJunCheolWoo/schoolmate_frontend/src/components/layout/admin/AdminTopBar.tsx\")",
+      "Bash(grep -r \"from ''\\\\.\\\\.\" \"c:/git/JinJunCheolWoo/schoolmate_frontend/src/components/layout/admin/AdminSidebar.tsx\")",
+      "Bash(python3:*)",
+      "Bash(node -e \":*)",
+      "Bash(node fix-imports.mjs)"
+    ]
+  }
+}
