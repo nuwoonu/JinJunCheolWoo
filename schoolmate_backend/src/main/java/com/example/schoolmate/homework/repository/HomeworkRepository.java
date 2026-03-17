@@ -31,4 +31,5 @@ public interface HomeworkRepository extends JpaRepository<Homework, Long> {
     // [woo] 특정 학생의 학급에 해당하는 과제 목록 (학부모 조회용)
     @Query("SELECT h FROM Homework h WHERE h.classroom.cid = :classroomId AND h.isDeleted = false ORDER BY h.createDate DESC")
     List<Homework> findAllByClassroomId(@Param("classroomId") Long classroomId);
+
 }

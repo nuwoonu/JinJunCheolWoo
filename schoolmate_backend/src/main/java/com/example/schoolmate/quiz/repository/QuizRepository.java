@@ -25,4 +25,5 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     // [woo] 학급별 퀴즈 전체 (학부모용)
     @Query("SELECT q FROM Quiz q WHERE q.classroom.cid = :classroomId AND q.isDeleted = false ORDER BY q.createDate DESC")
     List<Quiz> findAllByClassroomId(@Param("classroomId") Long classroomId);
+
 }

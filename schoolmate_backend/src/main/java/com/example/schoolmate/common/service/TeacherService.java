@@ -660,9 +660,12 @@ public class TeacherService {
                         .build())
                 .collect(Collectors.toList());
 
+        // [woo] 담임 이름: homeroomTeacher(TeacherInfo) 우선, 없으면 teacher(User) fallback
         String homeroomName = null;
         if (classroom.getHomeroomTeacher() != null && classroom.getHomeroomTeacher().getUser() != null) {
             homeroomName = classroom.getHomeroomTeacher().getUser().getName();
+        } else if (classroom.getTeacher() != null) {
+            homeroomName = classroom.getTeacher().getName();
         }
 
         return ClassStudentDTO.builder()

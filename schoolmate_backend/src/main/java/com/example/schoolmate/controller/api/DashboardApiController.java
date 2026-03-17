@@ -198,6 +198,7 @@ public class DashboardApiController {
 
         return ChildDTO.builder()
                 .id(user.getUid())
+                .studentInfoId(info.getId()) // [woo] 출결 조회용
                 .name(user.getName())
                 .grade(assignment != null ? assignment.getGrade() : null)
                 .classNum(assignment != null ? assignment.getClassNum() : null)

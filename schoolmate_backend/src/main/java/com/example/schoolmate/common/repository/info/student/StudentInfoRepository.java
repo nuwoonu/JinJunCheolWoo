@@ -52,4 +52,19 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
         // [woo] User UID로 학생 정보 조회 - 게시판 권한 체크 시 학생의 학급 정보 확인용
         @Query("SELECT s FROM StudentInfo s WHERE s.user.uid = :uid")
         Optional<StudentInfo> findByUserUid(@Param("uid") Long uid);
+
+        // [woo] 같은 학교의 승인대기 학생 조회 (교사 학급 배정용)
+        @Query("SELECT s FROM StudentInfo s " +
+                "JOIN FETCH s.user " +
+                "WHERE s.school.id = :schoolId " +
+                "AND s.status = :status " +
+                "ORDER BY s.id DESC")
+        List<StudentInfo> findPendingBySchoolId(@Param("schoolId") Long schoolId,
+                        @Param("status") com.example.schoolmate.common.entity.info.constant.StudentStatus status);
+
+        // [woo] 편의 메서드 - PENDING 상태만 조회
+        default List<StudentInfo> findPendingBySchoolId(Long schoolId) {
+                return findPendingBySchoolId(schoolId,
+                                com.example.schoolmate.common.entity.info.constant.StudentStatus.PENDING);
+        }
 }

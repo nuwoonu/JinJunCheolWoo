@@ -168,6 +168,7 @@ export default function HomeworkEdit() {
                 type="date"
                 className="form-control radius-8"
                 value={form.dueDate}
+                min={new Date().toISOString().slice(0, 10)}
                 onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}
               />
             </div>

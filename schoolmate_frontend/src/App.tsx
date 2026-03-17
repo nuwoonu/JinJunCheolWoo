@@ -52,6 +52,7 @@ import QuizEdit from "./pages/woo/quiz/QuizEdit";
 // [woo] 출결
 import StudentAttendance from "./pages/woo/attendance/StudentAttendance";
 import TeacherAttendance from "./pages/woo/attendance/TeacherAttendance";
+import ParentAttendance from "./pages/woo/attendance/ParentAttendance";
 // [jin] 학부모 관련
 import ParentDashboard from "./pages/jin/parent/Dashboard";
 import ParentChildrenStatus from "./pages/jin/parent/ChildrenStatus";
@@ -430,6 +431,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherAttendance />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 학부모 자녀 출결 현황 */}
+      <Route
+        path="/attendance/parent"
+        element={
+          <PrivateRoute allowedRoles={["PARENT"]}>
+            <ParentAttendance />
           </PrivateRoute>
         }
       />

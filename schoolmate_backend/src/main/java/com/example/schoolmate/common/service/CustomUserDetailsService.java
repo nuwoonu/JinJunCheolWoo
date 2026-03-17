@@ -68,6 +68,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                         dto.setStudentInfoId(studentInfo.getId()); // StudentInfo의 PK
                         dto.setStudentIdentityNum(studentInfo.getCode());
                         dto.setStudentNumber(studentInfo.getCode()); // 하위 호환
+                        // [woo] 학생 소속 학교 ID 세팅
+                        if (studentInfo.getSchool() != null) {
+                                dto.setSchoolId(studentInfo.getSchool().getId());
+                        }
 
                         StudentAssignment assignment = studentInfo.getCurrentAssignment();
                         if (assignment != null) {
@@ -85,6 +89,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                         dto.setDepartment(teacherInfo.getDepartment());
                         dto.setPosition(teacherInfo.getPosition());
                         dto.setEmployeeNumber(teacherInfo.getCode());
+                        // [woo] 교사 소속 학교 ID 세팅
+                        if (teacherInfo.getSchool() != null) {
+                                dto.setSchoolId(teacherInfo.getSchool().getId());
+                        }
                 }
 
                 // ParentInfo가 있으면 학부모 정보 추가

@@ -121,6 +121,14 @@ public class SecurityConfig {
                                                 .hasAnyRole("PARENT", "ADMIN")
                                                 .requestMatchers("/api/quiz/**")
                                                 .hasAnyRole("TEACHER", "STUDENT", "ADMIN")
+                                                // [woo] 출결 API - 역할별 접근
+                                                .requestMatchers("/api/attendance/student/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                // [woo] 교사 출근관리 - 관리자 전용
+                                                .requestMatchers("/api/attendance/teacher/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers("/api/attendance/parent/**")
+                                                .hasAnyRole("PARENT", "ADMIN")
                                                 // 나머지 모든 요청은 인증 필요
                                                 .anyRequest().authenticated())
                                 // [woo] OAuth2 소셜 로그인 (성공 시 JWT 발급)
