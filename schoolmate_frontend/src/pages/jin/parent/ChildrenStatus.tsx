@@ -87,7 +87,9 @@ export default function ParentChildrenStatus() {
       if (d.children && d.children.length > 0) {
         const fromState = (location.state as { childId?: number } | null)?.childId
         const valid = fromState && d.children.some(c => c.id === fromState)
-        setSelectedChildId(valid ? fromState : d.children[0].id)
+        const resolvedId = valid ? fromState : d.children[0].id
+        setSelectedChildId(resolvedId)
+        sessionStorage.setItem("selectedChildId", String(resolvedId))
       }
     }).catch(() => {})
 
@@ -160,7 +162,7 @@ export default function ParentChildrenStatus() {
               key={c.id}
               type="button"
               className={`btn px-24 py-10 rounded-pill fw-bold shadow-sm ${selectedChildId === c.id ? 'btn-primary' : 'btn-white text-secondary-light border border-neutral-200'}`}
-              onClick={() => setSelectedChildId(c.id)}
+              onClick={() => { setSelectedChildId(c.id); sessionStorage.setItem("selectedChildId", String(c.id)); }}
             >
               {c.name}
             </button>

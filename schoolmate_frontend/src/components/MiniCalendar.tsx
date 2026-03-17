@@ -92,7 +92,8 @@ export default function MiniCalendar() {
       {/* [woo] 날짜 + 이벤트 그리드 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
         {cells.map((day, idx) => {
-          if (day === null) return <div key={idx} style={{ minHeight: 44 }} />
+          // [soojin] minHeight 고정 → aspect-ratio: 1 로 변경 (정사각형 셀 유지)
+          if (day === null) return <div key={idx} style={{ aspectRatio: '1' }} />
 
           const ds = toDateStr(day)
           const isToday = ds === todayStr
@@ -100,7 +101,7 @@ export default function MiniCalendar() {
           const col = idx % 7
 
           return (
-            <div key={idx} style={{ minHeight: 44, padding: '2px 2px', borderRight: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0' }}>
+            <div key={idx} style={{ aspectRatio: '1', padding: '2px 2px', borderRight: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', overflow: 'hidden' }}>
               {/* 날짜 숫자 */}
               <div style={{ textAlign: 'right', paddingRight: 3 }}>
                 <span style={{

@@ -20,7 +20,7 @@ public class ReservationDTO {
         private LocalTime startTime;
         private LocalTime endTime;
         private String content;
-        private Long studentInfoId; // 자녀 선택
+        private Long studentUserUid; // 자녀 선택 (자녀의 User uid)
         private String consultationType; // "VISIT" or "PHONE"
     }
 
@@ -41,6 +41,7 @@ public class ReservationDTO {
         private String studentNumber;
         private String createDate;
         private String consultationType;
+        private Boolean isMine; // 학부모: 내 자녀의 예약 여부
     }
 
     // 교사 일정 조정 + 확정 요청

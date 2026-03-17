@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { ADMIN_ROUTES } from "@/constants/routes";
@@ -37,13 +37,14 @@ function useProfileDropdown() {
   return { isOpen, toggle: () => setIsOpen((prev) => !prev), ref };
 }
 
-// [woo] 학생 사이드바 프로필 카드용 데이터
-interface StudentSidebarInfo {
+// [soojin] 학생 대시보드 사이드바 프로필 패널용 학생 정보 타입
+interface StudentProfile {
   userName?: string;
   year?: number;
   classNum?: number;
   studentNumber?: number;
   status?: string;
+  profileImageUrl?: string;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -62,6 +63,24 @@ export default function Sidebar() {
   const { isOpen, isCollapsed, closeSidebar, toggleCollapse } = useSidebar();
   const profile = useProfileDropdown();
   const role = user?.role ?? "";
+  const location = useLocation();
+
+  // [soojin] /student/dashboard 페이지에서만 학생 프로필 패널 표시
+  // 다른 페이지(교사/학부모 대시보드 포함)에서는 표시하지 않음
+  const isStudentDashboard = location.pathname === "/student/dashboard";
+  const [studentProfile, setStudentProfile] = useState<StudentProfile | null>(null);
+
+  useEffect(() => {
+    if (!isStudentDashboard) return;
+    api
+      .get("/dashboard/student")
+      .then((res) => {
+        const s = res.data?.student;
+        const imgUrl = res.data?.profileImageUrl;
+        if (s) setStudentProfile({ ...s, profileImageUrl: imgUrl });
+      })
+      .catch(() => {});
+  }, [isStudentDashboard]);
   const ROLE_LABEL: Record<string, string> = {
     STUDENT: "학생",
     TEACHER: "선생님",
@@ -98,115 +117,69 @@ export default function Sidebar() {
 
   return (
     // [woo] isOpen → sidebar-open (모바일 슬라이드), isCollapsed → active (데스크탑 접힘)
-    <aside className={`sidebar${isOpen ? " sidebar-open" : ""}${isCollapsed ? " active" : ""}`}>
+    <aside
+      className={`sidebar${isOpen ? " sidebar-open" : ""}${isCollapsed ? " active" : ""}`}
+      style={{ display: "flex", flexDirection: "column" }}
+    >
       <button type="button" className="sidebar-close-btn" onClick={closeSidebar}>
         <iconify-icon icon="radix-icons:cross-2" />
       </button>
 
+      {/* [soojin] 사이드바 로고 + 접기 버튼 영역
+          - 펼친 상태(isCollapsed=false): 로고 + ri-contract-left-line 아이콘 표시
+          - 접힌 상태(isCollapsed=true): 로고 숨기고 ri-contract-right-line 아이콘만 표시 */}
       <div>
         <div className="sidebar-logo d-flex align-items-center justify-content-between">
-          <a href="/main">
-            <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
-            <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="173" height="40" />
-            <img src="/images/schoolmateLogo.png" alt="홈" className="logo-icon" />
-          </a>
-          {/* [woo] 데스크탑 접기 버튼 → toggleCollapse */}
+          {!isCollapsed && (
+            <a href="/main">
+              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="173" height="40" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="logo-icon" />
+            </a>
+          )}
+          {/* [soojin] 접기/펼치기 버튼 - 접힌 상태에서 아이콘 방향 전환 + 수평 중앙 정렬 */}
           <button
             type="button"
             className="text-xxl d-xl-flex d-none line-height-1 sidebar-toggle text-neutral-500"
             aria-label="Collapse Sidebar"
             onClick={toggleCollapse}
+            style={
+              isCollapsed
+                ? { left: "50%", right: "auto", top: "2.25rem", transform: "translateX(-50%) translateY(-50%)" }
+                : {}
+            }
           >
-            <i className="ri-contract-left-line" />
+            <i className={isCollapsed ? "ri-contract-right-line" : "ri-contract-left-line"} />
           </button>
         </div>
       </div>
 
-      {/* 사용자 프로필 */}
-      {user?.authenticated && (
+      {/* 사용자 프로필 드롭다운
+          [soojin] 학생 대시보드에서는 아래 프로필 패널로 대체하므로 숨김 */}
+      {!isStudentDashboard && user?.authenticated && (
         <div className="mx-16 py-12">
           {/* [woo] 프로필 드롭다운 - React state로 제어 (Bootstrap JS 불필요) */}
           <div className="dropdown profile-dropdown" ref={profile.ref}>
-            {/* [woo] 학생: 축소된 프로필 카드 / 그 외: 기존 버튼 */}
-            {role === "STUDENT" && studentInfo ? (
-              <button
-                type="button"
-                className="w-100 border-0 bg-neutral-50 radius-12 p-12 text-center"
-                onClick={profile.toggle}
-                style={{ cursor: "pointer" }}
-              >
-                {/* 프로필 아바타 (축소) */}
-                <div className="w-56-px h-56-px rounded-circle mx-auto mb-8 overflow-hidden border border-2 border-white shadow-sm">
-                  {profileImageUrl ? (
-                    <img src={profileImageUrl} alt="프로필" className="w-100 h-100" style={{ objectFit: "cover" }} />
-                  ) : (
-                    <div className="w-100 h-100 bg-primary-100 d-flex align-items-center justify-content-center">
-                      <i className="ri-user-3-line text-primary-600" style={{ fontSize: 24 }} />
-                    </div>
-                  )}
-                </div>
-                <h6 className="fw-bold mb-2 text-sm">{studentInfo.userName}</h6>
-                <p className="text-secondary-light text-xs mb-6">
-                  {studentInfo.year}학년 {studentInfo.classNum}반 {studentInfo.studentNumber}번
-                </p>
-                <span className="badge bg-success-600 px-10 py-4 rounded-pill text-xs">
-                  {STATUS_LABEL[studentInfo.status ?? ""] ?? studentInfo.status ?? "재학"}
+            <button
+              type="button"
+              className="profile-dropdown__button d-flex align-items-center justify-content-between p-10 w-100 overflow-hidden bg-neutral-50 radius-12"
+              onClick={profile.toggle}
+            >
+              <span className="d-flex align-items-start gap-10">
+                <img
+                  src="/images/thumbs/leave-request-img2.png"
+                  alt="Thumbnail"
+                  className="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
+                />
+                <span className="profile-dropdown__contents">
+                  <span className="h6 mb-0 text-md d-block text-primary-light">{user.name ?? user.email}</span>
+                  <span className="text-secondary-light text-sm mb-0 d-block">{ROLE_LABEL[role] ?? role}</span>
                 </span>
-                {/* [woo] 출결 현황 (축소) - API 연동 */}
-                <div className="border-top mt-10 pt-10">
-                  <p className="text-xs text-secondary-light mb-6">
-                    총 출석일 <span className="fw-bold text-primary-600">{attendanceCounts.totalDays ?? 0}</span>일
-                  </p>
-                  <div className="d-flex justify-content-around text-center">
-                    <div>
-                      <div className="w-32-px h-32-px rounded-circle bg-success-600 d-flex align-items-center justify-content-center mx-auto mb-4">
-                        <span className="text-white fw-bold text-xs">{attendanceCounts.PRESENT ?? 0}</span>
-                      </div>
-                      <span style={{ fontSize: 10 }} className="text-secondary-light">
-                        출석
-                      </span>
-                    </div>
-                    <div>
-                      <div className="w-32-px h-32-px rounded-circle bg-warning-main d-flex align-items-center justify-content-center mx-auto mb-4">
-                        <span className="text-white fw-bold text-xs">{attendanceCounts.LATE ?? 0}</span>
-                      </div>
-                      <span style={{ fontSize: 10 }} className="text-secondary-light">
-                        지각
-                      </span>
-                    </div>
-                    <div>
-                      <div className="w-32-px h-32-px rounded-circle bg-danger-main d-flex align-items-center justify-content-center mx-auto mb-4">
-                        <span className="text-white fw-bold text-xs">{attendanceCounts.ABSENT ?? 0}</span>
-                      </div>
-                      <span style={{ fontSize: 10 }} className="text-secondary-light">
-                        결석
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="profile-dropdown__button d-flex align-items-center justify-content-between p-10 w-100 overflow-hidden bg-neutral-50 radius-12"
-                onClick={profile.toggle}
-              >
-                <span className="d-flex align-items-start gap-10">
-                  <img
-                    src="/images/thumbs/leave-request-img2.png"
-                    alt="Thumbnail"
-                    className="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
-                  />
-                  <span className="profile-dropdown__contents">
-                    <span className="h6 mb-0 text-md d-block text-primary-light">{user.name ?? user.email}</span>
-                    <span className="text-secondary-light text-sm mb-0 d-block">{ROLE_LABEL[role] ?? role}</span>
-                  </span>
-                </span>
-                <span className="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
-                  <i className={`ri-arrow-${profile.isOpen ? "down" : "right"}-s-line`} />
-                </span>
-              </button>
-            )}
+              </span>
+              <span className="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
+                <i className={`ri-arrow-${profile.isOpen ? "down" : "right"}-s-line`} />
+              </span>
+            </button>
             <ul className={`dropdown-menu dropdown-menu-lg-end border p-12${profile.isOpen ? " show" : ""}`}>
               <li>
                 <Link
@@ -230,7 +203,72 @@ export default function Sidebar() {
         </div>
       )}
 
-      <div className="sidebar-menu-area">
+      {/* [soojin] 학생 대시보드 전용 프로필 패널
+          /student/dashboard 경로일 때만 렌더링 (다른 역할 대시보드에서는 표시 안 함) */}
+      {isStudentDashboard && studentProfile && !isCollapsed && (
+        <div className="mx-16 mt-16 mb-12 p-16 bg-neutral-50 radius-12 text-center position-relative">
+          {/* [soojin] 프로필 페이지 링크 - 패널 우측 상단
+              d-flex 없이 인라인 단일 링크로 처리 (분리된 요소처럼 보이는 현상 방지) */}
+          <Link
+            to="/user/profile"
+            className="position-absolute text-xs text-primary-600"
+            style={{ top: 10, right: 12 }}
+          >
+            <i className="ri-user-3-line me-4" />
+            프로필
+          </Link>
+          {/* 프로필 이미지 */}
+          <div className="w-120-px h-120-px rounded-circle mx-auto mb-16 overflow-hidden border border-4 border-white shadow-sm">
+            {studentProfile.profileImageUrl ? (
+              <img
+                src={studentProfile.profileImageUrl}
+                alt="프로필"
+                className="w-100 h-100"
+                style={{ objectFit: "cover" }}
+              />
+            ) : (
+              <div className="w-100 h-100 bg-primary-100 d-flex align-items-center justify-content-center">
+                <i className="ri-user-3-line text-primary-600" style={{ fontSize: 48 }} />
+              </div>
+            )}
+          </div>
+          {/* 이름 */}
+          <p className="fw-bold text-sm mb-2 text-dark">{studentProfile.userName}</p>
+          {/* 학년/반/번호 */}
+          <p className="text-xs text-secondary-light mb-8">
+            {studentProfile.year}학년 {studentProfile.classNum}반 {studentProfile.studentNumber}번
+          </p>
+          {/* 재학 배지 */}
+          <span className="badge bg-success-600 px-10 py-4 rounded-pill text-xs mb-12 d-inline-block">
+            {studentProfile.status ? (STATUS_LABEL[studentProfile.status] ?? studentProfile.status) : "재학"}
+          </span>
+          {/* 출결 현황 - 백엔드 출결 API 완성 전까지 0으로 표시 */}
+          <div className="border-top pt-20 mb-2">
+            <div className="d-flex justify-content-around text-center">
+              <div>
+                <div className="w-36-px h-36-px rounded-circle bg-success-600 d-flex align-items-center justify-content-center mx-auto mb-4">
+                  <span className="text-white fw-bold text-xs">0</span>
+                </div>
+                <span className="text-xs text-secondary-light">출석</span>
+              </div>
+              <div>
+                <div className="w-36-px h-36-px rounded-circle bg-warning-main d-flex align-items-center justify-content-center mx-auto mb-4">
+                  <span className="text-white fw-bold text-xs">0</span>
+                </div>
+                <span className="text-xs text-secondary-light">지각</span>
+              </div>
+              <div>
+                <div className="w-36-px h-36-px rounded-circle bg-danger-main d-flex align-items-center justify-content-center mx-auto mb-4">
+                  <span className="text-white fw-bold text-xs">0</span>
+                </div>
+                <span className="text-xs text-secondary-light">결석</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="sidebar-menu-area" style={{ flex: 1, height: 0, minHeight: 0 }}>
         <ul className="sidebar-menu" id="sidebar-menu">
           {/* [woo] 홈 - 역할별 대시보드로 이동 (a href로 강제 이동) */}
           {user?.authenticated &&
@@ -791,6 +829,20 @@ export default function Sidebar() {
           )}
         </ul>
       </div>
+
+      {/* 로그아웃 - 학생 대시보드에서만 사이드바 맨 하단에 표시 */}
+      {isStudentDashboard && !isCollapsed && (
+        <div className="px-16 pb-16">
+          <button
+            type="button"
+            className="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-6"
+            onClick={signOut}
+          >
+            <i className="ri-shut-down-line" />
+            <span>로그아웃</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

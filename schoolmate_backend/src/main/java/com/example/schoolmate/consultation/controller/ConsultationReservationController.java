@@ -26,21 +26,32 @@ public class ConsultationReservationController {
     private final ConsultationReservationService reservationService;
     private final UserRepository userRepository;
 
-    // 날짜 범위로 예약 조회 (캘린더 뷰)
+    // 날짜 범위로 예약 조회 (캘린더 뷰) - 교사: 담당 반만, 학부모: 자녀 반만
     @GetMapping
     public ResponseEntity<List<ReservationDTO.Response>> getByDateRange(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(reservationService.getByDateRange(startDate, endDate));
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(value = "studentUserUid", required = false) Long studentUserUid,
+            Authentication auth) {
+        Long uid = getUid(auth);
+        String role = getRole(auth);
+        // 교사만 role 체크로 판별, 나머지(학부모 등)는 studentUserUid/uid 직접 전달
+        // getRole()이 OAuth2 로그인 시 "UNKNOWN"을 반환하는 경우를 대비
+        Long teacherUid = "TEACHER".equals(role) ? uid : null;
+        Long studentUid = teacherUid == null ? studentUserUid : null;
+        Long parentUid = teacherUid == null ? uid : null;
+        return ResponseEntity.ok(reservationService.getByDateRange(startDate, endDate, teacherUid, studentUid, parentUid));
     }
 
-    // 내 예약 목록 (PARENT: 본인 예약, TEACHER: 전체 예약)
+    // 내 예약 목록 (TEACHER: 담당 반, PARENT: 선택 자녀, ADMIN: 전체)
     @GetMapping("/my")
-    public ResponseEntity<List<ReservationDTO.Response>> getMyReservations(Authentication auth) {
+    public ResponseEntity<List<ReservationDTO.Response>> getMyReservations(
+            @RequestParam(value = "studentUserUid", required = false) Long studentUserUid,
+            Authentication auth) {
         Long uid = getUid(auth);
         if (uid == null) return ResponseEntity.status(401).build();
         String role = getRole(auth);
-        return ResponseEntity.ok(reservationService.getMyReservations(uid, role));
+        return ResponseEntity.ok(reservationService.getMyReservations(uid, role, studentUserUid));
     }
 
     // 예약 생성
