@@ -45,9 +45,20 @@ import ParentBoard from "@/pages/woo/board/ParentBoard";
 import ParentBoardDetail from "@/pages/woo/board/ParentBoardDetail";
 import TeacherBoard from "@/pages/woo/board/TeacherBoard";
 import TeacherBoardDetail from "@/pages/woo/board/TeacherBoardDetail";
+// [woo] 과제
+import HomeworkList from "@/pages/woo/homework/HomeworkList";
+import HomeworkCreate from "@/pages/woo/homework/HomeworkCreate";
+import HomeworkDetail from "@/pages/woo/homework/HomeworkDetail";
+import HomeworkEdit from "@/pages/woo/homework/HomeworkEdit";
+import ParentHomework from "@/pages/woo/homework/ParentHomework";
+// [woo] 퀴즈
+import QuizCreate from "@/pages/woo/quiz/QuizCreate";
+import QuizDetail from "@/pages/woo/quiz/QuizDetail";
+import QuizEdit from "@/pages/woo/quiz/QuizEdit";
 // [woo] 출결
 import StudentAttendance from "@/pages/woo/attendance/StudentAttendance";
 import TeacherAttendance from "@/pages/woo/attendance/TeacherAttendance";
+import ParentAttendance from "@/pages/woo/attendance/ParentAttendance";
 // [jin] 학부모 관련
 import ParentDashboard from "@/pages/jin/parent/Dashboard";
 import ParentChildrenStatus from "@/pages/jin/parent/ChildrenStatus";
