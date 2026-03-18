@@ -78,13 +78,15 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
     }
 
     /**
-     * 학부모는 school_id가 없으므로, 자녀(StudentInfo)의 school로 범위를 제한합니다.
+     * [woo] 학부모는 school_id가 없으므로, 자녀(StudentInfo)의 school로 범위를 제한합니다.
      * schoolId가 null이면 전체 조회 (필터 미적용)
+     * 자녀가 없는 학부모도 포함 (student가 null이거나 school이 일치)
      */
     private BooleanExpression schoolFilter(QStudentInfo student) {
         Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null) return null;
-        // 자녀가 없는 학부모(student가 NULL)도 포함시키기 위해 isNull() 조건 추가
+        if (schoolId == null)
+            return null;
+        // [woo] 자녀가 없는 학부모도 목록에 포함되도록 OR 조건
         return student.id.isNull().or(student.school.id.eq(schoolId));
     }
 

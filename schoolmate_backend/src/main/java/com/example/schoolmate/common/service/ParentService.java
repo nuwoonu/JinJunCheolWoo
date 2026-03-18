@@ -249,6 +249,86 @@ public class ParentService {
         }
     }
 
+    /**
+     * [woo] 교사용 학부모 간편 등록
+     * 이름 + 전화번호 + 관계만으로 학부모 계정 생성 + 자녀 연결
+     * - 이메일: 전화번호 (예: 01012345678)
+     * - 비밀번호: 전화번호 뒷 4자리 (예: 5678)
+     * - 이미 같은 전화번호 계정 존재 시 자녀만 추가 연결
+     */
+    @Transactional
+    public ParentDTO.QuickRegisterResponse quickRegisterParent(ParentDTO.QuickRegisterRequest request) {
+        String phone = request.getPhoneNumber().replaceAll("[^0-9]", ""); // [woo] 숫자만 추출
+        String email = phone + "@schoolmate.kr"; // [woo] 전화번호 + 도메인으로 이메일 생성
+        String password = phone.substring(phone.length() - 4); // [woo] 뒷 4자리가 초기 비밀번호
+        FamilyRelationship relationship = FamilyRelationship.valueOf(request.getRelationship());
+
+        // [woo] 학생 정보 조회
+        StudentInfo student = studentInfoRepository.findById(request.getStudentInfoId())
+                .orElseThrow(() -> new IllegalArgumentException("학생 정보를 찾을 수 없습니다: " + request.getStudentInfoId()));
+
+        // [woo] 이미 같은 전화번호(이메일)로 등록된 계정이 있는지 확인
+        ParentInfo parentInfo;
+        if (userRepository.existsByEmail(email)) {
+            // [woo] 기존 계정 → ParentInfo 찾아서 자녀만 추가
+            User existingUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            parentInfo = existingUser.getInfos().stream()
+                    .filter(info -> info instanceof ParentInfo)
+                    .map(info -> (ParentInfo) info)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당 계정은 학부모 계정이 아닙니다."));
+
+            // [woo] 이미 같은 학생과 연결되어 있는지 확인
+            boolean alreadyLinked = parentInfo.getChildrenRelations().stream()
+                    .anyMatch(r -> r.getStudentInfo().getId().equals(student.getId()));
+            if (alreadyLinked) {
+                throw new IllegalArgumentException("이미 해당 학생과 연결된 학부모입니다.");
+            }
+        } else {
+            // [woo] 신규 계정 생성
+            User newUser = User.builder()
+                    .name(request.getParentName())
+                    .email(email)
+                    .password(passwordEncoder.encode(password))
+                    .phoneNumber(phone)
+                    .roles(new HashSet<>(Set.of(UserRole.PARENT)))
+                    .build();
+
+            parentInfo = new ParentInfo();
+            parentInfo.setParentName(request.getParentName());
+            parentInfo.setPhone(phone);
+            parentInfo.setCode("P_" + phone); // [woo] 학부모 코드: P_ + 전화번호
+            parentInfo.setStatus(ParentStatus.ACTIVE); // [woo] 교사 등록 → 즉시 활성
+            parentInfo.setUser(newUser);
+
+            newUser.getInfos().add(parentInfo);
+            userRepository.save(newUser);
+        }
+
+        // [woo] 자녀 관계 연결
+        FamilyRelation relation = new FamilyRelation();
+        relation.setParentInfo(parentInfo);
+        relation.setStudentInfo(student);
+        relation.setRelationship(relationship);
+        relation.setRepresentative(parentInfo.getChildrenRelations().isEmpty()); // [woo] 첫 자녀면 대표
+        if (student.getSchool() != null) {
+            relation.setSchool(student.getSchool());
+        }
+        parentInfo.getChildrenRelations().add(relation);
+
+        log.info("[woo] 학부모 간편 등록 완료 - parent: {}, student: {}, relation: {}",
+                request.getParentName(), student.getUser().getName(), relationship);
+
+        return new ParentDTO.QuickRegisterResponse(
+                parentInfo.getId(),
+                request.getParentName(),
+                email,
+                student.getUser().getName(),
+                relationship.getDescription()
+        );
+    }
+
     @Transactional
     public void addChild(Long parentId, Long studentUid, FamilyRelationship relationship) {
         ParentInfo parent = parentInfoRepository.findById(parentId).orElseThrow();

@@ -44,7 +44,7 @@ interface CalendarReservation {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
-  PENDING: { label: "대기중", bg: "#fff3cd", text: "#856404" },
+  PENDING: { label: "대기", bg: "#fff3cd", text: "#856404" },
   CONFIRMED: { label: "확정", bg: "#d4edda", text: "#155724" },
   CANCELLED: { label: "취소", bg: "#f8d7da", text: "#721c24" },
   COMPLETED: { label: "완료", bg: "#e2e3e5", text: "#383d41" },
@@ -82,10 +82,12 @@ export default function ConsultationList() {
   const startStr = fmt(monday);
   const endStr = fmt(addDays(monday, 4));
 
-  const fetchList = () => {
+  const fetchList = useCallback(() => {
     setLoading(true);
+    const childId = isParent ? Number(sessionStorage.getItem("selectedChildId")) || null : null;
+    const params = childId ? `?studentUserUid=${childId}` : "";
     api
-      .get("/consultation/reservations/my")
+      .get(`/consultation/reservations/my${params}`)
       .then((res) => {
         const list: ReservationItem[] = Array.isArray(res.data) ? res.data : [];
         setItems(
@@ -98,7 +100,7 @@ export default function ConsultationList() {
       })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  };
+  }, [isParent]);
 
   const fetchCalendarReservations = useCallback(() => {
     api
@@ -118,7 +120,7 @@ export default function ConsultationList() {
 
   useEffect(() => {
     fetchList();
-  }, []);
+  }, [fetchList]);
 
   useEffect(() => {
     if (!isTeacher) return;
@@ -128,6 +130,27 @@ export default function ConsultationList() {
   useEffect(() => {
     setPage(1);
   }, [filter]);
+
+  const PAGE_SIZE = 6;
+
+  // 대기중 → 확정 → 완료 → 취소 순, 같은 상태 내에서는 날짜 오름차순
+  const sorted = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const statusDiff = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
+      if (statusDiff !== 0) return statusDiff;
+      return a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime);
+    });
+  }, [items]);
+
+  const filtered = filter === "ALL" ? sorted : sorted.filter((i) => i.status === filter);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+  // 취소 등으로 아이템 수 감소 시 현재 페이지가 범위 초과하면 마지막 페이지로 이동
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [totalPages, page]);
 
   const handleCancel = async (id: number) => {
     if (!confirm("상담 일정을 취소하시겠습니까?")) return;
@@ -240,19 +263,6 @@ export default function ConsultationList() {
     return map;
   }, [calendarReservations]);
 
-  const PAGE_SIZE = 6;
-
-  // 대기중 → 확정 → 완료 → 취소 순, 같은 상태 내에서는 날짜 오름차순
-  const sorted = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const statusDiff = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
-      if (statusDiff !== 0) return statusDiff;
-      return a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime);
-    });
-  }, [items]);
-
-  const filtered = filter === "ALL" ? sorted : sorted.filter((i) => i.status === filter);
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const pagedItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const counts = {
@@ -271,7 +281,14 @@ export default function ConsultationList() {
         {/* 헤더 + 필터 */}
         <div className="d-flex align-items-center justify-content-between mb-24">
           <div className="d-flex align-items-center gap-10">
-            <h5 className="fw-bold mb-0">{isTeacher ? "상담 신청 목록" : "상담 신청 확인"}</h5>
+            <div>
+              <h5 className="fw-bold mb-0">{isTeacher ? "상담 신청 목록" : "상담 신청 확인"}</h5>
+              {isTeacher && (
+                <p className="text-sm text-secondary-light mb-0 mt-4">
+                  상담 확정 버튼을 누르면 상담 일정에 표시됩니다.
+                </p>
+              )}
+            </div>
           </div>
           <div
             className="d-flex align-items-center"
@@ -285,7 +302,7 @@ export default function ConsultationList() {
             {(
               [
                 { key: "ALL", label: "전체" },
-                { key: "PENDING", label: "대기중" },
+                { key: "PENDING", label: "대기" },
                 { key: "CONFIRMED", label: "확정" },
                 { key: "COMPLETED", label: "완료" },
                 { key: "CANCELLED", label: "취소" },
@@ -325,7 +342,7 @@ export default function ConsultationList() {
         {/* 예약 목록 */}
         {loading ? (
           <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
-        ) : pagedItems.length === 0 && filtered.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="card border-0 shadow-sm" style={{ borderRadius: 16 }}>
             <div className="card-body text-center py-48">
               <i className="ri-calendar-close-line text-neutral-300" style={{ fontSize: 48 }} />
@@ -341,7 +358,7 @@ export default function ConsultationList() {
               const dateDisplay = `${dateObj.getFullYear()}. ${dateObj.getMonth() + 1}. ${dateObj.getDate()}. (${dayLabel})`;
               const timeDisplay = `${TIME_LABEL[item.startTime] ?? item.startTime} ~ ${TIME_LABEL[item.endTime] ?? item.endTime}`;
               const nameDisplay = item.studentName
-                ? `${item.studentName}${item.studentNumber ? ` (${item.studentNumber})` : ""}`
+                ? `${item.studentName}${item.studentNumber ? ` (${item.studentNumber.replace(/^(\d+)-(\d+)-(\d+)$/, "$1학년 $2반 $3번")})` : ""}`
                 : item.writerName;
               const isPast = new Date(`${item.date}T${item.endTime}:00`) < new Date();
 
@@ -361,71 +378,69 @@ export default function ConsultationList() {
                       </div>
 
                       {/* 오른쪽 정보 */}
-                      <div
-                        className="flex-grow-1 min-width-0"
-                        style={{ position: "relative", padding: "16px 16px 16px 24px" }}
-                      >
-                        {/* 교사 액션 버튼 */}
-                        {isTeacher && item.status === "PENDING" && !isPast && (
-                          <div className="d-flex gap-6" style={{ position: "absolute", top: 12, right: 12 }}>
-                            <button
-                              className="btn btn-sm btn-outline-primary px-12 py-4"
-                              onClick={() => openAdjustModal(item)}
-                            >
-                              일정 조정
-                            </button>
-                            <button
-                              className="btn btn-sm text-white px-12 py-4"
-                              style={{ background: "#2ecc71" }}
-                              onClick={() => handleQuickConfirm(item.id)}
-                            >
-                              확정
-                            </button>
-                          </div>
-                        )}
-                        {isTeacher && item.status === "CONFIRMED" && isPast && (
-                          <div className="d-flex gap-6" style={{ position: "absolute", top: 12, right: 12 }}>
-                            <button
-                              className="btn btn-sm btn-outline-danger px-12 py-4"
-                              onClick={() => handleTeacherCancel(item.id)}
-                            >
-                              취소
-                            </button>
-                            <button
-                              className="btn btn-sm text-white px-12 py-4"
-                              style={{ background: "#6c757d" }}
-                              onClick={() => handleComplete(item.id)}
-                            >
-                              완료
-                            </button>
-                          </div>
-                        )}
-                        {isTeacher && item.status === "PENDING" && isPast && (
-                          <div className="d-flex gap-6" style={{ position: "absolute", top: 12, right: 12 }}>
-                            <button
-                              className="btn btn-sm btn-outline-danger px-12 py-4"
-                              onClick={() => handleTeacherCancel(item.id)}
-                            >
-                              취소
-                            </button>
-                          </div>
-                        )}
-
-                        <div className="d-flex align-items-center gap-8 mb-6">
-                          <span className="fw-semibold text-truncate">{nameDisplay}</span>
-                          <span
-                            className="badge px-8 py-4 rounded-pill text-xs flex-shrink-0"
-                            style={{ background: st.bg, color: st.text }}
-                          >
-                            {st.label}
-                          </span>
-                          {item.consultationType && (
+                      <div className="flex-grow-1 min-width-0" style={{ padding: "16px 16px 16px 24px" }}>
+                        {/* 이름+배지(왼쪽) / 교사 액션 버튼(오른쪽) */}
+                        <div className="d-flex align-items-start justify-content-between gap-8 mb-6">
+                          <div className="d-flex align-items-center gap-8 flex-wrap min-width-0">
+                            <span className="fw-semibold text-truncate">{nameDisplay}</span>
                             <span
                               className="badge px-8 py-4 rounded-pill text-xs flex-shrink-0"
-                              style={{ background: "#e3f2fd", color: "#1565c0" }}
+                              style={{ background: st.bg, color: st.text }}
                             >
-                              {CONSULTATION_TYPE_LABEL[item.consultationType] ?? item.consultationType}
+                              {st.label}
                             </span>
+                            {item.consultationType && (
+                              <span
+                                className="badge px-8 py-4 rounded-pill text-xs flex-shrink-0"
+                                style={{ background: "#e3f2fd", color: "#1565c0" }}
+                              >
+                                {CONSULTATION_TYPE_LABEL[item.consultationType] ?? item.consultationType}
+                              </span>
+                            )}
+                          </div>
+                          {isTeacher && item.status === "PENDING" && !isPast && (
+                            <div className="d-flex gap-6 flex-shrink-0">
+                              <button
+                                className="btn btn-sm btn-outline-primary px-12 py-4"
+                                onClick={() => openAdjustModal(item)}
+                              >
+                                일정 변경
+                              </button>
+                              <button
+                                className="btn btn-sm text-white px-12 py-4"
+                                style={{ background: "#2ecc71" }}
+                                onClick={() => handleQuickConfirm(item.id)}
+                              >
+                                확정
+                              </button>
+                            </div>
+                          )}
+                          {isTeacher && item.status === "CONFIRMED" && isPast && (
+                            <div className="d-flex gap-6 flex-shrink-0">
+                              <button
+                                className="btn btn-sm btn-outline-danger px-12 py-4"
+                                onClick={() => handleTeacherCancel(item.id)}
+                              >
+                                취소
+                              </button>
+                              <button
+                                className="btn btn-sm text-white px-12 py-4"
+                                style={{ background: "#6c757d" }}
+                                onClick={() => handleComplete(item.id)}
+                              >
+                                완료
+                              </button>
+                            </div>
+                          )}
+                          {isTeacher && item.status === "PENDING" && isPast && (
+                            <div className="d-flex gap-6 flex-shrink-0">
+                              <button
+                                className="btn btn-sm btn-outline-danger px-12 py-4"
+                                onClick={() => handleTeacherCancel(item.id)}
+                              >
+                                취소
+                              </button>
+                            </div>
                           )}
                         </div>
                         <div className="text-sm text-secondary-light mb-4">
@@ -483,14 +498,16 @@ export default function ConsultationList() {
         {/* [soojin] 교사 전용: 상담 일정 캘린더 */}
         {isTeacher && (
           <div className="mt-32">
-            <div className="d-flex align-items-center mb-16">
+            <div className="mb-16">
               <h5 className="fw-bold mb-0">상담 일정</h5>
+              <p className="text-sm text-secondary-light mb-0 mt-4">확정된 상담 클릭 시 일정 변경이 가능합니다.</p>
             </div>
 
             <div className="card" style={{ borderRadius: 16, border: "1px solid #e5e7eb", boxShadow: "none" }}>
               <div className="card-body p-24">
                 {/* 주간 네비게이션 */}
                 <div className="d-flex align-items-center justify-content-between mb-16">
+                  <div style={{ width: 80 }} />
                   <div className="d-flex align-items-center gap-8">
                     <button
                       className="btn btn-sm btn-outline-secondary px-10 py-4"
@@ -498,12 +515,15 @@ export default function ConsultationList() {
                     >
                       ‹
                     </button>
+                    <span className="fw-semibold text-lg">{rangeLabel}</span>
                     <button
                       className="btn btn-sm btn-outline-secondary px-10 py-4"
                       onClick={() => setMonday((prev) => addDays(prev, 7))}
                     >
                       ›
                     </button>
+                  </div>
+                  <div style={{ width: 80 }} className="d-flex justify-content-end">
                     <button
                       className="btn btn-sm btn-outline-secondary px-12 py-4"
                       onClick={() => setMonday(getMonday(new Date()))}
@@ -511,8 +531,6 @@ export default function ConsultationList() {
                       오늘
                     </button>
                   </div>
-                  <span className="fw-semibold text-lg">{rangeLabel}</span>
-                  <div style={{ width: 80 }} />
                 </div>
 
                 {/* 주간 그리드 */}
@@ -520,11 +538,11 @@ export default function ConsultationList() {
                   <table className="table table-bordered mb-0 text-center" style={{ tableLayout: "fixed" }}>
                     <thead>
                       <tr style={{ background: "#f8f9fa" }}>
-                        <th style={{ width: 90 }} className="py-12 text-sm fw-semibold">
+                        <th style={{ width: 90 }} className="py-12 text-sm fw-semibold text-center">
                           시간
                         </th>
                         {weekDates.map((d, i) => (
-                          <th key={i} className="py-12 text-sm fw-semibold">
+                          <th key={i} className="py-12 text-sm fw-semibold text-center">
                             {fmtDisplay(d)}
                           </th>
                         ))}
@@ -590,7 +608,7 @@ export default function ConsultationList() {
                     <span
                       style={{ width: 16, height: 16, background: "#2ecc71", borderRadius: 4, display: "inline-block" }}
                     />
-                    확정됨
+                    확정
                   </span>
                 </div>
               </div>

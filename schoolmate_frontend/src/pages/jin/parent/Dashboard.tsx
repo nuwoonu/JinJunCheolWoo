@@ -221,6 +221,7 @@ export default function ParentDashboard() {
                       key={child.id}
                       to="/parent/children/status"
                       state={{ childId: child.id }}
+                      onClick={() => sessionStorage.setItem("selectedChildId", String(child.id))}
                       style={{
                         width: "280px",
                         borderRadius: "16px",
