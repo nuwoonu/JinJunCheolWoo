@@ -92,6 +92,8 @@ export default function Sidebar() {
   const [studentInfo, setStudentInfo] = useState<StudentSidebarInfo | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
+  // [woo] 교사일 때 소속 학교 이름
+  const [schoolName, setSchoolName] = useState<string | null>(null);
 
   useEffect(() => {
     if (role === "STUDENT" && user?.authenticated) {
@@ -108,6 +110,16 @@ export default function Sidebar() {
         .get("/attendance/my/summary")
         .then((res) => {
           setAttendanceCounts(res.data ?? {});
+        })
+        .catch(() => {});
+    }
+
+    // [woo] 교사일 때 소속 학교 이름 조회
+    if (role === "TEACHER" && user?.authenticated) {
+      api
+        .get("/dashboard/teacher")
+        .then((res) => {
+          setSchoolName(res.data?.schoolName ?? null);
         })
         .catch(() => {});
     }
@@ -442,7 +454,7 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/board/parent-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 공지
+                    <i className="ri-circle-fill circle-icon w-auto" /> 가정통신문
                   </Link>
                 </li>
                 <li>
@@ -829,6 +841,25 @@ export default function Sidebar() {
           )}
         </ul>
       </div>
+
+      {/* [woo] 교사 사이드바 하단 - 소속 학교 표시 */}
+      {has("TEACHER") && schoolName && !isCollapsed && (
+        <div className="border-top border-neutral-200 px-16 py-12">
+          <div
+            className="text-secondary-light d-flex align-items-center gap-6"
+            style={{
+              fontSize: 12,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            title={schoolName}
+          >
+            <i className="ri-building-line text-primary-600" style={{ fontSize: 14, flexShrink: 0 }} />
+            {schoolName}
+          </div>
+        </div>
+      )}
 
       {/* 로그아웃 - 학생 대시보드에서만 사이드바 맨 하단에 표시 */}
       {isStudentDashboard && !isCollapsed && (
