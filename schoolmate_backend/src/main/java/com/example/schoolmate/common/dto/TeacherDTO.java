@@ -45,6 +45,8 @@ public class TeacherDTO {
         @Builder.Default
         private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
         private Set<UserRole> roles;
+        private Long roleRequestId;
+        private String roleRequestStatus;
 
         public DetailResponse(User user) {
             this.uid = user.getUid();
@@ -70,6 +72,14 @@ public class TeacherDTO {
 
         public void setNotifications(List<NotificationDTO.NotificationHistory> notifications) {
             this.notifications = notifications;
+        }
+
+        public void setRoleRequestId(Long roleRequestId) {
+            this.roleRequestId = roleRequestId;
+        }
+
+        public void setRoleRequestStatus(String roleRequestStatus) {
+            this.roleRequestStatus = roleRequestStatus;
         }
     }
 

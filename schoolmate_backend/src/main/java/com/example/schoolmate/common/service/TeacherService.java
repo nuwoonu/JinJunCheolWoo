@@ -35,6 +35,8 @@ import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.entity.user.RoleRequest;
+import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
@@ -72,6 +74,7 @@ public class TeacherService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationRepository notificationRepository;
     private final SchoolRepository schoolRepository;
+    private final RoleRequestRepository roleRequestRepository;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========
@@ -82,7 +85,14 @@ public class TeacherService {
      */
     public Page<TeacherDTO.DetailResponse> getTeacherList(TeacherDTO.TeacherSearchCondition cond, Pageable pageable) {
         Page<User> userPage = teacherInfoRepository.search(cond, pageable);
-        return userPage.map(TeacherDTO.DetailResponse::new);
+        return userPage.map(user -> {
+            TeacherDTO.DetailResponse dto = new TeacherDTO.DetailResponse(user);
+            roleRequestRepository.findByUserAndRole(user, UserRole.TEACHER).ifPresent(rr -> {
+                dto.setRoleRequestId(rr.getId());
+                dto.setRoleRequestStatus(rr.getStatus().name());
+            });
+            return dto;
+        });
     }
 
     /**
@@ -98,6 +108,11 @@ public class TeacherService {
         response.setNotifications(notifications.stream()
                 .map(NotificationDTO.NotificationHistory::new)
                 .toList());
+
+        roleRequestRepository.findByUserAndRole(user, UserRole.TEACHER).ifPresent(rr -> {
+            response.setRoleRequestId(rr.getId());
+            response.setRoleRequestStatus(rr.getStatus().name());
+        });
 
         return response;
     }
@@ -134,6 +149,9 @@ public class TeacherService {
 
         user.getInfos().add(info);
         userRepository.save(user);
+
+        // 관리자 직접 등록 시 즉시 ACTIVE RoleRequest 생성
+        roleRequestRepository.save(RoleRequest.createActive(user, UserRole.TEACHER, schoolId, null));
     }
 
     /**

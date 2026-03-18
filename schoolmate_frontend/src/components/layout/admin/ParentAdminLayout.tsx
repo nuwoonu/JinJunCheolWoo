@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
-import AdminTopBar from '@/components/layout/admin/AdminTopBar';
-import { ADMIN_ROUTES } from '@/constants/routes';
+import AdminTopBar from "@/components/layout/admin/AdminTopBar";
+import { ADMIN_ROUTES } from "@/constants/routes";
 
 interface ParentAdminLayoutProps {
   children: ReactNode;
@@ -14,14 +14,14 @@ const SCHOOL_QUICK_LINK = {
   label: "학교 관리",
 };
 
-export default function ParentAdminLayout({ children, msg, error }: ParentAdminLayoutProps) {
+export default function ParentAdminLayout({
+  children,
+  msg,
+  error,
+}: ParentAdminLayoutProps) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--body-bg, #f8fafc)" }}>
-      <AdminTopBar
-        position="sticky"
-        sectionBadge="학부모 관리"
-        quickLink={SCHOOL_QUICK_LINK}
-      />
+      <AdminTopBar position="sticky" quickLink={SCHOOL_QUICK_LINK} />
 
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         {msg && (
@@ -38,7 +38,9 @@ export default function ParentAdminLayout({ children, msg, error }: ParentAdminL
             <button
               type="button"
               className="btn-close"
-              onClick={(e) => (e.currentTarget.closest(".alert") as HTMLElement)?.remove()}
+              onClick={(e) =>
+                (e.currentTarget.closest(".alert") as HTMLElement)?.remove()
+              }
             />
           </div>
         )}
@@ -56,7 +58,9 @@ export default function ParentAdminLayout({ children, msg, error }: ParentAdminL
             <button
               type="button"
               className="btn-close"
-              onClick={(e) => (e.currentTarget.closest(".alert") as HTMLElement)?.remove()}
+              onClick={(e) =>
+                (e.currentTarget.closest(".alert") as HTMLElement)?.remove()
+              }
             />
           </div>
         )}

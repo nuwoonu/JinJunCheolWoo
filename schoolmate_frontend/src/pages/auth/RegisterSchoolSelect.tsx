@@ -4,7 +4,7 @@ import api from '@/api/auth'
 import { auth } from '@/shared/auth'
 
 // 이메일 가입: 학교 선택 후 /register로 이동 (state에 role+schoolId 전달)
-// SNS 가입:   학교 선택 후 POST /auth/select-role → 대시보드로 이동
+// SNS/Hub 가입: 학교 선택 후 POST /auth/select-role → /hub로 이동
 
 interface SchoolSummary {
   id: number
@@ -22,11 +22,6 @@ interface PageResponse {
 }
 
 const SCHOOL_KINDS = ['', '초등학교', '중학교', '고등학교', '특수학교', '각종학교']
-
-const roleRedirects: Record<string, string> = {
-  TEACHER: '/teacher/dashboard',
-  STUDENT: '/student/dashboard',
-}
 
 const roleLabels: Record<string, string> = {
   TEACHER: '교사',
@@ -87,13 +82,13 @@ export default function RegisterSchoolSelect() {
     setSubmitting(true)
     setError('')
     try {
-      if (source === 'sns') {
+      if (source === 'sns' || source === 'hub') {
         const res = await api.post<{ accessToken: string; refreshToken: string; role: string }>(
           '/auth/select-role',
           { role, schoolId: String(school.id) }
         )
         auth.setTokens(res.data.accessToken, res.data.refreshToken)
-        window.location.href = roleRedirects[role] ?? '/'
+        navigate('/hub')
       } else {
         // 이메일 가입: 폼 단계로 이동
         navigate('/register', { state: { role, schoolId: school.id, schoolName: school.name } })

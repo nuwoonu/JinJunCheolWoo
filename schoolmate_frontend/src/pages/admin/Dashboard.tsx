@@ -56,6 +56,9 @@ const STATUS_COLOR: Record<string, string> = {
   // 차단/제적
   BLOCKED: "#ef4444",
   EXPELLED: "#ef4444",
+  // RoleRequest
+  REJECTED: "#ef4444",
+  SUSPENDED: "#d97706",
 };
 
 const EVENT_CFG: Record<string, { label: string; color: string; bg: string }> = {
@@ -190,6 +193,7 @@ export default function AdminDashboard() {
   const [classesByGrade, setClassesByGrade] = useState<Record<number, { count: number; students: number }>>({});
   const [schedules, setSchedules] = useState<ScheduleEvent[]>([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
+  const [roleRequestCounts, setRoleRequestCounts] = useState<Record<string, Record<string, number>>>({});
 
   useEffect(() => {
     // 기본 stats
@@ -204,9 +208,17 @@ export default function AdminDashboard() {
       .catch(() => {});
 
     // 각 구성원 상태별 인원 병렬 조회
-    fetchStatusCounts("students", ["ENROLLED", "LEAVE_OF_ABSENCE", "GRADUATED", "DROPOUT"]).then(setStudentCounts);
-    fetchStatusCounts("teachers", ["EMPLOYED", "PENDING", "LEAVE", "RETIRED"]).then(setTeacherCounts);
+    fetchStatusCounts("students", ["ENROLLED", "LEAVE_OF_ABSENCE", "GRADUATED", "DROPOUT", "TRANSFERRED", "EXPELLED"]).then(setStudentCounts);
+    fetchStatusCounts("teachers", ["EMPLOYED", "LEAVE", "RETIRED"]).then(setTeacherCounts);
     fetchStatusCounts("staffs", ["EMPLOYED", "LEAVE", "DISPATCHED", "RETIRED"]).then(setStaffCounts);
+
+    // 역할별 RoleRequest 승인 상태 인원 조회 (학생/교사만; 학부모는 ParentList에서 별도 표시)
+    Promise.all([
+      admin.get("/role-requests/counts?role=STUDENT").then((r) => r.data as Record<string, number>).catch(() => ({})),
+      admin.get("/role-requests/counts?role=TEACHER").then((r) => r.data as Record<string, number>).catch(() => ({})),
+    ]).then(([s, t]) => {
+      setRoleRequestCounts({ STUDENT: s, TEACHER: t });
+    }).catch(() => {});
 
     // 학사 일정 (오늘 ~ 60일 후)
     const end = new Date(Date.now() + 60 * 86400000).toISOString().split("T")[0];
@@ -242,23 +254,17 @@ export default function AdminDashboard() {
 
   const g = (counts: Record<string, number>, key: string) => counts[key] ?? 0;
 
-  const studentTotal = stats.totalStudents;
-  const studentKnown =
-    g(studentCounts, "ENROLLED") +
-    g(studentCounts, "LEAVE_OF_ABSENCE") +
-    g(studentCounts, "GRADUATED") +
-    g(studentCounts, "DROPOUT");
   const studentChartData = [
-    { name: "재학", value: g(studentCounts, "ENROLLED"), fill: STATUS_COLOR.ENROLLED },
-    { name: "휴학", value: g(studentCounts, "LEAVE_OF_ABSENCE"), fill: STATUS_COLOR.LEAVE_OF_ABSENCE },
-    { name: "졸업", value: g(studentCounts, "GRADUATED"), fill: STATUS_COLOR.GRADUATED },
-    { name: "자퇴", value: g(studentCounts, "DROPOUT"), fill: STATUS_COLOR.EXPELLED },
-    { name: "기타", value: Math.max(0, studentTotal - studentKnown), fill: STATUS_COLOR.OTHERS },
-  ].filter((d) => d.value > 0 || d.name === "재학");
+    { name: "재학",   value: g(studentCounts, "ENROLLED"),          fill: STATUS_COLOR.ENROLLED },
+    { name: "휴학",   value: g(studentCounts, "LEAVE_OF_ABSENCE"),  fill: STATUS_COLOR.LEAVE_OF_ABSENCE },
+    { name: "졸업",   value: g(studentCounts, "GRADUATED"),         fill: STATUS_COLOR.GRADUATED },
+    { name: "자퇴",   value: g(studentCounts, "DROPOUT"),           fill: STATUS_COLOR.EXPELLED },
+    { name: "전학",   value: g(studentCounts, "TRANSFERRED"),       fill: STATUS_COLOR.DISPATCHED },
+    { name: "퇴학",   value: g(studentCounts, "EXPELLED"),          fill: STATUS_COLOR.BLOCKED },
+  ];
 
   const teacherChartData = [
     { name: "재직", value: g(teacherCounts, "EMPLOYED") || stats.totalTeachers, fill: STATUS_COLOR.EMPLOYED },
-    { name: "대기", value: g(teacherCounts, "PENDING"), fill: STATUS_COLOR.PENDING },
     { name: "휴직", value: g(teacherCounts, "LEAVE"), fill: STATUS_COLOR.LEAVE },
     { name: "퇴직", value: g(teacherCounts, "RETIRED"), fill: STATUS_COLOR.RETIRED },
   ];
@@ -273,6 +279,15 @@ export default function AdminDashboard() {
   const gradeKeys = Object.keys(classesByGrade)
     .map(Number)
     .sort((a, b) => a - b);
+
+  const rrg = (role: string, status: string) => roleRequestCounts[role]?.[status] ?? 0;
+
+  const makeRRChartData = (role: string) => [
+    { name: "활성", value: rrg(role, "ACTIVE"),    fill: STATUS_COLOR.ACTIVE },
+    { name: "대기", value: rrg(role, "PENDING"),   fill: STATUS_COLOR.PENDING },
+    { name: "정지", value: rrg(role, "SUSPENDED"), fill: STATUS_COLOR.SUSPENDED },
+    { name: "거절", value: rrg(role, "REJECTED"),  fill: STATUS_COLOR.REJECTED },
+  ];
 
   return (
     <AdminLayout>
@@ -325,6 +340,31 @@ export default function AdminDashboard() {
             link={ADMIN_ROUTES.STAFFS.LIST}
             data={staffChartData}
             accentColor="#6366f1"
+          />
+        </div>
+      </div>
+
+      {/* ── 구분선 ── */}
+      <div className="border-top border-neutral-200 mb-24" />
+
+      {/* ── 계정 승인 현황 (학생/교사) ── */}
+      <div className="row g-24 mb-24">
+        <div className="col-xl-6 col-md-6">
+          <StatusBarCard
+            title="학생 계정 승인 현황"
+            total={rrg("STUDENT", "ACTIVE") + rrg("STUDENT", "PENDING") + rrg("STUDENT", "SUSPENDED") + rrg("STUDENT", "REJECTED")}
+            link={ADMIN_ROUTES.STUDENTS.LIST}
+            data={makeRRChartData("STUDENT")}
+            accentColor="#25A194"
+          />
+        </div>
+        <div className="col-xl-6 col-md-6">
+          <StatusBarCard
+            title="교사 계정 승인 현황"
+            total={rrg("TEACHER", "ACTIVE") + rrg("TEACHER", "PENDING") + rrg("TEACHER", "SUSPENDED") + rrg("TEACHER", "REJECTED")}
+            link={ADMIN_ROUTES.TEACHERS.LIST}
+            data={makeRRChartData("TEACHER")}
+            accentColor="#1d4ed8"
           />
         </div>
       </div>
