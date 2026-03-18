@@ -254,24 +254,24 @@ export default function Sidebar() {
           <span className="badge bg-success-600 px-10 py-4 rounded-pill text-xs mb-12 d-inline-block">
             {studentProfile.status ? (STATUS_LABEL[studentProfile.status] ?? studentProfile.status) : "재학"}
           </span>
-          {/* 출결 현황 - 백엔드 출결 API 완성 전까지 0으로 표시 */}
+          {/* [woo] 출결 현황 */}
           <div className="border-top pt-20 mb-2">
             <div className="d-flex justify-content-around text-center">
               <div>
                 <div className="w-36-px h-36-px rounded-circle bg-success-600 d-flex align-items-center justify-content-center mx-auto mb-4">
-                  <span className="text-white fw-bold text-xs">0</span>
+                  <span className="text-white fw-bold text-xs">{attendanceCounts.PRESENT ?? 0}</span>
                 </div>
                 <span className="text-xs text-secondary-light">출석</span>
               </div>
               <div>
                 <div className="w-36-px h-36-px rounded-circle bg-warning-main d-flex align-items-center justify-content-center mx-auto mb-4">
-                  <span className="text-white fw-bold text-xs">0</span>
+                  <span className="text-white fw-bold text-xs">{attendanceCounts.LATE ?? 0}</span>
                 </div>
                 <span className="text-xs text-secondary-light">지각</span>
               </div>
               <div>
                 <div className="w-36-px h-36-px rounded-circle bg-danger-main d-flex align-items-center justify-content-center mx-auto mb-4">
-                  <span className="text-white fw-bold text-xs">0</span>
+                  <span className="text-white fw-bold text-xs">{attendanceCounts.ABSENT ?? 0}</span>
                 </div>
                 <span className="text-xs text-secondary-light">결석</span>
               </div>
