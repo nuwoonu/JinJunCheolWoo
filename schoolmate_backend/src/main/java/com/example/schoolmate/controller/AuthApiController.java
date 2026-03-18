@@ -26,6 +26,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -195,18 +197,15 @@ public class AuthApiController {
             roles = List.of(roleName);
         }
 
-        // 위임 관리자 권한 보유 여부 (Hub 어드민 접근 버튼 표시용)
         Long uid = user.getCustomUserDTO().getUid();
         User dbUser = userRepository.findById(uid).orElse(null);
-        boolean hasAdminAccess = primaryRole == UserRole.ADMIN
-                || (dbUser != null && schoolAdminGrantRepository.existsByUser(dbUser));
 
         // 역할 신청 목록 (Hub 카드 상태 표시용)
         List<Map<String, Object>> roleRequests = List.of();
         if (dbUser != null) {
             roleRequests = roleRequestRepository.findByUser(dbUser).stream()
                     .map(rr -> {
-                        java.util.Map<String, Object> map = new java.util.HashMap<>();
+                        Map<String, Object> map = new HashMap<>();
                         map.put("role", rr.getRole().name());
                         map.put("status", rr.getStatus().name());
                         map.put("schoolId", rr.getSchoolId() != null ? rr.getSchoolId() : "");
@@ -219,15 +218,40 @@ public class AuthApiController {
                     .collect(Collectors.toList());
         }
 
-        return ResponseEntity.ok(Map.of(
-                "authenticated", true,
-                "uid", uid,
-                "email", user.getUsername(),
-                "name", name != null ? name : "소셜사용자",
-                "role", roleName,
-                "roles", roles,
-                "hasAdminAccess", hasAdminAccess,
-                "roleRequests", roleRequests));
+        // GrantedRole 목록 구성
+        // — ADMIN role 보유 시 SUPER_ADMIN을 합성 항목으로 포함 (DB에는 저장하지 않음)
+        // — 그 외 사용자는 SchoolAdminGrant 실제 레코드를 포함
+        List<Map<String, Object>> grants = new ArrayList<>();
+        if (primaryRole == UserRole.ADMIN) {
+            Map<String, Object> superAdminGrant = new HashMap<>();
+            superAdminGrant.put("grantedRole", "SUPER_ADMIN");
+            grants.add(superAdminGrant);
+        }
+        if (dbUser != null) {
+            schoolAdminGrantRepository.findByUser(dbUser).forEach(g -> {
+                Map<String, Object> grantMap = new HashMap<>();
+                grantMap.put("grantedRole", g.getGrantedRole().name());
+                grantMap.put("schoolId", g.getSchool().getId());
+                grantMap.put("schoolName", g.getSchool().getName());
+                grants.add(grantMap);
+            });
+        }
+
+        // hasAdminAccess: grants가 하나라도 있으면 어드민 페이지 접근 가능
+        boolean hasAdminAccess = !grants.isEmpty();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("authenticated", true);
+        response.put("uid", uid);
+        response.put("email", user.getUsername());
+        response.put("name", name != null ? name : "소셜사용자");
+        response.put("role", roleName);
+        response.put("roles", roles);
+        response.put("hasAdminAccess", hasAdminAccess);
+        response.put("grants", grants);
+        response.put("roleRequests", roleRequests);
+
+        return ResponseEntity.ok(response);
     }
 
     /**

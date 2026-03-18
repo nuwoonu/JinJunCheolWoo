@@ -14,11 +14,13 @@ import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.dto.AuthUserDTO;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 공지사항 관리 REST API
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_NOTICES)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canAccessAdmin()")
 public class AdminNoticeApiController {
 
     private final BoardService boardService;

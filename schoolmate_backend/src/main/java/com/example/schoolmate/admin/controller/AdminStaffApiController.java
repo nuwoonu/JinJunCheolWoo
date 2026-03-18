@@ -16,11 +16,13 @@ import com.example.schoolmate.common.dto.StaffDTO;
 import com.example.schoolmate.common.service.StaffService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 교직원 관리 REST API
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_STAFFS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canAccessAdmin()")
 public class AdminStaffApiController {
 
     private final StaffService staffService;

@@ -17,11 +17,13 @@ import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
 import com.example.schoolmate.common.service.ParentService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 학부모 관리 REST API
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_PARENTS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canAccessAdmin()")
 public class AdminParentApiController {
 
     private final ParentService parentService;

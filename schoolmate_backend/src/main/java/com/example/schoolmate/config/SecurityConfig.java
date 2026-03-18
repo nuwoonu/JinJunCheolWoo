@@ -23,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -83,8 +84,10 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 // [woo] NEIS 공개 API - 인증 불필요
                                                 .requestMatchers("/api/calendar/**", "/api/meals/**").permitAll()
-                                                // 관리자 전용
-                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                // 관리자 전용: ADMIN role(슈퍼 어드민) 또는 SchoolAdminGrant 보유자
+                                                .requestMatchers("/api/admin/**")
+                                                .access(new WebExpressionAuthorizationManager(
+                                                                "hasRole('ADMIN') or @grants.canAccessAdmin()"))
                                                 // 교사 관리(추가/수정/삭제) - ADMIN만
                                                 .requestMatchers("/api/teacher/add", "/api/teacher/edit",
                                                                 "/api/teacher/delete")

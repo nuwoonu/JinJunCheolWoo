@@ -21,10 +21,12 @@ import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.common.dto.SchoolCalendarDTO;
 import com.example.schoolmate.common.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_SCHEDULE)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canAccessAdmin()")
 public class AdminScheduleApiController {
 
     private final ScheduleService adminScheduleService;

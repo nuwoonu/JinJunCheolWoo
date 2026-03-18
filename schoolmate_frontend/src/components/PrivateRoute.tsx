@@ -13,13 +13,15 @@ export default function PrivateRoute({ children, allowedRoles }: Props) {
   if (!user?.authenticated) return <Navigate to="/login" replace />
 
   if (allowedRoles) {
-    // roles 배열 우선, 없으면 role(단일) 폴백
     const userRoles = user.roles && user.roles.length > 0
       ? user.roles
       : user.role ? [user.role] : []
 
-    const hasAccess = userRoles.some(r => allowedRoles.includes(r))
-    if (!hasAccess) return <Navigate to="/unauthorized" replace />
+    const hasRoleAccess = userRoles.some(r => allowedRoles.includes(r))
+    // allowedRoles에 ADMIN이 포함된 경우, GrantedRole 보유자도 어드민 페이지 접근 허용
+    const hasGrantAccess = allowedRoles.includes('ADMIN') && !!user.hasAdminAccess
+
+    if (!hasRoleAccess && !hasGrantAccess) return <Navigate to="/unauthorized" replace />
   }
 
   return <>{children}</>

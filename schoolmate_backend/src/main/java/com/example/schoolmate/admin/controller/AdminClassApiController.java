@@ -19,11 +19,13 @@ import com.example.schoolmate.common.service.ClassroomService;
 import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 학급 관리 REST API
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_CLASSES)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canAccessAdmin()")
 public class AdminClassApiController {
 
     private final ClassroomService classService;

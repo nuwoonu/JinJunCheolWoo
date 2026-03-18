@@ -7,11 +7,13 @@ import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 시스템 설정 REST API
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_SETTINGS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.isSuperAdmin()")
 public class AdminSettingApiController {
 
     private final SystemSettingService systemSettingService;

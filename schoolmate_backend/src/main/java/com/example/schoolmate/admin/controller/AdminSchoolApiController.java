@@ -21,10 +21,12 @@ import com.example.schoolmate.domain.school.service.NeisService;
 import com.example.schoolmate.domain.school.service.SchoolService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_SCHOOLS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.isSuperAdmin()")
 public class AdminSchoolApiController {
 
     private final NeisService neisService;
