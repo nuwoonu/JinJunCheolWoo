@@ -1,16 +1,12 @@
 package com.example.schoolmate.cheol.entity;
 
-import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,16 +32,8 @@ public class Subject extends SchoolBaseEntity {
     @Enumerated(EnumType.STRING)
     private Year year; // 학년
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id")
-    private TeacherInfo teacher; // 담당 선생님
-
-    // 양방향 연관관계 편의 메서드
-    public void setTeacher(TeacherInfo teacher) {
-        this.teacher = teacher;
-    }
-
     public void changeYear(Year year) {
         this.year = year;
     }
+
 }

@@ -4,11 +4,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.schoolmate.common.dto.DashboardDTO;
-import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
-import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
+import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
+import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -29,14 +30,14 @@ public class DashboardService {
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StaffInfoRepository staffInfoRepository;
-    private final ParentInfoRepository parentInfoRepository;
+    private final RoleRequestRepository roleRequestRepository;
 
     public DashboardDTO getDashboardStats() {
         return DashboardDTO.builder()
                 .totalStudents(studentInfoRepository.countByStatus(StudentStatus.ENROLLED))
                 .totalTeachers(teacherInfoRepository.countByStatus(TeacherStatus.EMPLOYED))
                 .totalStaffs(staffInfoRepository.countByStatus(StaffStatus.EMPLOYED))
-                .pendingParents(parentInfoRepository.countByStatus(ParentStatus.PENDING))
+                .pendingParents(roleRequestRepository.countByRoleAndStatus(UserRole.PARENT, RoleRequestStatus.PENDING))
                 .pendingReservations(0) // 추후 시설 예약 기능 구현 시 연동
                 .build();
     }

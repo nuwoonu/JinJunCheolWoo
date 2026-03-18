@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.QClassroom;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
@@ -28,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
 
     private final JPAQueryFactory query;
+
+    // ── 검색/페이징 ─────────────────────────────────────────────────────────────
 
     @Override
     public Page<User> search(StudentDTO.StudentSearchCondition cond, Pageable pageable) {
@@ -64,28 +67,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
-    private BooleanExpression schoolFilter(QStudentInfo info) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null) return null;
-        return info.school.id.eq(schoolId);
-    }
-
-    private BooleanExpression statusFilter(String status, QStudentInfo info) {
-        if (status == null || status.isEmpty())
-            return null;
-        return info.status.eq(StudentStatus.valueOf(status));
-    }
-
-    private BooleanExpression searchPredicate(String type, String keyword, QUser user, QStudentInfo info) {
-        if (keyword == null || keyword.isEmpty())
-            return null;
-        return switch (type) {
-            case "name" -> user.name.contains(keyword);
-            case "email" -> user.email.contains(keyword);
-            case "idNum" -> info.code.contains(keyword);
-            default -> null;
-        };
-    }
+    // ── 상세 조회 / 존재 여부 ────────────────────────────────────────────────────
 
     @Override
     public Optional<User> findDetailByCode(String code) {
@@ -118,6 +100,140 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .fetchFirst();
         return fetchOne != null;
     }
+
+    // ── User 기반 특정 조회 ───────────────────────────────────────────────────────
+
+    @Override
+    public Optional<StudentInfo> findByAttendanceNum(Integer attendanceNum) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        StudentInfo result = query
+                .selectFrom(s)
+                .join(s.currentAssignment, assign)
+                .where(assign.attendanceNum.eq(attendanceNum))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<StudentInfo> findByUserEmail(String email) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QUser u = QUser.user;
+        StudentInfo result = query
+                .selectFrom(s)
+                .join(s.user, u)
+                .where(u.email.eq(email))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<StudentInfo> findByUserUid(Long uid) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QUser u = QUser.user;
+        StudentInfo result = query
+                .selectFrom(s)
+                .join(s.user, u)
+                .where(u.uid.eq(uid))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
+    // ── 학급 기반 조회 ────────────────────────────────────────────────────────────
+
+    @Override
+    public List<StudentInfo> findByClassroom(Classroom classroom) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        return query
+                .selectFrom(s)
+                .join(s.currentAssignment, assign)
+                .where(assign.classroom.eq(classroom))
+                .fetch();
+    }
+
+    @Override
+    public List<StudentInfo> findByClassroomGrade(int grade) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom c = QClassroom.classroom;
+        return query
+                .selectFrom(s)
+                .join(s.currentAssignment, assign)
+                .join(assign.classroom, c)
+                .where(c.grade.eq(grade))
+                .fetch();
+    }
+
+    @Override
+    public List<StudentInfo> findByClassroomClassNum(int classNum) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom c = QClassroom.classroom;
+        return query
+                .selectFrom(s)
+                .join(s.currentAssignment, assign)
+                .join(assign.classroom, c)
+                .where(c.classNum.eq(classNum))
+                .fetch();
+    }
+
+    @Override
+    public List<StudentInfo> findByClassroomGradeAndClassroomClassNum(int grade, int classNum) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom c = QClassroom.classroom;
+        return query
+                .selectFrom(s)
+                .join(s.currentAssignment, assign)
+                .join(assign.classroom, c)
+                .where(c.grade.eq(grade).and(c.classNum.eq(classNum)))
+                .fetch();
+    }
+
+    @Override
+    public List<StudentInfo> findByClassroomCid(Long classroomId) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom c = QClassroom.classroom;
+        return query
+                .selectFrom(s)
+                .join(s.currentAssignment, assign)
+                .join(assign.classroom, c)
+                .where(c.cid.eq(classroomId))
+                .fetch();
+    }
+
+    @Override
+    public List<StudentInfo> findByClassroomYearAndClassroomGradeAndClassroomClassNum(int year, int grade,
+            int classNum) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom c = QClassroom.classroom;
+        return query
+                .selectFrom(s)
+                .join(s.currentAssignment, assign)
+                .join(assign.classroom, c)
+                .where(c.year.eq(year).and(c.grade.eq(grade)).and(c.classNum.eq(classNum)))
+                .fetch();
+    }
+
+    // ── 학교 + 배정 상태 기반 조회 ────────────────────────────────────────────────
+
+    @Override
+    public List<StudentInfo> findUnassignedBySchoolId(Long schoolId) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QUser u = QUser.user;
+        return query
+                .selectFrom(s)
+                .join(s.user, u).fetchJoin()
+                .where(s.school.id.eq(schoolId)
+                        .and(s.currentAssignment.isNull()))
+                .orderBy(s.id.desc())
+                .fetch();
+    }
+
+    // ── 통계 ─────────────────────────────────────────────────────────────────────
 
     @Override
     public List<User> findStudentsByAssignment(int year, int grade, int classNum) {
@@ -203,5 +319,31 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                         .and(classroom.classNum.eq(classNum)))
                 .fetchOne();
         return max != null ? max : 0;
+    }
+
+    // ── 공통 필터 ─────────────────────────────────────────────────────────────────
+
+    private BooleanExpression schoolFilter(QStudentInfo info) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId == null)
+            return null;
+        return info.school.id.eq(schoolId);
+    }
+
+    private BooleanExpression statusFilter(String status, QStudentInfo info) {
+        if (status == null || status.isEmpty())
+            return null;
+        return info.status.eq(StudentStatus.valueOf(status));
+    }
+
+    private BooleanExpression searchPredicate(String type, String keyword, QUser user, QStudentInfo info) {
+        if (keyword == null || keyword.isEmpty())
+            return null;
+        return switch (type) {
+            case "name" -> user.name.contains(keyword);
+            case "email" -> user.email.contains(keyword);
+            case "idNum" -> info.code.contains(keyword);
+            default -> null;
+        };
     }
 }

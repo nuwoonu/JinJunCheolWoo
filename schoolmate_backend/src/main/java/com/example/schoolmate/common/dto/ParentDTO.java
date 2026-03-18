@@ -110,17 +110,17 @@ public class ParentDTO {
         private String name;
         private String code;
         private String phone;
-        private String statusName;
         private String email;
         private boolean linked;
         private List<String> childrenStrings;
+        private Long roleRequestId;
+        private String roleRequestStatus;
 
         public Summary(ParentInfo entity) {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
             this.phone = entity.getPhone();
-            this.statusName = entity.getStatus().name();
             this.linked = entity.getUser() != null;
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";
             this.childrenStrings = entity.getChildrenRelations().stream()
@@ -128,18 +128,14 @@ public class ParentDTO {
                             + ")")
                     .collect(Collectors.toList());
         }
-    }
 
-    /**
-     * 상태 일괄 변경 요청
-     */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class BulkStatusRequest {
-        private List<Long> ids;
-        private String status;
+        public void setRoleRequestId(Long roleRequestId) {
+            this.roleRequestId = roleRequestId;
+        }
+
+        public void setRoleRequestStatus(String roleRequestStatus) {
+            this.roleRequestStatus = roleRequestStatus;
+        }
     }
 
     /**
@@ -155,7 +151,6 @@ public class ParentDTO {
         private String code;
         private String phone;
         private String email;
-        private String statusName;
     }
 
     /**
@@ -171,16 +166,16 @@ public class ParentDTO {
         private String code;
         private String email;
         private String phone;
-        private String statusName;
         private List<LinkedStudent> children;
         private List<NotificationDTO.NotificationHistory> notifications = new ArrayList<>();
+        private Long roleRequestId;
+        private String roleRequestStatus;
 
         public DetailResponse(ParentInfo entity) {
             this.id = entity.getId();
             this.name = entity.getParentName();
             this.code = entity.getCode();
             this.phone = entity.getPhone();
-            this.statusName = entity.getStatus().name();
             this.email = entity.getUser() != null ? entity.getUser().getEmail() : "-";
             this.children = entity.getChildrenRelations().stream()
                     .map(r -> new LinkedStudent(r.getStudentInfo(), r.getRelationship()))

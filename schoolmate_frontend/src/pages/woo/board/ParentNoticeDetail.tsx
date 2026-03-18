@@ -4,16 +4,18 @@ import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 
-// [woo] /board/parent-notice/:id - 학부모 공지 상세
+// [woo] /board/parent-notice/:id - 가정통신문 상세 (개선된 UI)
 
 interface Board {
   id: number
   title: string
   content: string
   writerName: string
+  writerId: number
   viewCount: number
   pinned: boolean
   createDate: string
+  targetClassroomName?: string
 }
 
 export default function ParentNoticeDetail() {
@@ -78,77 +80,122 @@ export default function ParentNoticeDetail() {
     }
   }
 
+  // [woo] 날짜 포맷
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`
+  }
+
   if (loading) {
-    return <DashboardLayout><div className="text-center py-48 text-secondary-light">불러오는 중...</div></DashboardLayout>
+    return (
+      <DashboardLayout>
+        <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
+      </DashboardLayout>
+    )
   }
 
   if (!board) return null
 
   return (
     <DashboardLayout>
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h6 className="fw-semibold mb-0">게시판</h6>
-          <p className="text-neutral-600 mt-4 mb-0">학부모 공지</p>
-        </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
-              홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">게시판</li>
-          <li>-</li>
-          <li className="fw-medium"><Link to="/board/parent-notice" className="hover-text-primary">학부모 공지</Link></li>
-          <li>-</li>
-          <li className="fw-medium">상세보기</li>
-        </ul>
-      </div>
-
-      <div className="card radius-12">
-        <div className="card-header py-16 px-24 border-bottom">
-          <div className="d-flex justify-content-between align-items-start">
-            <div>
-              {board.pinned && (
-                <span className="badge bg-danger-100 text-danger-600 mb-8 d-inline-block">공지</span>
-              )}
-              <h5 className="mb-8">{board.title}</h5>
-              <div className="d-flex gap-16 text-secondary-light text-sm">
-                <span><iconify-icon icon="mdi:account" className="me-4" />{board.writerName}</span>
-                <span><iconify-icon icon="mdi:calendar" className="me-4" />{board.createDate?.slice(0, 16).replace('T', ' ')}</span>
-                <span><iconify-icon icon="mdi:eye" className="me-4" />{board.viewCount}</span>
-              </div>
-            </div>
-            {(isAdmin || isTeacher) && (
-              <div className="d-flex gap-8">
-                <button type="button" className="btn btn-outline-primary-600 radius-8" onClick={() => setShowEditModal(true)}>
-                  <iconify-icon icon="mdi:pencil" className="me-4" />수정
-                </button>
-                <button type="button" className="btn btn-outline-danger radius-8" onClick={handleDelete}>
-                  <iconify-icon icon="mdi:delete" className="me-4" />삭제
-                </button>
-              </div>
-            )}
+      {/* [woo] 상단 브레드크럼 */}
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div className="d-flex align-items-center gap-8">
+          <Link
+            to="/board/parent-notice"
+            className="w-36-px h-36-px rounded-circle bg-neutral-100 d-flex align-items-center justify-content-center text-secondary-light"
+          >
+            <i className="ri-arrow-left-line text-lg" />
+          </Link>
+          <div>
+            <h5 className="fw-bold mb-0">가정통신문</h5>
           </div>
         </div>
-        <div className="card-body p-24">
-          <div style={{ minHeight: 300, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{board.content}</div>
+        {/* [woo] 수정/삭제 버튼 - 교사/관리자만 */}
+        {(isAdmin || isTeacher) && (
+          <div className="d-flex gap-8">
+            <button
+              type="button"
+              className="btn btn-outline-primary-600 radius-8 d-flex align-items-center gap-4"
+              onClick={() => setShowEditModal(true)}
+            >
+              <i className="ri-edit-line" />수정
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-danger radius-8 d-flex align-items-center gap-4"
+              onClick={handleDelete}
+            >
+              <i className="ri-delete-bin-line" />삭제
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* [woo] 메인 콘텐츠 카드 */}
+      <div className="card border-0 radius-12 shadow-sm">
+        {/* 헤더 */}
+        <div className="card-header bg-white py-24 px-28 border-bottom border-neutral-100" style={{ borderRadius: '12px 12px 0 0' }}>
+          <div className="d-flex align-items-start gap-12 mb-16">
+            {board.pinned && (
+              <span className="badge bg-danger-100 text-danger-600 text-xs px-10 py-6 rounded-pill flex-shrink-0">
+                <i className="ri-pushpin-line me-4" />고정
+              </span>
+            )}
+            {board.targetClassroomName && (
+              <span className="badge bg-primary-100 text-primary-600 text-xs px-10 py-6 rounded-pill flex-shrink-0">
+                {board.targetClassroomName}
+              </span>
+            )}
+          </div>
+          <h4 className="fw-bold mb-16" style={{ lineHeight: 1.5 }}>{board.title}</h4>
+          <div className="d-flex flex-wrap align-items-center gap-16 text-secondary-light text-sm">
+            <div className="d-flex align-items-center gap-8">
+              <div className="w-32-px h-32-px rounded-circle bg-primary-100 d-flex align-items-center justify-content-center">
+                <i className="ri-user-line text-primary-600 text-sm" />
+              </div>
+              <span className="fw-medium">{board.writerName}</span>
+            </div>
+            <span className="d-flex align-items-center gap-4">
+              <i className="ri-calendar-line" />{formatDate(board.createDate)}
+            </span>
+            <span className="d-flex align-items-center gap-4">
+              <i className="ri-eye-line" />조회 {board.viewCount}
+            </span>
+          </div>
         </div>
-        <div className="card-footer py-16 px-24 border-top">
-          <Link to="/board/parent-notice" className="btn btn-secondary-600 radius-8">
-            <iconify-icon icon="mdi:arrow-left" className="me-4" />목록으로
+
+        {/* [woo] 본문 */}
+        <div className="card-body px-28 py-32">
+          <div style={{ whiteSpace: 'pre-wrap', lineHeight: 2, fontSize: '15px', color: '#333' }}>
+            {board.content}
+          </div>
+        </div>
+
+        {/* [woo] 하단 */}
+        <div className="card-footer bg-white py-16 px-28 border-top border-neutral-100" style={{ borderRadius: '0 0 12px 12px' }}>
+          <Link
+            to="/board/parent-notice"
+            className="btn btn-outline-neutral-300 radius-8 d-flex align-items-center gap-6"
+            style={{ width: 'fit-content' }}
+          >
+            <i className="ri-list-unordered" />
+            목록으로
           </Link>
         </div>
       </div>
 
+      {/* [woo] 수정 모달 */}
       {showEditModal && (
         <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content radius-12">
               <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title">게시물 수정</h6>
+                <h6 className="modal-title">
+                  <i className="ri-edit-line me-8 text-primary-600" />
+                  가정통신문 수정
+                </h6>
                 <button type="button" className="btn-close" onClick={() => setShowEditModal(false)} />
               </div>
               <div className="modal-body p-24">

@@ -4,6 +4,7 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import {
   TEACHER_STATUS,
+  ROLE_REQUEST_STATUS,
   STATUS_DEFAULT,
 } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
@@ -63,6 +64,18 @@ export default function TeacherList() {
       params: { uids: selected, status: s },
     });
     setSelected([]);
+    load(currentPage);
+  };
+
+  const approveRequest = async (requestId: number) => {
+    await admin.post(`/role-requests/${requestId}/approve`);
+    load(currentPage);
+  };
+
+  const rejectRequest = async (requestId: number) => {
+    const reason = window.prompt('거절 사유를 입력하세요.');
+    if (reason === null) return;
+    await admin.post(`/role-requests/${requestId}/reject`, { reason });
     load(currentPage);
   };
 
@@ -229,7 +242,8 @@ export default function TeacherList() {
                   <th>이메일</th>
                   <th>부서 / 직책</th>
                   <th>담당 과목</th>
-                  <th>상태</th>
+                  <th>재직 상태</th>
+                  <th>승인 상태</th>
                   <th className="text-end pe-4">관리</th>
                 </tr>
               </thead>
@@ -266,14 +280,36 @@ export default function TeacherList() {
                     </td>
                     <td>
                       {(() => {
-                        const cfg =
-                          TEACHER_STATUS[t.statusName] ?? STATUS_DEFAULT;
+                        const cfg = TEACHER_STATUS[t.statusName] ?? STATUS_DEFAULT;
                         return (
-                          <span className={`badge ${cfg.badge}`}>
-                            {cfg.label}
-                          </span>
+                          <span className={`badge ${cfg.badge}`}>{cfg.label}</span>
                         );
                       })()}
+                    </td>
+                    <td>
+                      {t.roleRequestStatus ? (
+                        <div className="d-flex align-items-center gap-1">
+                          <span className={`badge ${(ROLE_REQUEST_STATUS[t.roleRequestStatus] ?? ROLE_REQUEST_STATUS.PENDING).badge}`}>
+                            {(ROLE_REQUEST_STATUS[t.roleRequestStatus] ?? ROLE_REQUEST_STATUS.PENDING).label}
+                          </span>
+                          {t.roleRequestStatus === 'PENDING' && (
+                            <>
+                              <button
+                                className="btn btn-xs btn-success py-0 px-1"
+                                style={{ fontSize: 11 }}
+                                onClick={() => approveRequest(t.roleRequestId)}
+                              >승인</button>
+                              <button
+                                className="btn btn-xs btn-outline-danger py-0 px-1"
+                                style={{ fontSize: 11 }}
+                                onClick={() => rejectRequest(t.roleRequestId)}
+                              >거절</button>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted small">-</span>
+                      )}
                     </td>
                     <td className="text-end pe-4">
                       <Link
@@ -287,7 +323,7 @@ export default function TeacherList() {
                 ))}
                 {list.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-5 text-muted">
+                    <td colSpan={9} className="text-center py-5 text-muted">
                       검색 결과가 없습니다.
                     </td>
                   </tr>

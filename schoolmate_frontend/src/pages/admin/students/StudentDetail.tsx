@@ -2,19 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
+import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
-
-// [joon] 학생 상세
-
-const STATUS_CFG: Record<string, { label: string; badge: string; color: string }> = {
-  PENDING:          { label: "승인대기", badge: "bg-info-subtle text-info border border-info-subtle",           color: "#0ea5e9" },
-  ENROLLED:         { label: "재학",    badge: "bg-success-subtle text-success border border-success-subtle",  color: "#25A194" },
-  LEAVE_OF_ABSENCE: { label: "휴학",    badge: "bg-warning-subtle text-warning border border-warning-subtle",  color: "#d97706" },
-  GRADUATED:        { label: "졸업",    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle", color: "#6b7280" },
-  DROPOUT:          { label: "자퇴",    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle", color: "#6b7280" },
-  EXPELLED:         { label: "제적",    badge: "bg-danger-subtle text-danger border border-danger-subtle",     color: "#ef4444" },
-  TRANSFERRED:      { label: "전학",    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle", color: "#6b7280" },
-};
 
 export default function StudentDetail() {
   const { uid } = useParams<{ uid: string }>();
@@ -28,6 +17,7 @@ export default function StudentDetail() {
   const [relationship, setRelationship] = useState("OTHER");
   const [msg, setMsg] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const load = () => {
     setLoadError(null);
@@ -87,6 +77,23 @@ export default function StudentDetail() {
     load();
   };
 
+  const approveRequest = async () => {
+    await admin.post(`/role-requests/${student.roleRequestId}/approve`);
+    load();
+  };
+
+  const rejectRequest = async () => {
+    await admin.post(`/role-requests/${student.roleRequestId}/reject`, { reason: rejectReason });
+    setRejectReason("");
+    load();
+  };
+
+  const suspendRequest = async () => {
+    if (!confirm("역할을 정지하시겠습니까?")) return;
+    await admin.post(`/role-requests/${student.roleRequestId}/suspend`);
+    load();
+  };
+
   if (!student)
     return (
       <AdminLayout>
@@ -139,7 +146,7 @@ export default function StudentDetail() {
               </p>
               {/* 상태 뱃지 */}
               {(() => {
-                const cfg = STATUS_CFG[student.statusName] ?? STATUS_CFG.ENROLLED;
+                const cfg = STUDENT_STATUS[student.statusName] ?? STATUS_DEFAULT;
                 return (
                   <span className={`badge px-12 py-6 ${cfg.badge}`} style={{ fontSize: 12 }}>
                     {student.statusDescription || cfg.label}
@@ -185,6 +192,7 @@ export default function StudentDetail() {
                 ["basic", "기본 정보"],
                 ["history", "학적 이력"],
                 ["parent", "보호자 관리"],
+                ["approval", "역할 승인"],
               ].map(([key, label]) => (
                 <button
                   key={key}
@@ -244,13 +252,9 @@ export default function StudentDetail() {
                           }))
                         }
                       >
-                        <option value="PENDING">승인대기</option>
-                        <option value="ENROLLED">재학</option>
-                        <option value="LEAVE_OF_ABSENCE">휴학</option>
-                        <option value="GRADUATED">졸업</option>
-                        <option value="DROPOUT">자퇴</option>
-                        <option value="EXPELLED">제적</option>
-                        <option value="TRANSFERRED">전학</option>
+                        {Object.entries(STUDENT_STATUS).map(([value, cfg]) => (
+                          <option key={value} value={value}>{cfg.label}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="col-md-12">
@@ -397,6 +401,46 @@ export default function StudentDetail() {
                     </tbody>
                   </table>
                 </>
+              )}
+
+              {tab === "approval" && (
+                <div className="p-4">
+                  <h6 className="fw-semibold mb-3">학생 역할 승인 상태</h6>
+                  {student.roleRequestId ? (
+                    <div className="border rounded p-3" style={{ background: "var(--neutral-50, #f9fafb)" }}>
+                      <div className="d-flex align-items-center gap-2 mb-3">
+                        <span className={`badge ${(ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? STATUS_DEFAULT).badge}`}>
+                          {(ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? { label: student.roleRequestStatus }).label}
+                        </span>
+                      </div>
+                      <div className="d-flex gap-2 flex-wrap align-items-center">
+                        {student.roleRequestStatus === 'PENDING' && (
+                          <button className="btn btn-sm btn-success" onClick={approveRequest}>승인</button>
+                        )}
+                        {student.roleRequestStatus === 'ACTIVE' && (
+                          <button className="btn btn-sm btn-warning" onClick={suspendRequest}>정지</button>
+                        )}
+                        {student.roleRequestStatus === 'SUSPENDED' && (
+                          <button className="btn btn-sm btn-success" onClick={approveRequest}>재활성화</button>
+                        )}
+                        {student.roleRequestStatus === 'PENDING' && (
+                          <>
+                            <input
+                              className="form-control form-control-sm"
+                              style={{ maxWidth: 220 }}
+                              placeholder="거절 사유 입력"
+                              value={rejectReason}
+                              onChange={(e) => setRejectReason(e.target.value)}
+                            />
+                            <button className="btn btn-sm btn-outline-danger" onClick={rejectRequest}>거절</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted">역할 신청 내역이 없습니다.</p>
+                  )}
+                </div>
               )}
             </div>
           </div>

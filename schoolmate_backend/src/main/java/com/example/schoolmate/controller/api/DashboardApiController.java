@@ -89,6 +89,8 @@ public class DashboardApiController {
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
         if (teacherInfo != null) {
             data.put("teacherSubject", teacherInfo.getSubject() != null ? teacherInfo.getSubject() : "");
+            // [woo] 교사 소속 학교 이름
+            data.put("schoolName", teacherInfo.getSchool() != null ? teacherInfo.getSchool().getName() : null);
             try {
                 ClassStudentDTO classInfo = teacherService.getMyClassStudents(teacherInfo.getId(), currentYear);
                 data.put("classInfo", classInfo);
@@ -97,6 +99,7 @@ public class DashboardApiController {
             }
         } else {
             data.put("teacherSubject", "");
+            data.put("schoolName", null);
             data.put("classInfo", null);
         }
 

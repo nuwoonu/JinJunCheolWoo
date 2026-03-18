@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router";
-import { ArrowLeft, DoorOpen } from "lucide-react";
+import { ArrowLeft, DoorOpen, Search } from "lucide-react";
 import { useDormitory } from "./DormitoryProvider";
+import { useState } from "react";
 
 export default function FloorList() {
   const navigate = useNavigate();
@@ -11,80 +12,218 @@ export default function FloorList() {
 
   if (!building) {
     return (
-      <div className="size-full flex items-center justify-center">
+      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p>건물을 찾을 수 없습니다.</p>
       </div>
     );
   }
 
+  const [searchQuery, setSearchQuery] = useState(""); // cheol
+  const hasSearch = searchQuery.trim().length > 0; // cheol
+
   const floors = Array.from({ length: building.floors }, (_, i) => building.floors - i);
 
-  // 층별로 방 그룹화
   const getRoomsByFloor = (floor: number) => {
     return building.rooms.filter((room) => room.floor === floor);
   };
 
+  // cheol: 방 내 학생 이름 매칭
+  const roomMatchesSearch = (room: (typeof building.rooms)[0]) =>
+    room.beds.some((bed) =>
+      bed.student?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
   return (
-    <div className="size-full bg-gradient-to-br from-slate-50 to-slate-100 p-8 overflow-auto">
-      <div className="max-w-5xl mx-auto">
+    <div
+      style={{
+        minHeight: "100%",
+        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+        padding: "32px",
+        overflowY: "auto",
+      }}
+    >
+      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+
         {/* 헤더 */}
-        <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => navigate("/")} className="p-2 rounded-lg hover:bg-slate-200 transition-colors">
-            <ArrowLeft className="w-6 h-6 text-slate-700" />
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
+          <button
+            onClick={() => navigate("/student/dormitory")}
+            style={{
+              padding: "8px",
+              borderRadius: "8px",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#e2e8f0")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            <ArrowLeft size={24} style={{ color: "#475569" }} />
           </button>
-          <h1 className="text-4xl text-slate-800">{building.name} - 층별 호수</h1>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+            {building.name} — 층별 호수
+          </h1>
         </div>
 
-        {/* 건물 옆면 (층 구조) */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="space-y-4">
+        {/* 검색창 */} {/* cheol */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            background: "#fff",
+            border: "1px solid #e2e8f0",
+            borderRadius: "10px",
+            padding: "8px 14px",
+            marginBottom: "24px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
+        >
+          <Search size={16} style={{ color: "#94a3b8", flexShrink: 0 }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="학생 이름으로 검색"
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              fontSize: "14px",
+              color: "#1e293b",
+              background: "transparent",
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              style={{ border: "none", background: "none", cursor: "pointer", color: "#94a3b8", padding: 0, fontSize: "16px", lineHeight: 1 }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* 건물 층 구조 */}
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: "16px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
+            padding: "32px",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {floors.map((floor) => {
               const rooms = getRoomsByFloor(floor);
-
               return (
-                <div key={floor} className="flex items-center gap-6">
+                <div key={floor} style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+
                   {/* 층 표시 */}
                   <div
-                    className="w-20 h-24 flex items-center justify-center rounded-lg text-white text-xl font-bold shadow-md"
-                    style={{ backgroundColor: building.color }}
+                    style={{
+                      width: "72px",
+                      height: "80px",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "10px",
+                      background: building.color,
+                      color: "#fff",
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      boxShadow: `0 4px 12px ${building.color}55`,
+                    }}
                   >
                     {floor}층
                   </div>
 
-                  {/* 각 층의 호수들 */}
-                  <div className="flex-1 flex items-center gap-4 bg-slate-50 rounded-lg p-4 border-2 border-slate-200">
+                  {/* 호수 목록 */}
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      background: "#f8fafc",
+                      borderRadius: "10px",
+                      padding: "12px 16px",
+                      border: "2px solid #e2e8f0",
+                    }}
+                  >
                     {rooms.map((room) => {
-                        const occupiedBeds = room.beds.filter((bed) => bed.student !== null).length;
-                        const totalBeds = room.beds.length;
+                      const occupiedBeds = room.beds.filter((bed) => bed.student !== null).length;
+                      const totalBeds = room.beds.length;
+                      const isFull = occupiedBeds === totalBeds;
+                      const isMatch = roomMatchesSearch(room); // cheol
 
-                        return (
-                          <button
-                            key={room.roomNumber}
-                            onClick={() => navigate(`/building/${buildingId}/room/${room.roomNumber}`)}
-                            className="flex-1 flex flex-col items-center gap-2 p-4 bg-white rounded-lg border-2 hover:border-current hover:shadow-lg transition-all duration-200 group"
-                            style={{ borderColor: building.color }}
+                      return (
+                        <button
+                          key={room.roomNumber}
+                          onClick={() =>
+                            navigate(`/student/dormitory/building/${buildingId}/room/${room.roomNumber}`)
+                          }
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.boxShadow = `0 6px 18px ${building.color}44`;
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)";
+                            e.currentTarget.style.transform = "translateY(0)";
+                          }}
+                          style={{
+                            flex: 1,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "12px",
+                            background: hasSearch && isMatch ? `${building.color}12` : "#fff", // cheol
+                            border: `2px solid ${hasSearch && isMatch ? building.color : building.color}`,
+                            borderRadius: "10px",
+                            cursor: "pointer",
+                            boxShadow: hasSearch && isMatch ? `0 4px 14px ${building.color}44` : "0 2px 8px rgba(0,0,0,0.08)", // cheol
+                            opacity: hasSearch && !isMatch ? 0.3 : 1, // cheol
+                            transition: "transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease",
+                          }}
+                        >
+                          {/* 문 아이콘 */}
+                          <div
+                            style={{
+                              width: "52px",
+                              height: "64px",
+                              borderRadius: "8px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: `${building.color}20`,
+                            }}
                           >
-                            {/* 문 아이콘 */}
-                            <div
-                              className="w-16 h-20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
-                              style={{ backgroundColor: `${building.color}20` }}
-                            >
-                              <DoorOpen className="w-10 h-10" style={{ color: building.color }} />
-                            </div>
+                            <DoorOpen size={32} style={{ color: building.color }} />
+                          </div>
 
-                            {/* 호수 번호 */}
-                            <span className="font-bold text-lg" style={{ color: building.color }}>
-                              {room.roomNumber}호
-                            </span>
+                          {/* 호수 번호 */}
+                          <span style={{ fontWeight: 700, fontSize: "16px", color: building.color }}>
+                            {room.roomNumber}호
+                          </span>
 
-                            {/* 배정 현황 */}
-                            <span className="text-xs text-slate-600">
-                              {occupiedBeds}/{totalBeds}
-                            </span>
-                          </button>
-                        );
-                      },
-                    )}
+                          {/* 배정 현황 */}
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: isFull ? "#ef4444" : "#64748b",
+                              fontWeight: isFull ? 600 : 400,
+                            }}
+                          >
+                            {occupiedBeds}/{totalBeds}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               );
