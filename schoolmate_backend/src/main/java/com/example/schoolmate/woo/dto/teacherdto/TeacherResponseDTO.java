@@ -50,7 +50,7 @@ public class TeacherResponseDTO {
     // Entity -> DTO 변환
     public TeacherResponseDTO(TeacherInfo teacher) {
         this.id = teacher.getId();
-        this.subject = teacher.getSubject();
+        this.subject = teacher.getSubject() != null ? teacher.getSubject().getName() : null; // cheol
         this.department = teacher.getDepartment();
         this.position = teacher.getPosition();
         this.status = teacher.getStatus();
@@ -63,7 +63,7 @@ public class TeacherResponseDTO {
 
         // 담당 학생 수
         this.studentCount = teacher.getTeacherStudents() != null
-            ? teacher.getTeacherStudents().size()
-            : 0;
+                ? teacher.getTeacherStudents().size()
+                : 0;
     }
 }

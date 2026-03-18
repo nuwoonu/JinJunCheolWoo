@@ -5,7 +5,31 @@ import NeisEventsWidget from "@/components/NeisEventsWidget";
 
 // [cheol] 학생 대시보드 - cheol/student-dashboard.html 마이그레이션
 
-// [woo] STATUS_LABEL → Sidebar.tsx로 이동
+// [woo] 출결 현황 표시용 상수
+const STATUS_LABELS: Record<string, string> = {
+  PRESENT: '출석',
+  ABSENT: '결석',
+  LATE: '지각',
+  EARLY_LEAVE: '조퇴',
+  SICK: '병결',
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  PRESENT: 'bg-success-100 text-success-600',
+  ABSENT: 'bg-danger-100 text-danger-600',
+  LATE: 'bg-warning-100 text-warning-600',
+  EARLY_LEAVE: 'bg-info-100 text-info-600',
+  SICK: 'bg-neutral-200 text-neutral-600',
+}
+
+interface AttendanceSummary {
+  PRESENT?: number
+  ABSENT?: number
+  LATE?: number
+  EARLY_LEAVE?: number
+  SICK?: number
+  totalDays?: number
+}
 
 interface Notice {
   nno?: number;
@@ -54,6 +78,8 @@ export default function StudentDashboard() {
   const [todayEvents, setTodayEvents] = useState<CalendarEvent[]>([]);
   const [timetable, setTimetable] = useState<TimetableItem[]>([]);
   const [timetableLoading, setTimetableLoading] = useState(true);
+  // [woo] 출결 현황
+  const [attendance, setAttendance] = useState<AttendanceSummary>({});
 
   useEffect(() => {
     api
@@ -75,6 +101,12 @@ export default function StudentDashboard() {
         }
       })
       .catch(() => setTimetableLoading(false));
+
+    // [woo] 학생 본인 출결 현황 조회
+    api
+      .get('/attendance/my/summary')
+      .then((res) => setAttendance(res.data))
+      .catch(() => setAttendance({}));
 
     // [woo] 오늘의 학사일정 (NEIS) - 이번달 일정에서 오늘 날짜만 필터
     const now = new Date();
@@ -117,10 +149,38 @@ export default function StudentDashboard() {
         <>
           {/* 상단 3개 카드 */}
           <div className="row gy-4 mb-24">
-            {/* [woo] 학생 프로필 카드 사이드바로 이동*/}
+            {/* [woo] 출결 현황 카드 */}
             <div className="col-xl-4 col-md-5">
-              <div className="card border-0 shadow-sm p-24 h-100 text-center" style={{ borderRadius: 16 }}>
-                {/* [woo] 출결 현황 → 사이드바로 이동 */}
+              <div className="card border-0 shadow-sm p-24 h-100" style={{ borderRadius: 16 }}>
+                <h6 className="fw-bold mb-16 text-sm">
+                  <i className="ri-calendar-check-line text-primary-600 me-2" />
+                  이번 달 출결 현황
+                </h6>
+                {attendance.totalDays != null && attendance.totalDays > 0 ? (
+                  <>
+                    <div className="d-flex flex-wrap gap-8 mb-12">
+                      {Object.entries(STATUS_LABELS).map(([key, label]) => {
+                        const count = (attendance as Record<string, number>)[key] ?? 0;
+                        if (count === 0) return null;
+                        return (
+                          <div key={key} className="text-center">
+                            <span className={`badge px-10 py-4 radius-4 text-xs fw-medium ${STATUS_BADGE[key]}`}>
+                              {label}
+                            </span>
+                            <div className="fw-semibold mt-4">{count}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="text-sm text-secondary-light">
+                      총 {attendance.totalDays}일 기록
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-secondary-light text-sm text-center py-16 mb-0">
+                    출결 기록이 없습니다.
+                  </p>
+                )}
               </div>
             </div>
 

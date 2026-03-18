@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 
 public interface TeacherInfoRepository extends JpaRepository<TeacherInfo, Long>, TeacherInfoRepositoryCustom {
-    List<TeacherInfo> findBySubject(String subject);
+    List<TeacherInfo> findBySubjectCode(String subjectCode);
 
     boolean existsByCode(String code);
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { auth } from '@/shared/auth';
-import { ADMIN_ROUTES } from '@/constants/routes';
 
 // [woo] OAuth2 소셜 로그인 콜백 페이지
 // 백엔드가 리다이렉트한 URL: /oauth2/callback?accessToken=...&refreshToken=...&role=...
@@ -29,25 +28,11 @@ export default function OAuth2Callback() {
 
     auth.setTokens(accessToken, refreshToken);
 
-    // [woo] 역할별 대시보드로 이동
-    switch (role) {
-      case "GUEST":
-        window.location.href = "/select-info?source=sns";
-        break;
-      case "TEACHER":
-        window.location.href = "/teacher/dashboard";
-        break;
-      case "STUDENT":
-        window.location.href = "/student/dashboard";
-        break;
-      case "PARENT":
-        window.location.href = "/parent/dashboard";
-        break;
-      case "ADMIN":
-        window.location.href = ADMIN_ROUTES.DASHBOARD;
-        break;
-      default:
-        window.location.href = "/select-info?source=sns";
+    // GUEST는 역할 선택 페이지로, 나머지는 Hub로 이동
+    if (role === "GUEST") {
+      window.location.href = "/select-info?source=sns";
+    } else {
+      window.location.href = "/hub";
     }
   }, []);
 

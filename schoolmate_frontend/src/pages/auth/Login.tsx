@@ -1,24 +1,14 @@
 import { useState, useEffect } from "react";
 import api from "@/api/auth";
 import { useAuth } from "@/contexts/AuthContext";
-import { ADMIN_ROUTES } from "@/constants/routes";
 import "../../styles/login.css";
 
-const roleRedirects: Record<string, string> = {
-  ADMIN: ADMIN_ROUTES.MAIN,
-  TEACHER: "/teacher/dashboard",
-  STUDENT: "/student/dashboard",
-  PARENT: "/parent/dashboard",
-};
-
 export default function Login() {
-  // [woo] 이미 로그인된 상태면 해당 대시보드로 자동 리다이렉트
+  // 이미 로그인된 상태면 Hub로 이동
   const { user, loading: authLoading } = useAuth();
   useEffect(() => {
-    // [woo] authLoading 완료 후 체크 (로딩 중엔 user가 null이라 오탐 방지)
-    // [woo] 로그아웃 후 /login 접근 시: 토큰 없음 → getMe() unauthenticated → 조건 미충족 → 리다이렉트 안 함
     if (!authLoading && user?.authenticated && user.role) {
-      window.location.href = roleRedirects[user.role] ?? "/";
+      window.location.href = "/hub";
     }
   }, [user, authLoading]);
 
@@ -40,21 +30,13 @@ export default function Login() {
         email: loginEmail,
         password,
       });
-      const { accessToken, refreshToken, role } = res.data;
+      const { accessToken, refreshToken } = res.data;
 
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
-      // [woo] 브라우저 페이지 이동 시 JwtAuthFilter가 읽을 수 있도록 쿠키에도 저장
       document.cookie = `accessToken=${accessToken}; path=/; SameSite=Strict`;
 
-      const roleRedirects: Record<string, string> = {
-        ADMIN: ADMIN_ROUTES.MAIN,
-        TEACHER: "/teacher/dashboard",
-        STUDENT: "/student/dashboard",
-        PARENT: "/parent/dashboard",
-      };
-      // [woo] role에 해당하는 경로가 없으면(null/undefined) 기본값 '/'로 이동
-      window.location.href = roleRedirects[role] ?? "/";
+      window.location.href = "/hub";
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
     } finally {

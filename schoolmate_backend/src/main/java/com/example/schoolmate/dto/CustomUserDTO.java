@@ -1,5 +1,6 @@
 package com.example.schoolmate.dto;
 
+import com.example.schoolmate.cheol.entity.Subject;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -44,7 +45,7 @@ public class CustomUserDTO {
     private Integer schoolYear;
 
     // Teacher 전용 필드
-    private String subject; // 담당 과목
+    private Subject subject; // 담당 과목
     private String employeeNumber; // 사번
 
     // Admin 전용 필드

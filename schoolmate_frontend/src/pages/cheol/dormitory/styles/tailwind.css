@@ -1,4 +1,5 @@
+/* cheol: tailwindcss 패키지 설치 후 아래 주석 해제
 @import 'tailwindcss' source(none);
-@source '../**/*.{js,ts,jsx,tsx}';
-
+@source '../**\/*.{js,ts,jsx,tsx}';
 @import 'tw-animate-css';
+*/

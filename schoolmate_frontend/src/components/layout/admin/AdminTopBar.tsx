@@ -69,11 +69,13 @@ export default function AdminTopBar({
         {/* ── 좌측: 로고 → 구분선 → 관리자 메뉴 → (빠른 메뉴) ── */}
         <div className="col-auto">
           <div className="d-flex align-items-center gap-2">
-            <img
-              src="/images/schoolmateLogo.png"
-              alt="SchoolMate"
-              style={{ height: 28, width: "auto" }}
-            />
+            <Link to="/hub" style={{ lineHeight: 0 }}>
+              <img
+                src="/images/schoolmateLogo.png"
+                alt="SchoolMate"
+                style={{ height: 28, width: "auto" }}
+              />
+            </Link>
             {showBackButton && (
               <>
                 <div style={{ width: 1, height: 20, background: "var(--neutral-300)" }} />

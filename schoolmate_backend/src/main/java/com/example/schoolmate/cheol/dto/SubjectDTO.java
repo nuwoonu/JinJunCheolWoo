@@ -2,6 +2,7 @@ package com.example.schoolmate.cheol.dto;
 
 import com.example.schoolmate.cheol.entity.Subject;
 import com.example.schoolmate.common.entity.user.constant.TestType;
+import com.example.schoolmate.common.entity.user.constant.Year; 
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,7 @@ public class SubjectDTO {
         private String originCode; // 수정 시 기존 코드 식별용
         private String code;
         private String name;
+        private Year year;
     }
 
     /**
@@ -46,11 +48,13 @@ public class SubjectDTO {
     public static class Response {
         private String code;
         private String name;
+        private Year year;
 
         public static Response from(Subject subject) {
             return Response.builder()
                     .code(subject.getCode())
                     .name(subject.getName())
+                    .year(subject.getYear())
                     .build();
         }
     }

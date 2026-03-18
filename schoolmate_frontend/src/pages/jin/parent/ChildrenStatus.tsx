@@ -194,7 +194,7 @@ export default function ParentChildrenStatus() {
                 {(() => {
                   const summary = attendanceMap[selectedChild.studentInfoId]
                   const total = summary?.totalDays ?? 0
-                  if (total === 0) return <span className="badge bg-neutral-300 px-16 py-6 rounded-pill fs-13 mx-auto mb-24">미등록</span>
+                  if (total === 0) return <span className="badge bg-neutral-300 px-16 py-6 rounded-pill fs-13 mx-auto mb-24">출결 기록 없음</span>
                   return <span className="badge bg-success-600 px-16 py-6 rounded-pill fs-13 mx-auto mb-24">출결 {total}일 기록</span>
                 })()}
 

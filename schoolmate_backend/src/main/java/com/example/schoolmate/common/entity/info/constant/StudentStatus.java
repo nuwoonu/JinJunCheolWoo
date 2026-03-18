@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum StudentStatus {
-    PENDING("승인대기"),
     ENROLLED("재학"),
     LEAVE_OF_ABSENCE("휴학"),
     DROPOUT("자퇴"),

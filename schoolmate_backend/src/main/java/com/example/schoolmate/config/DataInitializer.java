@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.school.service.NeisService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -22,11 +24,14 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SchoolRepository schoolRepository;
+    private final NeisService neisService;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
         createAdminAccountIfNotExists();
+        syncSchoolDataIfEmpty();
     }
 
     private void createAdminAccountIfNotExists() {
@@ -44,5 +49,12 @@ public class DataInitializer implements CommandLineRunner {
 
         userRepository.save(adminUser);
         log.info("초기 관리자 계정이 자동 생성되었습니다. ID: {}", adminEmail);
+    }
+
+    private void syncSchoolDataIfEmpty() {
+        if (schoolRepository.count() == 0) {
+            log.info("학교 데이터가 없어 NEIS 동기화를 시작합니다.");
+            neisService.syncSchoolData("DataInitializer");
+        }
     }
 }

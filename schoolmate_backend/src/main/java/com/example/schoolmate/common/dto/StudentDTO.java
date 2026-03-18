@@ -129,6 +129,8 @@ public class StudentDTO {
         private String code;
         private String latestClass;
         private String statusName;
+        private Long roleRequestId;
+        private String roleRequestStatus;
 
         public SummaryResponse(User user) {
             this.uid = user.getUid();
@@ -145,6 +147,14 @@ public class StudentDTO {
                     this.latestClass = "-";
                 }
             }
+        }
+
+        public void setRoleRequestId(Long roleRequestId) {
+            this.roleRequestId = roleRequestId;
+        }
+
+        public void setRoleRequestStatus(String roleRequestStatus) {
+            this.roleRequestStatus = roleRequestStatus;
         }
     }
 
@@ -166,6 +176,8 @@ public class StudentDTO {
         private String specialNotes;
         private List<AssignmentInfo> assignments;
         private List<LinkedGuardian> guardians = new ArrayList<>();
+        private Long roleRequestId;
+        private String roleRequestStatus;
 
         public DetailResponse(User user) {
             this.uid = user.getUid();

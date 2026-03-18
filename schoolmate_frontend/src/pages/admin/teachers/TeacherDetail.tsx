@@ -4,6 +4,7 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import {
   TEACHER_STATUS,
+  ROLE_REQUEST_STATUS,
   STATUS_DEFAULT,
 } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
@@ -51,6 +52,7 @@ export default function TeacherDetail() {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
   const [teacher, setTeacher] = useState<any>(null);
+  const [subjects, setSubjects] = useState<{ code: string; name: string }[]>([]); // cheol
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -63,6 +65,7 @@ export default function TeacherDetail() {
   const [activeTab, setActiveTab] = useState("info");
   const [saving, setSaving] = useState(false);
   const [newRole, setNewRole] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
 
   const load = () =>
     admin.get(`/teachers/${uid}`).then((r) => {
@@ -72,12 +75,17 @@ export default function TeacherDetail() {
         name: d.name ?? "",
         email: d.email ?? "",
         code: d.code ?? "",
-        subject: d.subject ?? "",
+        subject: d.subjectCode ?? "", // cheol
         department: d.department ?? "",
         position: d.position ?? "",
         statusName: d.statusName ?? "",
       });
     });
+
+  // cheol
+  useEffect(() => {
+    admin.get("/subjects").then((r) => setSubjects(r.data ?? []));
+  }, []);
 
   useEffect(() => {
     load();
@@ -108,6 +116,25 @@ export default function TeacherDetail() {
     if (!confirm(`"${ROLE_LABEL[role] ?? role}" 권한을 제거하시겠습니까?`))
       return;
     await admin.delete(`/teachers/${uid}/role`, { params: { role } });
+    load();
+  };
+
+  const approveRequest = async () => {
+    if (!teacher.roleRequestId) return;
+    await admin.post(`/role-requests/${teacher.roleRequestId}/approve`);
+    load();
+  };
+
+  const rejectRequest = async () => {
+    if (!teacher.roleRequestId) return;
+    await admin.post(`/role-requests/${teacher.roleRequestId}/reject`, { reason: rejectReason });
+    setRejectReason("");
+    load();
+  };
+
+  const suspendRequest = async () => {
+    if (!teacher.roleRequestId || !confirm("역할을 정지하시겠습니까?")) return;
+    await admin.post(`/role-requests/${teacher.roleRequestId}/suspend`);
     load();
   };
 
@@ -274,15 +301,23 @@ export default function TeacherDetail() {
                         )}
                       </select>
                     </div>
+                    {/* cheol */}
                     <div className="col-md-12">
                       <label className="form-label fw-bold">담당 과목</label>
-                      <input
-                        className="form-control"
+                      <select
+                        className="form-select"
                         value={form.subject}
                         onChange={(e) =>
                           setForm((f) => ({ ...f, subject: e.target.value }))
                         }
-                      />
+                      >
+                        <option value="">-- 과목 선택 --</option>
+                        {subjects.map((s) => (
+                          <option key={s.code} value={s.code}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="col-md-6">
                       <label className="form-label fw-bold">부서</label>
@@ -348,6 +383,43 @@ export default function TeacherDetail() {
 
             {activeTab === "role" && (
               <div className="card-body p-4">
+                {/* 교사 역할 승인 상태 */}
+                <h6 className="fw-semibold mb-3">교사 역할 승인 상태</h6>
+                {teacher.roleRequestId ? (
+                  <div className="border rounded p-3 mb-4" style={{ background: "var(--neutral-50, #f9fafb)" }}>
+                    <div className="d-flex align-items-center gap-2 mb-3">
+                      <span className={`badge ${(ROLE_REQUEST_STATUS[teacher.roleRequestStatus] ?? STATUS_DEFAULT).badge}`}>
+                        {(ROLE_REQUEST_STATUS[teacher.roleRequestStatus] ?? { label: teacher.roleRequestStatus }).label}
+                      </span>
+                    </div>
+                    <div className="d-flex gap-2 flex-wrap">
+                      {teacher.roleRequestStatus === 'PENDING' && (
+                        <button className="btn btn-sm btn-success" onClick={approveRequest}>승인</button>
+                      )}
+                      {teacher.roleRequestStatus === 'ACTIVE' && (
+                        <button className="btn btn-sm btn-warning" onClick={suspendRequest}>정지</button>
+                      )}
+                      {teacher.roleRequestStatus === 'SUSPENDED' && (
+                        <button className="btn btn-sm btn-success" onClick={approveRequest}>재활성화</button>
+                      )}
+                      {(teacher.roleRequestStatus === 'PENDING') && (
+                        <div className="d-flex gap-2 align-items-center">
+                          <input
+                            className="form-control form-control-sm"
+                            style={{ maxWidth: 220 }}
+                            placeholder="거절 사유 입력"
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                          />
+                          <button className="btn btn-sm btn-outline-danger" onClick={rejectRequest}>거절</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-muted mb-4">역할 신청 내역이 없습니다.</p>
+                )}
+                <hr />
                 <h6 className="fw-semibold mb-3">부여된 시스템 권한</h6>
                 {roles.length === 0 && (
                   <p className="text-muted">부여된 권한이 없습니다.</p>

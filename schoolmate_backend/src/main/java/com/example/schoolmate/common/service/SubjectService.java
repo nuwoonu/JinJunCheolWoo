@@ -43,6 +43,7 @@ public class SubjectService {
         Subject subject = Subject.builder()
                 .code(request.getCode())
                 .name(request.getName())
+                .year(request.getYear()) // cheol
                 .build();
         subjectRepository.save(subject);
     }
@@ -65,22 +66,14 @@ public class SubjectService {
             Subject newSubject = Subject.builder()
                     .code(request.getCode())
                     .name(request.getName())
+                    .year(request.getYear()) // cheol
                     .build();
             subjectRepository.save(newSubject);
         } else {
-            // 코드 유지, 이름만 변경 (Dirty Checking이 안될 수 있으므로 명시적 저장 권장하거나 Setter 사용)
-            // Subject 엔티티에 Setter가 없으면 Builder로 새로 만들거나 Setter 추가 필요.
-            // 현재 Subject 엔티티는 @Builder, @Getter만 있고 Setter가 없음.
-            // 하지만 JPA 변경 감지를 위해선 엔티티 내부 상태를 변경해야 함.
-            // 여기서는 간단히 save로 덮어쓰기 (merge) 혹은 엔티티에 수정 메서드 추가가 정석.
-            // cheol.entity.Subject는 Setter가 없으므로, repository.save()를 통해 덮어쓰기 시도.
-            // 하지만 이미 영속 상태인 객체 값을 바꿔야 함.
-            // cheol.entity.Subject에 수정 메서드가 없으므로, 새로 빌드해서 저장.
             Subject updatedSubject = Subject.builder()
                     .code(request.getCode())
                     .name(request.getName())
-                    .year(subject.getYear()) // 기존 정보 유지
-                    .teacher(subject.getTeacher()) // 기존 정보 유지
+                    .year(request.getYear()) // cheol
                     .build();
             subjectRepository.save(updatedSubject);
         }
