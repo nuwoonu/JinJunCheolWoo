@@ -220,7 +220,7 @@ export default function AdminSidebar() {
         </ul>
       </div>
 
-      {/* 현재 학교 표시 + 학교 변경 버튼 */}
+      {/* 현재 학교 표시 + 학교 변경 버튼 (SUPER_ADMIN 전용) */}
       <div className="border-top border-neutral-200 px-16 py-12">
         {selectedSchool && (
           <div
@@ -237,32 +237,34 @@ export default function AdminSidebar() {
             {selectedSchool.name}
           </div>
         )}
-        <button
-          type="button"
-          onClick={handleChangeSchool}
-          className="w-100 bg-neutral-100 border border-neutral-200 text-secondary-light radius-8 d-flex align-items-center gap-2 px-12 py-8"
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: "pointer",
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            e.currentTarget.classList.replace(
-              "bg-neutral-100",
-              "bg-neutral-200",
-            )
-          }
-          onMouseLeave={(e) =>
-            e.currentTarget.classList.replace(
-              "bg-neutral-200",
-              "bg-neutral-100",
-            )
-          }
-        >
-          <i className="ri-building-4-line" />
-          <span>다른 학교 선택</span>
-        </button>
+        {isSuperAdmin && (
+          <button
+            type="button"
+            onClick={handleChangeSchool}
+            className="w-100 bg-neutral-100 border border-neutral-200 text-secondary-light radius-8 d-flex align-items-center gap-2 px-12 py-8"
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: "pointer",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) =>
+              e.currentTarget.classList.replace(
+                "bg-neutral-100",
+                "bg-neutral-200",
+              )
+            }
+            onMouseLeave={(e) =>
+              e.currentTarget.classList.replace(
+                "bg-neutral-200",
+                "bg-neutral-100",
+              )
+            }
+          >
+            <i className="ri-building-4-line" />
+            <span>다른 학교 선택</span>
+          </button>
+        )}
       </div>
     </aside>
   );

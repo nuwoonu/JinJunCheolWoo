@@ -2,23 +2,7 @@
   "tasks": [
     {
       "type": "gradle",
-      "id": "c:\\git\\JinJunCheolWoo\\schoolmate_backendbootRunschoolmate",
-      "script": "bootRun",
-      "description": "Runs this project as a Spring Boot application.",
-      "group": "build",
-      "project": "schoolmate",
-      "buildFile": "C:\\git\\JinJunCheolWoo\\schoolmate_backend\\build.gradle",
-      "rootProject": "schoolmate",
-      "projectFolder": "c:\\git\\JinJunCheolWoo\\schoolmate_backend",
-      "workspaceFolder": "c:\\git\\JinJunCheolWoo\\schoolmate_backend",
-      "args": "",
-      "javaDebug": false,
-      "problemMatcher": ["$gradle"],
-      "label": "gradle: bootRun"
-    },
-    {
-      "type": "gradle",
-      "id": "c:\\git\\JinJunCheolWoo\\schoolmate_backendbootRunschoolmate",
+      "id": "h:\\JavaProject\\SchoolMate\\JinJunCheolWoo\\schoolmate_backendbootRunschoolmate",
       "script": "bootRun",
       "description": "Runs this project as a Spring Boot application.",
       "group": {
@@ -26,13 +10,15 @@
         "isDefault": true
       },
       "project": "schoolmate",
-      "buildFile": "C:\\git\\JinJunCheolWoo\\schoolmate_backend\\build.gradle",
+      "buildFile": "H:\\JavaProject\\SchoolMate\\JinJunCheolWoo\\schoolmate_backend\\build.gradle",
       "rootProject": "schoolmate",
-      "projectFolder": "c:\\git\\JinJunCheolWoo\\schoolmate_backend",
-      "workspaceFolder": "c:\\git\\JinJunCheolWoo\\schoolmate_backend",
+      "projectFolder": "h:\\JavaProject\\SchoolMate\\JinJunCheolWoo\\schoolmate_backend",
+      "workspaceFolder": "h:\\JavaProject\\SchoolMate\\JinJunCheolWoo\\schoolmate_backend",
       "args": "",
       "javaDebug": false,
-      "problemMatcher": ["$gradle"],
+      "problemMatcher": [
+        "$gradle"
+      ],
       "label": "gradle: bootRun"
     }
   ]

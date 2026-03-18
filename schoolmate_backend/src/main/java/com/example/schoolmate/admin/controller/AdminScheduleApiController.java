@@ -21,12 +21,14 @@ import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.common.dto.SchoolCalendarDTO;
 import com.example.schoolmate.common.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_SCHEDULE)
 @RequiredArgsConstructor
-@PreAuthorize("@grants.canAccessAdmin()")
+@PreAuthorize("@grants.canManageSchedule()")
 public class AdminScheduleApiController {
 
     private final ScheduleService adminScheduleService;
@@ -62,6 +64,7 @@ public class AdminScheduleApiController {
             adminScheduleService.importScheduleFromCsv(file);
             return ResponseEntity.ok("일정이 일괄 등록되었습니다.");
         } catch (Exception e) {
+            log.error("학사 일정 CSV 가져오기 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("오류: " + e.getMessage());
         }
     }

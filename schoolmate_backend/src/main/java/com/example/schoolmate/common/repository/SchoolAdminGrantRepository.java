@@ -29,4 +29,7 @@ public interface SchoolAdminGrantRepository extends JpaRepository<SchoolAdminGra
 
     /** 역할 목록으로 보유자 전체 조회 — 학교 무관 (학부모 가입 알림 등) */
     List<SchoolAdminGrant> findByGrantedRoleIn(List<GrantedRole> roles);
+
+    /** 특정 유저가 학교 무관으로 특정 역할을 보유하는지 (컨트롤러 레벨 권한 체크용) */
+    boolean existsByUserAndGrantedRole(User user, GrantedRole grantedRole);
 }

@@ -9,6 +9,7 @@ import com.example.schoolmate.handler.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ import org.springframework.security.web.access.expression.WebExpressionAuthoriza
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -84,7 +86,18 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 // [woo] NEIS 공개 API - 인증 불필요
                                                 .requestMatchers("/api/calendar/**", "/api/meals/**").permitAll()
-                                                // 관리자 전용: ADMIN role(슈퍼 어드민) 또는 SchoolAdminGrant 보유자
+                                                // SUPER_ADMIN 전용: 학교 관리·권한 위임·시스템 설정·감사 로그
+                                                // URL 레벨에서는 내장 hasRole 사용 (SpEL bean 참조 없이 안전하게 처리)
+                                                // 컨트롤러 레벨에서 @PreAuthorize("@grants.isSuperAdmin()")로 이중 방어
+                                                .requestMatchers(
+                                                                "/api/admin/schools/**",
+                                                                "/api/admin/grants/**",
+                                                                "/api/admin/settings/**",
+                                                                "/api/admin/subjects/**",
+                                                                "/api/admin/audit/**")
+                                                .hasRole("ADMIN")
+                                                // 일반 어드민 영역: ADMIN role 또는 SchoolAdminGrant 보유자
+                                                // (개별 컨트롤러에서 @PreAuthorize로 기능별 세분화)
                                                 .requestMatchers("/api/admin/**")
                                                 .access(new WebExpressionAuthorizationManager(
                                                                 "hasRole('ADMIN') or @grants.canAccessAdmin()"))
@@ -153,6 +166,7 @@ public class SecurityConfig {
                                                 .accessDeniedHandler(accessDeniedHandler())
                                                 // API 요청은 /login redirect 대신 401 JSON 반환 (CORS 우회 방지)
                                                 .authenticationEntryPoint((request, response, authException) -> {
+                                                        log.warn("[401] {} {} - {}", request.getMethod(), request.getRequestURI(), authException.getMessage());
                                                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                                                         response.setContentType("application/json;charset=UTF-8");
                                                         response.getWriter().write("{\"authenticated\":false}");

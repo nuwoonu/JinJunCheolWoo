@@ -10,6 +10,7 @@ import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +28,7 @@ import java.util.Map;
  * 관리자 위임 권한(SchoolAdminGrant) CRUD API
  * SUPER_ADMIN 전용
  */
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_GRANTS)
 @RequiredArgsConstructor
@@ -91,6 +93,7 @@ public class AdminGrantApiController {
 
         if (!grantRepository.existsByUserAndSchool_IdAndGrantedRole(user, schoolId, role)) {
             grantRepository.save(new SchoolAdminGrant(user, school, role, getCurrentUser()));
+            log.info("관리자 권한 부여: userId={}, schoolId={}, role={}", userId, schoolId, role);
         }
         return ResponseEntity.ok().build();
     }
@@ -103,6 +106,7 @@ public class AdminGrantApiController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "권한을 찾을 수 없습니다.");
         }
         grantRepository.deleteById(id);
+        log.info("관리자 권한 회수: grantId={}", id);
         return ResponseEntity.ok().build();
     }
 }

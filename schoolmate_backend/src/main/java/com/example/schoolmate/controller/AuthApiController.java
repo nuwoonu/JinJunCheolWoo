@@ -233,6 +233,9 @@ public class AuthApiController {
                 grantMap.put("grantedRole", g.getGrantedRole().name());
                 grantMap.put("schoolId", g.getSchool().getId());
                 grantMap.put("schoolName", g.getSchool().getName());
+                grantMap.put("schoolCode", g.getSchool().getSchoolCode());
+                grantMap.put("schoolKind", g.getSchool().getSchoolKind());
+                grantMap.put("officeOfEducation", g.getSchool().getOfficeOfEducation());
                 grants.add(grantMap);
             });
         }

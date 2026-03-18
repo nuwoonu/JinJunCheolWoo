@@ -27,6 +27,9 @@ export type GrantInfo = {
   grantedRole: string;
   schoolId?: number;
   schoolName?: string;
+  schoolCode?: string;
+  schoolKind?: string;
+  officeOfEducation?: string;
 };
 
 export type AuthUser = {

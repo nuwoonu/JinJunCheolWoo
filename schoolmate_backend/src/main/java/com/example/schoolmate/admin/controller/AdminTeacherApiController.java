@@ -16,13 +16,15 @@ import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 // 교사 관리 REST API
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_TEACHERS)
 @RequiredArgsConstructor
-@PreAuthorize("@grants.canAccessAdmin()")
+@PreAuthorize("@grants.canManageTeachers()")
 public class AdminTeacherApiController {
 
     private final TeacherService teacherService;
@@ -45,6 +47,7 @@ public class AdminTeacherApiController {
             teacherService.createTeacher(request);
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
+            log.error("교사 등록 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -62,6 +65,7 @@ public class AdminTeacherApiController {
             teacherService.bulkUpdateTeacherStatus(uids, status);
             return ResponseEntity.ok("상태 변경되었습니다.");
         } catch (Exception e) {
+            log.error("교사 일괄 상태 변경 실패: uids={}, status={}, msg={}", uids, status, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -72,6 +76,7 @@ public class AdminTeacherApiController {
             teacherService.importTeachersFromCsv(file);
             return ResponseEntity.ok("등록되었습니다.");
         } catch (Exception e) {
+            log.error("교사 CSV 가져오기 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

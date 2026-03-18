@@ -13,7 +13,9 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.notice.NotificationRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,6 +26,7 @@ public class NotificationService {
 
     // 알림 발송 (발신자 UID는 컨트롤러에서 인증 정보로 전달)
     public void sendNotification(NotificationDTO.SendRequest request, Long senderUid) {
+        log.info("알림 발송: senderUid={}, receiverUid={}, title={}", senderUid, request.getReceiverUid(), request.getTitle());
         User sender = userRepository.findById(senderUid)
                 .orElseThrow(() -> new IllegalArgumentException("발신자를 찾을 수 없습니다."));
 

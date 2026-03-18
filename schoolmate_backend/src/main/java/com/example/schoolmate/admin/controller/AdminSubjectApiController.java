@@ -10,9 +10,11 @@ import com.example.schoolmate.cheol.dto.SubjectDTO;
 import com.example.schoolmate.common.service.SubjectService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 // 교과목 관리 REST API
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_SUBJECTS)
 @RequiredArgsConstructor

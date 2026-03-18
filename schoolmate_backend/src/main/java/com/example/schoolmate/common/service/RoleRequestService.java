@@ -8,6 +8,7 @@ import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.util.NotificationHelper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -53,6 +55,7 @@ public class RoleRequestService {
      * User.roles에 추가 + 승인 알림 발송
      */
     public void approve(Long requestId, User reviewer) {
+        log.info("역할 신청 승인: requestId={}, reviewerUid={}", requestId, reviewer.getUid());
         RoleRequest request = findById(requestId);
         request.approve(reviewer);
 
@@ -74,6 +77,7 @@ public class RoleRequestService {
      * User.roles에서 제거 + 거절 알림(사유 포함) 발송
      */
     public void reject(Long requestId, User reviewer, String reason) {
+        log.info("역할 신청 거절: requestId={}, reviewerUid={}, reason={}", requestId, reviewer.getUid(), reason);
         RoleRequest request = findById(requestId);
         request.reject(reviewer, reason);
 
@@ -92,6 +96,7 @@ public class RoleRequestService {
      * User.roles에서 제거 + 정지 알림 발송
      */
     public void suspend(Long requestId, User reviewer) {
+        log.info("역할 정지: requestId={}, reviewerUid={}", requestId, reviewer.getUid());
         RoleRequest request = findById(requestId);
         request.suspend(reviewer);
 

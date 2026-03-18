@@ -20,6 +20,7 @@ import com.example.schoolmate.domain.resources.dto.FacilityDTO;
 import com.example.schoolmate.domain.resources.service.FacilityService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * 관리자 시설 관리 REST 컨트롤러
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_FACILITIES)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canManageFacilities()")
 public class AdminFacilityApiController {
 
     private final FacilityService adminFacilityService;
