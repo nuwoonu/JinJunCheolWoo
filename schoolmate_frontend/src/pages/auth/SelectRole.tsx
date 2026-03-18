@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import api from '@/api/auth'
 import { auth } from '@/shared/auth'
-import { ADMIN_ROUTES } from '@/constants/routes'
 
 // [woo] OAuth2 소셜 로그인 후 역할 선택 페이지 (GUEST 유저 전용)
 export default function SelectRole() {
@@ -30,13 +29,6 @@ export default function SelectRole() {
     },
   ]
 
-  const roleRedirects: Record<string, string> = {
-    STUDENT: '/student/dashboard',
-    TEACHER: '/teacher/dashboard',
-    PARENT: '/parent/dashboard',
-    ADMIN: ADMIN_ROUTES.SCHOOL_SELECT,
-  }
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!selected) return
@@ -47,9 +39,9 @@ export default function SelectRole() {
         '/auth/select-role',
         { role: selected }
       )
-      const { accessToken, refreshToken, role } = res.data
+      const { accessToken, refreshToken } = res.data
       auth.setTokens(accessToken, refreshToken)
-      window.location.href = roleRedirects[role] ?? '/login'
+      window.location.href = '/hub'
     } catch (e: unknown) {
       const err = e as { response?: { data?: { message?: string } } }
       setError(err.response?.data?.message ?? '역할 설정에 실패했습니다. 다시 시도해 주세요.')

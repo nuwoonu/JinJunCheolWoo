@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ParentAdminLayout from '@/components/layout/admin/ParentAdminLayout';
 import admin from '@/api/adminApi';
-import { PARENT_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
+import { ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
 export default function ParentDetail() {
@@ -13,8 +13,8 @@ export default function ParentDetail() {
     name: "",
     email: "",
     phone: "",
-    statusName: "",
   });
+  const [rejectReason, setRejectReason] = useState("");
   const [activeTab, setActiveTab] = useState("info");
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,7 +31,6 @@ export default function ParentDetail() {
         name: d.name ?? "",
         email: d.email ?? "",
         phone: d.phone ?? "",
-        statusName: d.statusName ?? "ACTIVE",
       });
     });
 
@@ -49,6 +48,23 @@ export default function ParentDetail() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const approveRequest = async () => {
+    await admin.post(`/role-requests/${parent.roleRequestId}/approve`);
+    load();
+  };
+
+  const rejectRequest = async () => {
+    await admin.post(`/role-requests/${parent.roleRequestId}/reject`, { reason: rejectReason });
+    setRejectReason("");
+    load();
+  };
+
+  const suspendRequest = async () => {
+    if (!confirm("역할을 정지하시겠습니까?")) return;
+    await admin.post(`/role-requests/${parent.roleRequestId}/suspend`);
+    load();
   };
 
   const removeChild = async (studentUid: string) => {
@@ -264,14 +280,14 @@ export default function ParentDetail() {
               <h5 className="mb-1 fw-bold">{parent.name}</h5>
               <p className="text-muted small mb-2">{parent.email}</p>
               {(() => {
-                const cfg = PARENT_STATUS[parent.statusName] ?? STATUS_DEFAULT;
+                const cfg = ROLE_REQUEST_STATUS[parent.roleRequestStatus] ?? STATUS_DEFAULT;
                 return (
                   <button
                     type="button"
                     className={`btn ${cfg.btn} w-100 rounded-pill mb-3`}
                     style={{ pointerEvents: "none" }}
                   >
-                    {cfg.label}
+                    {cfg.label || "미신청"}
                   </button>
                 );
               })()}
@@ -299,6 +315,7 @@ export default function ParentDetail() {
               {[
                 ["info", "기본 정보"],
                 ["children", "자녀 관리"],
+                ["approval", "역할 승인"],
                 ["noti", "알림 이력"],
               ].map(([key, label]) => (
                 <button
@@ -354,21 +371,6 @@ export default function ParentDetail() {
                           setForm((f) => ({ ...f, email: e.target.value }))
                         }
                       />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">상태</label>
-                      <select
-                        className="form-select"
-                        value={form.statusName}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, statusName: e.target.value }))
-                        }
-                      >
-                        <option value="PENDING">승인대기</option>
-                        <option value="ACTIVE">활성</option>
-                        <option value="INACTIVE">비활성</option>
-                        <option value="BLOCKED">차단</option>
-                      </select>
                     </div>
                   </div>
                 </div>
@@ -449,6 +451,46 @@ export default function ParentDetail() {
                   </table>
                 </div>
               </>
+            )}
+
+            {activeTab === "approval" && (
+              <div className="card-body p-4">
+                <h6 className="fw-semibold mb-3">학부모 역할 승인 상태</h6>
+                {parent.roleRequestId ? (
+                  <div className="border rounded p-3" style={{ background: "var(--neutral-50, #f9fafb)" }}>
+                    <div className="d-flex align-items-center gap-2 mb-3">
+                      <span className={`badge ${(ROLE_REQUEST_STATUS[parent.roleRequestStatus] ?? STATUS_DEFAULT).badge}`}>
+                        {(ROLE_REQUEST_STATUS[parent.roleRequestStatus] ?? { label: parent.roleRequestStatus }).label}
+                      </span>
+                    </div>
+                    <div className="d-flex gap-2 flex-wrap align-items-center">
+                      {parent.roleRequestStatus === 'PENDING' && (
+                        <button className="btn btn-sm btn-success" onClick={approveRequest}>승인</button>
+                      )}
+                      {parent.roleRequestStatus === 'ACTIVE' && (
+                        <button className="btn btn-sm btn-warning" onClick={suspendRequest}>정지</button>
+                      )}
+                      {parent.roleRequestStatus === 'SUSPENDED' && (
+                        <button className="btn btn-sm btn-success" onClick={approveRequest}>재활성화</button>
+                      )}
+                      {parent.roleRequestStatus === 'PENDING' && (
+                        <>
+                          <input
+                            className="form-control form-control-sm"
+                            style={{ maxWidth: 220 }}
+                            placeholder="거절 사유 입력"
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                          />
+                          <button className="btn btn-sm btn-outline-danger" onClick={rejectRequest}>거절</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-muted">역할 신청 내역이 없습니다.</p>
+                )}
+              </div>
             )}
 
             {activeTab === "noti" && (

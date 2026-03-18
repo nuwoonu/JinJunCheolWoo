@@ -5,14 +5,15 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.ParentInfo;
-import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
@@ -43,6 +44,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final ParentInfoRepository parentInfoRepository;
+    private final RoleRequestRepository roleRequestRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
     private final SchoolRepository schoolRepository;
@@ -81,6 +83,11 @@ public class UserService {
         User savedUser = userRepository.save(user);
         log.info("회원가입 완료: {}, ID: {}", savedUser.getEmail(), savedUser.getUid());
 
+        // 역할별 RoleRequest 생성 (PENDING 승인 대기)
+        if (dto.getRole() != UserRole.ADMIN) {
+            roleRequestRepository.save(new RoleRequest(savedUser, dto.getRole(), dto.getSchoolId()));
+        }
+
         // 교사/학부모 가입 시 관리자에게 승인 요청 알림 발송
         if (dto.getRole() == UserRole.TEACHER) {
             notifyAdminsOfNewTeacher(savedUser);
@@ -98,7 +105,7 @@ public class UserService {
     private void createStudentInfo(User user, CustomUserDTO dto) {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
-        studentInfo.setStatus(StudentStatus.PENDING);
+        studentInfo.setStatus(StudentStatus.ENROLLED);
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(studentInfo::setSchool);
         }
@@ -139,7 +146,7 @@ public class UserService {
     private void createTeacherInfo(User user, CustomUserDTO dto) {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
-        teacherInfo.setStatus(TeacherStatus.PENDING);
+        teacherInfo.setStatus(TeacherStatus.EMPLOYED);
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(teacherInfo::setSchool);
         }
@@ -166,7 +173,6 @@ public class UserService {
         parentInfo.setUser(user);
         parentInfo.setParentName(dto.getName());
         parentInfo.setPhone(dto.getPhoneNumber());
-        parentInfo.setStatus(ParentStatus.PENDING); // 회원가입 시 승인대기 상태로 설정 [woo]
 
         // ========== [변경] 중복 code 체크 추가 (2025-01-29 woo) ==========
         // 동일한 이메일 아이디로 가입 시 중복 에러 방지
@@ -189,7 +195,7 @@ public class UserService {
             case STUDENT -> {
                 StudentInfo studentInfo = new StudentInfo();
                 studentInfo.setUser(user);
-                studentInfo.setStatus(StudentStatus.PENDING);
+                studentInfo.setStatus(StudentStatus.ENROLLED);
                 studentInfo.setCode(java.util.UUID.randomUUID().toString());
                 if (schoolId != null) {
                     schoolRepository.findById(schoolId).ifPresent(studentInfo::setSchool);
@@ -199,7 +205,7 @@ public class UserService {
             case TEACHER -> {
                 TeacherInfo teacherInfo = new TeacherInfo();
                 teacherInfo.setUser(user);
-                teacherInfo.setStatus(TeacherStatus.PENDING);
+                teacherInfo.setStatus(TeacherStatus.EMPLOYED);
                 teacherInfo.setCode(java.util.UUID.randomUUID().toString());
                 if (schoolId != null) {
                     schoolRepository.findById(schoolId).ifPresent(teacherInfo::setSchool);
@@ -210,7 +216,6 @@ public class UserService {
                 ParentInfo parentInfo = new ParentInfo();
                 parentInfo.setUser(user);
                 parentInfo.setParentName(user.getName());
-                parentInfo.setStatus(ParentStatus.PENDING);
                 String code = "TEMP_" + user.getEmail().split("@")[0];
                 if (parentInfoRepository.existsByCode(code)) {
                     code = "TEMP_" + java.util.UUID.randomUUID().toString().substring(0, 8);
@@ -223,11 +228,22 @@ public class UserService {
         }
         userRepository.save(user);
 
-        // 교사/학부모 SNS 가입 시 관리자에게 승인 요청 알림 발송
-        if (role == UserRole.TEACHER) {
-            notifyAdminsOfNewTeacher(user);
-        } else if (role == UserRole.PARENT) {
-            notifyAdminsOfNewParent(user);
+        // RoleRequest 생성 — ADMIN 보유 계정은 즉시 ACTIVE, 그 외는 PENDING 대기
+        if (role != UserRole.ADMIN) {
+            boolean isAdmin = user.getRoles().contains(UserRole.ADMIN);
+            RoleRequest roleRequest = isAdmin
+                    ? RoleRequest.createActive(user, role, schoolId, null)
+                    : new RoleRequest(user, role, schoolId);
+            roleRequestRepository.save(roleRequest);
+
+            // ADMIN 자동 승인된 경우 관리자 알림 불필요 (본인이 스스로 승인한 것이므로)
+            if (!isAdmin) {
+                if (role == UserRole.TEACHER) {
+                    notifyAdminsOfNewTeacher(user);
+                } else if (role == UserRole.PARENT) {
+                    notifyAdminsOfNewParent(user);
+                }
+            }
         }
     }
 

@@ -31,6 +31,7 @@ public class SchoolmateUrls {
     public static final String ADMIN_SCHEDULE = API_ADMIN + "/schedule";
     public static final String ADMIN_SETTINGS = API_ADMIN + "/settings";
     public static final String ADMIN_NOTICES = API_ADMIN + "/notices";
+    public static final String ADMIN_ROLE_REQUESTS = API_ADMIN + "/role-requests";
 
     // 외부 API 주소
     public static class Api {

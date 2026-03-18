@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.example.schoolmate.common.dto.StudentDTO;
+import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.User;
 
@@ -26,4 +28,26 @@ public interface StudentInfoRepositoryCustom {
     long countByStatus(StudentStatus status);
 
     int findMaxAttendanceNum(int year, int grade, int classNum);
+
+    // 기존 @Query 메서드들 → QueryDSL로 이전
+    Optional<StudentInfo> findByAttendanceNum(Integer attendanceNum);
+
+    Optional<StudentInfo> findByUserEmail(String email);
+
+    List<StudentInfo> findByClassroom(Classroom classroom);
+
+    List<StudentInfo> findByClassroomGrade(int grade);
+
+    List<StudentInfo> findByClassroomClassNum(int classNum);
+
+    List<StudentInfo> findByClassroomGradeAndClassroomClassNum(int grade, int classNum);
+
+    List<StudentInfo> findByClassroomCid(Long classroomId);
+
+    List<StudentInfo> findByClassroomYearAndClassroomGradeAndClassroomClassNum(int year, int grade, int classNum);
+
+    Optional<StudentInfo> findByUserUid(Long uid);
+
+    /** 특정 학교에서 아직 학급 배정이 없는 학생 목록 (구 findPendingBySchoolId 대체) */
+    List<StudentInfo> findUnassignedBySchoolId(Long schoolId);
 }

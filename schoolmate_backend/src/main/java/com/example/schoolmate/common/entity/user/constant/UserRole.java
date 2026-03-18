@@ -10,12 +10,7 @@ public enum UserRole {
     TEACHER("교사"),
     STAFF("교직원"),
     PARENT("학부모"),
-    ADMIN("관리자"),
-    FACILITY_MANAGER("시설 관리자"),
-    ASSET_MANAGER("기자재 관리자"),
-    LIBRARIAN("사서"),
-    NURSE("보건 교사"),
-    NUTRITIONIST("영양사");
+    ADMIN("관리자");
 
     private final String description;
 }
