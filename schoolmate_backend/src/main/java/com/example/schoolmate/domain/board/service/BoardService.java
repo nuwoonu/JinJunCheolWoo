@@ -16,6 +16,10 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.common.entity.info.FamilyRelation;
+import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
+import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -40,6 +44,7 @@ public class BoardService {
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StaffInfoRepository staffInfoRepository;
+    private final FamilyRelationRepository familyRelationRepository;
     private final SchoolRepository schoolRepository;
 
     // ========== 게시물 조회 ==========
@@ -90,6 +95,39 @@ public class BoardService {
     public Page<BoardDTO.Response> getParentNotices(Pageable pageable) {
         return boardRepository.findByType(BoardType.PARENT_NOTICE, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
+    }
+
+    /**
+     * [woo] 학부모 공지(가정통신문) - 역할별 필터링 조회
+     * 학부모: 자녀 학급 + 학년 전체 + 전체 공지만 표시
+     * 교사/관리자: 전체 조회
+     */
+    public Page<BoardDTO.Response> getParentNoticesFiltered(CustomUserDTO userDTO, Pageable pageable) {
+        // 비로그인 또는 교사/관리자 → 전체 조회
+        if (userDTO == null || isAdmin(userDTO) || isTeacher(userDTO)) {
+            return getParentNotices(pageable);
+        }
+
+        // 학부모 → 자녀의 학급 기준 필터링
+        if (isParent(userDTO)) {
+            List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
+            if (relations.isEmpty()) {
+                return getParentNotices(pageable); // 자녀 없으면 전체 표시
+            }
+
+            // 자녀들의 현재 학급/학년 정보 수집
+            for (FamilyRelation rel : relations) {
+                StudentInfo student = rel.getStudentInfo();
+                StudentAssignment assignment = student.getCurrentAssignment();
+                if (assignment != null && assignment.getClassroom() != null) {
+                    Classroom classroom = assignment.getClassroom();
+                    // 첫 번째 유효한 자녀의 학급으로 필터링 (여러 자녀면 가장 먼저 찾은 학급)
+                    return getParentNoticesByClassroom(classroom.getCid(), classroom.getGrade(), pageable);
+                }
+            }
+        }
+
+        return getParentNotices(pageable);
     }
 
     /**
@@ -204,6 +242,22 @@ public class BoardService {
         if (request.getTargetClassroomId() != null) {
             targetClassroom = classroomRepository.findById(request.getTargetClassroomId())
                     .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
+        }
+
+        // [woo] 가정통신문 작성 시 교사의 담임 학급 자동 연결
+        if (request.getBoardType() == BoardType.PARENT_NOTICE && targetClassroom == null && isTeacher(userDTO)) {
+            int currentYear = java.time.LocalDate.now().getYear();
+            teacherInfoRepository.findByUserUid(userDTO.getUid()).ifPresent(teacherInfo -> {
+                classroomRepository.findByHomeroomTeacherIdAndYear(teacherInfo.getId(), currentYear)
+                        .ifPresent(classroom -> {
+                            request.setTargetClassroomId(classroom.getCid());
+                            request.setTargetGrade(classroom.getGrade());
+                        });
+            });
+            if (request.getTargetClassroomId() != null) {
+                targetClassroom = classroomRepository.findById(request.getTargetClassroomId())
+                        .orElse(null);
+            }
         }
 
         Board board = Board.builder()
