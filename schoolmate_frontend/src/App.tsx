@@ -14,7 +14,6 @@ import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
 import UserProfile from "@/pages/user/Profile";
 // [cheol] 학생 관련
-import StudentDashboard from "@/pages/jin/student/StudentDashboard";
 import StudentList from "@/pages/cheol/student/StudentList";
 import StudentMyInfo from "@/pages/cheol/student/MyInfo";
 import StudentGrades from "@/pages/cheol/student/Grades";
@@ -68,6 +67,9 @@ import ConsultationReservation from "@/pages/jin/consultation/ConsultationReserv
 // [jin] 학교 일정/갤러리
 import SchoolSchedule from "@/pages/jin/school/SchoolSchedule";
 import SchoolGallery from "@/pages/jin/school/SchoolGallery";
+// [jin] 선생님, 학생 학급 대시보드
+import TeacherMyClassDashboard from "@/pages/jin/teacher/MyClassDashboard";
+import StudentDashboard from "@/pages/jin/student/StudentDashboard";
 // [parkjoon] 관리자 페이지
 import JoonAdminMain from "@/pages/admin/AdminMain";
 import JoonSchoolSelect from "@/pages/admin/school/SchoolSelect";
@@ -279,6 +281,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherMyClassStudents />
+          </PrivateRoute>
+        }
+      />
+      {/* [jin] 교사 학급 대시보드 */}
+      <Route
+        path="/teacher/myclass/dashboard"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherMyClassDashboard />
           </PrivateRoute>
         }
       />

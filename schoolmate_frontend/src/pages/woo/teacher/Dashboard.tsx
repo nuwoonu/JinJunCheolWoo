@@ -379,7 +379,7 @@ export default function TeacherDashboard() {
                         bg: "#f0fdf4",
                         iconBg: "#bbf7d0",
                         iconColor: "#15803d",
-                        href: "/teacher/myclass",
+                        href: "/teacher/myclass/dashboard",
                       },
                       {
                         label: "수업 관리",
