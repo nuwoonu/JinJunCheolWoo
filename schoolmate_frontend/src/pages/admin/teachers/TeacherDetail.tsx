@@ -51,6 +51,7 @@ export default function TeacherDetail() {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
   const [teacher, setTeacher] = useState<any>(null);
+  const [subjects, setSubjects] = useState<{ code: string; name: string }[]>([]); // cheol
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -72,12 +73,17 @@ export default function TeacherDetail() {
         name: d.name ?? "",
         email: d.email ?? "",
         code: d.code ?? "",
-        subject: d.subject ?? "",
+        subject: d.subjectCode ?? "", // cheol
         department: d.department ?? "",
         position: d.position ?? "",
         statusName: d.statusName ?? "",
       });
     });
+
+  // cheol
+  useEffect(() => {
+    admin.get("/subjects").then((r) => setSubjects(r.data ?? []));
+  }, []);
 
   useEffect(() => {
     load();
@@ -274,15 +280,23 @@ export default function TeacherDetail() {
                         )}
                       </select>
                     </div>
+                    {/* cheol */}
                     <div className="col-md-12">
                       <label className="form-label fw-bold">담당 과목</label>
-                      <input
-                        className="form-control"
+                      <select
+                        className="form-select"
                         value={form.subject}
                         onChange={(e) =>
                           setForm((f) => ({ ...f, subject: e.target.value }))
                         }
-                      />
+                      >
+                        <option value="">-- 과목 선택 --</option>
+                        {subjects.map((s) => (
+                          <option key={s.code} value={s.code}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="col-md-6">
                       <label className="form-label fw-bold">부서</label>

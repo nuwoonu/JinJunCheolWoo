@@ -13,7 +13,5 @@ public interface SubjectRepository extends JpaRepository<Subject, String> {
 
     List<Subject> findByYear(Year year);
 
-    List<Subject> findByTeacherId(Long teacherId);
-
     boolean existsByName(String name);
 }

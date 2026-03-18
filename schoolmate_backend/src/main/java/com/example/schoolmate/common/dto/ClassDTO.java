@@ -104,7 +104,8 @@ public class ClassDTO {
             User teacher = classroom.getTeacher();
             String subject = "-";
             if (teacher != null && teacher.getInfo(TeacherInfo.class) != null) {
-                subject = teacher.getInfo(TeacherInfo.class).getSubject();
+                TeacherInfo ti = teacher.getInfo(TeacherInfo.class);
+                subject = ti.getSubject() != null ? ti.getSubject().getName() : "-"; // cheol
             }
 
             return DetailResponse.builder()
@@ -163,7 +164,8 @@ public class ClassDTO {
         public static TeacherSelectResponse from(User user) {
             String subject = "-";
             if (user.getInfo(TeacherInfo.class) != null) {
-                subject = user.getInfo(TeacherInfo.class).getSubject();
+                TeacherInfo ti = user.getInfo(TeacherInfo.class);
+                subject = ti.getSubject() != null ? ti.getSubject().getName() : "-"; // cheol
             }
             return TeacherSelectResponse.builder()
                     .uid(user.getUid())

@@ -36,7 +36,8 @@ public class TeacherDTO {
         private String name;
         private String email;
         private String code;
-        private String subject;
+        private String subject;     // 과목명 (프로필 표시용)
+        private String subjectCode; // 과목 코드 (폼 선택값용) // cheol
 
         private String statusName;
 
@@ -58,7 +59,8 @@ public class TeacherDTO {
             // 2. TeacherInfo가 존재할 경우에만 상세 정보 세팅
             if (ti != null) {
                 this.code = ti.getCode();
-                this.subject = ti.getSubject();
+                this.subject = ti.getSubject() != null ? ti.getSubject().getName() : null; // cheol
+                this.subjectCode = ti.getSubject() != null ? ti.getSubject().getCode() : null; // cheol
                 this.department = ti.getDepartment();
                 this.position = ti.getPosition();
 

@@ -120,11 +120,11 @@
 }
 
 @layer base {
-  * {
+  .dormitory-app * {
     @apply border-border outline-ring/50;
   }
 
-  body {
+  .dormitory-app {
     @apply bg-background text-foreground;
   }
 

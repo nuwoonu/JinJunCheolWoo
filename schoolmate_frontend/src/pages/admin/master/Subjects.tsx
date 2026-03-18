@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 
-const EMPTY = { originCode: "", code: "", name: "" };
+// cheol
+const YEAR_OPTIONS = [
+  { value: "FIRST",  label: "1학년" },
+  { value: "SECOND", label: "2학년" },
+  { value: "THIRD",  label: "3학년" },
+];
+const YEAR_LABEL: Record<string, string> = { FIRST: "1학년", SECOND: "2학년", THIRD: "3학년" }; // cheol
+
+const EMPTY = { originCode: "", code: "", name: "", year: "" }; // cheol
 
 export default function Subjects() {
   const [subjects, setSubjects] = useState<any[]>([]);
@@ -23,21 +31,18 @@ export default function Subjects() {
   };
 
   const openUpdateModal = (s: any) => {
-    setForm({ originCode: s.code, code: s.code, name: s.name });
+    setForm({ originCode: s.code, code: s.code, name: s.name, year: s.year ?? "" }); // cheol
     setIsEdit(true);
     setShowModal(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const payload = { originCode: form.originCode, code: form.code, name: form.name, year: form.year || null }; // cheol
     if (isEdit) {
-      await admin.put(`/subjects`, {
-        originCode: form.originCode,
-        code: form.code,
-        name: form.name,
-      });
+      await admin.put(`/subjects`, payload);
     } else {
-      await admin.post("/subjects", { code: form.code, name: form.name });
+      await admin.post("/subjects", payload);
     }
     setShowModal(false);
     load();
@@ -125,6 +130,22 @@ export default function Subjects() {
                     placeholder="예: 수학"
                   />
                 </div>
+                {/* cheol */}
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">학년</label>
+                  <select
+                    className="form-select"
+                    value={form.year}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, year: e.target.value }))
+                    }
+                  >
+                    <option value="">-- 학년 선택 --</option>
+                    {YEAR_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div
                 style={{
@@ -173,6 +194,7 @@ export default function Subjects() {
               <tr>
                 <th className="ps-4">과목 코드</th>
                 <th>과목명</th>
+                <th>학년</th> {/* cheol */}
                 <th className="text-end pe-4">관리</th>
               </tr>
             </thead>
@@ -181,6 +203,7 @@ export default function Subjects() {
                 <tr key={s.code}>
                   <td className="ps-4 fw-bold text-primary">{s.code}</td>
                   <td>{s.name}</td>
+                  <td>{s.year ? YEAR_LABEL[s.year] : "-"}</td> {/* cheol */}
                   <td className="text-end pe-4">
                     <button
                       className="btn btn-sm btn-outline-primary me-2"
@@ -199,7 +222,7 @@ export default function Subjects() {
               ))}
               {subjects.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="text-center py-5 text-muted">
+                  <td colSpan={4} className="text-center py-5 text-muted">
                     등록된 과목이 없습니다.
                   </td>
                 </tr>

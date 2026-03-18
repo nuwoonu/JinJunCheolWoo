@@ -3,6 +3,7 @@ package com.example.schoolmate.common.entity.info;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.schoolmate.cheol.entity.Subject;
 import com.example.schoolmate.common.entity.info.assignment.TeacherStudent;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 
@@ -12,6 +13,9 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -26,13 +30,17 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "teacher_info", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_teacher_code_school", columnNames = { "code", "school_id" })
+        @UniqueConstraint(name = "uk_teacher_code_school", columnNames = { "code", "school_id" })
 })
 @DiscriminatorValue("TEACHER")
 @Getter
 @Setter
 public class TeacherInfo extends SchoolMemberInfo {
-    private String subject; // 담당 과목
+    // cheol
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_code")
+    private Subject subject; // 담당 과목 (Subject 엔티티 참조)
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private TeacherStatus status = TeacherStatus.EMPLOYED; // 재직 상태 (재직/휴직/퇴직)
@@ -43,7 +51,8 @@ public class TeacherInfo extends SchoolMemberInfo {
     @OneToMany(mappedBy = "teacherInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeacherStudent> teacherStudents = new ArrayList<>();
 
-    public void update(String subject, String department, String position, TeacherStatus status) {
+    // cheol
+    public void update(Subject subject, String department, String position, TeacherStatus status) {
         this.subject = subject;
         this.department = department;
         this.position = position;

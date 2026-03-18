@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
+import com.example.schoolmate.cheol.entity.QSubject;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.entity.info.QTeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
@@ -34,9 +35,13 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
         BooleanExpression statusFilter = statusFilter(cond.getStatus());
         BooleanExpression schoolFilter = schoolFilter(info);
 
+        // cheol
+        QSubject subject = QSubject.subject;
+
         JPAQuery<User> contentQuery = query
                 .selectFrom(user).distinct()
                 .leftJoin(info).on(info.user.eq(user))
+                .leftJoin(subject).on(info.subject.eq(subject))
                 .where(isTeacher, searchFilter, statusFilter, schoolFilter)
                 .orderBy(user.uid.desc());
 
@@ -50,6 +55,7 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
                 .select(user.countDistinct())
                 .from(user)
                 .leftJoin(info).on(info.user.eq(user))
+                .leftJoin(subject).on(info.subject.eq(subject))
                 .where(isTeacher, searchFilter, statusFilter, schoolFilter);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
@@ -79,7 +85,7 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
             case "name" -> user.name.contains(keyword);
             case "email" -> user.email.contains(keyword);
             case "dept" -> info.department.contains(keyword);
-            case "subject" -> info.subject.contains(keyword);
+            case "subject" -> info.subject.name.contains(keyword); // cheol
             case "position" -> info.position.contains(keyword);
             default -> null;
         };
