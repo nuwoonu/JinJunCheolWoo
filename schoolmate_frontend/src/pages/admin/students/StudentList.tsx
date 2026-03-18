@@ -2,48 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
+import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
 // [joon] 학생 목록
-const STATUSES = [
-  { value: "ENROLLED", label: "재학" },
-  { value: "LEAVE_OF_ABSENCE", label: "휴학" },
-  { value: "GRADUATED", label: "졸업", danger: true },
-  { value: "DROPOUT", label: "자퇴", danger: true },
-  { value: "EXPELLED", label: "제적", danger: true },
-  { value: "TRANSFERRED", label: "전학", danger: true },
-];
-
-const STATUS_CFG: Record<string, { label: string; badge: string }> = {
-  PENDING: {
-    label: "승인대기",
-    badge: "bg-info-subtle text-info border border-info-subtle",
-  },
-  ENROLLED: {
-    label: "재학",
-    badge: "bg-success-subtle text-success border border-success-subtle",
-  },
-  LEAVE_OF_ABSENCE: {
-    label: "휴학",
-    badge: "bg-warning-subtle text-warning border border-warning-subtle",
-  },
-  GRADUATED: {
-    label: "졸업",
-    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle",
-  },
-  DROPOUT: {
-    label: "자퇴",
-    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle",
-  },
-  EXPELLED: {
-    label: "제적",
-    badge: "bg-danger-subtle text-danger border border-danger-subtle",
-  },
-  TRANSFERRED: {
-    label: "전학",
-    badge: "bg-secondary-subtle text-secondary border border-secondary-subtle",
-  },
-};
+const STATUSES = Object.entries(STUDENT_STATUS).map(([value, cfg], i) => ({
+  value,
+  label: cfg.label,
+  danger: i >= 2, // DROPOUT, EXPELLED, GRADUATED, TRANSFERRED
+}));
 
 function formatClass(raw: string | null | undefined) {
   if (!raw || raw === "-") return "-";
@@ -109,6 +76,18 @@ export default function StudentList() {
       params: { uids: selected, status: s },
     });
     setSelected([]);
+    load(currentPage);
+  };
+
+  const approveRequest = async (requestId: number) => {
+    await admin.post(`/role-requests/${requestId}/approve`);
+    load(currentPage);
+  };
+
+  const rejectRequest = async (requestId: number) => {
+    const reason = window.prompt('거절 사유를 입력하세요.');
+    if (reason === null) return;
+    await admin.post(`/role-requests/${requestId}/reject`, { reason });
     load(currentPage);
   };
 
@@ -275,7 +254,8 @@ export default function StudentList() {
                   <th>이름</th>
                   <th>계정 (이메일)</th>
                   <th>최근 소속 정보</th>
-                  <th>상태</th>
+                  <th>학적 상태</th>
+                  <th>승인 상태</th>
                   <th className="text-end pe-4">관리</th>
                 </tr>
               </thead>
@@ -307,14 +287,35 @@ export default function StudentList() {
                       </small>
                     </td>
                     <td>
-                      <span
-                        className={`badge ${(STATUS_CFG[s.statusName] ?? STATUS_CFG.ENROLLED).badge}`}
-                      >
-                        {
-                          (STATUS_CFG[s.statusName] ?? { label: s.statusName })
-                            .label
-                        }
-                      </span>
+                      {(() => {
+                        const cfg = STUDENT_STATUS[s.statusName] ?? STATUS_DEFAULT;
+                        return <span className={`badge ${cfg.badge}`}>{cfg.label}</span>;
+                      })()}
+                    </td>
+                    <td>
+                      {s.roleRequestStatus ? (
+                        <div className="d-flex align-items-center gap-1">
+                          <span className={`badge ${(ROLE_REQUEST_STATUS[s.roleRequestStatus] ?? ROLE_REQUEST_STATUS.PENDING).badge}`}>
+                            {(ROLE_REQUEST_STATUS[s.roleRequestStatus] ?? ROLE_REQUEST_STATUS.PENDING).label}
+                          </span>
+                          {s.roleRequestStatus === 'PENDING' && (
+                            <>
+                              <button
+                                className="btn btn-xs btn-success py-0 px-1"
+                                style={{ fontSize: 11 }}
+                                onClick={() => approveRequest(s.roleRequestId)}
+                              >승인</button>
+                              <button
+                                className="btn btn-xs btn-outline-danger py-0 px-1"
+                                style={{ fontSize: 11 }}
+                                onClick={() => rejectRequest(s.roleRequestId)}
+                              >거절</button>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted small">-</span>
+                      )}
                     </td>
                     <td className="text-end pe-4">
                       <Link
@@ -328,7 +329,7 @@ export default function StudentList() {
                 ))}
                 {list.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-5 text-muted">
+                    <td colSpan={8} className="text-center py-5 text-muted">
                       검색 결과가 없습니다.
                     </td>
                   </tr>

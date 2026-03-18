@@ -3,15 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import { auth } from '@/shared/auth'
-import { ADMIN_ROUTES } from '@/constants/routes'
 import '../../styles/register.css'
-
-const roleRedirects: Record<string, string> = {
-  ADMIN: ADMIN_ROUTES.DASHBOARD,
-  TEACHER: '/teacher/dashboard',
-  STUDENT: '/student/dashboard',
-  PARENT: '/parent/dashboard',
-}
 
 const roleLabels: Record<string, string> = {
   TEACHER: '교사',
@@ -29,7 +21,7 @@ export default function Register() {
 
   useEffect(() => {
     if (!authLoading && user?.authenticated && user.role) {
-      window.location.href = roleRedirects[user.role] ?? '/'
+      window.location.href = '/hub'
     }
   }, [user, authLoading])
 
@@ -85,7 +77,7 @@ export default function Register() {
 
       setSuccess('회원가입이 완료되었습니다. 잠시만 기다려 주세요.')
       setTimeout(() => {
-        window.location.href = roleRedirects[returnedRole] ?? '/login'
+        window.location.href = '/hub'
       }, 1000)
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message

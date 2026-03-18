@@ -6,6 +6,7 @@ import { useSchool } from "@/context/SchoolContext";
 import NotFound from "@/pages/error/NotFound";
 import Unauthorized from "@/pages/error/Unauthorized";
 import Login from "@/pages/auth/Login";
+import Hub from "@/pages/auth/Hub";
 import Register from "@/pages/auth/Register";
 import OAuth2Callback from "@/pages/auth/OAuth2Callback";
 import SelectRole from "@/pages/auth/SelectRole";
@@ -106,9 +107,10 @@ function SchoolSelectGuard() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/main" replace />} />
+      <Route path="/" element={<Navigate to="/hub" replace />} />
       <Route path="/main" element={<Main />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/hub" element={<Hub />} />
       {/* [woo] OAuth2 소셜 로그인 콜백 - 토큰 저장 후 역할별 대시보드로 이동 */}
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
       <Route path="/register" element={<Register />} />

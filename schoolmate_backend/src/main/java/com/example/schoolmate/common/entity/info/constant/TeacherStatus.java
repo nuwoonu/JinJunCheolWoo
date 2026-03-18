@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum TeacherStatus {
-    PENDING("승인대기"),
     EMPLOYED("재직"),
     LEAVE("휴직"),
     RETIRED("퇴직");
