@@ -169,10 +169,10 @@ export default function RoomView() {
               />
             </div>
 
-            {/* 학생 목록 */}
+            {/* 학생 목록 — 3명 초과 시 스크롤 */}
             <div
               style={{
-                maxHeight: "200px",
+                maxHeight: "186px",
                 overflowY: "auto",
                 border: "1px solid #e2e8f0",
                 borderRadius: "8px",
@@ -193,9 +193,6 @@ export default function RoomView() {
                       cursor: "pointer",
                       background: selectedStudent?.id === s.id ? `${building.color}18` : "#fff",
                       borderBottom: "1px solid #f1f5f9",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
                       transition: "background 0.1s",
                     }}
                     onMouseEnter={(e) => {
@@ -207,12 +204,14 @@ export default function RoomView() {
                         e.currentTarget.style.background = "#fff";
                     }}
                   >
-                    <User size={14} style={{ color: building.color, flexShrink: 0 }} />
-                    <span style={{ fontWeight: selectedStudent?.id === s.id ? 600 : 400, color: "#1e293b", fontSize: "14px" }}>
-                      {s.name}
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <User size={14} style={{ color: building.color, flexShrink: 0 }} />
+                      <span style={{ fontWeight: selectedStudent?.id === s.id ? 600 : 400, color: "#1e293b", fontSize: "14px" }}>
+                        {s.name}
+                      </span>
+                    </div>
                     {s.fullStudentNumber && (
-                      <span style={{ fontSize: "12px", color: "#94a3b8", marginLeft: "auto" }}>
+                      <span style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginTop: "2px", paddingLeft: "22px" }}>
                         {s.fullStudentNumber}
                       </span>
                     )}

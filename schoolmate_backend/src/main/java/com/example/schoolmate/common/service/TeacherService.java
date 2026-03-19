@@ -472,18 +472,28 @@ public class TeacherService {
         StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-        Grade grade = Grade.builder()
-                .student(student)
-                .subject(subject)
-                .testType(gradeDTO.getTestType())
-                .semester(gradeDTO.getSemester())
-                .year(gradeDTO.getYear())
-                .score(gradeDTO.getScore())
-                .build();
-
-        gradeRepository.save(grade);
-        log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
-                student.getId(), subject.getName(), gradeDTO.getScore());
+        // 동일 조건(학생/과목/시험종류/학기/학년) 성적이 이미 있으면 점수만 덮어씀 (upsert)
+        gradeRepository.findDuplicate(
+                student.getId(), subject.getCode(),
+                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+                .ifPresentOrElse(
+                        existing -> {
+                            existing.changeScore(gradeDTO.getScore());
+                            log.info("성적 갱신 완료 - 학생: {}, 과목: {}, 점수: {}",
+                                    student.getId(), subject.getName(), gradeDTO.getScore());
+                        },
+                        () -> {
+                            gradeRepository.save(Grade.builder()
+                                    .student(student)
+                                    .subject(subject)
+                                    .testType(gradeDTO.getTestType())
+                                    .semester(gradeDTO.getSemester())
+                                    .year(gradeDTO.getYear())
+                                    .score(gradeDTO.getScore())
+                                    .build());
+                            log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
+                                    student.getId(), subject.getName(), gradeDTO.getScore());
+                        });
     }
 
     /**
@@ -658,18 +668,28 @@ public class TeacherService {
         Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())
                 .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
 
-        Grade grade = Grade.builder()
-                .student(student)
-                .subject(subject)
-                .testType(gradeDTO.getTestType())
-                .semester(gradeDTO.getSemester())
-                .year(gradeDTO.getYear())
-                .score(gradeDTO.getScore())
-                .build();
-
-        gradeRepository.save(grade);
-        log.info("담당 학급 학생 성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
-                student.getId(), subject.getName(), gradeDTO.getScore());
+        // 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
+        gradeRepository.findDuplicate(
+                student.getId(), subject.getCode(),
+                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+                .ifPresentOrElse(
+                        existing -> {
+                            existing.changeScore(gradeDTO.getScore());
+                            log.info("담당 학급 성적 갱신 완료 - 학생: {}, 과목: {}, 점수: {}",
+                                    student.getId(), subject.getName(), gradeDTO.getScore());
+                        },
+                        () -> {
+                            gradeRepository.save(Grade.builder()
+                                    .student(student)
+                                    .subject(subject)
+                                    .testType(gradeDTO.getTestType())
+                                    .semester(gradeDTO.getSemester())
+                                    .year(gradeDTO.getYear())
+                                    .score(gradeDTO.getScore())
+                                    .build());
+                            log.info("담당 학급 학생 성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
+                                    student.getId(), subject.getName(), gradeDTO.getScore());
+                        });
     }
 
     /**
@@ -751,6 +771,7 @@ public class TeacherService {
     private GradeDTO entityToDto(Grade grade) {
         return GradeDTO.builder()
                 .id(grade.getId())
+                .studentId(grade.getStudent() != null ? grade.getStudent().getId() : null)
                 .subjectName(grade.getSubject() != null ? grade.getSubject().getName() : null)
                 .subjectCode(grade.getSubject() != null ? grade.getSubject().getCode() : null)
                 .examType(grade.getTestType())
