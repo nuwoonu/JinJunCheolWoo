@@ -448,6 +448,13 @@ public class ClassroomService {
                     classroom.setYear(req.getYear());
                     classroom.setGrade(req.getGrade());
                     classroom.setClassNum(req.getClassNum());
+
+                    // school context 설정 (createClass()와 동일하게)
+                    Long schoolId = SchoolContextHolder.getSchoolId();
+                    if (schoolId != null) {
+                        schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
+                    }
+
                     classroom = classroomRepository.save(classroom);
                     logChange(classroom.getCid(), "CREATE", "CSV 일괄 생성");
                 }
@@ -455,9 +462,12 @@ public class ClassroomService {
 
                 // 2. 담임 교사 배정
                 if (req.getTeacherCode() != null && !req.getTeacherCode().isBlank()) {
-                    User teacher = teacherInfoRepository.findTeacherByCode(req.getTeacherCode())
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 교사 사번: " + req.getTeacherCode()));
-                    classroom.setTeacher(teacher);
+                    User teacher = teacherInfoRepository.findTeacherByCode(req.getTeacherCode()).orElse(null);
+                    if (teacher != null) {
+                        classroom.setTeacher(teacher);
+                    } else {
+                        log.warn("CSV Import: 존재하지 않는 교사 사번 건너뜀 - {}", req.getTeacherCode());
+                    }
                 }
 
                 // 3. 학생 배정

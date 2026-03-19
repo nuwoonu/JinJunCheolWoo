@@ -165,5 +165,7 @@ public class StaffDTO {
         private String workLocation;
         @CsvBindByName(column = "내선번호")
         private String extensionNumber;
+        @CsvBindByName(column = "권한")
+        private String grantedRole;
     }
 }

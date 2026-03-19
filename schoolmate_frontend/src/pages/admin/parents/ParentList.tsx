@@ -74,9 +74,11 @@ export default function ParentList() {
     fd.append("file", file);
     try {
       await admin.post("/parents/import-csv", fd);
+      await load(0);
+    } catch (err: any) {
+      alert(`등록 실패: ${err.response?.data ?? err.message}`);
     } finally {
       setLoading(false);
-      load(0);
     }
     e.target.value = "";
   };
