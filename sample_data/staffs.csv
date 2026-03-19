@@ -1,0 +1,16 @@
+이름,이메일,비밀번호,사번,부서,직함,근무지,내선번호
+김행복,staff001@schoolmate.kr,Test1234!,ST2026001,행정실,행정실장,행정실,101
+이사무,staff002@schoolmate.kr,Test1234!,ST2026002,행정실,행정직원,행정실,102
+박총무,staff003@schoolmate.kr,Test1234!,ST2026003,행정실,행정직원,행정실,103
+최기술,staff004@schoolmate.kr,Test1234!,ST2026004,시설관리실,시설팀장,시설관리실,201
+정설비,staff005@schoolmate.kr,Test1234!,ST2026005,시설관리실,시설직원,시설관리실,202
+강영양,staff006@schoolmate.kr,Test1234!,ST2026006,급식실,영양사,급식실,301
+조조리,staff007@schoolmate.kr,Test1234!,ST2026007,급식실,조리사,급식실,302
+윤영양,staff008@schoolmate.kr,Test1234!,ST2026008,급식실,조리사,급식실,303
+장전산,staff009@schoolmate.kr,Test1234!,ST2026009,전산실,전산담당,전산실,401
+임정보,staff010@schoolmate.kr,Test1234!,ST2026010,전산실,전산직원,전산실,402
+한경비,staff011@schoolmate.kr,Test1234!,ST2026011,당직실,당직원,당직실,501
+오야간,staff012@schoolmate.kr,Test1234!,ST2026012,당직실,당직원,당직실,502
+문도서,staff013@schoolmate.kr,Test1234!,ST2026013,기타,사서,도서실,601
+양보건,staff014@schoolmate.kr,Test1234!,ST2026014,기타,보건직원,보건실,602
+손상담,staff015@schoolmate.kr,Test1234!,ST2026015,기타,상담사,상담실,603

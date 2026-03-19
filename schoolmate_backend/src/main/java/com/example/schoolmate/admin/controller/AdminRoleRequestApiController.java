@@ -7,10 +7,12 @@ import com.example.schoolmate.common.service.RoleRequestService;
 import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.dto.AuthUserDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +26,11 @@ import java.util.Map;
  * - POST /api/admin/role-requests/{id}/approve : 승인
  * - POST /api/admin/role-requests/{id}/reject  : 거절
  */
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_ROLE_REQUESTS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canAccessAdmin()")
 public class AdminRoleRequestApiController {
 
     private final RoleRequestService roleRequestService;
@@ -63,6 +67,7 @@ public class AdminRoleRequestApiController {
             @PathVariable Long id,
             @AuthenticationPrincipal AuthUserDTO authUser) {
         User reviewer = getReviewer(authUser);
+        log.info("역할 신청 승인 요청: requestId={}, reviewerUid={}", id, reviewer.getUid());
         roleRequestService.approve(id, reviewer);
         return ResponseEntity.ok(Map.of("message", "승인되었습니다."));
     }
@@ -75,6 +80,7 @@ public class AdminRoleRequestApiController {
             @AuthenticationPrincipal AuthUserDTO authUser) {
         String reason = body.getOrDefault("reason", "");
         User reviewer = getReviewer(authUser);
+        log.info("역할 신청 거절 요청: requestId={}, reviewerUid={}, reason={}", id, reviewer.getUid(), reason);
         roleRequestService.reject(id, reviewer, reason);
         return ResponseEntity.ok(Map.of("message", "거절되었습니다."));
     }
@@ -85,6 +91,7 @@ public class AdminRoleRequestApiController {
             @PathVariable Long id,
             @AuthenticationPrincipal AuthUserDTO authUser) {
         User reviewer = getReviewer(authUser);
+        log.info("역할 정지 요청: requestId={}, reviewerUid={}", id, reviewer.getUid());
         roleRequestService.suspend(id, reviewer);
         return ResponseEntity.ok(Map.of("message", "정지되었습니다."));
     }

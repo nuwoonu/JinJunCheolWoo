@@ -1,26 +1,69 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ADMIN_ROUTES } from '@/constants/routes'
+import { ADMIN_GRANTS, GRANTED_ROLE } from '@/constants/adminPermissions'
+import { useAuth } from '@/contexts/AuthContext'
+import { useSchool } from '@/context/SchoolContext'
+import type { GrantInfo } from '@/api/auth'
 import AdminTopBar from '@/components/layout/admin/AdminTopBar'
 
-const MENU_ITEMS = [
+/** AdminSidebar와 동일한 grant 체크 헬퍼 */
+function hasGrant(grants: GrantInfo[], ...roles: string[]) {
+  return grants.some(g => roles.includes(g.grantedRole))
+}
+
+const ALL_MENU_ITEMS = [
   {
     to: ADMIN_ROUTES.SCHOOL_SELECT,
     icon: 'ri-building-2-line',
     label: '학교 정보 관리',
     desc: '학교를 선택하여 학생, 교사, 교직원, 학급, 공지사항 등을 관리합니다.',
+    /** 표시 조건: SCHOOL_ADMIN 이상이거나 학교 내 기능 grant 중 하나라도 보유 */
+    requiredGrants: ADMIN_GRANTS.DASHBOARD.filter(g => g !== GRANTED_ROLE.PARENT_MANAGER),
   },
   {
     to: ADMIN_ROUTES.PARENTS.LIST,
     icon: 'ri-user-heart-line',
     label: '학부모 관리',
     desc: '학부모 계정을 등록하고 자녀 연결 및 상태를 관리합니다.',
+    requiredGrants: ADMIN_GRANTS.PARENTS,
   },
 ]
 
 export default function AdminMain() {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState<string | null>(null)
+  const { user } = useAuth()
+  const { selectedSchool, setSelectedSchool } = useSchool()
+
+  const grants: GrantInfo[] = user?.grants ?? []
+  const isSuperAdmin = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN'
+
+  // 비 SUPER_ADMIN 그랜트 보유자: 학교 자동 선택 후 바로 대시보드로 이동
+  // AdminMain은 SUPER_ADMIN 전용 학교 선택 허브이므로 그랜트 보유자는 직접 대시보드 진입
+  useEffect(() => {
+    if (isSuperAdmin || !user) return
+    const firstGrant = grants.find(g => g.schoolId)
+    if (!firstGrant) return
+    if (!selectedSchool) {
+      setSelectedSchool({
+        id: firstGrant.schoolId!,
+        name: firstGrant.schoolName!,
+        schoolCode: firstGrant.schoolCode ?? '',
+        schoolKind: firstGrant.schoolKind ?? '',
+        officeOfEducation: firstGrant.officeOfEducation ?? '',
+      })
+    }
+    navigate(ADMIN_ROUTES.DASHBOARD, { replace: true })
+  }, [isSuperAdmin, user])
+
+  // ADMIN role은 모든 메뉴 표시, GrantedRole 보유자는 requiredGrants 기준 필터링
+  const menuItems = useMemo(() => {
+    if (isSuperAdmin) return ALL_MENU_ITEMS
+    return ALL_MENU_ITEMS.filter(item =>
+      hasGrant(grants, ...item.requiredGrants)
+    )
+  }, [grants, isSuperAdmin])
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--body-bg, #f8fafc)' }}>
@@ -57,7 +100,7 @@ export default function AdminMain() {
           </p>
         </div>
 
-        {MENU_ITEMS.map((item) => (
+        {menuItems.map((item) => (
           <div
             key={item.to}
             onClick={() => navigate(item.to)}

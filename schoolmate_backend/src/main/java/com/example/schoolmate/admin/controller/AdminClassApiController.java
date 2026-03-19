@@ -19,11 +19,15 @@ import com.example.schoolmate.common.service.ClassroomService;
 import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 학급 관리 REST API
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_CLASSES)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canManageClasses()")
 public class AdminClassApiController {
 
     private final ClassroomService classService;
@@ -51,6 +55,7 @@ public class AdminClassApiController {
             Long cid = classService.createClass(request);
             return ResponseEntity.ok(cid);
         } catch (Exception e) {
+            log.error("학급 등록 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -68,6 +73,7 @@ public class AdminClassApiController {
             classService.deleteClass(cid);
             return ResponseEntity.ok("삭제되었습니다.");
         } catch (Exception e) {
+            log.error("학급 삭제 실패: cid={}, msg={}", cid, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -105,6 +111,7 @@ public class AdminClassApiController {
             classService.bulkUpdateClassStatus(cids, status);
             return ResponseEntity.ok("상태 변경되었습니다.");
         } catch (Exception e) {
+            log.error("학급 일괄 상태 변경 실패: cids={}, status={}, msg={}", cids, status, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -115,6 +122,7 @@ public class AdminClassApiController {
             String result = classService.importClassesFromCsv(file);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
+            log.error("학급 CSV 가져오기 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

@@ -5,7 +5,8 @@
       "Bash(grep -r \"from ''\\\\.\\\\.\" \"c:/git/JinJunCheolWoo/schoolmate_frontend/src/components/layout/admin/AdminSidebar.tsx\")",
       "Bash(python3:*)",
       "Bash(node -e \":*)",
-      "Bash(node fix-imports.mjs)"
+      "Bash(node fix-imports.mjs)",
+      "Bash(find /c/git/JinJunCheolWoo -name *.csv -o -name *template* -o -name *sample*)"
     ]
   }
 }

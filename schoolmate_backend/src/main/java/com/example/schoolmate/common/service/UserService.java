@@ -11,6 +11,9 @@ import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.user.RoleRequest;
+import com.example.schoolmate.common.entity.user.SchoolAdminGrant;
+import com.example.schoolmate.common.entity.user.constant.GrantedRole;
+import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
@@ -29,7 +32,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 회원 관련 비즈니스 로직 서비스
@@ -45,6 +52,7 @@ public class UserService {
     private final ProfileRepository profileRepository;
     private final ParentInfoRepository parentInfoRepository;
     private final RoleRequestRepository roleRequestRepository;
+    private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
     private final SchoolRepository schoolRepository;
@@ -106,6 +114,7 @@ public class UserService {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
         studentInfo.setStatus(StudentStatus.ENROLLED);
+        studentInfo.setPhone(dto.getPhoneNumber());
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(studentInfo::setSchool);
         }
@@ -147,6 +156,7 @@ public class UserService {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
         teacherInfo.setStatus(TeacherStatus.EMPLOYED);
+        teacherInfo.setPhone(dto.getPhoneNumber());
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(teacherInfo::setSchool);
         }
@@ -317,17 +327,34 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    /** 교사 신규 가입 시 ADMIN 역할 보유 유저 전체에 알림 발송 */
+    /**
+     * 교사 신규 가입 시 알림 발송 대상:
+     * 1. SUPER_ADMIN (UserRole.ADMIN 전체)
+     * 2. 해당 학교의 TEACHER_MANAGER 또는 SCHOOL_ADMIN 권한 보유자
+     * 동일인 중복 발송 방지 (uid 기준 dedup)
+     */
     private void notifyAdminsOfNewTeacher(User teacher) {
         TeacherInfo info = teacher.getInfo(TeacherInfo.class);
         Long schoolId = (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
         String actionUrl = "/admin/teachers" + (schoolId != null ? "?schoolId=" + schoolId : "");
 
-        List<User> admins = userRepository.findAllByRole(UserRole.ADMIN);
-        for (User admin : admins) {
+        // uid → User 맵으로 중복 제거
+        Map<Long, User> recipients = new LinkedHashMap<>();
+        userRepository.findAllByRole(UserRole.ADMIN)
+                .forEach(u -> recipients.put(u.getUid(), u));
+
+        if (schoolId != null) {
+            schoolAdminGrantRepository
+                    .findBySchool_IdAndGrantedRoleIn(schoolId,
+                            List.of(GrantedRole.SCHOOL_ADMIN, GrantedRole.TEACHER_MANAGER))
+                    .stream()
+                    .map(SchoolAdminGrant::getUser)
+                    .forEach(u -> recipients.putIfAbsent(u.getUid(), u));
+        }
+
+        for (User recipient : recipients.values()) {
             NotificationHelper.send(
-                    teacher,
-                    admin,
+                    teacher, recipient,
                     "신규 교사 가입 승인 요청",
                     teacher.getName() + " 교사가 회원가입을 완료했습니다. 승인 처리를 해주세요.",
                     actionUrl
@@ -335,13 +362,26 @@ public class UserService {
         }
     }
 
-    /** 학부모 신규 가입 시 ADMIN 역할 보유 유저 전체에 알림 발송 */
+    /**
+     * 학부모 신규 가입 시 알림 발송 대상:
+     * 1. SUPER_ADMIN (UserRole.ADMIN 전체)
+     * 2. 임의 학교의 PARENT_MANAGER 또는 SCHOOL_ADMIN 권한 보유자
+     * 동일인 중복 발송 방지
+     */
     private void notifyAdminsOfNewParent(User parent) {
-        List<User> admins = userRepository.findAllByRole(UserRole.ADMIN);
-        for (User admin : admins) {
+        Map<Long, User> recipients = new LinkedHashMap<>();
+        userRepository.findAllByRole(UserRole.ADMIN)
+                .forEach(u -> recipients.put(u.getUid(), u));
+
+        schoolAdminGrantRepository
+                .findByGrantedRoleIn(List.of(GrantedRole.SCHOOL_ADMIN, GrantedRole.PARENT_MANAGER))
+                .stream()
+                .map(SchoolAdminGrant::getUser)
+                .forEach(u -> recipients.putIfAbsent(u.getUid(), u));
+
+        for (User recipient : recipients.values()) {
             NotificationHelper.send(
-                    parent,
-                    admin,
+                    parent, recipient,
                     "신규 학부모 가입 승인 요청",
                     parent.getName() + " 학부모가 회원가입을 완료했습니다. 승인 처리를 해주세요.",
                     "/admin/parents"

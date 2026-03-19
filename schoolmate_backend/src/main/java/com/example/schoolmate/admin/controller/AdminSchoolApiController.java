@@ -21,10 +21,14 @@ import com.example.schoolmate.domain.school.service.NeisService;
 import com.example.schoolmate.domain.school.service.SchoolService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_SCHOOLS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.isSuperAdmin()")
 public class AdminSchoolApiController {
 
     private final NeisService neisService;
@@ -59,6 +63,7 @@ public class AdminSchoolApiController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         String adminName = (principal != null) ? principal.getName() : "Unknown Admin";
+        log.info("NEIS 학교 데이터 동기화 시작: admin={}", adminName);
         neisService.syncSchoolData(adminName);
         return ResponseEntity.ok().build();
     }

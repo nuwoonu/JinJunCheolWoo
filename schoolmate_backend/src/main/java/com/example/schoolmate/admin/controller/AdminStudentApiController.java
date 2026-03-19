@@ -20,11 +20,15 @@ import com.example.schoolmate.common.service.StudentService;
 import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 학생 관리 REST API
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_STUDENTS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canManageStudents()")
 public class AdminStudentApiController {
 
     private final StudentService studentService;
@@ -47,6 +51,7 @@ public class AdminStudentApiController {
         try {
             return ResponseEntity.ok(studentService.getStudentDetail(uid));
         } catch (IllegalArgumentException e) {
+            log.warn("학생 상세 조회 실패: uid={}, msg={}", uid, e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -58,6 +63,7 @@ public class AdminStudentApiController {
             Long uid = studentService.createStudent(request);
             return ResponseEntity.ok(uid);
         } catch (Exception e) {
+            log.error("학생 등록 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -77,6 +83,7 @@ public class AdminStudentApiController {
             studentService.bulkUpdateStudentStatus(uids, status);
             return ResponseEntity.ok("상태가 변경되었습니다.");
         } catch (Exception e) {
+            log.error("학생 일괄 상태 변경 실패: uids={}, status={}, msg={}", uids, status, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -88,6 +95,7 @@ public class AdminStudentApiController {
             studentService.importStudentsFromCsv(file);
             return ResponseEntity.ok("등록되었습니다.");
         } catch (Exception e) {
+            log.error("학생 CSV 가져오기 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -112,6 +120,7 @@ public class AdminStudentApiController {
             studentService.updateAssignment(request);
             return ResponseEntity.ok("수정되었습니다.");
         } catch (Exception e) {
+            log.error("학적 이력 수정 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

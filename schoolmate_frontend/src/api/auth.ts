@@ -22,6 +22,16 @@ export type RoleRequestInfo = {
   schoolName?: string;
 };
 
+/** SchoolAdminGrant 항목 — SUPER_ADMIN은 schoolId/schoolName 없음 */
+export type GrantInfo = {
+  grantedRole: string;
+  schoolId?: number;
+  schoolName?: string;
+  schoolCode?: string;
+  schoolKind?: string;
+  officeOfEducation?: string;
+};
+
 export type AuthUser = {
   authenticated: boolean;
   uid?: number;
@@ -31,8 +41,10 @@ export type AuthUser = {
   role?: string;
   /** 보유한 모든 역할 목록 */
   roles?: string[];
-  /** ADMIN 역할이거나 SchoolAdminGrant 보유 시 true */
+  /** grants가 하나라도 있으면 true (어드민 페이지 진입 가능 여부) */
   hasAdminAccess?: boolean;
+  /** GrantedRole 목록 (ADMIN이면 SUPER_ADMIN 포함, 그 외 SchoolAdminGrant 레코드) */
+  grants?: GrantInfo[];
   /** 역할 신청 목록 (Hub 카드 상태 표시용) */
   roleRequests?: RoleRequestInfo[];
 };

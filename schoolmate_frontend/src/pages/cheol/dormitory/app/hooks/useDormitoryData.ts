@@ -1,211 +1,184 @@
-import { useState, useEffect } from "react";
-import type { DormitoryData, Building, Room, Bed, Student } from "../types/dormitory";
+// cheol: localStorage → DB API 기반으로 전환
+import { useState, useEffect, useCallback } from "react";
+import {
+  fetchBuildings,
+  fetchBuildingRooms,
+  fetchRoomDetails,
+  assignStudent as apiAssign,
+  unassignStudent as apiUnassign,
+} from "../../api/dormitoryApi";
+import type { Building, Room, Bed, DormitoryDTO, BuildingSummary } from "../types/dormitory";
 
-const STORAGE_KEY = "dormitory_data";
-
-const getInitialData = (): DormitoryData => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    return JSON.parse(saved);
-  }
-  
-  // 기본 데이터
-  return {
-    buildings: [
-      {
-        id: "1",
-        name: "1동",
-        color: "#4A90E2",
-        floors: 5,
-        roomsPerFloor: 4,
-        rooms: generateRooms(5, 4, 2), // 5층, 층당 4개 방, 방당 2개 침대
-      },
-      {
-        id: "2",
-        name: "2동",
-        color: "#E94E77",
-        floors: 5,
-        roomsPerFloor: 4,
-        rooms: generateRooms(5, 4, 2),
-      },
-      {
-        id: "3",
-        name: "3동",
-        color: "#50C878",
-        floors: 5,
-        roomsPerFloor: 4,
-        rooms: generateRooms(5, 4, 2),
-      },
-      {
-        id: "4",
-        name: "4동",
-        color: "#F39C12",
-        floors: 5,
-        roomsPerFloor: 4,
-        rooms: generateRooms(5, 4, 2),
-      },
-    ],
-  };
+// 건물별 고정 색상 (DB에 없으므로 프론트에서 관리)
+const BUILDING_COLORS: Record<string, string> = {
+  "1동": "#4A90E2",
+  "2동": "#E94E77",
+  "3동": "#50C878",
+  "4동": "#F39C12",
+  "5동": "#9B59B6",
 };
+const DEFAULT_COLORS = ["#4A90E2", "#E94E77", "#50C878", "#F39C12", "#9B59B6", "#1ABC9C"];
 
-function generateRooms(floors: number, roomsPerFloor: number, bedsPerRoom: number): Room[] {
-  const rooms: Room[] = [];
-  
-  for (let floor = 1; floor <= floors; floor++) {
-    for (let roomIndex = 1; roomIndex <= roomsPerFloor; roomIndex++) {
-      const roomNumber = `${floor}0${roomIndex}`;
-      const beds: Bed[] = [];
-      
-      for (let bedNum = 1; bedNum <= bedsPerRoom; bedNum++) {
-        beds.push({
-          bedNumber: bedNum,
-          student: null,
-        });
-      }
-      
-      rooms.push({
-        roomNumber,
-        floor,
-        beds,
-      });
-    }
-  }
-  
-  return rooms;
+function getColor(name: string, index: number): string {
+  return BUILDING_COLORS[name] ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length];
 }
 
-export function useDormitoryData() {
-  const [data, setData] = useState<DormitoryData>(getInitialData);
+// DormitoryDTO[] (한 방의 침대들) → Room
+function dtosToRoom(dtos: DormitoryDTO[]): Room {
+  const first = dtos[0];
+  const beds: Bed[] = dtos.map((d) => ({
+    dormitoryId: d.id,
+    bedNumber: d.bedNumber,
+    student:
+      d.studentNames.length > 0
+        ? { id: d.studentIds[0], name: d.studentNames[0] }
+        : null,
+  }));
+  return { roomNumber: first.roomNumber, floor: first.floor, beds };
+}
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
+// ─── 건물 목록 훅 ────────────────────────────────────────────
+export function useBuildingList() {
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const addBuilding = (name: string, color: string, floors: number, roomsPerFloor: number, bedsPerRoom: number) => {
-    const newBuilding: Building = {
-      id: String(data.buildings.length + 1),
-      name,
-      color,
-      floors,
-      roomsPerFloor,
-      rooms: generateRooms(floors, roomsPerFloor, bedsPerRoom),
-    };
-    
-    setData((prev) => ({
-      ...prev,
-      buildings: [...prev.buildings, newBuilding],
-    }));
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const summaries: BuildingSummary[] = await fetchBuildings();
+      setBuildings(
+        summaries.map((s, i) => ({
+          id: s.building,
+          name: s.building,
+          color: getColor(s.building, i),
+          floors: s.maxFloor,
+          totalBeds: s.totalBeds,
+          occupiedBeds: s.occupiedBeds,
+          rooms: [],
+        }))
+      );
+    } catch {
+      setError("건물 목록을 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  return { buildings, loading, error, refetch: load };
+}
+
+// ─── 층별 호수 훅 ─────────────────────────────────────────────
+export function useFloorRooms(buildingName: string) {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [building, setBuilding] = useState<Building | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!buildingName) return;
+    setLoading(true);
+    setError(null);
+    try {
+      // 건물 통계 (색상, 층수용)
+      const summaries: BuildingSummary[] = await fetchBuildings();
+      const summary = summaries.find((s) => s.building === buildingName);
+      const idx = summaries.findIndex((s) => s.building === buildingName);
+
+      if (!summary) throw new Error("건물 없음");
+
+      const b: Building = {
+        id: buildingName,
+        name: buildingName,
+        color: getColor(buildingName, idx),
+        floors: summary.maxFloor,
+        totalBeds: summary.totalBeds,
+        occupiedBeds: summary.occupiedBeds,
+        rooms: [],
+      };
+
+      // 층별 방 데이터
+      const floorMap = await fetchBuildingRooms(buildingName);
+      const allRooms: Room[] = [];
+      for (const floorKey of Object.keys(floorMap)) {
+        const roomMap = floorMap[floorKey];
+        for (const roomNumber of Object.keys(roomMap)) {
+          allRooms.push(dtosToRoom(roomMap[roomNumber]));
+        }
+      }
+      b.rooms = allRooms;
+
+      setBuilding(b);
+      setRooms(allRooms);
+    } catch {
+      setError("층 정보를 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [buildingName]);
+
+  useEffect(() => { load(); }, [load]);
+
+  return { building, rooms, loading, error, refetch: load };
+}
+
+// ─── 호실 상세 훅 ─────────────────────────────────────────────
+export function useRoomDetail(buildingName: string, floor: number, roomNumber: string) {
+  const [room, setRoom] = useState<Room | null>(null);
+  const [building, setBuilding] = useState<Building | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!buildingName || !floor || !roomNumber) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const [summaries, dtos] = await Promise.all([
+        fetchBuildings(),
+        fetchRoomDetails(buildingName, floor, roomNumber),
+      ]);
+
+      const summary = summaries.find((s) => s.building === buildingName);
+      const idx = summaries.findIndex((s) => s.building === buildingName);
+
+      if (!summary) throw new Error("건물 없음");
+
+      setBuilding({
+        id: buildingName,
+        name: buildingName,
+        color: getColor(buildingName, idx),
+        floors: summary.maxFloor,
+        totalBeds: summary.totalBeds,
+        occupiedBeds: summary.occupiedBeds,
+        rooms: [],
+      });
+      setRoom(dtosToRoom(dtos));
+    } catch {
+      setError("방 정보를 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [buildingName, floor, roomNumber]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // 학생 배정
+  const assign = async (dormitoryId: number, studentId: number) => {
+    const dto = await apiAssign(studentId, buildingName, floor, roomNumber,
+      room?.beds.find((b) => b.dormitoryId === dormitoryId)?.bedNumber ?? "");
+    await load();
+    return dto;
   };
 
-  const deleteBuilding = (buildingId: string) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.filter((building) => building.id !== buildingId),
-    }));
+  // 배정 해제
+  const unassign = async (studentId: number) => {
+    await apiUnassign(studentId);
+    await load();
   };
 
-  const updateRoomBeds = (buildingId: string, roomNumber: string, bedCount: number) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.map((building) => {
-        if (building.id !== buildingId) return building;
-        
-        return {
-          ...building,
-          rooms: building.rooms.map((room) => {
-            if (room.roomNumber !== roomNumber) return room;
-            
-            const currentBeds = room.beds;
-            const newBeds: Bed[] = [];
-            
-            // 기존 침대 유지 (학생 정보 포함)
-            for (let i = 0; i < bedCount; i++) {
-              if (i < currentBeds.length) {
-                newBeds.push(currentBeds[i]);
-              } else {
-                // 새 침대 추가
-                newBeds.push({
-                  bedNumber: i + 1,
-                  student: null,
-                });
-              }
-            }
-            
-            return {
-              ...room,
-              beds: newBeds,
-            };
-          }),
-        };
-      }),
-    }));
-  };
-
-  const assignStudent = (buildingId: string, roomNumber: string, bedNumber: number, student: Student) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.map((building) => {
-        if (building.id !== buildingId) return building;
-        
-        return {
-          ...building,
-          rooms: building.rooms.map((room) => {
-            if (room.roomNumber !== roomNumber) return room;
-            
-            return {
-              ...room,
-              beds: room.beds.map((bed) => {
-                if (bed.bedNumber !== bedNumber) return bed;
-                return { ...bed, student };
-              }),
-            };
-          }),
-        };
-      }),
-    }));
-  };
-
-  const unassignStudent = (buildingId: string, roomNumber: string, bedNumber: number) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.map((building) => {
-        if (building.id !== buildingId) return building;
-        
-        return {
-          ...building,
-          rooms: building.rooms.map((room) => {
-            if (room.roomNumber !== roomNumber) return room;
-            
-            return {
-              ...room,
-              beds: room.beds.map((bed) => {
-                if (bed.bedNumber !== bedNumber) return bed;
-                return { ...bed, student: null };
-              }),
-            };
-          }),
-        };
-      }),
-    }));
-  };
-
-  const getBuilding = (buildingId: string) => {
-    return data.buildings.find((b) => b.id === buildingId);
-  };
-
-  const getRoom = (buildingId: string, roomNumber: string) => {
-    const building = getBuilding(buildingId);
-    return building?.rooms.find((r) => r.roomNumber === roomNumber);
-  };
-
-  return {
-    data,
-    addBuilding,
-    deleteBuilding,
-    updateRoomBeds,
-    assignStudent,
-    unassignStudent,
-    getBuilding,
-    getRoom,
-  };
+  return { building, room, loading, error, assign, unassign, refetch: load };
 }

@@ -4,18 +4,36 @@ import AdminSidebar from '@/components/layout/admin/AdminSidebar'
 import AdminHeader from '@/components/layout/admin/AdminHeader'
 import { SidebarProvider, useSidebar } from '@/contexts/SidebarContext'
 import { useSchool } from '@/context/SchoolContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { ADMIN_ROUTES } from '@/constants/routes'
 
 function Layout({ children, msg, error, requireSchool = true }: { children: ReactNode; msg?: string; error?: string; requireSchool?: boolean }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
-  const { selectedSchool } = useSchool()
+  const { selectedSchool, setSelectedSchool } = useSchool()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (requireSchool && !selectedSchool) {
-      navigate(ADMIN_ROUTES.SCHOOL_SELECT, { replace: true })
+    if (!requireSchool || selectedSchool) return
+
+    const isSuperAdmin = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN'
+    if (!isSuperAdmin) {
+      // 그랜트 보유자는 첫 번째 그랜트 학교를 자동 선택
+      const firstGrant = user?.grants?.find(g => g.schoolId)
+      if (firstGrant?.schoolId && firstGrant.schoolName) {
+        setSelectedSchool({
+          id: firstGrant.schoolId,
+          name: firstGrant.schoolName,
+          schoolCode: firstGrant.schoolCode ?? '',
+          schoolKind: firstGrant.schoolKind ?? '',
+          officeOfEducation: firstGrant.officeOfEducation ?? '',
+        })
+        return
+      }
     }
-  }, [requireSchool, selectedSchool, navigate])
+
+    navigate(ADMIN_ROUTES.SCHOOL_SELECT, { replace: true })
+  }, [requireSchool, selectedSchool, user, setSelectedSchool, navigate])
 
   return (
     <>
