@@ -89,9 +89,11 @@ export default function Sidebar() {
   };
 
   // [woo] 학생일 때 대시보드 API에서 프로필 정보 + 출결 통계 가져오기
-  const [studentInfo, setStudentInfo] = useState<StudentSidebarInfo | null>(null);
+  const [studentInfo, setStudentInfo] = useState<StudentProfile | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
+  // [woo] 교사일 때 소속 학교 이름
+  const [schoolName, setSchoolName] = useState<string | null>(null);
 
   useEffect(() => {
     if (role === "STUDENT" && user?.authenticated) {
@@ -108,6 +110,16 @@ export default function Sidebar() {
         .get("/attendance/my/summary")
         .then((res) => {
           setAttendanceCounts(res.data ?? {});
+        })
+        .catch(() => {});
+    }
+
+    // [woo] 교사일 때 소속 학교 이름 조회
+    if (role === "TEACHER" && user?.authenticated) {
+      api
+        .get("/dashboard/teacher")
+        .then((res) => {
+          setSchoolName(res.data?.schoolName ?? null);
         })
         .catch(() => {});
     }
@@ -242,24 +254,24 @@ export default function Sidebar() {
           <span className="badge bg-success-600 px-10 py-4 rounded-pill text-xs mb-12 d-inline-block">
             {studentProfile.status ? (STATUS_LABEL[studentProfile.status] ?? studentProfile.status) : "재학"}
           </span>
-          {/* 출결 현황 - 백엔드 출결 API 완성 전까지 0으로 표시 */}
+          {/* [woo] 출결 현황 */}
           <div className="border-top pt-20 mb-2">
             <div className="d-flex justify-content-around text-center">
               <div>
                 <div className="w-36-px h-36-px rounded-circle bg-success-600 d-flex align-items-center justify-content-center mx-auto mb-4">
-                  <span className="text-white fw-bold text-xs">0</span>
+                  <span className="text-white fw-bold text-xs">{attendanceCounts.PRESENT ?? 0}</span>
                 </div>
                 <span className="text-xs text-secondary-light">출석</span>
               </div>
               <div>
                 <div className="w-36-px h-36-px rounded-circle bg-warning-main d-flex align-items-center justify-content-center mx-auto mb-4">
-                  <span className="text-white fw-bold text-xs">0</span>
+                  <span className="text-white fw-bold text-xs">{attendanceCounts.LATE ?? 0}</span>
                 </div>
                 <span className="text-xs text-secondary-light">지각</span>
               </div>
               <div>
                 <div className="w-36-px h-36-px rounded-circle bg-danger-main d-flex align-items-center justify-content-center mx-auto mb-4">
-                  <span className="text-white fw-bold text-xs">0</span>
+                  <span className="text-white fw-bold text-xs">{attendanceCounts.ABSENT ?? 0}</span>
                 </div>
                 <span className="text-xs text-secondary-light">결석</span>
               </div>
@@ -318,6 +330,12 @@ export default function Sidebar() {
                 <li>
                   <Link to="/student/list">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 리스트
+                  </Link>
+                </li>
+                {/* [cheol] 기숙사 */}
+                <li>
+                  <Link to="/student/dormitory">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
                 </li>
               </ul>
@@ -442,7 +460,7 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/board/parent-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 공지
+                    <i className="ri-circle-fill circle-icon w-auto" /> 가정통신문
                   </Link>
                 </li>
                 <li>
@@ -717,7 +735,7 @@ export default function Sidebar() {
                 {/* [cheol] 성적/시험 관련 React 페이지 */}
                 <li>
                   <Link to="/exam">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회 / 체점
                   </Link>
                 </li>
                 <li>
@@ -829,6 +847,25 @@ export default function Sidebar() {
           )}
         </ul>
       </div>
+
+      {/* [woo] 교사 사이드바 하단 - 소속 학교 표시 */}
+      {has("TEACHER") && schoolName && !isCollapsed && (
+        <div className="border-top border-neutral-200 px-16 py-12">
+          <div
+            className="text-secondary-light d-flex align-items-center gap-6"
+            style={{
+              fontSize: 12,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            title={schoolName}
+          >
+            <i className="ri-building-line text-primary-600" style={{ fontSize: 14, flexShrink: 0 }} />
+            {schoolName}
+          </div>
+        </div>
+      )}
 
       {/* 로그아웃 - 학생 대시보드에서만 사이드바 맨 하단에 표시 */}
       {isStudentDashboard && !isCollapsed && (

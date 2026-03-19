@@ -117,15 +117,19 @@ public class BoardRestController {
     }
 
     /**
-     * 학부모 공지 목록 (React /board/parent-notice)
+     * [woo] 학부모 공지(가정통신문) 목록 - 역할별 필터링
+     * 교사: 전체 조회 / 학부모: 자녀 학급 기준 필터링
      * GET /api/board/parent-notice?page=0&size=10
      */
     @GetMapping("/parent-notice")
     public ResponseEntity<Map<String, Object>> getParentNotices(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
 
-        Page<BoardDTO.Response> result = boardService.getParentNotices(PageRequest.of(page, size));
+        Page<BoardDTO.Response> result = boardService.getParentNoticesFiltered(
+                authUser != null ? authUser.getCustomUserDTO() : null,
+                PageRequest.of(page, size));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),

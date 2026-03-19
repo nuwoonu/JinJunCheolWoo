@@ -70,11 +70,12 @@ export default function WeeklyCalendarWidget() {
 
   return (
     <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
-      <div className="p-16 border-bottom">
+      <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
         <h6 className="fw-bold mb-0 text-sm">
           <i className="ri-calendar-event-line text-primary-600 me-2" />
           이번 주 일정
         </h6>
+        <button style={{ background: '#25A194', color: 'white', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>작성</button>
       </div>
 
       <div className="p-16">

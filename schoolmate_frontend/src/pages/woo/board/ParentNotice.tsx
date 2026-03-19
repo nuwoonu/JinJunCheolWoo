@@ -4,15 +4,25 @@ import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 
-// [woo] /board/parent-notice - 학부모 공지 목록
+// [woo] /board/parent-notice - 가정통신문 목록 (뉴스피드형 UI)
 
 interface Board {
   id: number
   title: string
+  content?: string
   writerName: string
   viewCount: number
   pinned: boolean
   createDate: string
+  targetClassroomName?: string
+}
+
+// [woo] 교사 담임 학급 정보
+interface MyClassInfo {
+  classroomId: number
+  className: string
+  grade: number
+  classNum: number
 }
 
 export default function ParentNotice() {
@@ -21,11 +31,13 @@ export default function ParentNotice() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
-  const [totalElements, setTotalElements] = useState(0)
 
   const [showWriteModal, setShowWriteModal] = useState(false)
   const [writeForm, setWriteForm] = useState({ title: '', content: '', isPinned: false })
   const [saving, setSaving] = useState(false)
+
+  // [woo] 교사일 때 담임 학급 정보 조회
+  const [myClass, setMyClass] = useState<MyClassInfo | null>(null)
 
   const isAdmin = user?.role === 'ADMIN'
   const isTeacher = user?.role === 'TEACHER'
@@ -36,14 +48,31 @@ export default function ParentNotice() {
       .then(res => {
         setBoards(res.data.content)
         setTotalPages(res.data.totalPages)
-        setTotalElements(res.data.totalElements)
         setPage(res.data.currentPage)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { fetchBoards() }, [])
+  useEffect(() => {
+    fetchBoards()
+    // [woo] 교사인 경우 담임 학급 정보 가져오기
+    if (isTeacher) {
+      api.get('/teacher/myclass')
+        .then(res => {
+          const d = res.data
+          if (d?.classroomId) {
+            setMyClass({
+              classroomId: d.classroomId,
+              className: d.className ?? `${d.grade}학년 ${d.classNum}반`,
+              grade: d.grade,
+              classNum: d.classNum,
+            })
+          }
+        })
+        .catch(() => {})
+    }
+  }, [])
 
   const handleWrite = async () => {
     if (!writeForm.title.trim() || !writeForm.content.trim()) {
@@ -68,91 +97,169 @@ export default function ParentNotice() {
     }
   }
 
-  const getRowNumber = (index: number, board: Board) => {
-    if (board.pinned) return null
-    return totalElements - page * 10 - index
+  // [woo] 날짜 포맷
+  const formatDateFull = (dateStr: string) => {
+    if (!dateStr) return { month: '', day: '', full: '' }
+    const d = new Date(dateStr)
+    return {
+      month: `${d.getMonth() + 1}월`,
+      day: `${d.getDate()}`,
+      full: `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`,
+    }
   }
 
   return (
     <DashboardLayout>
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      {/* [woo] 상단 헤더 */}
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
         <div>
-          <h6 className="fw-semibold mb-0">게시판</h6>
-          <p className="text-neutral-600 mt-4 mb-0">학부모 공지</p>
+          <h5 className="fw-bold mb-4">가정통신문</h5>
+          <p className="text-secondary-light text-sm mb-0">
+            {isTeacher && myClass
+              ? `${myClass.className} 담임 학부모에게 전달되는 가정통신문입니다.`
+              : '학교와 가정을 연결하는 소식을 전합니다.'}
+          </p>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
-              홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">게시판</li>
-          <li>-</li>
-          <li className="fw-medium">학부모 공지</li>
-        </ul>
+        {(isAdmin || isTeacher) && (
+          <button
+            type="button"
+            className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
+            onClick={() => setShowWriteModal(true)}
+          >
+            <i className="ri-edit-line" />
+            작성
+          </button>
+        )}
       </div>
 
-      <div className="card radius-12">
-        <div className="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
-          <h6 className="mb-0">학부모 공지</h6>
-          {/* [woo] TEACHER, ADMIN만 글쓰기 가능 */}
-          {(isAdmin || isTeacher) && (
-            <button type="button" className="btn btn-primary-600 radius-8" onClick={() => setShowWriteModal(true)}>
-              <iconify-icon icon="mdi:plus" className="me-4" />
-              글쓰기
-            </button>
-          )}
-        </div>
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table bordered-table mb-0">
-              <thead>
-                <tr>
-                  <th scope="col" style={{ width: 60 }}>번호</th>
-                  <th scope="col">제목</th>
-                  <th scope="col" style={{ width: 120 }}>작성자</th>
-                  <th scope="col" style={{ width: 120 }}>작성일</th>
-                  <th scope="col" style={{ width: 80 }}>조회</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan={5} className="text-center py-24 text-secondary-light">불러오는 중...</td></tr>
-                ) : boards.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-24 text-secondary-light">등록된 게시물이 없습니다.</td></tr>
-                ) : (
-                  boards.map((board, i) => (
-                    <tr key={board.id} className={board.pinned ? 'bg-primary-50' : ''}>
-                      <td>
-                        {board.pinned
-                          ? <span className="badge bg-danger-100 text-danger-600">공지</span>
-                          : getRowNumber(i, board)
-                        }
-                      </td>
-                      <td>
-                        <Link to={`/board/parent-notice/${board.id}`} className="text-primary-600 hover-text-primary-700 fw-medium">
-                          {board.title}
-                        </Link>
-                      </td>
-                      <td className="text-secondary-light">{board.writerName}</td>
-                      <td className="text-secondary-light">{board.createDate?.slice(0, 10)}</td>
-                      <td className="text-secondary-light">{board.viewCount}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      {/* [woo] 교사 담임 학급 안내 배너 */}
+      {isTeacher && myClass && (
+        <div className="card border-0 radius-8 mb-20" style={{ background: '#f0faf8' }}>
+          <div className="card-body py-12 px-20 d-flex align-items-center gap-10">
+            <i className="ri-information-line text-success-600" />
+            <span className="text-sm text-dark">
+              <strong>{myClass.className}</strong> 학부모에게 자동 전달됩니다.
+            </span>
           </div>
+        </div>
+      )}
 
+      {/* [woo] 메인 콘텐츠 */}
+      <div className="card border-0 radius-12 shadow-sm">
+        {/* 카드 헤더 - 총 건수 */}
+        <div className="card-header bg-white py-16 px-24 border-bottom d-flex align-items-center justify-content-between" style={{ borderRadius: '12px 12px 0 0' }}>
+          <div className="d-flex align-items-center gap-8">
+            <i className="ri-mail-send-line text-primary-600 text-lg" />
+            <span className="fw-semibold text-dark">전체 통신문</span>
+          </div>
+        </div>
+
+        <div className="card-body p-0">
+          {loading ? (
+            <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
+          ) : boards.length === 0 ? (
+            <div className="text-center py-48">
+              <i className="ri-mail-line text-4xl text-neutral-300 d-block mb-12" />
+              <p className="text-secondary-light mb-0">등록된 가정통신문이 없습니다.</p>
+            </div>
+          ) : (
+            <div>
+              {boards.map((board, idx) => {
+                const date = formatDateFull(board.createDate)
+                return (
+                  <Link
+                    key={board.id}
+                    to={`/board/parent-notice/${board.id}`}
+                    className="d-flex align-items-start gap-20 px-24 py-20 text-decoration-none"
+                    style={{
+                      borderBottom: idx < boards.length - 1 ? '1px solid #f1f3f5' : 'none',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#f8f9fa' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '' }}
+                  >
+                    {/* [woo] 왼쪽: 날짜 블록 */}
+                    <div
+                      className="text-center flex-shrink-0"
+                      style={{
+                        width: 52,
+                        padding: '8px 0',
+                        background: board.pinned ? '#fff3e0' : '#f5f7fa',
+                        borderRadius: 8,
+                      }}
+                    >
+                      <div className="text-xs fw-medium" style={{ color: board.pinned ? '#e65100' : '#868e96' }}>
+                        {date.month}
+                      </div>
+                      <div className="fw-bold" style={{ fontSize: 20, lineHeight: 1.2, color: board.pinned ? '#e65100' : '#495057' }}>
+                        {date.day}
+                      </div>
+                    </div>
+
+                    {/* [woo] 가운데: 제목 + 미리보기 + 메타 */}
+                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                      <div className="d-flex align-items-center gap-8 mb-4">
+                        {board.pinned && (
+                          <span className="badge text-xs px-6 py-2 rounded-pill" style={{ background: '#fff3e0', color: '#e65100' }}>
+                            <i className="ri-pushpin-fill me-2" style={{ fontSize: 10 }} />고정
+                          </span>
+                        )}
+                        {board.targetClassroomName && (
+                          <span className="badge bg-primary-100 text-primary-600 text-xs px-6 py-2 rounded-pill">
+                            {board.targetClassroomName}
+                          </span>
+                        )}
+                      </div>
+                      <h6
+                        className="fw-semibold mb-4"
+                        style={{
+                          color: '#212529',
+                          fontSize: 15,
+                          lineHeight: 1.5,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {board.title}
+                      </h6>
+                      {board.content && (
+                        <p
+                          className="mb-0 text-secondary-light"
+                          style={{
+                            fontSize: 13,
+                            lineHeight: 1.5,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {board.content}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* [woo] 오른쪽: 작성자 + 조회수 */}
+                    <div className="flex-shrink-0 text-end" style={{ minWidth: 80 }}>
+                      <div className="text-xs text-secondary-light mb-2">{board.writerName}</div>
+                      <div className="text-xs text-neutral-400">
+                        <i className="ri-eye-line me-2" />{board.viewCount}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+
+          {/* [woo] 페이지네이션 */}
           {totalPages > 1 && (
-            <div className="d-flex justify-content-center py-16">
+            <div className="d-flex justify-content-center py-16 border-top">
               <nav>
-                <ul className="pagination mb-0">
+                <ul className="pagination pagination-sm mb-0">
                   <li className={`page-item${page === 0 ? ' disabled' : ''}`}>
                     <button className="page-link" onClick={() => fetchBoards(page - 1)}>
-                      <iconify-icon icon="mdi:chevron-left" />
+                      <i className="ri-arrow-left-s-line" />
                     </button>
                   </li>
                   {Array.from({ length: totalPages }, (_, i) => (
@@ -162,7 +269,7 @@ export default function ParentNotice() {
                   ))}
                   <li className={`page-item${page >= totalPages - 1 ? ' disabled' : ''}`}>
                     <button className="page-link" onClick={() => fetchBoards(page + 1)}>
-                      <iconify-icon icon="mdi:chevron-right" />
+                      <i className="ri-arrow-right-s-line" />
                     </button>
                   </li>
                 </ul>
@@ -172,21 +279,31 @@ export default function ParentNotice() {
         </div>
       </div>
 
+      {/* [woo] 작성 모달 */}
       {showWriteModal && (
         <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content radius-12">
               <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title">학부모 공지 작성</h6>
+                <h6 className="modal-title">가정통신문 작성</h6>
                 <button type="button" className="btn-close" onClick={() => setShowWriteModal(false)} />
               </div>
               <div className="modal-body p-24">
+                {/* [woo] 교사 담임 학급 자동 연결 안내 */}
+                {isTeacher && myClass && (
+                  <div className="radius-8 mb-16 py-10 px-16 d-flex align-items-center gap-8" style={{ background: '#f0faf8' }}>
+                    <i className="ri-information-line text-success-600" />
+                    <span className="text-sm text-dark">
+                      <strong>{myClass.className}</strong> 학부모에게 자동 전달됩니다.
+                    </span>
+                  </div>
+                )}
                 <div className="mb-16">
                   <label className="form-label fw-semibold text-sm">제목 *</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="제목을 입력하세요"
+                    placeholder="가정통신문 제목을 입력하세요"
                     value={writeForm.title}
                     onChange={e => setWriteForm(f => ({ ...f, title: e.target.value }))}
                   />
@@ -195,8 +312,8 @@ export default function ParentNotice() {
                   <label className="form-label fw-semibold text-sm">내용 *</label>
                   <textarea
                     className="form-control"
-                    rows={10}
-                    placeholder="내용을 입력하세요"
+                    rows={12}
+                    placeholder="학부모에게 전달할 내용을 입력하세요"
                     value={writeForm.content}
                     onChange={e => setWriteForm(f => ({ ...f, content: e.target.value }))}
                   />

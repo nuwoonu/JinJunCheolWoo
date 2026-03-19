@@ -6,6 +6,7 @@ import { useSchool } from "@/context/SchoolContext";
 import NotFound from "@/pages/error/NotFound";
 import Unauthorized from "@/pages/error/Unauthorized";
 import Login from "@/pages/auth/Login";
+import Hub from "@/pages/auth/Hub";
 import Register from "@/pages/auth/Register";
 import OAuth2Callback from "@/pages/auth/OAuth2Callback";
 import SelectRole from "@/pages/auth/SelectRole";
@@ -14,7 +15,6 @@ import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
 import UserProfile from "@/pages/user/Profile";
 // [cheol] 학생 관련
-import StudentDashboard from "@/pages/jin/student/StudentDashboard";
 import StudentList from "@/pages/cheol/student/StudentList";
 import StudentMyInfo from "@/pages/cheol/student/MyInfo";
 import StudentGrades from "@/pages/cheol/student/Grades";
@@ -68,6 +68,9 @@ import ConsultationReservation from "@/pages/jin/consultation/ConsultationReserv
 // [jin] 학교 일정/갤러리
 import SchoolSchedule from "@/pages/jin/school/SchoolSchedule";
 import SchoolGallery from "@/pages/jin/school/SchoolGallery";
+// [jin] 선생님, 학생 학급 대시보드
+import TeacherMyClassDashboard from "@/pages/jin/teacher/MyClassDashboard";
+import StudentDashboard from "@/pages/jin/student/StudentDashboard";
 // [parkjoon] 관리자 페이지
 import JoonAdminMain from "@/pages/admin/AdminMain";
 import JoonSchoolSelect from "@/pages/admin/school/SchoolSelect";
@@ -106,9 +109,10 @@ function SchoolSelectGuard() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/main" replace />} />
+      <Route path="/" element={<Navigate to="/hub" replace />} />
       <Route path="/main" element={<Main />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/hub" element={<Hub />} />
       {/* [woo] OAuth2 소셜 로그인 콜백 - 토큰 저장 후 역할별 대시보드로 이동 */}
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
       <Route path="/register" element={<Register />} />
@@ -279,6 +283,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherMyClassStudents />
+          </PrivateRoute>
+        }
+      />
+      {/* [jin] 교사 학급 대시보드 */}
+      <Route
+        path="/teacher/myclass/dashboard"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherMyClassDashboard />
           </PrivateRoute>
         }
       />

@@ -27,6 +27,7 @@ public class DormitoryDTO {
 
     // 배정된 학생 정보
     private List<String> studentNames;
+    private List<Long> studentIds; // cheol: 배정 해제 시 studentInfoId 필요
     private boolean isEmpty;
     private int occupiedCount;
     private int capacity;
@@ -46,6 +47,9 @@ public class DormitoryDTO {
                 .roomTypeDescription(dormitory.getRoomType().getDescription())
                 .studentNames(dormitory.getStudents().stream()
                         .map(student -> student.getUser().getName())
+                        .collect(Collectors.toList()))
+                .studentIds(dormitory.getStudents().stream() // cheol
+                        .map(student -> student.getId())
                         .collect(Collectors.toList()))
                 .isEmpty(dormitory.isEmpty())
                 .occupiedCount(dormitory.getOccupiedCount())
