@@ -43,9 +43,12 @@ export default function ClassNoticeWidget({ classroomId }: Props) {
           <i className="ri-notification-badge-line text-primary-600 me-2" />
           학급 공지사항
         </h6>
-        {classroomId != null && (
-          <a href="/board/grade/1" className="text-primary-600 text-sm">더보기</a>
-        )}
+        <div className="d-flex align-items-center gap-12">
+          {classroomId != null && (
+            <a href="/board/grade/1" className="text-primary-600 text-sm">더보기</a>
+          )}
+          <button style={{ background: '#25A194', color: 'white', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>작성</button>
+        </div>
       </div>
 
       {loading ? (

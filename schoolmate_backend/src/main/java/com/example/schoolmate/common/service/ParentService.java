@@ -22,10 +22,11 @@ import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
-import com.example.schoolmate.common.entity.info.constant.ParentStatus;
 import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.entity.user.RoleRequest;
+import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
@@ -54,13 +55,23 @@ public class ParentService {
     private final ParentInfoRepository parentInfoRepository;
     private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRequestRepository roleRequestRepository;
 
     /**
      * 학부모 목록 조회 (검색 포함)
      */
     public Page<ParentDTO.Summary> getParentList(ParentDTO.ParentSearchCondition cond, Pageable pageable) {
         return parentInfoRepository.search(cond, pageable)
-                .map(ParentDTO.Summary::new);
+                .map(entity -> {
+                    ParentDTO.Summary dto = new ParentDTO.Summary(entity);
+                    if (entity.getUser() != null) {
+                        roleRequestRepository.findByUserAndRole(entity.getUser(), UserRole.PARENT).ifPresent(rr -> {
+                            dto.setRoleRequestId(rr.getId());
+                            dto.setRoleRequestStatus(rr.getStatus().name());
+                        });
+                    }
+                    return dto;
+                });
     }
 
     /**
@@ -86,7 +97,6 @@ public class ParentService {
         info.setCode(request.getCode());
         info.setParentName(request.getName());
         info.setPhone(request.getPhone());
-        info.setStatus(ParentStatus.ACTIVE);
         info.setUser(user);
 
         // 자녀 연동 처리
@@ -112,6 +122,9 @@ public class ParentService {
 
         user.getInfos().add(info);
         userRepository.save(user);
+
+        // 관리자 직접 등록 시 즉시 ACTIVE RoleRequest 생성
+        roleRequestRepository.save(RoleRequest.createActive(user, UserRole.PARENT, null, null));
     }
 
     /**
@@ -149,49 +162,6 @@ public class ParentService {
     }
 
     /**
-     * 학부모 상태 일괄 변경
-     */
-    @Transactional
-    public void bulkUpdateParentStatus(List<Long> ids, String statusName) {
-        ParentStatus status = ParentStatus.valueOf(statusName);
-        List<ParentInfo> parents = parentInfoRepository.findAllById(ids);
-        for (ParentInfo parent : parents) {
-            ParentStatus prev = parent.getStatus();
-            parent.setStatus(status);
-            if (parent.getUser() != null && prev != status) {
-                notifyParentStatusChanged(parent.getUser(), status);
-            }
-        }
-    }
-
-    private void notifyParentStatusChanged(User parentUser, ParentStatus status) {
-        String title;
-        String content;
-        switch (status) {
-            case ACTIVE -> {
-                title = "학부모 계정 승인 완료";
-                content = "학부모 계정이 승인되어 서비스를 이용하실 수 있습니다.";
-            }
-            case INACTIVE -> {
-                title = "학부모 계정 비활성화";
-                content = "학부모 계정이 비활성화되었습니다. 문의가 있으시면 학교로 연락해주세요.";
-            }
-            case BLOCKED -> {
-                title = "학부모 계정 차단";
-                content = "학부모 계정이 차단되었습니다. 문의가 있으시면 학교로 연락해주세요.";
-            }
-            case PENDING -> {
-                title = "학부모 계정 승인대기";
-                content = "학부모 계정이 승인대기 상태로 변경되었습니다.";
-            }
-            default -> {
-                return;
-            }
-        }
-        NotificationHelper.send(parentUser, title, content);
-    }
-
-    /**
      * 학부모 상세 조회
      */
     public ParentDTO.DetailResponse getParentDetail(Long id) {
@@ -200,11 +170,15 @@ public class ParentService {
 
         ParentDTO.DetailResponse response = new ParentDTO.DetailResponse(parent);
 
-        // 계정이 연결되어 있다면 알림 이력 조회 (논리 삭제 제외)
         if (parent.getUser() != null) {
             List<Notification> notifications = notificationRepository
                     .findActiveByReceiver(parent.getUser());
             response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
+
+            roleRequestRepository.findByUserAndRole(parent.getUser(), UserRole.PARENT).ifPresent(rr -> {
+                response.setRoleRequestId(rr.getId());
+                response.setRoleRequestStatus(rr.getStatus().name());
+            });
         }
         return response;
     }
@@ -238,10 +212,6 @@ public class ParentService {
 
         info.setParentName(request.getName());
         info.setPhone(request.getPhone());
-
-        if (request.getStatusName() != null) {
-            info.setStatus(ParentStatus.valueOf(request.getStatusName()));
-        }
 
         if (info.getUser() != null) {
             info.getUser().setName(request.getName());
@@ -299,7 +269,6 @@ public class ParentService {
             parentInfo.setParentName(request.getParentName());
             parentInfo.setPhone(phone);
             parentInfo.setCode("P_" + phone); // [woo] 학부모 코드: P_ + 전화번호
-            parentInfo.setStatus(ParentStatus.ACTIVE); // [woo] 교사 등록 → 즉시 활성
             parentInfo.setUser(newUser);
 
             newUser.getInfos().add(parentInfo);

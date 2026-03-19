@@ -57,16 +57,6 @@ public class AdminParentApiController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/bulk-status")
-    public ResponseEntity<String> bulkStatus(@RequestBody ParentDTO.BulkStatusRequest request) {
-        try {
-            parentService.bulkUpdateParentStatus(request.getIds(), request.getStatus());
-            return ResponseEntity.ok("상태 변경되었습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @PostMapping("/import-csv")
     public ResponseEntity<String> importCsv(@RequestParam MultipartFile file) {
         try {

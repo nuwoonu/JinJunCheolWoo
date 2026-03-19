@@ -22,7 +22,6 @@ import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
-import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -74,7 +73,7 @@ public class TeacherMyClassRestController {
     }
 
     /**
-     * [woo] 같은 학교의 승인대기 학생 목록 조회
+     * [woo] 같은 학교에서 아직 학급 배정이 없는 학생 목록 조회
      * GET /api/teacher/myclass/pending-students
      */
     @GetMapping("/pending-students")
@@ -89,24 +88,24 @@ public class TeacherMyClassRestController {
         }
 
         if (schoolId == null) {
-            log.warn("[woo] 승인대기 학생 조회 실패 - schoolId null (teacherUid: {})", teacherUid);
+            log.warn("[woo] 미배정 학생 조회 실패 - schoolId null (teacherUid: {})", teacherUid);
             return ResponseEntity.ok(List.of());
         }
 
-        // [woo] 같은 학교 + 승인대기 상태 학생 조회 (전용 쿼리 사용)
-        List<StudentInfo> pendingStudents = studentInfoRepository.findPendingBySchoolId(schoolId);
+        // [woo] 같은 학교 + 학급 미배정 학생 조회
+        // [joon] PENDING과 같은 기존 상태를 RoleRequest 엔티티로 변경하여 해당 함수 수정
+        List<StudentInfo> unassignedStudents = studentInfoRepository.findUnassignedBySchoolId(schoolId);
 
-        List<Map<String, Object>> result = pendingStudents.stream()
+        List<Map<String, Object>> result = unassignedStudents.stream()
                 .map(s -> Map.<String, Object>of(
                         "studentInfoId", s.getId(),
                         "name", s.getUser() != null ? s.getUser().getName() : "이름없음",
                         "email", s.getUser() != null && s.getUser().getEmail() != null ? s.getUser().getEmail() : "-",
                         "phone", s.getPhone() != null ? s.getPhone() : "-",
-                        "status", s.getStatus().getDescription()
-                ))
+                        "status", s.getStatus().getDescription()))
                 .collect(Collectors.toList());
 
-        log.info("[woo] 승인대기 학생 조회 - schoolId: {}, count: {}", schoolId, result.size());
+        log.info("[woo] 미배정 학생 조회 - schoolId: {}, count: {}", schoolId, result.size());
         return ResponseEntity.ok(result);
     }
 
@@ -123,7 +122,8 @@ public class TeacherMyClassRestController {
 
         Long studentInfoId = ((Number) body.get("studentInfoId")).longValue();
         Integer attendanceNum = body.get("attendanceNum") != null
-                ? ((Number) body.get("attendanceNum")).intValue() : null;
+                ? ((Number) body.get("attendanceNum")).intValue()
+                : null;
 
         Long teacherUid = authUser.getCustomUserDTO().getUid();
         Long schoolId = authUser.getCustomUserDTO().getSchoolId();
@@ -147,9 +147,9 @@ public class TeacherMyClassRestController {
                 return ResponseEntity.badRequest().body(Map.of("error", "같은 학교의 학생만 배정할 수 있습니다."));
             }
 
-            // [woo] 승인대기 상태인지 확인
-            if (student.getStatus() != StudentStatus.PENDING) {
-                return ResponseEntity.badRequest().body(Map.of("error", "승인대기 상태의 학생만 배정할 수 있습니다."));
+            // [woo] 이미 학급 배정이 완료된 학생인지 확인
+            if (student.getCurrentAssignment() != null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "이미 학급이 배정된 학생입니다."));
             }
 
             // [woo] 반번호 자동 부여 (미입력 시 현재 학생 수 + 1)
@@ -169,7 +169,6 @@ public class TeacherMyClassRestController {
 
             student.setCurrentAssignment(assignment);
             student.getAssignments().add(assignment);
-            student.setStatus(StudentStatus.ENROLLED); // [woo] 승인대기 → 재학
             studentInfoRepository.save(student);
 
             log.info("[woo] 학생 학급 배정 완료 - student: {}, classroom: {}학년 {}반, 번호: {}",
@@ -178,8 +177,7 @@ public class TeacherMyClassRestController {
             return ResponseEntity.ok(Map.of(
                     "message", student.getUser().getName() + " 학생이 " +
                             classroom.getGrade() + "학년 " + classroom.getClassNum() + "반 " +
-                            attendanceNum + "번으로 배정되었습니다."
-            ));
+                            attendanceNum + "번으로 배정되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -234,7 +232,8 @@ public class TeacherMyClassRestController {
             studentInfoRepository.save(student);
 
             log.info("[woo] 학생 반번호 변경 - student: {}, 새 번호: {}", student.getUser().getName(), newNumber);
-            return ResponseEntity.ok(Map.of("message", student.getUser().getName() + " 학생의 반번호가 " + newNumber + "번으로 변경되었습니다."));
+            return ResponseEntity
+                    .ok(Map.of("message", student.getUser().getName() + " 학생의 반번호가 " + newNumber + "번으로 변경되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

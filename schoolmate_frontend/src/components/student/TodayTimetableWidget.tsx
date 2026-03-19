@@ -10,16 +10,18 @@ interface TimetableItem {
 interface Props {
   timetable: TimetableItem[]
   loading: boolean
+  title?: string
 }
 
-export default function TodayTimetableWidget({ timetable, loading }: Props) {
+export default function TodayTimetableWidget({ timetable, loading, title }: Props) {
   return (
     <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
-      <div className="p-16 border-bottom">
+      <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
         <h6 className="fw-bold mb-0 text-sm">
           <i className="ri-time-line text-primary-600 me-2" />
-          오늘의 시간표{timetable.length > 0 && ` (${timetable.length}교시)`}
+          {title ?? '오늘의 시간표'}{timetable.length > 0 && ` (${timetable.length}교시)`}
         </h6>
+        <button style={{ background: '#25A194', color: 'white', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>작성</button>
       </div>
       <div className="p-16" style={{ overflowY: 'auto' }}>
         {loading ? (

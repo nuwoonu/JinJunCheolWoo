@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -59,10 +61,18 @@ public class AuthService {
 
         saveRefreshToken(email, refreshToken);
 
+        List<String> roles = userDTO.getCustomUserDTO().getRoles().stream()
+                .map(UserRole::name)
+                .collect(Collectors.toList());
+        if (roles.isEmpty() && !"GUEST".equals(role)) {
+            roles = List.of(role);
+        }
+
         return Map.of(
                 "accessToken", accessToken,
                 "refreshToken", refreshToken,
                 "role", role,
+                "roles", roles,
                 "email", email,
                 "name", userDTO.getCustomUserDTO().getName()
         );

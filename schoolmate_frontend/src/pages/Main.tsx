@@ -1,28 +1,14 @@
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { ADMIN_ROUTES } from '@/constants/routes'
-
-const roleRedirects: Record<string, string> = {
-  ADMIN: ADMIN_ROUTES.SCHOOL_SELECT,
-  TEACHER: '/teacher/dashboard',
-  STUDENT: '/student/dashboard',
-  PARENT: '/parent/dashboard',
-  GUEST: '/select-role',
-}
 
 export default function Main() {
   const { user, loading } = useAuth()
-  const navigate = useNavigate()
 
-  useEffect(() => {
-    if (loading || !user?.authenticated || !user.role) return
-    const target = roleRedirects[user.role]
-    if (target) {
-      navigate(target, { replace: true })
-    }
-    // 알 수 없는 role이면 /main에 그대로 머물러 무한 루프 방지
-  }, [user, loading, navigate])
+  // 인증 확인 중에는 아무것도 렌더링하지 않아 flash 방지
+  if (loading) return null
+
+  // 로그인된 사용자는 hub로 바로 이동
+  if (user?.authenticated) return <Navigate to="/hub" replace />
 
   return (
     <>

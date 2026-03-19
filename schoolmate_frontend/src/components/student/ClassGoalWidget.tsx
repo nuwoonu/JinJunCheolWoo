@@ -1,16 +1,16 @@
-// [soojin] 이달의 학급 목표 위젯
+// [soojin] 이달의 학급 목표 위젯 (학생용)
 // GET /api/class/goal/{classroomId}?year=&month=
-// 백엔드 API 미완성 (ClassGoal 엔티티 신규 기능) → "준비 중" 표시
+// 204 No Content → "목표 없음" 표시
 
 import { useEffect, useState } from 'react'
 import api from '../../api/auth'
 
 interface ClassGoal {
   id: number
-  content: string
-  achievementRate: number  // 달성률 0~100
   year: number
   month: number
+  goal: string
+  actionItems: string[]
 }
 
 interface Props {
@@ -20,7 +20,6 @@ interface Props {
 export default function ClassGoalWidget({ classroomId }: Props) {
   const [goal, setGoal] = useState<ClassGoal | null>(null)
   const [loading, setLoading] = useState(true)
-  const [notReady, setNotReady] = useState(false)
 
   useEffect(() => {
     if (classroomId == null) {
@@ -29,52 +28,86 @@ export default function ClassGoalWidget({ classroomId }: Props) {
     }
     const now = new Date()
     api.get(`/class/goal/${classroomId}?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
-      .then(res => { setGoal(res.data) })
-      .catch(() => {
-        // API 미완성 → 준비 중 상태
-        setNotReady(true)
+      .then(res => {
+        if (res.status !== 204 && res.data?.goal) {
+          setGoal(res.data)
+        }
       })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [classroomId])
 
-  return (
-    <div className="card shadow-sm p-20 h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
-      <h6 className="fw-bold mb-16 text-sm">
-        <i className="ri-focus-3-line text-primary-600 me-2" />
-        이달의 학급 목표
-      </h6>
+  const now = new Date()
 
-      {loading ? (
-        <p className="text-secondary-light text-sm mb-0">불러오는 중...</p>
-      ) : notReady || classroomId == null ? (
-        <div className="text-center py-20">
-          <i className="ri-tools-line text-secondary-light mb-8" style={{ fontSize: 32 }} />
-          <p className="text-secondary-light text-sm mb-0">준비 중입니다.</p>
+  return (
+    <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: '1px solid #e5e7eb' }}>
+      {/* 헤더 */}
+      <div
+        className="d-flex align-items-center justify-content-between px-20 py-16"
+        style={{ borderBottom: '1px solid #e5e7eb' }}
+      >
+        <div className="d-flex align-items-center gap-8">
+          <i className="ri-focus-3-line text-primary-600" style={{ fontSize: 18 }} />
+          <span style={{ fontWeight: 600, fontSize: 15, color: '#111827' }}>이달의 학급 목표</span>
         </div>
-      ) : goal ? (
-        <>
-          <p className="text-sm text-dark mb-16" style={{ lineHeight: 1.6 }}>
-            {goal.content}
-          </p>
-          {/* 달성률 Progress Bar */}
-          <div>
-            <div className="d-flex justify-content-between align-items-center mb-6">
-              <span className="text-xs text-secondary-light">달성률</span>
-              <span className="text-xs fw-bold text-primary-600">{goal.achievementRate}%</span>
-            </div>
-            <div className="progress" style={{ height: 8, borderRadius: 4 }}>
-              <div
-                className="progress-bar bg-primary-600"
-                style={{ width: `${goal.achievementRate}%`, borderRadius: 4 }}
-              />
-            </div>
+        <span className="text-xs" style={{ color: '#9ca3af' }}>
+          {now.getFullYear()}년 {now.getMonth() + 1}월
+        </span>
+      </div>
+
+      {/* 본문 */}
+      <div className="p-20">
+        {loading ? (
+          <p className="text-secondary-light text-sm mb-0">불러오는 중...</p>
+
+        ) : classroomId == null ? (
+          <div className="text-center py-20">
+            <i className="ri-error-warning-line text-secondary-light mb-8" style={{ fontSize: 32 }} />
+            <p className="text-secondary-light text-sm mb-0">학급 정보가 없습니다.</p>
           </div>
-        </>
-      ) : (
-        <div className="text-center text-secondary-light text-sm py-20">
-          이번 달 학급 목표가 없습니다.
-        </div>
-      )}
+
+        ) : goal ? (
+          <div>
+            {/* 목표 텍스트 박스 */}
+            <div style={{
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: 10,
+              padding: '12px 16px',
+              marginBottom: 16,
+            }}>
+              <p className="text-sm fw-semibold mb-0" style={{ color: '#15803d', lineHeight: 1.6 }}>
+                {goal.goal}
+              </p>
+            </div>
+
+            {/* 실천 사항 */}
+            {goal.actionItems.length > 0 && (
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {goal.actionItems.map((item, i) => (
+                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{
+                      width: 20, height: 20, minWidth: 20, borderRadius: '50%',
+                      border: '2px solid #25A194', background: 'white',
+                      marginTop: 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#25A194', display: 'block' }} />
+                    </span>
+                    <span className="text-sm" style={{ color: '#374151', lineHeight: 1.5 }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+        ) : (
+          <div className="text-center py-20">
+            <i className="ri-focus-3-line text-secondary-light mb-8" style={{ fontSize: 32 }} />
+            <p className="text-secondary-light text-sm mb-0">이번 달 학급 목표가 없습니다.</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

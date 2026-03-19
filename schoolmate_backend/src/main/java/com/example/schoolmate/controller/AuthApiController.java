@@ -1,12 +1,16 @@
 package com.example.schoolmate.controller;
 
+import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.RoleRequestRepository;
+import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
 import com.example.schoolmate.common.util.LogHelper;
 import com.example.schoolmate.domain.school.dto.SchoolDTO;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.school.service.SchoolService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.CustomUserDTO;
@@ -22,7 +26,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * JWT 기반 인증 REST API
@@ -42,6 +48,9 @@ public class AuthApiController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final SchoolService schoolService;
+    private final SchoolAdminGrantRepository schoolAdminGrantRepository;
+    private final RoleRequestRepository roleRequestRepository;
+    private final SchoolRepository schoolRepository;
 
     /**
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
@@ -174,17 +183,51 @@ public class AuthApiController {
         if (user == null) {
             return ResponseEntity.ok(Map.of("authenticated", false));
         }
-        // [woo] getPrimaryRole()이 null일 수 있음 (OAuth2 신규 GUEST 유저 - DB에 roles 없음)
         UserRole primaryRole = user.getPrimaryRole();
         String roleName = primaryRole != null ? primaryRole.name() : "GUEST";
         String name = user.getCustomUserDTO().getName();
 
+        // 유저가 보유한 모든 역할 목록
+        List<String> roles = user.getCustomUserDTO().getRoles().stream()
+                .map(UserRole::name)
+                .collect(Collectors.toList());
+        if (roles.isEmpty() && !"GUEST".equals(roleName)) {
+            roles = List.of(roleName);
+        }
+
+        // 위임 관리자 권한 보유 여부 (Hub 어드민 접근 버튼 표시용)
+        Long uid = user.getCustomUserDTO().getUid();
+        User dbUser = userRepository.findById(uid).orElse(null);
+        boolean hasAdminAccess = primaryRole == UserRole.ADMIN
+                || (dbUser != null && schoolAdminGrantRepository.existsByUser(dbUser));
+
+        // 역할 신청 목록 (Hub 카드 상태 표시용)
+        List<Map<String, Object>> roleRequests = List.of();
+        if (dbUser != null) {
+            roleRequests = roleRequestRepository.findByUser(dbUser).stream()
+                    .map(rr -> {
+                        java.util.Map<String, Object> map = new java.util.HashMap<>();
+                        map.put("role", rr.getRole().name());
+                        map.put("status", rr.getStatus().name());
+                        map.put("schoolId", rr.getSchoolId() != null ? rr.getSchoolId() : "");
+                        if (rr.getSchoolId() != null) {
+                            schoolRepository.findById(rr.getSchoolId())
+                                    .ifPresent(school -> map.put("schoolName", school.getName()));
+                        }
+                        return map;
+                    })
+                    .collect(Collectors.toList());
+        }
+
         return ResponseEntity.ok(Map.of(
                 "authenticated", true,
-                "uid", user.getCustomUserDTO().getUid(),
+                "uid", uid,
                 "email", user.getUsername(),
                 "name", name != null ? name : "소셜사용자",
-                "role", roleName));
+                "role", roleName,
+                "roles", roles,
+                "hasAdminAccess", hasAdminAccess,
+                "roleRequests", roleRequests));
     }
 
     /**

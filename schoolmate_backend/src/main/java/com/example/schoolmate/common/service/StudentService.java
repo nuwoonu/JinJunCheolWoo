@@ -30,6 +30,8 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.entity.user.RoleRequest;
+import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
@@ -61,6 +63,7 @@ public class StudentService {
     private final ClassroomRepository classroomRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRequestRepository roleRequestRepository;
 
     /**
      * 1. 학생 목록 조회 (마스터 목록)
@@ -68,9 +71,15 @@ public class StudentService {
     @Transactional(readOnly = true)
     public Page<StudentDTO.SummaryResponse> getStudentSummaryList(StudentDTO.StudentSearchCondition cond,
             Pageable pageable) {
-        // QueryHandler에서 연도/학년/반 필터를 제거한 searchStudents를 호출
         return studentInfoRepository.search(cond, pageable)
-                .map(StudentDTO.SummaryResponse::new); // DTO 내부에서 '가장 최근 소속'을 추출하도록 설계
+                .map(user -> {
+                    StudentDTO.SummaryResponse dto = new StudentDTO.SummaryResponse(user);
+                    roleRequestRepository.findByUserAndRole(user, UserRole.STUDENT).ifPresent(rr -> {
+                        dto.setRoleRequestId(rr.getId());
+                        dto.setRoleRequestStatus(rr.getStatus().name());
+                    });
+                    return dto;
+                });
     }
 
     /**
@@ -98,6 +107,11 @@ public class StudentService {
         List<FamilyRelation> relations = familyRelationRepository
                 .findByStudentInfo_User_Uid(uid);
         response.setGuardians(relations.stream().map(StudentDTO.LinkedGuardian::new).toList());
+
+        roleRequestRepository.findByUserAndRole(user, UserRole.STUDENT).ifPresent(rr -> {
+            response.setRoleRequestId(rr.getId());
+            response.setRoleRequestStatus(rr.getStatus().name());
+        });
 
         return response;
     }
@@ -179,6 +193,9 @@ public class StudentService {
 
         // 4. 저장 및 학번 반환
         userRepository.save(user);
+
+        // 관리자 직접 등록 시 즉시 ACTIVE RoleRequest 생성
+        roleRequestRepository.save(RoleRequest.createActive(user, UserRole.STUDENT, SchoolContextHolder.getSchoolId(), null));
 
         // 저장된 User UID 반환
         return user.getUid();
