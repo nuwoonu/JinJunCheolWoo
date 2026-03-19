@@ -44,6 +44,12 @@ export default function StudentList() {
       .finally(() => setLoading(false));
   }, []);
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = selectedStudent ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [selectedStudent]);
+
   const filtered = students.filter((s) => {
     if (!search) return true;
     const q = search.toLowerCase();

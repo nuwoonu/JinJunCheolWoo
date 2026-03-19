@@ -42,6 +42,12 @@ export default function ParentNotice() {
   const isAdmin = user?.role === 'ADMIN'
   const isTeacher = user?.role === 'TEACHER'
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showWriteModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showWriteModal])
+
   const fetchBoards = (p = 0) => {
     setLoading(true)
     api.get(`/board/parent-notice?page=${p}&size=10`)

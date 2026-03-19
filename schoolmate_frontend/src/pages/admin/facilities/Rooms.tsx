@@ -46,6 +46,12 @@ export default function Rooms() {
     load();
   }, []);
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal]);
+
   const openCreate = () => {
     setForm({ ...EMPTY_FORM });
     setShowModal(true);

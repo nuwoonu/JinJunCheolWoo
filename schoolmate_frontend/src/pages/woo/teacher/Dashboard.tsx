@@ -73,6 +73,12 @@ export default function TeacherDashboard() {
       .catch(() => {});
   }, []);
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showTodoModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showTodoModal]);
+
   const allNotices = data.notices ?? [];
   const visibleNotices = allNotices.filter((_, i) => !dismissedNotices.has(i));
 

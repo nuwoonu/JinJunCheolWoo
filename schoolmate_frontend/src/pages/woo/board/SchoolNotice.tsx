@@ -46,6 +46,12 @@ export default function SchoolNotice() {
 
   useEffect(() => { fetchBoards() }, [])
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showWriteModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showWriteModal])
+
   const handleWrite = async () => {
     if (!writeForm.title.trim() || !writeForm.content.trim()) {
       alert('제목과 내용을 입력해주세요.')

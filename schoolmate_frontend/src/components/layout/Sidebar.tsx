@@ -432,7 +432,7 @@ export default function Sidebar() {
                 }}
               >
                 <i className="ri-user-follow-line" />
-                <span>선생님</span>
+                <span>교직원</span>
               </a>
               <ul className="sidebar-submenu">
                 <li>

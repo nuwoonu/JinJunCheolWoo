@@ -43,6 +43,12 @@ export default function ClassGoalEditor({ classroomId }: Props) {
       .finally(() => setLoading(false))
   }, [classroomId])
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal])
+
   const openModal = () => {
     setEditGoal(goal?.goal ?? '')
     setEditItems(goal?.actionItems?.length ? [...goal.actionItems] : [''])

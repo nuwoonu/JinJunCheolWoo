@@ -38,6 +38,12 @@ export default function ParentDetail() {
     load();
   }, [id]);
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
