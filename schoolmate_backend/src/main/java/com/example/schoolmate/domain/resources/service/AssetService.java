@@ -22,7 +22,9 @@ import com.example.schoolmate.domain.resources.repository.SchoolAssetRepository;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -48,6 +50,7 @@ public class AssetService {
     }
 
     public void createAssetModel(AssetModelDTO.Request request) {
+        log.info("기자재 모델 생성: name={}, category={}", request.getName(), request.getCategory());
         String filename = null;
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             filename = fileService.upload(request.getImageFile(), "assets");
@@ -70,6 +73,7 @@ public class AssetService {
     }
 
     public void updateAssetModel(AssetModelDTO.Request request) {
+        log.info("기자재 모델 수정: id={}, name={}", request.getId(), request.getName());
         AssetModel model = modelRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("모델을 찾을 수 없습니다."));
 
@@ -87,6 +91,7 @@ public class AssetService {
     }
 
     public void deleteAssetModel(Long id) {
+        log.info("기자재 모델 삭제 시도: id={}", id);
         AssetModel model = modelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("모델을 찾을 수 없습니다."));
 
@@ -98,10 +103,12 @@ public class AssetService {
 
         // TODO: 이미지 파일 삭제 로직 추가 (fileService.delete)
         modelRepository.delete(model);
+        log.info("기자재 모델 삭제 완료: id={}", id);
     }
 
     // --- 자산(SchoolAsset) 관리 ---
     public void createAsset(AssetDTO.Request request) {
+        log.info("기자재 등록: assetCode={}, modelId={}", request.getAssetCode(), request.getModelId());
         // 관리 번호 중복 체크
         if (assetRepository.existsByAssetCode(request.getAssetCode())) {
             throw new IllegalArgumentException("이미 존재하는 관리 번호입니다.");
@@ -139,6 +146,7 @@ public class AssetService {
     }
 
     public void updateAsset(AssetDTO.Request request) {
+        log.info("기자재 수정: id={}, assetCode={}", request.getId(), request.getAssetCode());
         SchoolAsset asset = assetRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("기자재를 찾을 수 없습니다."));
 
@@ -167,6 +175,7 @@ public class AssetService {
     }
 
     public void deleteAsset(Long id) {
+        log.info("기자재 삭제: id={}", id);
         assetRepository.deleteById(id);
     }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
@@ -31,10 +31,16 @@ export default function TeacherCreate() {
     department: "",
     position: "",
   });
+  const [subjects, setSubjects] = useState<{ code: string; name: string }[]>([]);
+
+  useEffect(() => {
+    admin.get("/subjects").then((r) => setSubjects(r.data ?? []));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await admin.post("/teachers", form);
+    const payload = { ...form, subject: form.subject || null };
+    await admin.post("/teachers", payload);
     navigate(ADMIN_ROUTES.TEACHERS.LIST);
   };
 
@@ -126,14 +132,16 @@ export default function TeacherCreate() {
           <div className="row g-3">
             <div className="col-md-12">
               <label className="form-label fw-bold">담당 과목</label>
-              <input
-                className="form-control"
+              <select
+                className="form-select"
                 value={form.subject}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, subject: e.target.value }))
-                }
-                placeholder="예: 수학, 영어"
-              />
+                onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+              >
+                <option value="">-- 과목 선택 (선택 사항) --</option>
+                {subjects.map((s) => (
+                  <option key={s.code} value={s.code}>{s.name}</option>
+                ))}
+              </select>
             </div>
             <div className="col-md-6">
               <label className="form-label fw-bold">부서</label>

@@ -10,11 +10,13 @@ import com.example.schoolmate.common.dto.DashboardDTO;
 import com.example.schoolmate.common.service.DashboardService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 관리자 대시보드 REST API
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_DASHBOARD)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canAccessAdmin()")
 public class AdminDashboardApiController {
 
     private final DashboardService dashboardService;

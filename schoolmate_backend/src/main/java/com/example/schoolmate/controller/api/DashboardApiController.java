@@ -126,10 +126,8 @@ public class DashboardApiController {
             String name = parentUser.getName();
             if ((name == null || name.isBlank()) && parentInfo != null)
                 name = parentInfo.getParentName();
-            // phone: ParentInfo.phone 우선, 없으면 User.phoneNumber
+            // phone: ParentInfo.phone
             String phone = parentInfo != null ? parentInfo.getPhone() : null;
-            if (phone == null || phone.isBlank())
-                phone = parentUser.getPhoneNumber();
             profile.put("name", name);
             profile.put("email", parentUser.getEmail());
             profile.put("phone", phone);

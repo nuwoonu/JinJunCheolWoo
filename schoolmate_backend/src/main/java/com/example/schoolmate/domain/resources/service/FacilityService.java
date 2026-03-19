@@ -15,7 +15,9 @@ import com.example.schoolmate.domain.resources.repository.SchoolFacilityReposito
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -32,6 +34,7 @@ public class FacilityService {
     }
 
     public void createFacility(FacilityDTO.Request request) {
+        log.info("시설 생성: name={}", request.getName());
         String filename = null;
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             filename = fileService.upload(request.getImageFile(), "facilities");
@@ -61,6 +64,7 @@ public class FacilityService {
     }
 
     public void updateFacility(FacilityDTO.Request request) {
+        log.info("시설 수정: id={}, name={}", request.getId(), request.getName());
         SchoolFacility facility = facilityRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("시설을 찾을 수 없습니다."));
 
@@ -86,6 +90,7 @@ public class FacilityService {
     }
 
     public void deleteFacility(Long id) {
+        log.info("시설 삭제: id={}", id);
         facilityRepository.deleteById(id);
     }
 }

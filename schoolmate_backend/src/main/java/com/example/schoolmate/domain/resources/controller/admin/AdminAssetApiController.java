@@ -25,6 +25,7 @@ import com.example.schoolmate.domain.resources.dto.AssetModelDTO;
 import com.example.schoolmate.domain.resources.service.AssetService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * 관리자 기자재(Asset) 관리 REST 컨트롤러
@@ -32,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_ASSETS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canManageAssets()")
 public class AdminAssetApiController {
 
     private final AssetService adminAssetService;
