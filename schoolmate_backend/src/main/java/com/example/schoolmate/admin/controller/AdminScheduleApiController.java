@@ -1,6 +1,6 @@
 package com.example.schoolmate.admin.controller;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -35,10 +35,9 @@ public class AdminScheduleApiController {
 
     @GetMapping
     public ResponseEntity<List<SchoolCalendarDTO.Response>> getEvents(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        // FullCalendar가 보내는 시간 포함 ISO 포맷을 받아서 LocalDate로 변환
-        return ResponseEntity.ok(adminScheduleService.getEvents(start.toLocalDate(), end.toLocalDate()));
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return ResponseEntity.ok(adminScheduleService.getEvents(start, end));
     }
 
     @PostMapping

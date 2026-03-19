@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import api from '@/api/auth'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import NeisEventsWidget from '@/components/NeisEventsWidget'
+import ClassNotebookWidget from '@/components/teacher/ClassNotebookWidget'
 
 // [soojin] 학부모 자녀현황 - soojin/mychildren/status.html 마이그레이션
 // 레이아웃: 상단 3컬럼(프로필+출결 | 시간표 | 학교일정) + 하단 2컬럼(가정통신문 | 급식) + 알림장
@@ -49,13 +50,22 @@ interface ParentDashboardData {
 }
 
 
-const MEAL_TYPE_LABEL: Record<string, string> = { BREAKFAST: '조식', LUNCH: '중식', DINNER: '석식' }
-const MEAL_TYPE_CLASS: Record<string, string> = {
-  BREAKFAST: 'bg-warning-100 text-warning-600',
-  LUNCH: 'bg-primary-100 text-primary-600',
-  DINNER: 'bg-info-100 text-info-600',
-}
 
+const MOCK_BOARDS: Board[] = [
+  { title: '3월 가정통신문 안내', writerName: '담임', createDate: '2026-03-18' },
+  { title: '학교 폭력 예방 교육 안내', writerName: '담임', createDate: '2026-03-15' },
+  { title: '2026학년도 학사일정 안내', writerName: '교무', createDate: '2026-03-10' },
+]
+
+const MOCK_PARENT_POSTS: Board[] = [
+  { title: '3월 학급 사진 공유드립니다', writerName: '담임', createDate: '2026-03-18' },
+  { title: '이번 주 학습 안내 말씀드려요', writerName: '학부모', createDate: '2026-03-16' },
+  { title: '3월 학부모 모임 공지', writerName: '학부모회', createDate: '2026-03-12' },
+]
+
+function isNew(dateStr: string) {
+  return (new Date().getTime() - new Date(dateStr).getTime()) < 3 * 24 * 60 * 60 * 1000
+}
 
 // [woo] 학부모 자녀 출결 통계 타입
 interface AttendanceSummary {
@@ -103,7 +113,10 @@ export default function ParentChildrenStatus() {
       }).catch(() => {})
 
     // [soojin] 오늘의 급식
-    fetch('/api/meals/daily')
+    const _d = new Date()
+    const _pad = (n: number) => String(n).padStart(2, '0')
+    const _today = `${_d.getFullYear()}-${_pad(_d.getMonth() + 1)}-${_pad(_d.getDate())}`
+    fetch(`/api/meals/daily?date=${_today}`)
       .then(r => r.ok ? r.json() : [])
       .then(setMeals).catch(() => {})
 
@@ -278,12 +291,17 @@ export default function ParentChildrenStatus() {
           </div>
 
           {/* 하단: 가정통신문 + 오늘의 급식 */}
-          <div className="row gy-4 mb-24">
-            <div className="col-xl-8">
-              <div className="card border-0 shadow-sm p-20" style={{ borderRadius: 16 }}>
-                <h6 className="fw-bold mb-20 text-sm">
-                  <i className="ri-file-list-3-line text-primary-600 me-2" />가정통신문
-                </h6>
+          <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
+            <div className="col-xl-8 d-flex flex-column">
+              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 16 }}>
+                <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
+                  <h6 className="fw-bold mb-0 text-sm">
+                    <i className="ri-file-list-3-line text-primary-600 me-2" />가정통신문
+                  </h6>
+                  <a href="/board/notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>더보기</a>
+                </div>
+                <div className="p-16">
+                {/* 기존 UI 주석처리
                 {boards.length > 0 ? boards.map((b, i) => (
                   <div key={i} className="d-flex align-items-center justify-content-between py-12 border-bottom border-neutral-100">
                     <div className="d-flex align-items-center gap-12">
@@ -298,31 +316,81 @@ export default function ParentChildrenStatus() {
                 )) : (
                   <p className="text-secondary-light text-sm mb-0">등록된 가정통신문이 없습니다.</p>
                 )}
+                */}
+                {(() => {
+                  const list = boards.length > 0 ? boards : MOCK_BOARDS
+                  return list.map((b, i) => (
+                    <div
+                      key={i}
+                      className={`d-flex align-items-center justify-content-between py-12${i < list.length - 1 ? ' border-bottom' : ''}`}
+                    >
+                      <div className="d-flex align-items-center gap-12">
+                        <i className="ri-file-text-line text-secondary-light" />
+                        <span className="text-sm" style={{ color: '#374151' }}>{b.title}</span>
+                        {b.createDate && isNew(b.createDate) && (
+                          <span style={{ background: '#25A194', color: 'white', borderRadius: 4, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>새글</span>
+                        )}
+                      </div>
+                      {b.createDate && <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{b.createDate.slice(0, 10)}</span>}
+                    </div>
+                  ))
+                })()}
+                </div>
               </div>
             </div>
 
-            <div className="col-xl-4">
-              <div className="card border-0 shadow-sm p-20 h-100" style={{ borderRadius: 16 }}>
-                <h6 className="fw-bold mb-16 text-sm">
-                  <i className="ri-restaurant-line text-success-600 me-2" />오늘의 급식
-                </h6>
-                {meals.length > 0 ? meals.map((meal, i) => (
-                  <div key={i} className={i < meals.length - 1 ? 'mb-16' : ''}>
-                    <span className={`badge ${MEAL_TYPE_CLASS[meal.mealType] ?? 'bg-neutral-100 text-secondary-light'} px-10 py-4 radius-4 fw-medium text-xs mb-8`}>
-                      {MEAL_TYPE_LABEL[meal.mealType] ?? meal.mealType}
-                    </span>
-                    <p className="text-sm mb-4" style={{ whiteSpace: 'pre-wrap', wordBreak: 'keep-all' }}>{meal.menu}</p>
-                    <span className="text-xs text-secondary-light">칼로리: {meal.calories != null ? `${meal.calories}kcal` : '정보없음'}</span>
-                  </div>
-                )) : (
-                  <p className="text-secondary-light text-sm mb-0">오늘 등록된 급식이 없습니다.</p>
-                )}
+            <div className="col-xl-4 d-flex flex-column">
+              <div className="card border-0 shadow-sm d-flex flex-column h-100" style={{ borderRadius: 16 }}>
+                {/* 헤더 */}
+                <div className="p-16 border-bottom">
+                  <h6 className="fw-bold mb-0 text-sm">
+                    <i className="ri-restaurant-line text-primary-600 me-2" />오늘의 급식
+                  </h6>
+                </div>
+                {/* 본문: 세로 중앙 정렬 */}
+                <div className="d-flex flex-column align-items-center justify-content-center p-20" style={{ flex: 1 }}>
+                  {(() => {
+                    const meal = meals[0]
+                    const menu = meal?.menu ?? '잡곡밥, 미역국, 제육볶음, 배추김치, 과일'
+                    const calories = meal?.calories ?? 646
+                    return (
+                      <>
+                        <p className="text-sm mb-12 text-center" style={{ color: '#374151', lineHeight: 1.7 }}>{menu}</p>
+                        <span style={{
+                          display: 'block',
+                          width: '100%',
+                          textAlign: 'center',
+                          background: '#25A194',
+                          color: 'white',
+                          borderRadius: 20,
+                          padding: '5px 0',
+                          fontSize: 12,
+                          fontWeight: 500,
+                          marginBottom: 16,
+                        }}>
+                          칼로리: {calories}kcal
+                        </span>
+                        <div style={{
+                          width: '100%',
+                          height: 110,
+                          borderRadius: 10,
+                          background: '#f3f4f6',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          <i className="ri-image-line" style={{ fontSize: 32, color: '#9ca3af' }} />
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
               </div>
             </div>
           </div>
 
           {/* [soojin] 하단: 학급 알림장 - 추후 API 연동 예정, 현재 공란 */}
-          <div className="row">
+          {/* <div className="row">
             <div className="col-12">
               <div className="card border-0 shadow-sm p-20" style={{ borderRadius: 16 }}>
                 <h6 className="fw-bold mb-20 text-sm">
@@ -331,6 +399,45 @@ export default function ParentChildrenStatus() {
                 <p className="text-secondary-light text-sm mb-0 py-8 text-center">
                   알림장 데이터가 아직 등록되지 않았습니다.
                 </p>
+              </div>
+            </div>
+          </div> */}
+
+          {/* 3행: 학급 알림장 (col-6) | 학부모 게시판 (col-6) */}
+          <div className="row gy-4">
+            <div className="col-xl-6 d-flex flex-column">
+              <ClassNotebookWidget classroomId={null} readonly moreHref="/board/notebook" />
+            </div>
+            <div className="col-xl-6 d-flex flex-column">
+              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 16 }}>
+                <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
+                  <h6 className="fw-bold mb-0 text-sm">
+                    <i className="ri-parent-line text-primary-600 me-2" />학부모 게시판
+                  </h6>
+                  <a href="/board/parent" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>더보기</a>
+                </div>
+                <div className="p-16">
+                  {/* 기존: 빈 상태 표시
+                  <p className="text-secondary-light text-sm mb-0 text-center py-20">
+                    등록된 게시글이 없습니다.
+                  </p>
+                  */}
+                  {MOCK_PARENT_POSTS.map((b, i) => (
+                    <div
+                      key={i}
+                      className={`d-flex align-items-center justify-content-between py-12${i < MOCK_PARENT_POSTS.length - 1 ? ' border-bottom' : ''}`}
+                    >
+                      <div className="d-flex align-items-center gap-12">
+                        <i className="ri-file-text-line text-secondary-light" />
+                        <span className="text-sm" style={{ color: '#374151' }}>{b.title}</span>
+                        {b.createDate && isNew(b.createDate) && (
+                          <span style={{ background: '#25A194', color: 'white', borderRadius: 4, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>새글</span>
+                        )}
+                      </div>
+                      {b.createDate && <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{b.createDate.slice(0, 10)}</span>}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

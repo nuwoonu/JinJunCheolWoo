@@ -21,7 +21,6 @@ export default function TodayTimetableWidget({ timetable, loading, title }: Prop
           <i className="ri-time-line text-primary-600 me-2" />
           {title ?? '오늘의 시간표'}{timetable.length > 0 && ` (${timetable.length}교시)`}
         </h6>
-        <button style={{ background: '#25A194', color: 'white', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>작성</button>
       </div>
       <div className="p-16" style={{ overflowY: 'auto' }}>
         {loading ? (
