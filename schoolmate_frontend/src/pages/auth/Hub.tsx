@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import type { RoleRequestInfo, GrantInfo } from "@/api/auth";
 import NotificationDropdown from "@/components/fragments/NotificationDropdown";
@@ -74,8 +74,6 @@ const ROLE_LABEL: Record<string, string> = {
 export default function Hub() {
   const { user, loading, signOut, refetch } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const isManageMode = searchParams.get("manage") === "true";
   const [showProfile, setShowProfile] = useState(false);
   const theme = useTheme();
 
@@ -108,15 +106,6 @@ export default function Hub() {
 
     return { cfg, status: status ?? (hasActiveRole ? 'ACTIVE' : null), schoolName };
   }).filter(Boolean) as { cfg: RoleConfig; status: string; schoolName: string | null }[];
-
-  // 활성 역할이 1개뿐이면 Hub를 렌더하지 않고 바로 이동 (useEffect와 달리 페인트 전 처리)
-  const activeRoleCards = roleCards.filter((c) => c.status === 'ACTIVE');
-  const totalNavigable = activeRoleCards.length + (isSuperAdmin ? 1 : 0);
-  if (totalNavigable === 1 && !isManageMode) {
-    const target =
-      isSuperAdmin && activeRoleCards.length === 0 ? ADMIN_ROUTES.MAIN : activeRoleCards[0].cfg.path;
-    return <Navigate to={target} replace />;
-  }
 
   const s = getStyles(theme.isDark);
 
