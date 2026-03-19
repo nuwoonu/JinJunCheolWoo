@@ -45,52 +45,50 @@ export default function NeisEventsWidget() {
   }, [])
 
   return (
-    <div className="card h-100">
-      <div className="card-body p-0">
-        <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
-          <h6 className="text-lg mb-0 fw-semibold">
-            <i className="ri-calendar-event-line text-primary-600 me-8" />학교 일정
-          </h6>
-          <button
-            className="btn btn-sm btn-outline-primary rounded-pill px-12 py-4"
-            style={{ fontSize: 12 }}
-            onClick={() => setShowCalendar(v => !v)}
-          >
-            {showCalendar
-              ? <><i className="ri-list-check" /> 목록</>
-              : <><i className="ri-calendar-2-line" /> 캘린더</>
-            }
-          </button>
-        </div>
-        <div className="px-16 py-12">
-          {showCalendar ? (
-            <MiniCalendar />
-          ) : events.length > 0 ? (
-            <div className="d-flex flex-column gap-8">
-              {events.map((evt, i) => {
-                const color = COLOR_MAP[evt.eventType] ?? '#6c757d'
-                return (
-                  <div key={i}
-                    className="d-flex align-items-center justify-content-between p-12 rounded-8"
-                    style={{ background: color + '12', border: `1px solid ${color}30` }}>
-                    <span className="text-sm fw-medium" style={{ color }}>
-                      <i className="ri-calendar-line me-8" />
-                      {evt.dateRangeText} {evt.title}
-                    </span>
-                    <span className="badge text-white text-xs px-10 py-4 rounded-pill flex-shrink-0 ms-8"
-                      style={{ background: evt.dday <= 3 ? '#dc3545' : '#0d6efd' }}>
-                      {evt.dday === 0 ? 'D-DAY' : `D-${evt.dday}`}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-32 text-secondary-light">
-              <p className="text-sm mb-0">예정된 일정이 없습니다.</p>
-            </div>
-          )}
-        </div>
+    <div className="card border-0 shadow-sm h-100 overflow-hidden" style={{ borderRadius: 16 }}>
+      <div className="d-flex align-items-center justify-content-between p-16 border-bottom">
+        <h6 className="fw-bold mb-0 text-sm">
+          <i className="ri-calendar-event-line text-primary-600 me-2" />학교 일정
+        </h6>
+        <button
+          className="btn btn-sm btn-outline-primary rounded-pill px-12 py-4"
+          style={{ fontSize: 12, lineHeight: 1 }}
+          onClick={() => setShowCalendar(v => !v)}
+        >
+          {showCalendar
+            ? <><i className="ri-list-check" /> 목록</>
+            : <><i className="ri-calendar-2-line" /> 캘린더</>
+          }
+        </button>
+      </div>
+      <div className="p-16">
+        {showCalendar ? (
+          <MiniCalendar />
+        ) : events.length > 0 ? (
+          <div className="d-flex flex-column gap-8">
+            {events.map((evt, i) => {
+              const color = COLOR_MAP[evt.eventType] ?? '#6c757d'
+              return (
+                <div key={i}
+                  className="d-flex align-items-center justify-content-between p-12 rounded-8"
+                  style={{ background: color + '12', border: `1px solid ${color}30` }}>
+                  <span className="text-sm fw-medium" style={{ color }}>
+                    <i className="ri-calendar-line me-8" />
+                    {evt.dateRangeText} {evt.title}
+                  </span>
+                  <span className="badge text-white text-xs px-10 py-4 rounded-pill flex-shrink-0 ms-8"
+                    style={{ background: evt.dday <= 3 ? '#dc3545' : '#0d6efd' }}>
+                    {evt.dday === 0 ? 'D-DAY' : `D-${evt.dday}`}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-32 text-secondary-light">
+            <p className="text-sm mb-0">예정된 일정이 없습니다.</p>
+          </div>
+        )}
       </div>
     </div>
   )

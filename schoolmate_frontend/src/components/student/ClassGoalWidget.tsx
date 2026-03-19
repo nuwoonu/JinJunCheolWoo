@@ -43,14 +43,14 @@ export default function ClassGoalWidget({ classroomId }: Props) {
     <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: '1px solid #e5e7eb' }}>
       {/* 헤더 */}
       <div
-        className="d-flex align-items-center justify-content-between px-20 py-16"
+        className="d-flex align-items-center justify-content-between p-16"
         style={{ borderBottom: '1px solid #e5e7eb' }}
       >
-        <div className="d-flex align-items-center gap-8">
-          <i className="ri-focus-3-line text-primary-600" style={{ fontSize: 18 }} />
-          <span style={{ fontWeight: 600, fontSize: 15, color: '#111827' }}>이달의 학급 목표</span>
-        </div>
-        <span className="text-xs" style={{ color: '#9ca3af' }}>
+        <h6 className="fw-bold mb-0 text-sm">
+          <i className="ri-focus-3-line text-primary-600 me-2" />
+          이달의 학급 목표
+        </h6>
+        <span className="text-xs" style={{ color: '#9ca3af', lineHeight: 1 }}>
           {now.getFullYear()}년 {now.getMonth() + 1}월
         </span>
       </div>
@@ -68,36 +68,52 @@ export default function ClassGoalWidget({ classroomId }: Props) {
 
         ) : goal ? (
           <div>
-            {/* 목표 텍스트 박스 */}
+            {/* 1행: 해당 월 */}
             <div style={{
               background: '#f0fdf4',
               border: '1px solid #bbf7d0',
               borderRadius: 10,
+              padding: '10px 16px',
+              marginBottom: 12,
+              textAlign: 'center',
+            }}>
+              <span style={{ fontWeight: 700, fontSize: 16, color: '#15803d' }}>
+                {goal.month}월
+              </span>
+            </div>
+
+            {/* 2행: 목표 */}
+            <div style={{
+              background: '#fefce8',
+              border: '1px solid #fde68a',
+              borderRadius: 10,
               padding: '12px 16px',
               marginBottom: 16,
             }}>
-              <p className="text-sm fw-semibold mb-0" style={{ color: '#15803d', lineHeight: 1.6 }}>
-                {goal.goal}
-              </p>
+              <p style={{ fontWeight: 700, fontSize: 15, color: '#374151', marginBottom: 4 }}>목표</p>
+              <p className="text-sm mb-0" style={{ color: '#374151', lineHeight: 1.6 }}>{goal.goal}</p>
             </div>
 
-            {/* 실천 사항 */}
+            {/* 3행: 실천 사항 */}
             {goal.actionItems.length > 0 && (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {goal.actionItems.map((item, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <span style={{
-                      width: 20, height: 20, minWidth: 20, borderRadius: '50%',
-                      border: '2px solid #25A194', background: 'white',
-                      marginTop: 1,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#25A194', display: 'block' }} />
-                    </span>
-                    <span className="text-sm" style={{ color: '#374151', lineHeight: 1.5 }}>{item}</span>
-                  </li>
-                ))}
-              </ul>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 15, color: '#374151', marginBottom: 10 }}>실천 사항</p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {goal.actionItems.map((item, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{
+                        width: 24, height: 24, minWidth: 24, borderRadius: '50%',
+                        background: '#25A194', color: 'white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 700,
+                      }}>
+                        {i + 1}
+                      </span>
+                      <span className="text-sm" style={{ color: '#374151', lineHeight: 1.5 }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
 

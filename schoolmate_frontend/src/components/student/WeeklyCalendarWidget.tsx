@@ -1,11 +1,5 @@
 // [soojin] 이번 주 일정 캘린더 위젯
-// NeisEventsWidget(src/components/NeisEventsWidget.tsx)을 참고해 이번 주 월~금 뷰로 재작성
-// GET /api/calendar/events?year=&month= 호출 후 이번 주 월~금 날짜의 이벤트 필터링
-//
-// 레이아웃: 스크린샷 참고 - 요일+날짜가 상단, 이벤트 칩이 아래
-//   월  화  수  목  금
-//   16  17  18  19  20
-//   [이벤트] [이벤트] ...
+// 발표용: API 주석 처리, 더미 데이터 사용 중
 
 import { useEffect, useState } from 'react'
 
@@ -16,76 +10,109 @@ interface CalendarEvent {
   dday: number
 }
 
-// 이번 주 월요일~금요일 날짜 문자열 배열 반환 (YYYY-MM-DD)
+function toLocalDateStr(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
 function getWeekDays(): string[] {
   const now = new Date()
-  const day = now.getDay() // 0=일, 1=월, ..., 6=토
+  const day = now.getDay()
   const monday = new Date(now)
   monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1))
   monday.setHours(0, 0, 0, 0)
   return Array.from({ length: 5 }, (_, i) => {
     const d = new Date(monday)
     d.setDate(monday.getDate() + i)
-    return d.toISOString().slice(0, 10)
+    return toLocalDateStr(d)
   })
 }
 
 const DAY_LABEL = ['월', '화', '수', '목', '금']
 
 const COLOR_MAP: Record<string, { bg: string; text: string }> = {
-  HOLIDAY:  { bg: '#fff3cd', text: '#856404' },
-  EXAM:     { bg: '#f8d7da', text: '#842029' },
-  EVENT:    { bg: '#d1e7ff', text: '#0a58ca' },
-  ACADEMIC: { bg: '#d1e7dd', text: '#0f5132' },
-  ETC:      { bg: '#e2e3e5', text: '#41464b' },
+  HOLIDAY:  { bg: '#d1fae5', text: '#065f46' },
+  EVENT:    { bg: '#d1fae5', text: '#065f46' },
+  ACADEMIC: { bg: '#ffe8cc', text: '#9c4a00' },
+  EXAM:     { bg: '#fde2e2', text: '#9b1c1c' },
+  ETC:      { bg: '#dbeafe', text: '#1e40af' },
 }
+
 
 export default function WeeklyCalendarWidget() {
   const [eventsByDay, setEventsByDay] = useState<Record<string, CalendarEvent[]>>({})
   const [loading, setLoading] = useState(true)
   const weekDays = getWeekDays()
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = toLocalDateStr(new Date())
 
   useEffect(() => {
-    const now = new Date()
-    const nextMonth = now.getMonth() + 2 > 12 ? 1 : now.getMonth() + 2
-    const nextYear = now.getMonth() + 2 > 12 ? now.getFullYear() + 1 : now.getFullYear()
+    const applyData = (all: CalendarEvent[]) => {
+      const grouped: Record<string, CalendarEvent[]> = {}
+      for (const date of weekDays) {
+        grouped[date] = all.filter(e => e.startDate === date)
+      }
 
-    Promise.all([
-      fetch(`/api/calendar/events?year=${now.getFullYear()}&month=${now.getMonth() + 1}`),
-      fetch(`/api/calendar/events?year=${nextYear}&month=${nextMonth}`),
-    ])
-      .then(([r1, r2]) => Promise.all([r1.ok ? r1.json() : [], r2.ok ? r2.json() : []]))
-      .then(([d1, d2]) => {
-        const all: CalendarEvent[] = [...d1, ...d2]
-        const grouped: Record<string, CalendarEvent[]> = {}
-        for (const date of weekDays) {
-          grouped[date] = all.filter(e => e.startDate === date)
-        }
-        setEventsByDay(grouped)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+      // 발표용: 항상 더미 데이터 사용
+      const hasAny = weekDays.some(d => grouped[d].length > 0)
+      if (!hasAny) {
+        const [mon, tue, wed, thu, fri] = weekDays
+        grouped[mon] = [
+          { title: '개학식', startDate: mon, eventType: 'EVENT', dday: 0 },
+          { title: '독후감 제출', startDate: mon, eventType: 'ACADEMIC', dday: 0 },
+        ]
+        grouped[tue] = [{ title: '수학 1단원 과제', startDate: tue, eventType: 'ACADEMIC', dday: 0 }]
+        grouped[wed] = [{ title: '학부모 상담주간', startDate: wed, eventType: 'ETC', dday: 0 }]
+        grouped[thu] = [{ title: '영어 단어 시험', startDate: thu, eventType: 'EXAM', dday: 0 }]
+        grouped[fri] = [{ title: '봄 방학 전날', startDate: fri, eventType: 'EVENT', dday: 0 }]
+      }
+
+      setEventsByDay(grouped)
+      setLoading(false)
+    }
+
+    // 발표용: API 주석 처리 → 더미 데이터 바로 사용
+    // const now = new Date()
+    // const nextMonth = now.getMonth() + 2 > 12 ? 1 : now.getMonth() + 2
+    // const nextYear = now.getMonth() + 2 > 12 ? now.getFullYear() + 1 : now.getFullYear()
+    // Promise.all([
+    //   fetch(`/api/calendar/events?year=${now.getFullYear()}&month=${now.getMonth() + 1}`).then(r => r.ok ? r.json() : []),
+    //   fetch(`/api/calendar/events?year=${nextYear}&month=${nextMonth}`).then(r => r.ok ? r.json() : []),
+    // ])
+    //   .then(([d1, d2]) => applyData([...d1, ...d2]))
+    //   .catch(() => applyData([]))
+    applyData([])
   }, [])
 
   return (
-    <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
+    <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: '1px solid #e5e7eb' }}>
+      {/* 헤더 */}
       <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
         <h6 className="fw-bold mb-0 text-sm">
           <i className="ri-calendar-event-line text-primary-600 me-2" />
           이번 주 일정
         </h6>
-        <button style={{ background: '#25A194', color: 'white', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>작성</button>
       </div>
 
-      <div className="p-16">
+      {/* 범례 */}
+      <div className="d-flex gap-12 px-16 pt-12 pb-4">
+        {[
+          { label: '학교 행사', bg: '#d1fae5', text: '#065f46' },
+          { label: '과제 제출', bg: '#ffe8cc', text: '#9c4a00' },
+          { label: '시험',     bg: '#fde2e2', text: '#9b1c1c' },
+          { label: '기타',     bg: '#dbeafe', text: '#1e40af' },
+        ].map(l => (
+          <div key={l.label} className="d-flex align-items-center" style={{ gap: 4 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: l.bg, border: `1px solid ${l.text}44`, display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: '#374151' }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-16" style={{ paddingTop: 8 }}>
         {loading ? (
-          <p className="text-secondary-light text-sm text-center py-16 mb-0">
-            일정을 불러오는 중...
-          </p>
+          <p className="text-secondary-light text-sm text-center py-16 mb-0">일정을 불러오는 중...</p>
         ) : (
-          /* 5열 그리드: 각 열 = 요일 + 날짜 + 이벤트 */
-          <div className="d-flex gap-8" style={{ minHeight: 120 }}>
+          <div className="d-flex gap-10">
             {weekDays.map((date, i) => {
               const events = eventsByDay[date] ?? []
               const isToday = date === todayStr
@@ -93,55 +120,58 @@ export default function WeeklyCalendarWidget() {
               return (
                 <div
                   key={date}
-                  className="d-flex flex-column"
-                  style={{ flex: 1, minWidth: 0 }}
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    border: `1.5px solid ${isToday ? '#25A194' : '#e5e7eb'}`,
+                    borderRadius: 12,
+                    padding: '10px 8px',
+                    background: isToday ? '#f0faf9' : '#fff',
+                  }}
                 >
-                  {/* 요일 + 날짜 헤더 */}
-                  <div className="text-center mb-8">
+                  <div
+                    className="text-center fw-semibold mb-2"
+                    style={{ fontSize: 13, color: isToday ? '#25A194' : '#9ca3af' }}
+                  >
+                    {DAY_LABEL[i]}
+                  </div>
+                  <div className="d-flex justify-content-center mb-10">
                     <div
-                      className="text-xs fw-semibold mb-4"
-                      style={{ color: isToday ? '#4361ee' : '#6c757d' }}
-                    >
-                      {DAY_LABEL[i]}
-                    </div>
-                    <div
-                      className="fw-bold text-sm d-flex align-items-center justify-content-center mx-auto"
+                      className="fw-bold d-flex align-items-center justify-content-center"
                       style={{
-                        width: 28,
-                        height: 28,
+                        width: 32,
+                        height: 32,
                         borderRadius: '50%',
-                        background: isToday ? '#4361ee' : 'transparent',
-                        color: isToday ? '#fff' : '#212529',
+                        background: isToday ? '#25A194' : 'transparent',
+                        color: isToday ? '#fff' : '#111827',
+                        fontSize: 18,
                       }}
                     >
-                      {date.slice(8)}
+                      {Number(date.slice(8))}
                     </div>
                   </div>
-
-                  {/* 이벤트 칩 목록 */}
                   <div className="d-flex flex-column gap-4">
-                    {events.length > 0 ? (
-                      events.map((evt, j) => {
-                        const c = COLOR_MAP[evt.eventType] ?? COLOR_MAP.ETC
-                        return (
-                          <span
-                            key={j}
-                            className="rounded-4 text-center"
-                            style={{
-                              background: c.bg,
-                              color: c.text,
-                              fontSize: 10,
-                              padding: '2px 4px',
-                              wordBreak: 'keep-all',
-                              lineHeight: 1.4,
-                              display: 'block',
-                            }}
-                          >
-                            {evt.title}
-                          </span>
-                        )
-                      })
-                    ) : null}
+                    {events.map((evt, j) => {
+                      const c = COLOR_MAP[evt.eventType] ?? COLOR_MAP.ETC
+                      return (
+                        <div
+                          key={j}
+                          style={{
+                            background: c.bg,
+                            color: c.text,
+                            borderRadius: 6,
+                            fontSize: 11,
+                            fontWeight: 500,
+                            padding: '3px 6px',
+                            textAlign: 'center',
+                            wordBreak: 'keep-all',
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {evt.title}
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )

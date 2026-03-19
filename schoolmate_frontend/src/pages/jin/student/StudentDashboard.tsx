@@ -15,7 +15,7 @@ import api from '../../../api/auth'
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 import ClassGoalWidget from '../../../components/student/ClassGoalWidget'
 import WeeklyCalendarWidget from '../../../components/student/WeeklyCalendarWidget'
-import ClassNoticeWidget from '../../../components/student/ClassNoticeWidget'
+import ClassNotebookWidget from '../../../components/teacher/ClassNotebookWidget'
 import TodayTimetableWidget from '../../../components/student/TodayTimetableWidget'
 import ClassBoardWidget from '../../../components/student/ClassBoardWidget'
 import TodayMealWidget from '../../../components/student/TodayMealWidget'
@@ -123,7 +123,7 @@ export default function StudentDashboard() {
       {/* 2행: 학급 공지사항 (col-8) | 오늘의 시간표 (col-4) */}
       <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
         <div className="col-xl-8 d-flex flex-column">
-          <ClassNoticeWidget classroomId={classroomId} />
+          <ClassNotebookWidget classroomId={classroomId} readonly moreHref="/board/notebook" />
         </div>
         <div className="col-xl-4 d-flex flex-column">
           <TodayTimetableWidget timetable={timetable} loading={timetableLoading} />
