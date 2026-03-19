@@ -44,6 +44,7 @@ export default function ClassBoardWidget({ classroomId }: Props) {
           <i className="ri-article-line text-primary-600 me-2" />
           학급 게시판
         </h6>
+        <button style={{ background: '#25A194', color: 'white', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>작성</button>
       </div>
 
       {loading ? (
