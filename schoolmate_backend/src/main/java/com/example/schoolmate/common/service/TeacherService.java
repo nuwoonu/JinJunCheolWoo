@@ -218,6 +218,12 @@ public class TeacherService {
                         log.warn("이미 존재하는 교사 코드 건너뜀: {}", csvReq.getCode());
                         continue;
                     }
+                    // 담당과목 코드가 DB에 없으면 경고 후 null로 등록 (에러 없이 진행)
+                    if (csvReq.getSubject() != null && !csvReq.getSubject().isBlank()
+                            && subjectRepository.findByCode(csvReq.getSubject()).isEmpty()) {
+                        log.warn("존재하지 않는 과목 코드, 담당과목 null로 등록: {}", csvReq.getSubject());
+                        csvReq.setSubject(null);
+                    }
                     this.createTeacher(new TeacherDTO.CreateRequest(csvReq));
                     log.info("교사 등록 성공: {}", csvReq.getEmail());
                 } catch (Exception e) {
