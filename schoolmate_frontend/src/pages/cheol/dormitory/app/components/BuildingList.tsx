@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router";
 import { Building2, Search, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext"; // cheol
 import { useBuildingList } from "../hooks/useDormitoryData"; // cheol
-import { addBuilding, deleteBuilding } from "../../api/dormitoryApi"; // cheol
+import { addBuilding, deleteBuilding, searchBuildingsByStudent } from "../../api/dormitoryApi"; // cheol
 
 // cheol: 건물 색상 어둡게/밝게 조정
 function shadeColor(color: string, percent: number): string {
@@ -56,11 +56,25 @@ export default function BuildingList() {
     }
   };
 
-  // cheol: 검색어 필터 (건물 이름 기준 — 학생 이름은 상세 페이지에서 검색)
+  // cheol: 학생 이름으로 배정된 건물 검색 (300ms 디바운스)
+  const [studentMatchBuildings, setStudentMatchBuildings] = useState<string[]>([]);
   const hasSearch = searchQuery.trim().length > 0;
-  const filtered = hasSearch
-    ? buildings.filter((b) => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : buildings;
+
+  useEffect(() => {
+    if (!hasSearch) {
+      setStudentMatchBuildings([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const result = await searchBuildingsByStudent(searchQuery.trim());
+        setStudentMatchBuildings(result);
+      } catch {
+        setStudentMatchBuildings([]);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, hasSearch]);
 
   if (loading) {
     return (
@@ -215,8 +229,12 @@ export default function BuildingList() {
 
         {/* 건물 목록 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "48px", alignItems: "flex-end" }}>
-          {filtered.map((building) => (
-            <div key={building.id} style={{ position: "relative", flexShrink: 0 }}>
+          {buildings.map((building) => {
+            const isMatch = !hasSearch ||
+              building.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              studentMatchBuildings.includes(building.name);
+            return (
+            <div key={building.id} style={{ position: "relative", flexShrink: 0, opacity: hasSearch && !isMatch ? 0.3 : 1, transition: "opacity 0.2s ease" }}>
 
               {/* 건물 카드 */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "140px" }}>
@@ -381,7 +399,7 @@ export default function BuildingList() {
 
               </div>
             </div>
-          ))}
+          ); })}
         </div>
 
         {/* 빈 상태 */}

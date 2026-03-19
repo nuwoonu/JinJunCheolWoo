@@ -112,6 +112,15 @@ public class DormitoryController {
     }
 
     /**
+     * cheol: 학생 이름으로 건물 검색
+     * GET /api/dormitories/search?name=xxx
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<String>> searchBuildingsByStudent(@RequestParam String name) {
+        return ResponseEntity.ok(dormitoryService.getBuildingsByStudentName(name));
+    }
+
+    /**
      * cheol: 건물 추가
      * POST /api/dormitories/buildings
      * body: { buildingName, floors, roomsPerFloor, bedsPerRoom }

@@ -261,7 +261,6 @@ public class ParentService {
                     .name(request.getParentName())
                     .email(email)
                     .password(passwordEncoder.encode(password))
-                    .phoneNumber(phone)
                     .roles(new HashSet<>(Set.of(UserRole.PARENT)))
                     .build();
 

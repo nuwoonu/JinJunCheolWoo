@@ -248,6 +248,14 @@ public class DormitoryService {
     }
 
     /**
+     * cheol: 학생 이름으로 해당 학생이 배정된 건물 목록 검색
+     */
+    public List<String> getBuildingsByStudentName(String name) {
+        if (name == null || name.trim().isEmpty()) return List.of();
+        return dormitoryRepository.findBuildingsByStudentName(name.trim());
+    }
+
+    /**
      * 특정 호실의 모든 침대 및 배정 현황 조회
      */
     public List<DormitoryDTO> getRoomDetails(String building, Integer floor, String roomNumber) {

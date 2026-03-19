@@ -68,6 +68,12 @@ export async function deleteBuilding(buildingName: string): Promise<void> {
   await api.delete(`/dormitories/buildings/${encodeURIComponent(buildingName)}`);
 }
 
+// cheol: 학생 이름으로 해당 학생이 배정된 건물명 목록 검색
+export async function searchBuildingsByStudent(name: string): Promise<string[]> {
+  const res = await api.get("/dormitories/search", { params: { name } });
+  return res.data ?? [];
+}
+
 // 전체 학생 목록 (배정 시 선택용)
 export async function fetchAllStudents(): Promise<StudentSummary[]> {
   const res = await api.get("/students");

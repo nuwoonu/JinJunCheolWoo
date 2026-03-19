@@ -52,4 +52,8 @@ public interface DormitoryRepository extends JpaRepository<Dormitory, Long> {
     // cheol: 건물별 통계 (건물명, 전체침대수, 점유침대수, 최고층)
     @Query("SELECT d.building, COUNT(d), SUM(CASE WHEN SIZE(d.students) > 0 THEN 1 ELSE 0 END), MAX(d.floor) FROM Dormitory d GROUP BY d.building ORDER BY d.building")
     List<Object[]> findBuildingSummaries();
+
+    // cheol: 학생 이름으로 해당 학생이 배정된 건물 목록 검색
+    @Query("SELECT DISTINCT d.building FROM Dormitory d JOIN d.students s JOIN s.user u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<String> findBuildingsByStudentName(@Param("name") String name);
 }

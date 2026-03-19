@@ -106,6 +106,7 @@ public class UserService {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
         studentInfo.setStatus(StudentStatus.ENROLLED);
+        studentInfo.setPhone(dto.getPhoneNumber());
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(studentInfo::setSchool);
         }
@@ -147,6 +148,7 @@ public class UserService {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
         teacherInfo.setStatus(TeacherStatus.EMPLOYED);
+        teacherInfo.setPhone(dto.getPhoneNumber());
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(teacherInfo::setSchool);
         }
