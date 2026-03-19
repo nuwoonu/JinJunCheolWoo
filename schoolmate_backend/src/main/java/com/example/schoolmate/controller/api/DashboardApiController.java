@@ -88,7 +88,9 @@ public class DashboardApiController {
         int currentYear = systemSettingService.getCurrentSchoolYear();
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
         if (teacherInfo != null) {
-            data.put("teacherSubject", teacherInfo.getSubject() != null ? teacherInfo.getSubject() : "");
+            data.put("teacherInfoId", teacherInfo.getId());
+            data.put("teacherSubject", teacherInfo.getSubject() != null ? teacherInfo.getSubject().getName() : "");
+            data.put("teacherSubjectCode", teacherInfo.getSubject() != null ? teacherInfo.getSubject().getCode() : null);
             // [woo] 교사 소속 학교 이름
             data.put("schoolName", teacherInfo.getSchool() != null ? teacherInfo.getSchool().getName() : null);
             try {

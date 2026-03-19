@@ -36,6 +36,8 @@ import TeacherScheduleAdd from "@/pages/woo/teacher/ScheduleAdd";
 import TeacherScheduleEdit from "@/pages/woo/teacher/ScheduleEdit";
 import TeacherList from "@/pages/woo/teacher/TeacherList";
 import ParentList from "@/pages/woo/teacher/ParentList";
+// [cheol] 교사 성적 채점 학급 선택 페이지
+import TeacherGradeClasses from "@/pages/woo/teacher/GradeClasses";
 // [woo] 게시판
 import SchoolNotice from "@/pages/woo/board/SchoolNotice";
 import SchoolNoticeDetail from "@/pages/woo/board/SchoolNoticeDetail";
@@ -267,6 +269,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherDashboard />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 교사 성적 채점 — 학급 선택 페이지 */}
+      <Route
+        path="/teacher/grade-classes"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER"]}>
+            <TeacherGradeClasses />
           </PrivateRoute>
         }
       />

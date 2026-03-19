@@ -149,6 +149,9 @@ export default function FloorList() {
                       const totalBeds = room.beds.length;
                       const isFull = occupiedBeds === totalBeds;
                       const isMatch = roomMatchesSearch(room); // cheol
+                      const assignedNames = room.beds
+                        .filter((bed) => bed.student !== null)
+                        .map((bed) => bed.student!.name);
 
                       return (
                         <button
@@ -199,6 +202,11 @@ export default function FloorList() {
                           <span style={{ fontSize: "11px", color: isFull ? "#ef4444" : "#64748b", fontWeight: isFull ? 600 : 400 }}>
                             {occupiedBeds}/{totalBeds}
                           </span>
+                          {assignedNames.length > 0 && (
+                            <span style={{ fontSize: "10px", color: "#475569", textAlign: "center", lineHeight: 1.4, wordBreak: "keep-all" }}>
+                              {assignedNames.join(", ")}
+                            </span>
+                          )}
                         </button>
                       );
                     })}

@@ -107,6 +107,7 @@ public class GradeService {
     private GradeDTO entityToDto(Grade grade) {
         return GradeDTO.builder()
                 .id(grade.getId())
+                .studentId(grade.getStudent() != null ? grade.getStudent().getId() : null)
                 .subjectName(grade.getSubject() != null ? grade.getSubject().getName() : null)
                 .subjectCode(grade.getSubject() != null ? grade.getSubject().getCode() : null)
                 .examType(grade.getTestType())

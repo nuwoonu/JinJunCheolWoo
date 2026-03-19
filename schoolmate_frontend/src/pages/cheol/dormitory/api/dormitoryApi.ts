@@ -79,7 +79,7 @@ export async function fetchAllStudents(): Promise<StudentSummary[]> {
   const res = await api.get("/students");
   return (res.data ?? []).map((s: any) => ({
     id: s.id,
-    name: s.name,
+    name: s.userName ?? s.name,
     studentNumber: s.studentNumber,
     fullStudentNumber: s.fullStudentNumber,
   }));

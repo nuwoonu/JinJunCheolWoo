@@ -1,7 +1,10 @@
 package com.example.schoolmate.woo.controller;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +21,8 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.common.service.SystemSettingService;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.common.service.TeacherService;
@@ -53,6 +58,36 @@ import lombok.RequiredArgsConstructor;
 public class TeacherClassController {
 
     private final TeacherService teacherService;
+    private final ClassroomRepository classroomRepository;
+    private final SystemSettingService systemSettingService;
+
+    // ==================================================================================
+    // ========== [cheol] 학년별 학급 목록 조회 ==========
+    // ==================================================================================
+
+    /**
+     * [cheol] 특정 학년의 전체 학급 목록 조회 (교사 성적 채점 진입용)
+     *
+     * GET /api/teacher/class/by-grade?grade=3
+     */
+    @GetMapping("/by-grade")
+    public ResponseEntity<List<Map<String, Object>>> getClassesByGrade(
+            @RequestParam int grade) {
+        int currentYear = systemSettingService.getCurrentSchoolYear();
+        List<Classroom> classrooms = classroomRepository.findByYearAndGrade(currentYear, grade);
+        List<Map<String, Object>> result = classrooms.stream()
+                .sorted((a, b) -> Integer.compare(a.getClassNum(), b.getClassNum()))
+                .map(c -> {
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    map.put("cid", c.getCid());
+                    map.put("grade", c.getGrade());
+                    map.put("classNum", c.getClassNum());
+                    map.put("teacherName", c.getTeacher() != null ? c.getTeacher().getName() : null);
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
 
     // ==================================================================================
     // ========== 1. 담임 배정 확인 ==========
