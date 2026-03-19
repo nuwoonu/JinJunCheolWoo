@@ -28,13 +28,13 @@ public class DataInitializer implements CommandLineRunner {
     private final NeisService neisService;
 
     @Override
-    @Transactional
     public void run(String... args) throws Exception {
         createAdminAccountIfNotExists();
         syncSchoolDataIfEmpty();
     }
 
-    private void createAdminAccountIfNotExists() {
+    @Transactional
+    public void createAdminAccountIfNotExists() {
         String adminEmail = "admin@school.com";
         if (userRepository.findByEmail(adminEmail).isPresent()) {
             return;
@@ -51,10 +51,14 @@ public class DataInitializer implements CommandLineRunner {
         log.info("초기 관리자 계정이 자동 생성되었습니다. ID: {}", adminEmail);
     }
 
-    private void syncSchoolDataIfEmpty() {
+    public void syncSchoolDataIfEmpty() {
         if (schoolRepository.count() == 0) {
             log.info("학교 데이터가 없어 NEIS 동기화를 시작합니다.");
-            neisService.syncSchoolData("DataInitializer");
+            try {
+                neisService.syncSchoolData("DataInitializer");
+            } catch (Exception e) {
+                log.warn("NEIS 학교 데이터 동기화 실패 (서버 시작은 계속 진행됩니다): {}", e.getMessage());
+            }
         }
     }
 }

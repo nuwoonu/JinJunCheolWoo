@@ -16,11 +16,15 @@ import com.example.schoolmate.common.dto.StaffDTO;
 import com.example.schoolmate.common.service.StaffService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 // 교직원 관리 REST API
+@Slf4j
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_STAFFS)
 @RequiredArgsConstructor
+@PreAuthorize("@grants.canManageStaffs()")
 public class AdminStaffApiController {
 
     private final StaffService staffService;
@@ -43,6 +47,7 @@ public class AdminStaffApiController {
             staffService.createStaff(request);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            log.error("교직원 등록 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -60,6 +65,7 @@ public class AdminStaffApiController {
             staffService.bulkUpdateStaffStatus(uids, status);
             return ResponseEntity.ok("상태 변경되었습니다.");
         } catch (Exception e) {
+            log.error("교직원 일괄 상태 변경 실패: uids={}, status={}, msg={}", uids, status, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -70,6 +76,7 @@ public class AdminStaffApiController {
             staffService.importStaffsFromCsv(file);
             return ResponseEntity.ok("등록되었습니다.");
         } catch (Exception e) {
+            log.error("교직원 CSV 가져오기 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
