@@ -37,16 +37,17 @@ export default function ClassFriendsWidget({ grade, classNum }: Props) {
   }, [grade, classNum])
 
   return (
-    <div className="card shadow-sm p-20 h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
+    <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
       {/* 헤더 */}
-      <div className="d-flex align-items-center mb-16">
-        <i className="ri-group-line text-primary-600 me-8" style={{ fontSize: 18 }} />
+      <div className="d-flex align-items-center p-16 border-bottom">
         <h6 className="fw-bold mb-0 text-sm">
+          <i className="ri-group-line text-primary-600 me-2" />
           우리 반 친구들
           <span className="text-secondary-light fw-normal ms-4">({students.length}명)</span>
         </h6>
       </div>
 
+      <div className="p-16">
       {loading ? (
         <p className="text-secondary-light text-sm text-center py-20 mb-0">불러오는 중...</p>
       ) : students.length > 0 ? (
@@ -134,6 +135,7 @@ export default function ClassFriendsWidget({ grade, classNum }: Props) {
           같은 반 학생 정보가 없습니다.
         </div>
       )}
+      </div>
     </div>
   )
 }

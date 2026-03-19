@@ -104,20 +104,20 @@ export default function TeacherMyClassDashboard() {
         </div>
       </div>
 
-      {/* 2행: 학급 공지사항 (col-8) | 우리 반 시간표 (col-4) */}
+      {/* 2행: 우리 반 알림장 (col-8) | 우리 반 시간표 (col-4) */}
       <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
         <div className="col-xl-8 d-flex flex-column">
-          <ClassNoticeWidget classroomId={classroomId} />
+          <ClassNotebookWidget classroomId={classroomId} />
         </div>
         <div className="col-xl-4 d-flex flex-column">
           <TodayTimetableWidget timetable={timetable} loading={timetableLoading} title="우리 반 시간표" />
         </div>
       </div>
 
-      {/* 3행: 우리 반 알림장 (col-8) | 이달의 학급 목표 (col-4) */}
+      {/* 3행: 가정통신문 (col-8) | 이달의 학급 목표 (col-4) */}
       <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
         <div className="col-xl-8 d-flex flex-column">
-          <ClassNotebookWidget classroomId={classroomId} />
+          <ClassNoticeWidget classroomId={classroomId} title="가정통신문" />
         </div>
         <div className="col-xl-4 d-flex flex-column">
           <ClassGoalEditor classroomId={classroomId} />

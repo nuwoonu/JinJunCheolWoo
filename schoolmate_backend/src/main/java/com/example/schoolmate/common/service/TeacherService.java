@@ -136,7 +136,7 @@ public class TeacherService {
         TeacherInfo info = new TeacherInfo();
         info.setCode(request.getCode());
         // cheol
-        if (request.getSubject() != null) {
+        if (request.getSubject() != null && !request.getSubject().isBlank()) {
             Subject subject = subjectRepository.findByCode(request.getSubject())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
             info.setSubject(subject);
@@ -180,7 +180,7 @@ public class TeacherService {
             TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
             // cheol
             Subject subject = null;
-            if (request.getSubject() != null) {
+            if (request.getSubject() != null && !request.getSubject().isBlank()) {
                 subject = subjectRepository.findByCode(request.getSubject())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
             }

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Navigate } from "react-router-dom";
 import { ADMIN_ROUTES } from "@/constants/routes";
-import type { RoleRequestInfo } from "@/api/auth";
+import type { RoleRequestInfo, GrantInfo } from "@/api/auth";
 import NotificationDropdown from "@/components/fragments/NotificationDropdown";
 
 function useTheme() {
@@ -89,8 +89,10 @@ export default function Hub() {
     ? user.roles
     : user.role ? [user.role] : [];
 
-  const isAdmin = userRoles.includes("ADMIN");
-  const hasAdminAccess = user.hasAdminAccess || isAdmin;
+  const grants: GrantInfo[] = user.grants ?? [];
+  const isSuperAdmin = grants.some(g => g.grantedRole === "SUPER_ADMIN");
+  // grants가 하나라도 있으면 어드민 카드 표시
+  const hasAdminAccess = grants.length > 0;
   const roleRequests = user.roleRequests;
 
   // ACTIVE RoleRequest가 있는 역할만 클릭 가능 카드로 표시
@@ -189,16 +191,16 @@ export default function Hub() {
             );
           })}
 
-          {/* 관리자 페이지 (ADMIN 또는 SchoolAdminGrant 보유) */}
+          {/* 관리자 페이지 (SUPER_ADMIN 또는 SchoolAdminGrant 보유) */}
           {hasAdminAccess && (
             <button
               style={{ ...s.roleCard, borderTop: "4px solid #ef4444" }}
-              onClick={() => navigate(isAdmin ? ADMIN_ROUTES.MAIN : ADMIN_ROUTES.DASHBOARD)}
+              onClick={() => navigate(isSuperAdmin ? ADMIN_ROUTES.MAIN : ADMIN_ROUTES.DASHBOARD)}
             >
               <i className="ri-shield-user-line" style={{ ...s.roleIcon, color: "#ef4444" }} />
               <span style={s.roleLabel}>관리자</span>
               <span style={s.roleDesc}>
-                {isAdmin ? "전체 시스템을 관리합니다." : "위임된 관리 기능을 사용합니다."}
+                {isSuperAdmin ? "전체 시스템을 관리합니다." : "위임된 관리 기능을 사용합니다."}
               </span>
             </button>
           )}
