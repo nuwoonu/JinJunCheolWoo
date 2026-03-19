@@ -89,7 +89,7 @@ export default function Sidebar() {
   };
 
   // [woo] 학생일 때 대시보드 API에서 프로필 정보 + 출결 통계 가져오기
-  const [studentInfo, setStudentInfo] = useState<StudentSidebarInfo | null>(null);
+  const [studentInfo, setStudentInfo] = useState<StudentProfile | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
   // [woo] 교사일 때 소속 학교 이름
@@ -330,6 +330,12 @@ export default function Sidebar() {
                 <li>
                   <Link to="/student/list">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 리스트
+                  </Link>
+                </li>
+                {/* [cheol] 기숙사 */}
+                <li>
+                  <Link to="/student/dormitory">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
                 </li>
               </ul>
@@ -729,7 +735,7 @@ export default function Sidebar() {
                 {/* [cheol] 성적/시험 관련 React 페이지 */}
                 <li>
                   <Link to="/exam">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회 / 체점
                   </Link>
                 </li>
                 <li>

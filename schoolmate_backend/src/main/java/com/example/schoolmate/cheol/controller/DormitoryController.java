@@ -37,6 +37,15 @@ public class DormitoryController {
     }
 
     /**
+     * cheol: 전체 건물 목록 및 통계 조회
+     * GET /api/dormitories/buildings
+     */
+    @GetMapping("/buildings")
+    public ResponseEntity<List<Map<String, Object>>> getAllBuildings() {
+        return ResponseEntity.ok(dormitoryService.getAllBuildings());
+    }
+
+    /**
      * 특정 건물의 모든 방 조회
      * GET /api/dormitories/buildings/{building}
      */
@@ -100,5 +109,30 @@ public class DormitoryController {
     public ResponseEntity<Void> unassignDormitory(@PathVariable Long studentId) {
         dormitoryService.unassignDormitory(studentId);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * cheol: 건물 추가
+     * POST /api/dormitories/buildings
+     * body: { buildingName, floors, roomsPerFloor, bedsPerRoom }
+     */
+    @PostMapping("/buildings")
+    public ResponseEntity<String> addBuilding(@RequestBody Map<String, Object> body) {
+        String buildingName = (String) body.get("buildingName");
+        int floors = ((Number) body.get("floors")).intValue();
+        int roomsPerFloor = ((Number) body.get("roomsPerFloor")).intValue();
+        int bedsPerRoom = ((Number) body.get("bedsPerRoom")).intValue();
+        dormitoryService.addBuilding(buildingName, floors, roomsPerFloor, bedsPerRoom);
+        return ResponseEntity.ok("건물 추가 완료: " + buildingName);
+    }
+
+    /**
+     * cheol: 건물 삭제
+     * DELETE /api/dormitories/buildings/{buildingName}
+     */
+    @DeleteMapping("/buildings/{buildingName}")
+    public ResponseEntity<String> deleteBuilding(@PathVariable String buildingName) {
+        dormitoryService.deleteBuilding(buildingName);
+        return ResponseEntity.ok("건물 삭제 완료: " + buildingName);
     }
 }

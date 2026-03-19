@@ -48,4 +48,8 @@ public interface DormitoryRepository extends JpaRepository<Dormitory, Long> {
     // 학생과 함께 조회 (Fetch Join)
     @Query("SELECT d FROM Dormitory d LEFT JOIN FETCH d.students WHERE d.building = :building ORDER BY d.floor DESC, d.roomNumber, d.bedNumber")
     List<Dormitory> findByBuildingWithStudents(@Param("building") String building);
+
+    // cheol: 건물별 통계 (건물명, 전체침대수, 점유침대수, 최고층)
+    @Query("SELECT d.building, COUNT(d), SUM(CASE WHEN SIZE(d.students) > 0 THEN 1 ELSE 0 END), MAX(d.floor) FROM Dormitory d GROUP BY d.building ORDER BY d.building")
+    List<Object[]> findBuildingSummaries();
 }

@@ -1,33 +1,45 @@
 import { useNavigate, useParams } from "react-router";
 import { ArrowLeft, DoorOpen, Search } from "lucide-react";
-import { useDormitory } from "./DormitoryProvider";
 import { useState } from "react";
+import { useFloorRooms } from "../hooks/useDormitoryData"; // cheol
 
 export default function FloorList() {
   const navigate = useNavigate();
   const { buildingId } = useParams<{ buildingId: string }>();
-  const { getBuilding } = useDormitory();
+  const buildingName = decodeURIComponent(buildingId ?? "");
 
-  const building = getBuilding(buildingId || "");
+  const [searchQuery, setSearchQuery] = useState(""); // cheol
 
-  if (!building) {
+  // cheol: API 기반 층/호수 데이터
+  const { building, loading, error, refetch } = useFloorRooms(buildingName);
+
+  if (loading) {
     return (
-      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p>건물을 찾을 수 없습니다.</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100%" }}>
+        <p style={{ color: "#64748b" }}>불러오는 중...</p>
       </div>
     );
   }
 
-  const [searchQuery, setSearchQuery] = useState(""); // cheol
-  const hasSearch = searchQuery.trim().length > 0; // cheol
+  if (error || !building) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100%", gap: "12px" }}>
+        <p style={{ color: "#ef4444" }}>{error ?? "건물을 찾을 수 없습니다."}</p>
+        <button
+          onClick={refetch}
+          style={{ padding: "8px 20px", background: "#334155", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer" }}
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
 
   const floors = Array.from({ length: building.floors }, (_, i) => building.floors - i);
+  const getRoomsByFloor = (floor: number) => building.rooms.filter((r) => r.floor === floor);
 
-  const getRoomsByFloor = (floor: number) => {
-    return building.rooms.filter((room) => room.floor === floor);
-  };
-
-  // cheol: 방 내 학생 이름 매칭
+  // cheol: 방 내 학생 이름 검색
+  const hasSearch = searchQuery.trim().length > 0;
   const roomMatchesSearch = (room: (typeof building.rooms)[0]) =>
     room.beds.some((bed) =>
       bed.student?.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -45,19 +57,10 @@ export default function FloorList() {
       <div style={{ maxWidth: "900px", margin: "0 auto" }}>
 
         {/* 헤더 */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
           <button
             onClick={() => navigate("/student/dormitory")}
-            style={{
-              padding: "8px",
-              borderRadius: "8px",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            style={{ padding: "8px", borderRadius: "8px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#e2e8f0")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
@@ -88,14 +91,7 @@ export default function FloorList() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="학생 이름으로 검색"
-            style={{
-              flex: 1,
-              border: "none",
-              outline: "none",
-              fontSize: "14px",
-              color: "#1e293b",
-              background: "transparent",
-            }}
+            style={{ flex: 1, border: "none", outline: "none", fontSize: "14px", color: "#1e293b", background: "transparent" }}
           />
           {searchQuery && (
             <button
@@ -108,14 +104,7 @@ export default function FloorList() {
         </div>
 
         {/* 건물 층 구조 */}
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: "16px",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
-            padding: "32px",
-          }}
-        >
+        <div style={{ background: "#fff", borderRadius: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.10)", padding: "32px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {floors.map((floor) => {
               const rooms = getRoomsByFloor(floor);
@@ -183,7 +172,7 @@ export default function FloorList() {
                             gap: "6px",
                             padding: "12px",
                             background: hasSearch && isMatch ? `${building.color}12` : "#fff", // cheol
-                            border: `2px solid ${hasSearch && isMatch ? building.color : building.color}`,
+                            border: `2px solid ${building.color}`,
                             borderRadius: "10px",
                             cursor: "pointer",
                             boxShadow: hasSearch && isMatch ? `0 4px 14px ${building.color}44` : "0 2px 8px rgba(0,0,0,0.08)", // cheol
@@ -191,7 +180,6 @@ export default function FloorList() {
                             transition: "transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease",
                           }}
                         >
-                          {/* 문 아이콘 */}
                           <div
                             style={{
                               width: "52px",
@@ -205,20 +193,10 @@ export default function FloorList() {
                           >
                             <DoorOpen size={32} style={{ color: building.color }} />
                           </div>
-
-                          {/* 호수 번호 */}
                           <span style={{ fontWeight: 700, fontSize: "16px", color: building.color }}>
                             {room.roomNumber}호
                           </span>
-
-                          {/* 배정 현황 */}
-                          <span
-                            style={{
-                              fontSize: "11px",
-                              color: isFull ? "#ef4444" : "#64748b",
-                              fontWeight: isFull ? 600 : 400,
-                            }}
-                          >
+                          <span style={{ fontSize: "11px", color: isFull ? "#ef4444" : "#64748b", fontWeight: isFull ? 600 : 400 }}>
                             {occupiedBeds}/{totalBeds}
                           </span>
                         </button>

@@ -1,68 +1,76 @@
 import { useNavigate, useParams } from "react-router";
-import { ArrowLeft, User, UserPlus, UserMinus, Settings } from "lucide-react";
-import { useDormitory } from "./DormitoryProvider";
-import { useState } from "react";
+import { ArrowLeft, User, UserPlus, UserMinus, Search } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext"; // cheol
+import { useRoomDetail } from "../hooks/useDormitoryData"; // cheol
+import { fetchAllStudents } from "../../api/dormitoryApi"; // cheol
+import type { StudentSummary } from "../types/dormitory";
 
 export default function RoomView() {
   const navigate = useNavigate();
   const { buildingId, roomNumber } = useParams<{ buildingId: string; roomNumber: string }>();
-  const { getBuilding, getRoom, assignStudent, unassignStudent, updateRoomBeds } = useDormitory();
-
-  const [showAssignForm, setShowAssignForm] = useState(false);
-  const [selectedBed, setSelectedBed] = useState<number | null>(null);
-  const [studentName, setStudentName] = useState("");
-  const [showBedSettings, setShowBedSettings] = useState(false);
-  const [bedCount, setBedCount] = useState(2);
+  const buildingName = decodeURIComponent(buildingId ?? "");
+  const floor = parseInt(roomNumber?.charAt(0) ?? "1"); // 호수 첫 자리가 층 (예: "101" → 1층)
 
   const { user } = useAuth(); // cheol
   const isStudent = user?.role === "STUDENT"; // cheol
 
-  const building = getBuilding(buildingId || "");
-  const room = getRoom(buildingId || "", roomNumber || "");
+  // cheol: API 기반 방 데이터
+  const { building, room, loading, error, assign, unassign, refetch } = useRoomDetail(
+    buildingName,
+    floor,
+    roomNumber ?? ""
+  );
 
-  if (!building || !room) {
-    return (
-      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p>방을 찾을 수 없습니다.</p>
-      </div>
-    );
-  }
+  // cheol: 학생 배정 폼 상태
+  const [showAssignForm, setShowAssignForm] = useState(false);
+  const [selectedBed, setSelectedBed] = useState<{ dormitoryId: number; bedNumber: string } | null>(null);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [allStudents, setAllStudents] = useState<StudentSummary[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<StudentSummary | null>(null);
+  const [assigning, setAssigning] = useState(false);
 
-  const handleAssign = (bedNumber: number) => {
-    setSelectedBed(bedNumber);
+  // 전체 학생 목록 로드 (배정 폼 열릴 때)
+  useEffect(() => {
+    if (showAssignForm && allStudents.length === 0) {
+      fetchAllStudents().then(setAllStudents).catch(() => {});
+    }
+  }, [showAssignForm]);
+
+  const filteredStudents = studentSearch.trim()
+    ? allStudents.filter((s) => s.name.includes(studentSearch) || String(s.studentNumber ?? "").includes(studentSearch))
+    : allStudents.slice(0, 30); // 검색어 없으면 최대 30명만 표시
+
+  const handleOpenAssign = (dormitoryId: number, bedNumber: string) => {
+    setSelectedBed({ dormitoryId, bedNumber });
+    setStudentSearch("");
+    setSelectedStudent(null);
     setShowAssignForm(true);
   };
 
-  const handleConfirmAssign = () => {
-    if (!studentName.trim()) {
-      alert("학생 이름을 입력하세요.");
+  const handleConfirmAssign = async () => {
+    if (!selectedStudent || !selectedBed) {
+      alert("학생을 선택하세요.");
       return;
     }
-    if (selectedBed !== null) {
-      assignStudent(buildingId || "", roomNumber || "", selectedBed, {
-        id: `${buildingId}-${roomNumber}-${selectedBed}-${Date.now()}`,
-        name: studentName,
-      });
+    setAssigning(true);
+    try {
+      await assign(selectedBed.dormitoryId, selectedStudent.id);
       setShowAssignForm(false);
-      setStudentName("");
-      setSelectedBed(null);
+    } catch (e: any) {
+      alert(e?.response?.data?.message ?? "배정 중 오류가 발생했습니다.");
+    } finally {
+      setAssigning(false);
     }
   };
 
-  const handleUnassign = (bedNumber: number) => {
-    if (confirm("배정을 해제하시겠습니까?")) {
-      unassignStudent(buildingId || "", roomNumber || "", bedNumber);
+  const handleUnassign = async (studentId: number) => {
+    if (!confirm("배정을 해제하시겠습니까?")) return;
+    try {
+      await unassign(studentId);
+    } catch (e: any) {
+      alert(e?.response?.data?.message ?? "해제 중 오류가 발생했습니다.");
     }
-  };
-
-  const handleUpdateBeds = () => {
-    if (bedCount < 1) {
-      alert("침대 수는 최소 1개 이상이어야 합니다.");
-      return;
-    }
-    updateRoomBeds(buildingId || "", roomNumber || "", bedCount);
-    setShowBedSettings(false);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -83,6 +91,28 @@ export default function RoomView() {
     marginBottom: "24px",
   };
 
+  if (loading) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100%" }}>
+        <p style={{ color: "#64748b" }}>불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (error || !building || !room) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100%", gap: "12px" }}>
+        <p style={{ color: "#ef4444" }}>{error ?? "방을 찾을 수 없습니다."}</p>
+        <button
+          onClick={refetch}
+          style={{ padding: "8px 20px", background: "#334155", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer" }}
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -98,15 +128,7 @@ export default function RoomView() {
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
           <button
             onClick={() => navigate(`/student/dormitory/building/${buildingId}`)}
-            style={{
-              padding: "8px",
-              borderRadius: "8px",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
+            style={{ padding: "8px", borderRadius: "8px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#e2e8f0")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
@@ -115,142 +137,116 @@ export default function RoomView() {
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#1e293b", margin: 0, flex: 1 }}>
             {building.name} {roomNumber}호
           </h1>
-          {!isStudent && ( // cheol
-            <button
-              onClick={() => {
-                setBedCount(room.beds.length);
-                setShowBedSettings(!showBedSettings);
-              }}
+        </div>
+
+        {/* 학생 배정 폼 — 학생 제한 */}
+        {!isStudent && showAssignForm && ( // cheol
+          <div style={formCardStyle}>
+            <h2 style={{ fontSize: "17px", fontWeight: 600, margin: "0 0 4px", color: "#1e293b" }}>
+              학생 배정 — {selectedBed?.bedNumber}번 침대
+            </h2>
+
+            {/* 학생 검색 */}
+            <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                padding: "9px 18px",
-                background: "#475569",
-                color: "#fff",
-                border: "none",
+                border: "1px solid #e2e8f0",
                 borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: 500,
+                padding: "8px 12px",
+                marginBottom: "10px",
               }}
             >
-              <Settings size={16} />
-              침대 설정
-            </button>
-          )}
-        </div>
-
-        {/* 침대 설정 폼 — 학생 제한 */}
-        {!isStudent && showBedSettings && ( // cheol
-          <div style={formCardStyle}>
-            <h2 style={{ fontSize: "17px", fontWeight: 600, margin: "0 0 16px", color: "#1e293b" }}>
-              침대 개수 조절
-            </h2>
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#475569", marginBottom: "4px" }}>
-                침대 수
-              </label>
-              <input
-                type="number"
-                value={bedCount}
-                onChange={(e) => setBedCount(parseInt(e.target.value) || 1)}
-                style={inputStyle}
-                min="1"
-                max="10"
-              />
-              <p style={{ fontSize: "12px", color: "#94a3b8", margin: "4px 0 0" }}>
-                현재 침대 수: {room.beds.length}개 → {bedCount}개로 변경
-              </p>
-              {bedCount < room.beds.length && (
-                <p style={{ fontSize: "12px", color: "#ef4444", margin: "4px 0 0" }}>
-                  ⚠️ 침대를 줄이면 마지막 침대들이 삭제됩니다. 배정된 학생 정보도 함께 삭제됩니다.
-                </p>
-              )}
-            </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={handleUpdateBeds}
-                style={{
-                  padding: "8px 20px",
-                  background: "#3b82f6",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-              >
-                적용
-              </button>
-              <button
-                onClick={() => setShowBedSettings(false)}
-                style={{
-                  padding: "8px 20px",
-                  background: "#e2e8f0",
-                  color: "#475569",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 배정 폼 — 학생 제한 */}
-        {!isStudent && showAssignForm && ( // cheol
-          <div style={formCardStyle}>
-            <h2 style={{ fontSize: "17px", fontWeight: 600, margin: "0 0 16px", color: "#1e293b" }}>
-              학생 배정 — 침대 {selectedBed}번
-            </h2>
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#475569", marginBottom: "4px" }}>
-                학생 이름
-              </label>
+              <Search size={14} style={{ color: "#94a3b8" }} />
               <input
                 type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                style={inputStyle}
-                placeholder="이름을 입력하세요"
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                placeholder="이름 또는 학번으로 검색"
+                style={{ flex: 1, border: "none", outline: "none", fontSize: "14px" }}
                 autoFocus
-                onKeyDown={(e) => e.key === "Enter" && handleConfirmAssign()}
               />
             </div>
+
+            {/* 학생 목록 */}
+            <div
+              style={{
+                maxHeight: "200px",
+                overflowY: "auto",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+                marginBottom: "14px",
+              }}
+            >
+              {filteredStudents.length === 0 ? (
+                <div style={{ padding: "16px", textAlign: "center", color: "#94a3b8", fontSize: "13px" }}>
+                  학생이 없습니다.
+                </div>
+              ) : (
+                filteredStudents.map((s) => (
+                  <div
+                    key={s.id}
+                    onClick={() => setSelectedStudent(s)}
+                    style={{
+                      padding: "10px 14px",
+                      cursor: "pointer",
+                      background: selectedStudent?.id === s.id ? `${building.color}18` : "#fff",
+                      borderBottom: "1px solid #f1f5f9",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      transition: "background 0.1s",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedStudent?.id !== s.id)
+                        e.currentTarget.style.background = "#f8fafc";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedStudent?.id !== s.id)
+                        e.currentTarget.style.background = "#fff";
+                    }}
+                  >
+                    <User size={14} style={{ color: building.color, flexShrink: 0 }} />
+                    <span style={{ fontWeight: selectedStudent?.id === s.id ? 600 : 400, color: "#1e293b", fontSize: "14px" }}>
+                      {s.name}
+                    </span>
+                    {s.fullStudentNumber && (
+                      <span style={{ fontSize: "12px", color: "#94a3b8", marginLeft: "auto" }}>
+                        {s.fullStudentNumber}
+                      </span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {selectedStudent && (
+              <div style={{ fontSize: "13px", color: "#475569", marginBottom: "12px" }}>
+                선택: <strong>{selectedStudent.name}</strong>
+                {selectedStudent.fullStudentNumber && ` (${selectedStudent.fullStudentNumber})`}
+              </div>
+            )}
+
             <div style={{ display: "flex", gap: "8px" }}>
               <button
                 onClick={handleConfirmAssign}
+                disabled={assigning || !selectedStudent}
                 style={{
                   padding: "8px 20px",
-                  background: "#3b82f6",
+                  background: selectedStudent ? "#3b82f6" : "#cbd5e1",
                   color: "#fff",
                   border: "none",
                   borderRadius: "8px",
-                  cursor: "pointer",
+                  cursor: selectedStudent ? "pointer" : "not-allowed",
                   fontWeight: 500,
                 }}
               >
-                배정
+                {assigning ? "배정 중..." : "배정"}
               </button>
               <button
-                onClick={() => {
-                  setShowAssignForm(false);
-                  setStudentName("");
-                  setSelectedBed(null);
-                }}
-                style={{
-                  padding: "8px 20px",
-                  background: "#e2e8f0",
-                  color: "#475569",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
+                onClick={() => setShowAssignForm(false)}
+                style={{ padding: "8px 20px", background: "#e2e8f0", color: "#475569", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: 500 }}
               >
                 취소
               </button>
@@ -259,120 +255,36 @@ export default function RoomView() {
         )}
 
         {/* 방 내부 — 침대 목록 */}
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: "16px",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
-            padding: "36px",
-          }}
-        >
+        <div style={{ background: "#fff", borderRadius: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.10)", padding: "36px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
             {room.beds.map((bed) => (
               <div key={bed.bedNumber} style={{ display: "flex", alignItems: "center", gap: "28px" }}>
 
                 {/* 침대 */}
                 <div style={{ position: "relative", flexShrink: 0 }}>
-                  {/* 침대 번호 뱃지 */}
                   <div
                     style={{
-                      position: "absolute",
-                      top: "-12px",
-                      left: "-12px",
-                      width: "32px",
-                      height: "32px",
-                      background: "#334155",
-                      color: "#fff",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 700,
-                      fontSize: "13px",
-                      zIndex: 2,
+                      position: "absolute", top: "-12px", left: "-12px",
+                      width: "32px", height: "32px",
+                      background: "#334155", color: "#fff", borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 700, fontSize: "13px", zIndex: 2,
                     }}
                   >
                     {bed.bedNumber}
                   </div>
 
-                  {/* 침대 프레임 */}
-                  <div
-                    style={{
-                      width: "280px",
-                      height: "112px",
-                      borderRadius: "10px",
-                      background: `${building.color}28`,
-                      position: "relative",
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-                    }}
-                  >
-                    {/* 매트리스 */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "8px",
-                        left: "8px",
-                        right: "8px",
-                        height: "72px",
-                        borderRadius: "6px",
-                        background: building.color,
-                        overflow: "hidden",
-                      }}
-                    >
-                      {/* 베개 */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "-4px",
-                          left: "14px",
-                          width: "56px",
-                          height: "36px",
-                          background: "#fff",
-                          borderRadius: "6px",
-                          border: `2px solid ${building.color}`,
-                        }}
-                      />
-                      {/* 이불 선 패턴 */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "8px",
-                          opacity: 0.25,
-                        }}
-                      >
+                  <div style={{ width: "280px", height: "112px", borderRadius: "10px", background: `${building.color}28`, position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.10)" }}>
+                    <div style={{ position: "absolute", top: "8px", left: "8px", right: "8px", height: "72px", borderRadius: "6px", background: building.color, overflow: "hidden" }}>
+                      <div style={{ position: "absolute", top: "-4px", left: "14px", width: "56px", height: "36px", background: "#fff", borderRadius: "6px", border: `2px solid ${building.color}` }} />
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", opacity: 0.25 }}>
                         {[0, 1, 2].map((n) => (
                           <div key={n} style={{ width: "3px", height: "100%", background: "#fff", borderRadius: "2px" }} />
                         ))}
                       </div>
                     </div>
-
-                    {/* 침대 다리 */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: "-14px",
-                        left: "14px",
-                        width: "10px",
-                        height: "18px",
-                        borderRadius: "0 0 4px 4px",
-                        background: building.color,
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: "-14px",
-                        right: "14px",
-                        width: "10px",
-                        height: "18px",
-                        borderRadius: "0 0 4px 4px",
-                        background: building.color,
-                      }}
-                    />
+                    <div style={{ position: "absolute", bottom: "-14px", left: "14px", width: "10px", height: "18px", borderRadius: "0 0 4px 4px", background: building.color }} />
+                    <div style={{ position: "absolute", bottom: "-14px", right: "14px", width: "10px", height: "18px", borderRadius: "0 0 4px 4px", background: building.color }} />
                   </div>
                 </div>
 
@@ -381,17 +293,9 @@ export default function RoomView() {
                   <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
                     <div
                       style={{
-                        flex: 1,
-                        maxWidth: "280px",
-                        padding: "18px 24px",
-                        borderRadius: "12px",
-                        background: building.color,
-                        color: "#fff",
-                        fontSize: "20px",
-                        fontWeight: 600,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
+                        flex: 1, maxWidth: "280px", padding: "18px 24px", borderRadius: "12px",
+                        background: building.color, color: "#fff", fontSize: "20px", fontWeight: 600,
+                        display: "flex", alignItems: "center", gap: "10px",
                         boxShadow: `0 4px 16px ${building.color}44`,
                       }}
                     >
@@ -400,19 +304,12 @@ export default function RoomView() {
                     </div>
                     {!isStudent && ( // cheol
                       <button
-                        onClick={() => handleUnassign(bed.bedNumber)}
+                        onClick={() => handleUnassign(bed.student!.id)}
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          padding: "10px 16px",
-                          background: "#ef4444",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontWeight: 500,
-                          fontSize: "14px",
+                          display: "flex", alignItems: "center", gap: "6px",
+                          padding: "10px 16px", background: "#ef4444", color: "#fff",
+                          border: "none", borderRadius: "8px", cursor: "pointer",
+                          fontWeight: 500, fontSize: "14px",
                         }}
                       >
                         <UserMinus size={16} />
@@ -422,7 +319,7 @@ export default function RoomView() {
                   </div>
                 ) : !isStudent ? ( // cheol
                   <button
-                    onClick={() => handleAssign(bed.bedNumber)}
+                    onClick={() => handleOpenAssign(bed.dormitoryId, bed.bedNumber)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.boxShadow = `0 4px 16px ${building.color}44`;
                       e.currentTarget.style.transform = "translateY(-1px)";
@@ -432,21 +329,11 @@ export default function RoomView() {
                       e.currentTarget.style.transform = "translateY(0)";
                     }}
                     style={{
-                      flex: 1,
-                      maxWidth: "280px",
-                      padding: "18px 24px",
-                      borderRadius: "12px",
-                      border: `2px dashed ${building.color}`,
-                      background: "transparent",
-                      color: building.color,
-                      fontSize: "18px",
-                      fontWeight: 600,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "10px",
-                      cursor: "pointer",
-                      transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                      flex: 1, maxWidth: "280px", padding: "18px 24px", borderRadius: "12px",
+                      border: `2px dashed ${building.color}`, background: "transparent",
+                      color: building.color, fontSize: "18px", fontWeight: 600,
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+                      cursor: "pointer", transition: "transform 0.15s ease, box-shadow 0.15s ease",
                     }}
                   >
                     <UserPlus size={20} />
@@ -460,15 +347,9 @@ export default function RoomView() {
           {/* 방 정보 요약 */}
           <div
             style={{
-              marginTop: "36px",
-              padding: "20px 24px",
-              background: "#f8fafc",
-              borderRadius: "10px",
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "12px",
-              fontSize: "14px",
-              color: "#475569",
+              marginTop: "36px", padding: "20px 24px", background: "#f8fafc",
+              borderRadius: "10px", display: "grid", gridTemplateColumns: "1fr 1fr",
+              gap: "12px", fontSize: "14px", color: "#475569",
             }}
           >
             <div><span style={{ fontWeight: 600 }}>건물:</span> {building.name}</div>
@@ -478,7 +359,7 @@ export default function RoomView() {
               <span style={{ fontWeight: 600 }}>배정 현황:</span>{" "}
               {room.beds.filter((b) => b.student !== null).length}/{room.beds.length}
             </div>
-            <div><span style={{ fontWeight: 600 }}>층:</span> {room.floor}층</div>
+            <div><span style={{ fontWeight: 600 }}>층:</span> {floor}층</div>
           </div>
         </div>
       </div>
