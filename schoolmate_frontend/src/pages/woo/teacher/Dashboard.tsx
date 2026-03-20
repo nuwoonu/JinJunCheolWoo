@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import api from '@/api/auth';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import DashboardScheduleWidget from '@/components/teacher/DashboardScheduleWidget';
-import MiniCalendar from '@/components/MiniCalendar';
+import api from "@/api/auth";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import DashboardScheduleWidget from "@/components/teacher/DashboardScheduleWidget";
+import MiniCalendar from "@/components/MiniCalendar";
 
 interface Notice {
   title: string;
@@ -109,7 +109,7 @@ export default function TeacherDashboard() {
   return (
     <DashboardLayout>
       {/* 헤더 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      {/* <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
         <div>
           <h6 className="fw-semibold mb-0">선생님 대시보드</h6>
           <p className="text-neutral-600 mt-4 mb-0">
@@ -121,9 +121,9 @@ export default function TeacherDashboard() {
             <span>{data.teacherName ?? "선생님"}</span>선생
           </p>
         </div>
-      </div>
+      </div> */}
 
-      <div className="mt-24">
+      <div>
         <div className="row gy-4">
           {/* 1. 알림 메시지 */}
           <div className="col-xxl-4 col-lg-4">
