@@ -17,6 +17,9 @@ public class SchoolmateUrls {
     // 감사 로그 (Audit)
     public static final String ADMIN_AUDIT = API_ADMIN + "/audit";
 
+    // 학교 검색 (Public)
+    public static final String SCHOOLS = API_ROOT + "/schools";
+
     // 학교 관리 (School Management)
     public static final String ADMIN_SCHOOLS = API_ADMIN + "/schools";
 

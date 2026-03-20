@@ -62,8 +62,8 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
-                                                                "/api/auth/schools",
-                                                                "/api/auth/schools/**",
+                                                                "/api/schools",
+                                                                "/api/schools/**",
                                                                 // [woo] /me는 컨트롤러가 직접 인증 여부 판단 (미인증 시
                                                                 // authenticated:false 반환)
                                                                 "/api/auth/me",
