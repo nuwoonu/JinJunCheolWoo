@@ -30,100 +30,121 @@ export default function NoticeList() {
   };
   const list = page?.content ?? [];
 
+  const thStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#6b7280',
+    background: '#f9fafb',
+    borderBottom: '1px solid #e5e7eb',
+    whiteSpace: 'nowrap',
+    textAlign: 'left',
+  };
+  const thCenterStyle: React.CSSProperties = { ...thStyle, textAlign: 'center' };
+  const tdStyle: React.CSSProperties = {
+    padding: '14px 16px',
+    fontSize: 14,
+    color: '#374151',
+    borderBottom: '1px solid #f3f4f6',
+    whiteSpace: 'nowrap',
+    verticalAlign: 'middle',
+  };
+  const tdCenterStyle: React.CSSProperties = { ...tdStyle, textAlign: 'center' };
+
   return (
     <AdminLayout>
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h6 className="fw-semibold mb-0">공지사항 관리</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
-            전체 공지사항을 관리합니다.
-          </p>
-        </div>
-        <div className="d-flex gap-2">
-          <Link
-            to={ADMIN_ROUTES.NOTICES.CREATE}
-            className="btn btn-primary-600 radius-8"
-          >
-            <i className="bi bi-pencil-fill" /> 공지 작성
-          </Link>
+      {/* Page header */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>공지사항 관리</h5>
+            <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>전체 공지사항을 관리합니다.</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Link
+              to={ADMIN_ROUTES.NOTICES.CREATE}
+              style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
+            >
+              ✏️ 공지 작성
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-body p-0">
-          <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
-            <h6 className="fw-semibold mb-0">공지사항 목록</h6>
-            <div className="d-flex gap-2">
-              <form className="input-group input-group-sm" onSubmit={search}>
-                <input
-                  className="form-control"
-                  style={{ width: 300 }}
-                  placeholder="제목 검색..."
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                />
-                <button className="btn btn-primary-600 radius-8" type="submit">
-                  <i className="bi bi-search" />
-                </button>
-                <button
-                  className="btn btn-outline-secondary"
-                  type="button"
-                  onClick={() => {
-                    setKeyword("");
-                    load(0, "");
-                  }}
-                >
-                  초기화
-                </button>
-              </form>
-            </div>
-          </div>
-          <table className="table table-hover align-middle mb-0">
-            <thead className="table-heading-dark-mode">
+      {/* Card */}
+      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        {/* Search bar */}
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <span style={{ fontWeight: 600, fontSize: 15, color: '#111827' }}>공지사항 목록</span>
+          <form onSubmit={search} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              className="form-control"
+              style={{ width: 280, fontSize: 14 }}
+              placeholder="제목 검색..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            <button
+              type="submit"
+              style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              검색
+            </button>
+            <button
+              type="button"
+              style={{ padding: '9px 14px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' }}
+              onClick={() => { setKeyword(""); load(0, ""); }}
+            >
+              초기화
+            </button>
+          </form>
+        </div>
+
+        {/* Table */}
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: 80 }} />
+              <col />
+              <col style={{ width: 120 }} />
+              <col style={{ width: 120 }} />
+              <col style={{ width: 80 }} />
+            </colgroup>
+            <thead>
               <tr>
-                <th className="text-center" style={{ width: 80 }}>
-                  No
-                </th>
-                <th>제목</th>
-                <th className="text-center" style={{ width: 120 }}>
-                  작성자
-                </th>
-                <th className="text-center" style={{ width: 120 }}>
-                  작성일
-                </th>
-                <th className="text-center" style={{ width: 80 }}>
-                  조회
-                </th>
+                <th style={thCenterStyle}>No</th>
+                <th style={thStyle}>제목</th>
+                <th style={thCenterStyle}>작성자</th>
+                <th style={thCenterStyle}>작성일</th>
+                <th style={thCenterStyle}>조회</th>
               </tr>
             </thead>
             <tbody>
               {list.map((n: any) => (
                 <tr key={n.id}>
-                  <td className="text-center">
+                  <td style={tdCenterStyle}>
                     {n.important ? (
-                      <span className="badge bg-danger">중요</span>
+                      <span style={{ padding: '2px 8px', background: '#fef2f2', color: '#dc2626', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>중요</span>
                     ) : (
-                      <span className="text-muted">{n.id}</span>
+                      <span style={{ color: '#9ca3af', fontSize: 13 }}>{n.id}</span>
                     )}
                   </td>
-                  <td>
+                  <td style={tdStyle}>
                     <Link
                       to={ADMIN_ROUTES.NOTICES.DETAIL(n.id)}
-                      className="fw-bold text-decoration-none text-primary-light"
+                      style={{ background: 'none', border: 'none', padding: 0, color: '#1d4ed8', fontWeight: 500, fontSize: 14, cursor: 'pointer', textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textDecoration: 'none', display: 'block' }}
                     >
                       {n.title}
                     </Link>
                   </td>
-                  <td className="text-center text-muted">{n.writerName}</td>
-                  <td className="text-center text-muted">
-                    {n.createDate?.split("T")[0]}
-                  </td>
-                  <td className="text-center text-muted">{n.viewCount}</td>
+                  <td style={{ ...tdCenterStyle, color: '#6b7280' }}>{n.writerName}</td>
+                  <td style={{ ...tdCenterStyle, color: '#6b7280' }}>{n.createDate?.split("T")[0]}</td>
+                  <td style={{ ...tdCenterStyle, color: '#6b7280' }}>{n.viewCount}</td>
                 </tr>
               ))}
               {list.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center py-5 text-muted">
+                  <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', padding: '40px 16px', color: '#9ca3af' }}>
                     공지사항이 없습니다.
                   </td>
                 </tr>
@@ -131,53 +152,33 @@ export default function NoticeList() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-base py-16">
-            <nav>
-              <ul className="pagination pagination-sm justify-content-center mb-0">
-                <li className={`page-item${page.first ? " disabled" : ""}`}>
-                  <a
-                    className="page-link"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      load(currentPage - 1);
-                    }}
-                  >
-                    &laquo;
-                  </a>
-                </li>
-                {Array.from({ length: page.totalPages }, (_, i) => (
-                  <li
-                    key={i}
-                    className={`page-item${i === currentPage ? " active" : ""}`}
-                  >
-                    <a
-                      className="page-link"
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        load(i);
-                      }}
-                    >
-                      {i + 1}
-                    </a>
-                  </li>
-                ))}
-                <li className={`page-item${page.last ? " disabled" : ""}`}>
-                  <a
-                    className="page-link"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      load(currentPage + 1);
-                    }}
-                  >
-                    &raquo;
-                  </a>
-                </li>
-              </ul>
-            </nav>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0', borderTop: '1px solid #f3f4f6', gap: 4 }}>
+            <button
+              onClick={() => { if (!page.first) load(currentPage - 1); }}
+              disabled={page.first}
+              style={{ padding: '6px 12px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', fontSize: 13, cursor: page.first ? 'default' : 'pointer', color: page.first ? '#d1d5db' : '#374151' }}
+            >
+              &laquo;
+            </button>
+            {Array.from({ length: page.totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => load(i)}
+                style={{ padding: '6px 12px', border: `1px solid ${i === currentPage ? '#25A194' : '#e5e7eb'}`, borderRadius: 6, fontSize: 13, cursor: 'pointer', background: i === currentPage ? '#25A194' : '#fff', color: i === currentPage ? '#fff' : '#374151', fontWeight: i === currentPage ? 600 : 400 }}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => { if (!page.last) load(currentPage + 1); }}
+              disabled={page.last}
+              style={{ padding: '6px 12px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', fontSize: 13, cursor: page.last ? 'default' : 'pointer', color: page.last ? '#d1d5db' : '#374151' }}
+            >
+              &raquo;
+            </button>
           </div>
         )}
       </div>

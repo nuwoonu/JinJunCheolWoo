@@ -176,13 +176,10 @@ export default function SchoolSelect() {
           <button
             type="button"
             onClick={theme.toggle}
-            className="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center me-2 border-0"
             aria-label="Dark & Light Mode Button"
+            style={{ width: 40, height: 40, background: theme.isDark ? "#2d2d2d" : "#f3f4f6", borderRadius: "50%", display: "flex", justifyContent: "center", alignItems: "center", marginRight: 8, border: "none", cursor: "pointer", fontSize: 18, color: theme.isDark ? "#f3f4f6" : "#374151" }}
           >
-            <iconify-icon
-              icon={theme.isDark ? "ri:sun-line" : "ri:moon-line"}
-              className="text-primary-light text-xl"
-            />
+            {theme.isDark ? "☀" : "🌙"}
           </button>
           <NotificationDropdown />
           <button
@@ -212,7 +209,7 @@ export default function SchoolSelect() {
       {/* 본문 */}
       <main style={{ maxWidth: 820, margin: "0 auto", padding: "48px 24px" }}>
         {/* 타이틀 */}
-        <div className="text-center mb-40">
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div
             style={{
               width: 56,

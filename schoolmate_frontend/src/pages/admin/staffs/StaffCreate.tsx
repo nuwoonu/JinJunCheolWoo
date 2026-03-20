@@ -36,173 +36,146 @@ export default function StaffCreate() {
 
   return (
     <AdminLayout>
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          style={{
-            background: "none",
-            border: "1px solid var(--border-color)",
-            borderRadius: 6,
-            padding: "4px 10px",
-            cursor: "pointer",
-            color: "var(--text-secondary-light)",
-          }}
-        >
-          <i className="bi bi-arrow-left" />
-        </button>
-        <div>
-          <h6 className="fw-semibold mb-0">신규 교직원 등록</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
-            새 교직원 계정을 등록합니다.
-          </p>
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => navigate(-1)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#6b7280', fontSize: 13 }}>← 뒤로</button>
+          <div>
+            <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>신규 교직원 등록</h5>
+            <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>새 교직원 계정을 등록합니다.</p>
+          </div>
         </div>
       </div>
-      <form onSubmit={handleSubmit} className="card">
-        <div className="card-body p-4">
-          <h5 className="mb-4 text-primary fw-bold">
-            <i className="bi bi-person-circle me-2" />
-            기본 정보
-          </h5>
-          <div className="row g-3 mb-4">
-            <div className="col-md-6">
-              <label className="form-label fw-bold">이름</label>
-              <input
-                className="form-control"
-                required
-                value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
-                placeholder="성함 입력"
-              />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">이메일 (ID)</label>
-              <input
-                type="email"
-                className="form-control"
-                required
-                value={form.email}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, email: e.target.value }))
-                }
-                placeholder="example@school.com"
-              />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">사번</label>
-              <input
-                className="form-control"
-                required
-                value={form.code}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, code: e.target.value }))
-                }
-                placeholder="ST20240203"
-              />
-            </div>
-            <div className="col-md-12">
-              <label className="form-label fw-bold">초기 비밀번호</label>
-              <input
-                type="password"
-                className="form-control"
-                required
-                value={form.password}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, password: e.target.value }))
-                }
-              />
-            </div>
-          </div>
-          <h5 className="mb-4 text-primary fw-bold">
-            <i className="bi bi-briefcase me-2" />
-            직무 정보
-          </h5>
-          <div className="row g-3">
-            <div className="col-md-6">
-              <label className="form-label fw-bold">부서</label>
-              <select
-                className="form-select"
-                value={form.department}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, department: e.target.value }))
-                }
-              >
-                <option value="">부서 선택</option>
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">직책</label>
-              <select
-                className="form-select"
-                value={form.jobTitle}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, jobTitle: e.target.value }))
-                }
-              >
-                <option value="">직책 선택</option>
-                <option value="팀장">팀장</option>
-                <option value="주임">주임</option>
-                <option value="사원">사원</option>
-                <option value="기간제">기간제</option>
-              </select>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">내선번호</label>
-              <input
-                className="form-control"
-                value={form.extensionNumber}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, extensionNumber: e.target.value }))
-                }
-                placeholder="예: 123"
-              />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">고용형태</label>
-              <select
-                className="form-select"
-                value={form.employmentType}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, employmentType: e.target.value }))
-                }
-              >
-                <option value="PERMANENT">정규직</option>
-                <option value="FIXED_TERM">계약직</option>
-              </select>
-            </div>
-            {form.employmentType === "FIXED_TERM" && (
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+          <div style={{ padding: 24 }}>
+            <h6 style={{ fontWeight: 700, color: '#25A194', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              기본 정보
+            </h6>
+            <div className="row g-3" style={{ marginBottom: 24 }}>
               <div className="col-md-6">
-                <label className="form-label fw-bold">계약 종료일</label>
+                <label className="form-label fw-bold">이름</label>
                 <input
-                  type="date"
                   className="form-control"
-                  value={form.contractEndDate}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, contractEndDate: e.target.value }))
-                  }
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="성함 입력"
                 />
               </div>
-            )}
+              <div className="col-md-6">
+                <label className="form-label fw-bold">이메일 (ID)</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  required
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="example@school.com"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label fw-bold">사번</label>
+                <input
+                  className="form-control"
+                  required
+                  value={form.code}
+                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+                  placeholder="ST20240203"
+                />
+              </div>
+              <div className="col-md-12">
+                <label className="form-label fw-bold">초기 비밀번호</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  required
+                  value={form.password}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <h6 style={{ fontWeight: 700, color: '#25A194', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              직무 정보
+            </h6>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <label className="form-label fw-bold">부서</label>
+                <select
+                  className="form-select"
+                  value={form.department}
+                  onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
+                >
+                  <option value="">부서 선택</option>
+                  {DEPARTMENTS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label fw-bold">직책</label>
+                <select
+                  className="form-select"
+                  value={form.jobTitle}
+                  onChange={(e) => setForm((f) => ({ ...f, jobTitle: e.target.value }))}
+                >
+                  <option value="">직책 선택</option>
+                  <option value="팀장">팀장</option>
+                  <option value="주임">주임</option>
+                  <option value="사원">사원</option>
+                  <option value="기간제">기간제</option>
+                </select>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label fw-bold">내선번호</label>
+                <input
+                  className="form-control"
+                  value={form.extensionNumber}
+                  onChange={(e) => setForm((f) => ({ ...f, extensionNumber: e.target.value }))}
+                  placeholder="예: 123"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label fw-bold">고용형태</label>
+                <select
+                  className="form-select"
+                  value={form.employmentType}
+                  onChange={(e) => setForm((f) => ({ ...f, employmentType: e.target.value }))}
+                >
+                  <option value="PERMANENT">정규직</option>
+                  <option value="FIXED_TERM">계약직</option>
+                </select>
+              </div>
+              {form.employmentType === "FIXED_TERM" && (
+                <div className="col-md-6">
+                  <label className="form-label fw-bold">계약 종료일</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={form.contractEndDate}
+                    onChange={(e) => setForm((f) => ({ ...f, contractEndDate: e.target.value }))}
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
-          <button
-            type="button"
-            className="btn btn-secondary px-4 me-2"
-            onClick={() => navigate(-1)}
-          >
-            취소
-          </button>
-          <button type="submit" className="btn btn-primary-600 radius-8 px-5">
-            등록 완료
-          </button>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '16px 24px', borderTop: '1px solid #e5e7eb' }}>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              style={{ padding: '9px 14px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' }}
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              등록 완료
+            </button>
+          </div>
         </div>
       </form>
     </AdminLayout>

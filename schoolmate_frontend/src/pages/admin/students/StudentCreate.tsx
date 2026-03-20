@@ -13,6 +13,14 @@ const RELATION_LABEL: Record<string, string> = {
   OTHER: "기타",
 };
 
+const sectionTitle: React.CSSProperties = {
+  fontWeight: 700,
+  color: "#25A194",
+  fontSize: 16,
+  marginBottom: 16,
+  marginTop: 4,
+};
+
 export default function StudentCreate() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -27,10 +35,7 @@ export default function StudentCreate() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResult, setSearchResult] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [relModal, setRelModal] = useState<{
-    parentId: string;
-    name: string;
-  } | null>(null);
+  const [relModal, setRelModal] = useState<{ parentId: string; name: string } | null>(null);
   const [relation, setRelation] = useState("FATHER");
 
   useEffect(() => {
@@ -41,9 +46,7 @@ export default function StudentCreate() {
   }, []);
 
   const searchParents = async () => {
-    const r = await admin.get("/students/search-parent", {
-      params: { keyword: searchKeyword },
-    });
+    const r = await admin.get("/students/search-parent", { params: { keyword: searchKeyword } });
     setSearchResult(Array.isArray(r.data) ? r.data : (r.data?.content ?? []));
   };
 
@@ -68,237 +71,133 @@ export default function StudentCreate() {
     await admin.post("/students", {
       ...form,
       classroomId: form.classroomId || null,
-      guardians: guardians.map((g) => ({
-        parentId: g.parentId,
-        relationship: g.relation,
-      })),
+      guardians: guardians.map((g) => ({ parentId: g.parentId, relationship: g.relation })),
     });
     navigate(ADMIN_ROUTES.STUDENTS.LIST);
   };
 
   return (
     <AdminLayout>
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          style={{
-            background: "none",
-            border: "1px solid var(--border-color)",
-            borderRadius: 6,
-            padding: "4px 10px",
-            cursor: "pointer",
-            color: "var(--text-secondary-light)",
-          }}
+          style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280" }}
         >
           <i className="bi bi-arrow-left" />
         </button>
         <div>
-          <h6 className="fw-semibold mb-0">신규 학생 등록</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
-            새 학생 계정을 등록합니다.
-          </p>
+          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>신규 학생 등록</h5>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>새 학생 계정을 등록합니다.</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="card">
-        <div className="card-body p-4">
-          <h5 className="mb-4 text-primary fw-bold">
-            <i className="bi bi-person-circle me-2" />
-            기본 인적 사항
-          </h5>
-          <div className="row g-3 mb-5">
-            <div className="col-md-6">
-              <label className="form-label fw-bold">
-                이름 <span className="text-danger">*</span>
-              </label>
-              <input
-                className="form-control"
-                required
-                value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
-                placeholder="성함 입력"
-              />
+      <form onSubmit={handleSubmit}>
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+          <div style={{ padding: 24 }}>
+            <h6 style={sectionTitle}>
+              <i className="bi bi-person-circle me-2" />기본 인적 사항
+            </h6>
+            <div className="row g-3" style={{ marginBottom: 32 }}>
+              <div className="col-md-6">
+                <label className="form-label fw-semibold">이름 <span style={{ color: "#dc2626" }}>*</span></label>
+                <input className="form-control" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="성함 입력" />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label fw-semibold">학번</label>
+                <input className="form-control" required value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="예: 202610001" />
+              </div>
+              <div className="col-md-12">
+                <label className="form-label fw-semibold">이메일 (ID) <span style={{ color: "#dc2626" }}>*</span></label>
+                <input type="email" className="form-control" required value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="example@school.com" />
+              </div>
+              <div className="col-md-12">
+                <label className="form-label fw-semibold">초기 비밀번호 <span style={{ color: "#dc2626" }}>*</span></label>
+                <input type="password" className="form-control" required value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} />
+              </div>
             </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">학번</label>
-              <input
-                className="form-control"
-                required
-                value={form.code}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, code: e.target.value }))
-                }
-                placeholder="예: 202610001"
-              />
-            </div>
-            <div className="col-md-12">
-              <label className="form-label fw-bold">
-                이메일 (ID) <span className="text-danger">*</span>
-              </label>
-              <input
-                type="email"
-                className="form-control"
-                required
-                value={form.email}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, email: e.target.value }))
-                }
-                placeholder="example@school.com"
-              />
-            </div>
-            <div className="col-md-12">
-              <label className="form-label fw-bold">
-                초기 비밀번호 <span className="text-danger">*</span>
-              </label>
-              <input
-                type="password"
-                className="form-control"
-                required
-                value={form.password}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, password: e.target.value }))
-                }
-              />
-            </div>
-          </div>
 
-          <h5 className="mb-4 text-primary fw-bold">
-            <i className="bi bi-journal-check me-2" />
-            최초 학급 배정 (선택)
-          </h5>
-          <div className="row g-3 mb-5">
-            <div className="col-md-12">
-              <label className="form-label fw-bold">학급 선택</label>
-              <select
-                className="form-select"
-                value={form.classroomId}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, classroomId: e.target.value }))
-                }
-              >
-                <option value="">배정 안함 (미배정)</option>
-                {classrooms.map((c: any) => (
-                  <option key={c.cid} value={c.cid}>
-                    {c.year}학년도 {c.grade}학년 {c.classNum}반
-                  </option>
-                ))}
-              </select>
-              <div className="form-text">
-                현재 학년도에 개설된 학급 목록입니다.
+            <h6 style={sectionTitle}>
+              <i className="bi bi-journal-check me-2" />최초 학급 배정 (선택)
+            </h6>
+            <div className="row g-3" style={{ marginBottom: 32 }}>
+              <div className="col-md-12">
+                <label className="form-label fw-semibold">학급 선택</label>
+                <select className="form-select" value={form.classroomId} onChange={(e) => setForm((f) => ({ ...f, classroomId: e.target.value }))}>
+                  <option value="">배정 안함 (미배정)</option>
+                  {classrooms.map((c: any) => (
+                    <option key={c.cid} value={c.cid}>{c.year}학년도 {c.grade}학년 {c.classNum}반</option>
+                  ))}
+                </select>
+                <div className="form-text">현재 학년도에 개설된 학급 목록입니다.</div>
+              </div>
+            </div>
+
+            <h6 style={sectionTitle}>
+              <i className="bi bi-people me-2" />보호자 연동 (선택)
+            </h6>
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <label className="form-label fw-semibold" style={{ margin: 0 }}>보호자 목록</label>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  style={{ padding: "5px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 6, fontSize: 13, fontWeight: 500, color: "#25A194", cursor: "pointer" }}
+                >
+                  <i className="bi bi-search me-1" /> 보호자 검색
+                </button>
+              </div>
+              <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 10, minHeight: 50, background: "#f9fafb" }}>
+                {guardians.length === 0 ? (
+                  <p style={{ color: "#9ca3af", fontSize: 13, textAlign: "center", margin: "6px 0" }}>연동할 보호자를 검색하여 추가하세요.</p>
+                ) : (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {guardians.map((g) => (
+                      <span key={g.parentId} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#eff6ff", color: "#1d4ed8", border: "1px solid #93c5fd", borderRadius: 6, padding: "3px 10px", fontSize: 13, fontWeight: 500 }}>
+                        {g.name} ({RELATION_LABEL[g.relation] ?? g.relation})
+                        <button
+                          type="button"
+                          onClick={() => setGuardians((prev) => prev.filter((x) => x.parentId !== g.parentId))}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#1d4ed8", fontSize: 14, padding: 0, lineHeight: 1 }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          <h5 className="mb-4 text-primary fw-bold">
-            <i className="bi bi-people me-2" />
-            보호자 연동 (선택)
-          </h5>
-          <div className="mb-3">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <label className="form-label fw-bold mb-0">보호자 목록</label>
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-primary"
-                onClick={() => setShowModal(true)}
-              >
-                <i className="bi bi-search" /> 보호자 검색
-              </button>
-            </div>
-            <div
-              className="border rounded p-2 bg-neutral-100"
-              style={{ minHeight: 50 }}
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "16px 24px", borderTop: "1px solid #e5e7eb", background: "#f9fafb" }}>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              style={{ padding: "9px 20px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 14, color: "#374151", cursor: "pointer" }}
             >
-              {guardians.length === 0 ? (
-                <p className="text-muted small text-center mb-0 py-2">
-                  연동할 보호자를 검색하여 추가하세요.
-                </p>
-              ) : (
-                guardians.map((g) => (
-                  <span key={g.parentId} className="badge bg-primary me-2 mb-1">
-                    {g.name} ({RELATION_LABEL[g.relation] ?? g.relation})
-                    <button
-                      type="button"
-                      className="btn-close btn-close-white ms-1"
-                      style={{ fontSize: "0.5rem" }}
-                      onClick={() =>
-                        setGuardians((prev) =>
-                          prev.filter((x) => x.parentId !== g.parentId),
-                        )
-                      }
-                    />
-                  </span>
-                ))
-              )}
-            </div>
+              취소
+            </button>
+            <button
+              type="submit"
+              style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+            >
+              등록 완료
+            </button>
           </div>
-        </div>
-        <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
-          <button
-            type="button"
-            className="btn btn-secondary px-4 me-2"
-            onClick={() => navigate(-1)}
-          >
-            취소
-          </button>
-          <button type="submit" className="btn btn-primary-600 radius-8 px-5">
-            등록 완료
-          </button>
         </div>
       </form>
 
       {/* 보호자 검색 모달 */}
       {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "var(--white)",
-              borderRadius: 12,
-              width: "100%",
-              maxWidth: 480,
-              margin: "0 16px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                borderBottom: "1px solid var(--border-color)",
-              }}
-            >
-              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
-                보호자 검색
-              </h6>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: 18,
-                  cursor: "pointer",
-                  color: "var(--text-secondary-light)",
-                }}
-              >
-                ✕
-              </button>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#fff", borderRadius: 12, width: "100%", maxWidth: 480, margin: "0 16px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>보호자 검색</h6>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#6b7280" }}>✕</button>
             </div>
-            <div style={{ padding: "20px" }}>
-              <div className="input-group mb-3">
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                 <input
                   className="form-control"
                   placeholder="보호자 이름 입력"
@@ -307,27 +206,29 @@ export default function StudentCreate() {
                   onKeyUp={(e) => e.key === "Enter" && searchParents()}
                 />
                 <button
-                  className="btn btn-primary-600 radius-8"
                   type="button"
                   onClick={searchParents}
+                  style={{ padding: "9px 16px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
                 >
                   검색
                 </button>
               </div>
-              <div
-                className="list-group"
-                style={{ maxHeight: 300, overflowY: "auto" }}
-              >
+              <div style={{ maxHeight: 300, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8 }}>
                 {searchResult.map((p: any) => (
                   <button
                     key={p.id ?? p.uid}
                     type="button"
-                    className="list-group-item list-group-item-action"
                     onClick={() => addGuardian(p)}
+                    style={{ display: "block", width: "100%", padding: "10px 14px", background: "none", border: "none", borderBottom: "1px solid #f3f4f6", textAlign: "left", fontSize: 14, color: "#374151", cursor: "pointer" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                   >
                     {p.name} ({p.email})
                   </button>
                 ))}
+                {searchResult.length === 0 && (
+                  <p style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, padding: "16px 0", margin: 0 }}>검색 결과가 없습니다.</p>
+                )}
               </div>
             </div>
           </div>
@@ -336,60 +237,16 @@ export default function StudentCreate() {
 
       {/* 관계 선택 모달 */}
       {relModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "var(--white)",
-              borderRadius: 12,
-              width: "100%",
-              maxWidth: 360,
-              margin: "0 16px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                borderBottom: "1px solid var(--border-color)",
-              }}
-            >
-              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
-                관계 설정
-              </h6>
-              <button
-                onClick={() => setRelModal(null)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: 18,
-                  cursor: "pointer",
-                  color: "var(--text-secondary-light)",
-                }}
-              >
-                ✕
-              </button>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#fff", borderRadius: 12, width: "100%", maxWidth: 360, margin: "0 16px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>관계 설정</h6>
+              <button onClick={() => setRelModal(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#6b7280" }}>✕</button>
             </div>
-            <div style={{ padding: "20px" }}>
-              <p className="mb-2 text-center fw-bold">{relModal.name}</p>
-              <label className="form-label small text-muted">관계 선택</label>
-              <select
-                className="form-select"
-                value={relation}
-                onChange={(e) => setRelation(e.target.value)}
-              >
+            <div style={{ padding: 20 }}>
+              <p style={{ textAlign: "center", fontWeight: 600, marginBottom: 12 }}>{relModal.name}</p>
+              <label style={{ display: "block", fontSize: 13, color: "#6b7280", marginBottom: 6 }}>관계 선택</label>
+              <select className="form-select" value={relation} onChange={(e) => setRelation(e.target.value)}>
                 <option value="FATHER">부</option>
                 <option value="MOTHER">모</option>
                 <option value="GRANDFATHER">조부</option>
@@ -400,8 +257,8 @@ export default function StudentCreate() {
             <div style={{ padding: "0 20px 20px" }}>
               <button
                 type="button"
-                className="btn btn-primary-600 radius-8 w-100"
                 onClick={confirmRelation}
+                style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
               >
                 확인
               </button>

@@ -150,10 +150,13 @@ public class RoleRequestService {
 
     /** 역할별 상태별 인원 수 (PENDING/ACTIVE/REJECTED/SUSPENDED) */
     @Transactional(readOnly = true)
-    public Map<String, Long> getCountsByRole(UserRole role) {
+    public Map<String, Long> getCountsByRole(UserRole role, Long schoolId) {
         Map<String, Long> result = new LinkedHashMap<>();
         for (RoleRequestStatus s : RoleRequestStatus.values()) {
-            result.put(s.name(), roleRequestRepository.countByRoleAndStatus(role, s));
+            long count = schoolId != null
+                    ? roleRequestRepository.countByRoleAndStatusAndSchoolId(role, s, schoolId)
+                    : roleRequestRepository.countByRoleAndStatus(role, s);
+            result.put(s.name(), count);
         }
         return result;
     }

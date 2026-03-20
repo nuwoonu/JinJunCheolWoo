@@ -36,4 +36,7 @@ public interface RoleRequestRepository extends JpaRepository<RoleRequest, Long> 
 
     /** 역할별 특정 상태 건수 */
     long countByRoleAndStatus(UserRole role, RoleRequestStatus status);
+
+    /** 역할별 특정 상태 건수 (학교 필터) */
+    long countByRoleAndStatusAndSchoolId(UserRole role, RoleRequestStatus status, Long schoolId);
 }

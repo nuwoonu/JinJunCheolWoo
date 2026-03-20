@@ -5,6 +5,7 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.RoleRequestService;
 import com.example.schoolmate.config.SchoolmateUrls;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.dto.AuthUserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,7 @@ public class AdminRoleRequestApiController {
     /** 역할별 상태별 건수 조회 (대시보드용) */
     @GetMapping("/counts")
     public ResponseEntity<?> counts(@RequestParam String role) {
-        return ResponseEntity.ok(roleRequestService.getCountsByRole(UserRole.valueOf(role)));
+        return ResponseEntity.ok(roleRequestService.getCountsByRole(UserRole.valueOf(role), SchoolContextHolder.getSchoolId()));
     }
 
     /** 전체 PENDING 신청 목록 (최고 어드민용) */

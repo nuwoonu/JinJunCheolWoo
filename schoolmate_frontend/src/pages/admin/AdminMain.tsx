@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useSchool } from '@/context/SchoolContext'
 import type { GrantInfo } from '@/api/auth'
 import AdminTopBar from '@/components/layout/admin/AdminTopBar'
+import PageLoader from '@/components/PageLoader'
 
 /** AdminSidebar와 동일한 grant 체크 헬퍼 */
 function hasGrant(grants: GrantInfo[], ...roles: string[]) {
@@ -20,6 +21,7 @@ const ALL_MENU_ITEMS = [
     desc: '학교를 선택하여 학생, 교사, 교직원, 학급, 공지사항 등을 관리합니다.',
     /** 표시 조건: SCHOOL_ADMIN 이상이거나 학교 내 기능 grant 중 하나라도 보유 */
     requiredGrants: ADMIN_GRANTS.DASHBOARD.filter(g => g !== GRANTED_ROLE.PARENT_MANAGER),
+    superAdminOnly: false,
   },
   {
     to: ADMIN_ROUTES.PARENTS.LIST,
@@ -27,6 +29,15 @@ const ALL_MENU_ITEMS = [
     label: '학부모 관리',
     desc: '학부모 계정을 등록하고 자녀 연결 및 상태를 관리합니다.',
     requiredGrants: ADMIN_GRANTS.PARENTS,
+    superAdminOnly: false,
+  },
+  {
+    to: ADMIN_ROUTES.SERVICE_NOTICES.LIST,
+    icon: 'ri-notification-2-line',
+    label: '서비스 공지 관리',
+    desc: 'SchoolMate 서비스 전체 공지사항을 작성하고 관리합니다.',
+    requiredGrants: [] as string[],
+    superAdminOnly: true,
   },
 ]
 
@@ -41,10 +52,11 @@ export default function AdminMain() {
 
   // 비 SUPER_ADMIN 그랜트 보유자: 학교 자동 선택 후 바로 대시보드로 이동
   // AdminMain은 SUPER_ADMIN 전용 학교 선택 허브이므로 그랜트 보유자는 직접 대시보드 진입
+  const firstGrant = !isSuperAdmin ? grants.find(g => g.schoolId) : undefined
+  const willRedirect = !!user && !isSuperAdmin && !!firstGrant
+
   useEffect(() => {
-    if (isSuperAdmin || !user) return
-    const firstGrant = grants.find(g => g.schoolId)
-    if (!firstGrant) return
+    if (!willRedirect || !firstGrant) return
     if (!selectedSchool) {
       setSelectedSchool({
         id: firstGrant.schoolId!,
@@ -55,13 +67,16 @@ export default function AdminMain() {
       })
     }
     navigate(ADMIN_ROUTES.DASHBOARD, { replace: true })
-  }, [isSuperAdmin, user])
+  }, [willRedirect])
 
-  // ADMIN role은 모든 메뉴 표시, GrantedRole 보유자는 requiredGrants 기준 필터링
+  // 리다이렉트 예정이면 UI 렌더링 없이 스피너만 표시
+  if (willRedirect) return <PageLoader />
+
+  // ADMIN role은 모든 메뉴 표시, GrantedRole 보유자는 superAdminOnly 항목 제외 후 requiredGrants 기준 필터링
   const menuItems = useMemo(() => {
     if (isSuperAdmin) return ALL_MENU_ITEMS
     return ALL_MENU_ITEMS.filter(item =>
-      hasGrant(grants, ...item.requiredGrants)
+      !item.superAdminOnly && hasGrant(grants, ...item.requiredGrants)
     )
   }, [grants, isSuperAdmin])
 

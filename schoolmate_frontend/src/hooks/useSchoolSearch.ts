@@ -7,6 +7,8 @@ export interface SchoolSummary {
   schoolKind: string
   officeOfEducation: string
   address: string
+  phoneNumber?: string
+  homepage?: string
 }
 
 interface PageResponse {
@@ -24,7 +26,7 @@ type FetchFn = (params: {
   sort: string
 }) => Promise<{ data: PageResponse }>
 
-export function useSchoolSearch(fetchFn: FetchFn) {
+export function useSchoolSearch(fetchFn: FetchFn, size = 10) {
   const [name, setName] = useState('')
   const [schoolKind, setSchoolKind] = useState('')
   const [schools, setSchools] = useState<SchoolSummary[]>([])
@@ -40,7 +42,7 @@ export function useSchoolSearch(fetchFn: FetchFn) {
       name: name.trim() || undefined,
       schoolKind: schoolKind || undefined,
       page: pageNum,
-      size: 10,
+      size,
       sort: 'name,asc',
     })
       .then((r) => {
@@ -60,6 +62,16 @@ export function useSchoolSearch(fetchFn: FetchFn) {
     fetchSchools(0)
   }
 
+  const reset = () => {
+    setName('')
+    setSchoolKind('')
+    setSchools([])
+    setTotalPages(0)
+    setTotalElements(0)
+    setPage(0)
+    setSearched(false)
+  }
+
   return {
     name, setName,
     schoolKind, setSchoolKind,
@@ -71,5 +83,6 @@ export function useSchoolSearch(fetchFn: FetchFn) {
     searched,
     fetchSchools,
     handleSearch,
+    reset,
   }
 }

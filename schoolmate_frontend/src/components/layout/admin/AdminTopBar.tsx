@@ -3,6 +3,98 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
 import { ADMIN_ROUTES } from '@/constants/routes';
 import NotificationDropdown from '@/components/fragments/NotificationDropdown';
+import type { GrantInfo } from '@/api/auth';
+
+const GRANT_LABELS: Record<string, string> = {
+  SUPER_ADMIN:      '최고 관리자',
+  SCHOOL_ADMIN:     '학교 관리자',
+  STUDENT_MANAGER:  '학생 관리',
+  TEACHER_MANAGER:  '교사 관리',
+  STAFF_MANAGER:    '교직원 관리',
+  PARENT_MANAGER:   '학부모 관리',
+  CLASS_MANAGER:    '학급 관리',
+  NOTICE_MANAGER:   '공지 관리',
+  SCHEDULE_MANAGER: '일정 관리',
+  FACILITY_MANAGER: '시설 관리',
+  ASSET_MANAGER:    '기자재 관리',
+  LIBRARIAN:        '도서 관리',
+  NURSE:            '보건 관리',
+  NUTRITIONIST:     '급식 관리',
+};
+
+function grantBadgeColor(role: string) {
+  if (role === 'SUPER_ADMIN')  return '#ef4444';
+  if (role === 'SCHOOL_ADMIN') return '#f97316';
+  return '#25A194';
+}
+
+function GrantTooltip({ grants }: { grants: GrantInfo[] }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <span style={{ position: 'relative' }}>
+      <span
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        style={{
+          background: 'var(--neutral-400)',
+          color: '#fff',
+          borderRadius: 4,
+          padding: '1px 5px',
+          fontSize: 9,
+          fontWeight: 600,
+          cursor: 'default',
+          userSelect: 'none',
+        }}
+      >
+        +{grants.length - 1}
+      </span>
+      {visible && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 'calc(100% + 6px)',
+            right: 0,
+            background: 'var(--body-bg, #fff)',
+            border: '1px solid var(--neutral-200)',
+            borderRadius: 8,
+            padding: '8px 10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+            zIndex: 300,
+            minWidth: 140,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}
+        >
+          {grants.map((g) => (
+            <span
+              key={g.grantedRole + (g.schoolId ?? '')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 11,
+                color: 'var(--text-primary-light)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: grantBadgeColor(g.grantedRole),
+                  flexShrink: 0,
+                }}
+              />
+              {GRANT_LABELS[g.grantedRole] ?? g.grantedRole}
+            </span>
+          ))}
+        </div>
+      )}
+    </span>
+  );
+}
 
 function useTheme() {
   const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
@@ -48,7 +140,8 @@ export default function AdminTopBar({
 }: AdminTopBarProps) {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const grants: GrantInfo[] = user?.grants ?? [];
 
   const navBtnCls =
     "d-flex align-items-center gap-1 text-decoration-none text-secondary-light px-10 py-6 radius-8";
@@ -159,6 +252,51 @@ export default function AdminTopBar({
               />
             </button>
             <NotificationDropdown />
+
+            {/* 현재 로그인 사용자 정보 */}
+            {user && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '5px 10px',
+                  borderRadius: 8,
+                  background: 'var(--neutral-100)',
+                  border: '1px solid var(--neutral-200)',
+                  transition: smoothTransition,
+                  maxWidth: 220,
+                }}
+              >
+                <i className="ri-user-3-fill" style={{ fontSize: 18, color: '#25A194', flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary-light)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {user.name ?? user.email}
+                  </div>
+                  <div style={{ display: 'flex', gap: 3, marginTop: 2, alignItems: 'center' }}>
+                    {grants[0] && (
+                      <span
+                        style={{
+                          background: grantBadgeColor(grants[0].grantedRole),
+                          color: '#fff',
+                          borderRadius: 4,
+                          padding: '1px 5px',
+                          fontSize: 9,
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {GRANT_LABELS[grants[0].grantedRole] ?? grants[0].grantedRole}
+                      </span>
+                    )}
+                    {grants.length >= 2 && (
+                      <GrantTooltip grants={grants} />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button
               className="btn btn-sm btn-outline-danger"
               onClick={signOut}

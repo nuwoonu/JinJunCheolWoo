@@ -40,7 +40,7 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
                 .leftJoin(relation.studentInfo, student)
                 .leftJoin(student.user, studentUser)
                 .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser),
-                        schoolFilter(student))
+                        cond.isIgnoreSchoolFilter() ? null : schoolFilter(student))
                 .distinct()
                 .orderBy(parent.id.desc());
 
@@ -69,7 +69,7 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
                 .leftJoin(relation.studentInfo, student)
                 .leftJoin(student.user, studentUser)
                 .where(searchPredicate(cond.getType(), cond.getKeyword(), parent, user, studentUser),
-                        schoolFilter(student));
+                        cond.isIgnoreSchoolFilter() ? null : schoolFilter(student));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }

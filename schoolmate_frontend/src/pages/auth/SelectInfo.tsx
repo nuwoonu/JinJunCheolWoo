@@ -91,14 +91,14 @@ export default function SelectInfo() {
     <div className="d-flex">
       {/* 왼쪽 - 로고 */}
       <div className="register-left d-none d-lg-flex">
-        <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+        <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
       </div>
 
       {/* 오른쪽 - 역할 선택 폼 */}
       <div className="register-right">
         <div className="register-form">
           <div className="d-lg-none text-center mb-4">
-            <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} />
+            <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} /></a>
           </div>
 
           <div className="text-center mb-4">

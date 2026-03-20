@@ -20,6 +20,10 @@ public class SchoolmateUrls {
     // 학교 검색 (Public)
     public static final String SCHOOLS = API_ROOT + "/schools";
 
+    // 서비스 공지 (Public)
+    public static final String SERVICE_NOTICES = API_ROOT + "/service-notices";
+    public static final String ADMIN_SERVICE_NOTICES = API_ADMIN + "/service-notices";
+
     // 학교 관리 (School Management)
     public static final String ADMIN_SCHOOLS = API_ADMIN + "/schools";
 

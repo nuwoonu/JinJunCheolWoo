@@ -34,6 +34,8 @@ public class StudentDTO {
         private String type;
         private String keyword;
         private String status; // 기본값: 전체 (null이면 필터 없음) [woo]
+        private boolean ignoreSchoolFilter; // true이면 학교 필터 미적용 (타 학교 학생 검색 허용)
+        private Long excludeParentId; // 지정된 학부모와 이미 연결된 학생 제외
     }
 
     /**
@@ -131,6 +133,7 @@ public class StudentDTO {
         private String statusName;
         private Long roleRequestId;
         private String roleRequestStatus;
+        private String schoolName;
 
         public SummaryResponse(User user) {
             this.uid = user.getUid();
@@ -140,6 +143,7 @@ public class StudentDTO {
             if (info != null) {
                 this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : null;
+                this.schoolName = info.getSchool() != null ? info.getSchool().getName() : null;
                 if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getClassroom() != null) {
                     StudentAssignment a = info.getCurrentAssignment();
                     this.latestClass = a.getSchoolYear() + "년 " + a.getGrade() + "학년 " + a.getClassNum() + "반";
