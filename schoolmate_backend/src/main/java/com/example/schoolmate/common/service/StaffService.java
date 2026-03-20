@@ -20,12 +20,18 @@ import com.example.schoolmate.common.entity.info.StaffInfo;
 import com.example.schoolmate.common.entity.info.constant.EmploymentType;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.notification.Notification;
+import com.example.schoolmate.common.entity.user.RoleRequest;
+import com.example.schoolmate.common.entity.user.SchoolAdminGrant;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.GrantedRole;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.RoleRequestRepository;
+import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
 import com.example.schoolmate.common.repository.notice.NotificationRepository;
 import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
@@ -49,6 +55,8 @@ public class StaffService {
     private final StaffInfoRepository staffInfoRepository;
     private final NotificationRepository notificationRepository;
     private final SchoolRepository schoolRepository;
+    private final RoleRequestRepository roleRequestRepository;
+    private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
@@ -69,7 +77,7 @@ public class StaffService {
         return response;
     }
 
-    public void createStaff(StaffDTO.CreateRequest request) {
+    public User createStaff(StaffDTO.CreateRequest request) {
         if (request.getCode() != null && codeExistsForStaff(request.getCode())) {
             throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
         }
@@ -105,6 +113,11 @@ public class StaffService {
 
         user.getInfos().add(info);
         userRepository.save(user);
+
+        // 관리자 직접 등록 시 즉시 ACTIVE RoleRequest 생성 (Hub 카드 학교명 표시 및 hasAdminAccess 연동)
+        roleRequestRepository.save(RoleRequest.createActive(user, UserRole.STAFF, schoolId, null));
+
+        return user;
     }
 
     public void updateStaff(StaffDTO.UpdateRequest request) {
@@ -152,7 +165,23 @@ public class StaffService {
                     continue;
                 }
                 StaffDTO.CreateRequest createReq = new StaffDTO.CreateRequest(csvReq);
-                createStaff(createReq);
+                User created = createStaff(createReq);
+
+                // CSV에 권한이 지정된 경우 SchoolAdminGrant 생성
+                if (csvReq.getGrantedRole() != null && !csvReq.getGrantedRole().isBlank()) {
+                    try {
+                        GrantedRole grantedRole = GrantedRole.valueOf(csvReq.getGrantedRole().trim());
+                        Long schoolId = SchoolContextHolder.getSchoolId();
+                        if (schoolId != null) {
+                            School school = schoolRepository.findById(schoolId).orElse(null);
+                            if (school != null) {
+                                schoolAdminGrantRepository.save(new SchoolAdminGrant(created, school, grantedRole, null));
+                            }
+                        }
+                    } catch (IllegalArgumentException e) {
+                        log.warn("알 수 없는 권한 코드, 권한 부여 건너뜀: {}", csvReq.getGrantedRole());
+                    }
+                }
             }
         }
     }

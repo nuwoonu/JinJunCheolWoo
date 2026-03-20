@@ -17,6 +17,7 @@ import lombok.ToString;
 @Builder
 public class GradeDTO {
     private Long id;
+    private Long studentId;
     private String subjectName;
     private String subjectCode;
     private TestType examType;

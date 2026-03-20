@@ -76,7 +76,7 @@ const getResult = (score: number): "Pass" | "Fail" => (score >= 40 ? "Pass" : "F
 // 탭 목록
 // ───────────────────────────────────────────────
 const TABS = [
-  { key: "details", icon: "ri-group-line", label: "Student Details" },
+  { key: "details", icon: "ri-group-line", label: "세부 정보" },
   { key: "attendance", icon: "ri-calendar-check-line", label: "Attendance" },
   { key: "awards", icon: "ri-trophy-line", label: "수상경력" },
   { key: "fees", icon: "ri-money-dollar-box-line", label: "Fees" },
@@ -889,37 +889,6 @@ export default function StudentMyInfo() {
                       <div className="col-sm-4">
                         <h6 className="text-md mb-2 fw-medium">체중(kg)</h6>
                         <span className="text-secondary-light">{student.weight ?? "-"}</span>
-                      </div>
-                    </div>
-                  </div>
-                </SectionCard>
-              </div>
-
-              {/* 첨부 서류 (col-md-6) */}
-              <div className="col-md-6">
-                <SectionCard title="첨부 서류">
-                  <div className="p-20">
-                    <span className="text-secondary-light text-sm">등록된 서류가 없습니다.</span>
-                  </div>
-                </SectionCard>
-              </div>
-
-              {/* 기숙사 (col-md-6) */}
-              <div className="col-md-6">
-                <SectionCard title="기숙사">
-                  <div className="p-20">
-                    <div className="row gy-4">
-                      <div className="col-sm-4">
-                        <h6 className="text-md mb-2 fw-medium">기숙사명</h6>
-                        <span className="text-secondary-light">-</span>
-                      </div>
-                      <div className="col-sm-4">
-                        <h6 className="text-md mb-2 fw-medium">호실</h6>
-                        <span className="text-secondary-light">-</span>
-                      </div>
-                      <div className="col-sm-4">
-                        <h6 className="text-md mb-2 fw-medium">방 유형</h6>
-                        <span className="text-secondary-light">-</span>
                       </div>
                     </div>
                   </div>

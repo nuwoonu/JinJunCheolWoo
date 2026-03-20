@@ -72,13 +72,22 @@ public class StudentRestController {
     }
 
     // 전체 학생 목록 조회
-    // GET /api/students
+    // GET /api/students?classroomId={cid} (교사가 특정 학급 지정 시 사용)
     @GetMapping
     public ResponseEntity<?> getAllStudents(
-            @AuthenticationPrincipal AuthUserDTO authUser) {
+            @AuthenticationPrincipal AuthUserDTO authUser,
+            @RequestParam(required = false) Long classroomId) {
 
-        // [woo] 교사: 담임 학급 학생만 반환
+        // [woo] 교사: classroomId가 있으면 해당 학급, 없으면 담임 학급 반환
         if (authUser != null && authUser.getCustomUserDTO().getRole() == UserRole.TEACHER) {
+            if (classroomId != null) {
+                // 지정된 학급의 학생 반환
+                List<StudentResponseDTO> students = studentInfoRepository.findByClassroomCid(classroomId).stream()
+                        .map(StudentResponseDTO::from)
+                        .toList();
+                log.info("[cheol] 교사 지정 학급 학생 조회 - classroomId: {}, {}명", classroomId, students.size());
+                return ResponseEntity.ok(students);
+            }
             try {
                 TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(authUser.getCustomUserDTO().getUid())
                         .orElseThrow(() -> new IllegalArgumentException("교사 정보 없음"));
@@ -90,7 +99,8 @@ public class StudentRestController {
                                 .id(s.getStudentId())
                                 .userName(s.getName())
                                 .studentNumber(s.getStudentNumber() != null ? Long.valueOf(s.getStudentNumber()) : null)
-                                .fullStudentNumber(classInfo.getGrade() + "학년 " + classInfo.getClassNum() + "반 " + (s.getStudentNumber() != null ? s.getStudentNumber() + "번" : ""))
+                                .fullStudentNumber(classInfo.getGrade() + "학년 " + classInfo.getClassNum() + "반 "
+                                        + (s.getStudentNumber() != null ? s.getStudentNumber() + "번" : ""))
                                 .year(classInfo.getGrade())
                                 .classNum(classInfo.getClassNum())
                                 .phone(s.getPhone())
@@ -111,7 +121,7 @@ public class StudentRestController {
             StudentInfo myInfo = studentInfoRepository.findByUserUid(uid).orElse(null);
             if (myInfo != null && myInfo.getCurrentAssignment() != null
                     && myInfo.getCurrentAssignment().getClassroom() != null) {
-                Long classroomId = myInfo.getCurrentAssignment().getClassroom().getCid();
+                classroomId = myInfo.getCurrentAssignment().getClassroom().getCid();
                 List<StudentResponseDTO> students = studentInfoRepository.findByClassroomCid(classroomId).stream()
                         .map(StudentResponseDTO::from)
                         .toList();

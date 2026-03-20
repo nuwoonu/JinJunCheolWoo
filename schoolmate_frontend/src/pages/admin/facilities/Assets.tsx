@@ -253,6 +253,7 @@ export default function Assets() {
                     </label>
                     <select
                       className="form-select"
+                      required
                       value={assetForm.modelId}
                       onChange={(e) => {
                         const mid = e.target.value;
@@ -260,16 +261,14 @@ export default function Assets() {
                         setAssetForm((f: any) => ({
                           ...f,
                           modelId: mid,
-                          name: m?.name ?? f.name,
-                          category: m?.category ?? f.category,
-                          manufacturer: m?.manufacturer ?? f.manufacturer,
-                          description: m?.description ?? f.description,
+                          name: m?.name ?? "",
+                          category: m?.category ?? "",
+                          manufacturer: m?.manufacturer ?? "",
+                          description: m?.description ?? "",
                         }));
                       }}
                     >
-                      <option value="">
-                        신규 모델 직접 입력 (권장하지 않음)
-                      </option>
+                      <option value="" disabled>모델을 선택하세요</option>
                       {models.map((m: any) => (
                         <option key={m.id} value={m.id}>
                           [{m.category}] {m.name} ({m.manufacturer})
@@ -281,28 +280,19 @@ export default function Assets() {
                   <div className="col-md-6">
                     <label className="form-label fw-bold">자산명(모델명)</label>
                     <input
-                      className="form-control"
-                      required
+                      className="form-control bg-light"
+                      readOnly
                       value={assetForm.name}
-                      onChange={(e) =>
-                        setAssetForm((f: any) => ({
-                          ...f,
-                          name: e.target.value,
-                        }))
-                      }
+                      placeholder="모델 선택 시 자동 입력"
                     />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold">분류</label>
                     <input
-                      className="form-control"
+                      className="form-control bg-light"
+                      readOnly
                       value={assetForm.category}
-                      onChange={(e) =>
-                        setAssetForm((f: any) => ({
-                          ...f,
-                          category: e.target.value,
-                        }))
-                      }
+                      placeholder="모델 선택 시 자동 입력"
                     />
                   </div>
                 </div>
