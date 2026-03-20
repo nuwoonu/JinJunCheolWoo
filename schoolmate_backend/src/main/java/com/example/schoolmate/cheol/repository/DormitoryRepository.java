@@ -33,6 +33,13 @@ public interface DormitoryRepository extends JpaRepository<Dormitory, Long> {
             @Param("floor") Integer floor,
             @Param("roomNumber") String roomNumber);
 
+    // 특정 호실의 모든 침대 + 학생 Fetch Join 조회 (같은 방 학생 표시용)
+    @Query("SELECT d FROM Dormitory d LEFT JOIN FETCH d.students s LEFT JOIN FETCH s.user WHERE d.building = :building AND d.floor = :floor AND d.roomNumber = :roomNumber ORDER BY d.bedNumber")
+    List<Dormitory> findByRoomWithStudents(
+            @Param("building") String building,
+            @Param("floor") Integer floor,
+            @Param("roomNumber") String roomNumber);
+
     // 빈 침대 조회
     @Query("SELECT d FROM Dormitory d WHERE d.students IS EMPTY ORDER BY d.building, d.floor DESC, d.roomNumber, d.bedNumber")
     List<Dormitory> findEmptyBeds();

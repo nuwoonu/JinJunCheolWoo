@@ -1,12 +1,15 @@
 package com.example.schoolmate.cheol.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.schoolmate.cheol.entity.Grade;
+import com.example.schoolmate.common.entity.user.constant.Semester;
+import com.example.schoolmate.common.entity.user.constant.TestType;
 import com.example.schoolmate.common.entity.user.constant.Year;
 
 public interface GradeRepository extends JpaRepository<Grade, Long> {
@@ -21,6 +24,15 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
     List<Grade> findByStudentAndSubject(
             @Param("studentId") Long studentId,
             @Param("subjectCode") String subjectCode);
+
+    // 동일 학생/과목/시험종류/학기/학년 중복 조회 — upsert 처리용
+    @Query("SELECT g FROM Grade g JOIN FETCH g.subject WHERE g.student.id = :studentId AND g.subject.code = :subjectCode AND g.testType = :testType AND g.semester = :semester AND g.year = :year")
+    Optional<Grade> findDuplicate(
+            @Param("studentId") Long studentId,
+            @Param("subjectCode") String subjectCode,
+            @Param("testType") TestType testType,
+            @Param("semester") Semester semester,
+            @Param("year") Year year);
 
     // 전체 성적 조회 - Subject Fetch Join
     @Query("SELECT g FROM Grade g JOIN FETCH g.subject")

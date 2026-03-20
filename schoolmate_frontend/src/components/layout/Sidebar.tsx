@@ -327,11 +327,6 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
                   </Link>
                 </li>
-                <li>
-                  <Link to="/student/list">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생 리스트
-                  </Link>
-                </li>
                 {/* [cheol] 기숙사 */}
                 <li>
                   <Link to="/student/dormitory">
@@ -733,21 +728,33 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 {/* [cheol] 성적/시험 관련 React 페이지 */}
-                <li>
-                  <Link to="/exam">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회 / 체점
-                  </Link>
-                </li>
+                {has("TEACHER") && (
+                  <li>
+                    {/* [cheol] 교사: 학급 선택 페이지 → 학생리스트 순서로 이동 */}
+                    <Link to="/teacher/grade-classes">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 채점
+                    </Link>
+                  </li>
+                )}
                 <li>
                   <Link to="/exam/schedule">
                     <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
                   </Link>
                 </li>
-                <li>
-                  <Link to="/exam/result">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
-                  </Link>
-                </li>
+                {has("TEACHER") ? (
+                  <li>
+                    {/* [cheol] 교사: 자기 반 학생 성적 확인 모드 */}
+                    <Link to="/student/list?mode=view">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
+                    </Link>
+                  </li>
+                ) : (
+                  <li>
+                    <Link to="/exam/result">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
+                    </Link>
+                  </li>
+                )}
               </ul>
             </li>
           )}

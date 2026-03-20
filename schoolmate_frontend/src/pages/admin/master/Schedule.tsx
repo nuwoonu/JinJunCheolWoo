@@ -66,8 +66,8 @@ export default function Schedule() {
   const csvRef = useRef<HTMLInputElement>(null);
 
   const load = (y = year, m = month) => {
-    const start = new Date(y, m - 1, 1).toISOString();
-    const end = new Date(y, m, 0, 23, 59, 59).toISOString();
+    const start = toDateStr(new Date(y, m - 1, 1));
+    const end = toDateStr(new Date(y, m, 0));
     admin
       .get("/schedule", { params: { start, end } })
       .then((r) => setEvents(r.data ?? []));

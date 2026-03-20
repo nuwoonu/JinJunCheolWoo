@@ -221,12 +221,38 @@ public class DormitoryService {
     }
 
     /**
-     * 특정 학생의 기숙사 배정 정보 조회
+     * 특정 학생의 기숙사 배정 정보 조회 (같은 방 학생 전체 포함)
      */
     public java.util.Optional<DormitoryDTO> getDormitoryByStudentInfoId(Long studentInfoId) {
         return studentInfoRepository.findById(studentInfoId)
                 .filter(StudentInfo::hasDormitory)
-                .map(s -> DormitoryDTO.from(s.getDormitory()));
+                .map(s -> {
+                    Dormitory myBed = s.getDormitory();
+                    // 같은 방의 모든 침대 + 학생 목록 조회
+                    List<Dormitory> roomBeds = dormitoryRepository.findByRoomWithStudents(
+                            myBed.getBuilding(), myBed.getFloor(), myBed.getRoomNumber());
+                    // 방 내 모든 학생 이름 수집
+                    List<String> allStudentNames = roomBeds.stream()
+                            .flatMap(bed -> bed.getStudents().stream())
+                            .map(student -> student.getUser().getName())
+                            .collect(Collectors.toList());
+                    return DormitoryDTO.builder()
+                            .id(myBed.getId())
+                            .building(myBed.getBuilding())
+                            .floor(myBed.getFloor())
+                            .roomNumber(myBed.getRoomNumber())
+                            .bedNumber(myBed.getBedNumber())
+                            .roomType(myBed.getRoomType())
+                            .roomTypeDescription(myBed.getRoomType().getDescription())
+                            .studentNames(allStudentNames)
+                            .studentIds(myBed.getStudents().stream()
+                                    .map(student -> student.getId())
+                                    .collect(Collectors.toList()))
+                            .isEmpty(myBed.isEmpty())
+                            .occupiedCount(myBed.getOccupiedCount())
+                            .fullAddress(myBed.getFullAddress())
+                            .build();
+                });
     }
 
     /**
