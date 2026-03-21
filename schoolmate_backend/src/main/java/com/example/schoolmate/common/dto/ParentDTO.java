@@ -32,6 +32,7 @@ public class ParentDTO {
         private String type; // name, email, phone, childName
         private String keyword;
         private String status; // 기본값: 전체 (null이면 필터 없음) [woo]
+        private boolean ignoreSchoolFilter; // true이면 학교 필터 미적용 (타 학교 학부모 검색 허용)
     }
 
     /**
@@ -196,6 +197,7 @@ public class ParentDTO {
         private String code;
         private String relationship;
         private String relationshipCode;
+        private String schoolName;
 
         public LinkedStudent(StudentInfo info, FamilyRelationship relation) {
             this.uid = info.getUser().getUid();
@@ -203,6 +205,7 @@ public class ParentDTO {
             this.code = info.getCode();
             this.relationship = relation.getDescription();
             this.relationshipCode = relation.name();
+            this.schoolName = info.getSchool() != null ? info.getSchool().getName() : null;
         }
     }
 

@@ -22,7 +22,7 @@ export default function NoticeDetail() {
   if (!notice)
     return (
       <AdminLayout>
-        <div className="text-center py-5">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 0' }}>
           <div className="spinner-border" />
         </div>
       </AdminLayout>
@@ -30,70 +30,71 @@ export default function NoticeDetail() {
 
   return (
     <AdminLayout>
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
-        <button
-          type="button"
-          onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}
-          style={{
-            background: "none",
-            border: "1px solid var(--border-color)",
-            borderRadius: 6,
-            padding: "4px 10px",
-            cursor: "pointer",
-            color: "var(--text-secondary-light)",
-          }}
-        >
-          <i className="bi bi-arrow-left" />
-        </button>
-        <h6 className="fw-semibold mb-0">공지사항 상세</h6>
+      {/* Page header */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}
+              style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#6b7280', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              ← 뒤로
+            </button>
+            <div>
+              <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>공지사항 상세</h5>
+              <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>공지사항 내용을 확인합니다.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="card">
-        <div className="d-flex align-items-start justify-content-between px-20 py-16 border-bottom border-neutral-200">
+      {/* Card */}
+      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        {/* Card header: title + meta + action buttons */}
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
           <div>
-            <h5 className="mb-2 fw-bold">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
               {notice.important && (
-                <span className="badge bg-danger me-2">중요</span>
+                <span style={{ padding: '2px 8px', background: '#fef2f2', color: '#dc2626', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>중요</span>
               )}
-              {notice.title}
-            </h5>
-            <p className="mb-0 text-muted small">
-              작성자: <strong>{notice.writerName}</strong> · 작성일:{" "}
-              {notice.createDate?.split("T")[0]} · 조회수: {notice.viewCount}
+              <h5 style={{ fontWeight: 700, color: '#111827', margin: 0, fontSize: 18 }}>{notice.title}</h5>
+            </div>
+            <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>
+              작성자: <strong style={{ color: '#374151' }}>{notice.writerName}</strong>
+              {' · '}작성일: {notice.createDate?.split("T")[0]}
+              {' · '}조회수: {notice.viewCount}
             </p>
           </div>
-          <div className="d-flex gap-2">
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button
-              className="btn btn-outline-secondary btn-sm radius-8"
               onClick={() => navigate(ADMIN_ROUTES.NOTICES.EDIT(id!))}
+              style={{ padding: '4px 12px', background: '#fff', border: '1px solid #25A194', borderRadius: 6, fontSize: 12, fontWeight: 500, color: '#25A194', cursor: 'pointer', whiteSpace: 'nowrap' }}
             >
-              <i className="bi bi-pencil" /> 수정
+              수정
             </button>
             <button
-              className="btn btn-outline-danger btn-sm radius-8"
               onClick={handleDelete}
+              style={{ padding: '4px 12px', background: '#fff', border: '1px solid #ef4444', borderRadius: 6, fontSize: 12, fontWeight: 500, color: '#ef4444', cursor: 'pointer', whiteSpace: 'nowrap' }}
             >
-              <i className="bi bi-trash" /> 삭제
+              삭제
             </button>
           </div>
         </div>
-        <div className="card-body p-24">
-          <pre
-            style={{
-              whiteSpace: "pre-wrap",
-              fontFamily: "inherit",
-              fontSize: "1rem",
-            }}
-          >
+
+        {/* Content body */}
+        <div style={{ padding: 24 }}>
+          <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.9, color: '#374151', fontSize: '0.95rem', margin: 0 }}>
             {notice.content}
-          </pre>
+          </p>
         </div>
-        <div className="px-20 py-16 border-top border-neutral-200">
+
+        {/* Footer */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '16px 24px', borderTop: '1px solid #e5e7eb' }}>
           <button
-            className="btn btn-outline-secondary radius-8"
             onClick={() => navigate(ADMIN_ROUTES.NOTICES.LIST)}
+            style={{ padding: '9px 14px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' }}
           >
-            <i className="bi bi-list" /> 목록으로
+            목록으로
           </button>
         </div>
       </div>

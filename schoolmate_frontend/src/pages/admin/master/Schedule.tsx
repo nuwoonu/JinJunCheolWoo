@@ -11,12 +11,12 @@ const TYPE_LABELS: Record<string, string> = {
   EVENT: "행사",
   VACATION: "방학",
 };
-const TYPE_COLORS: Record<string, string> = {
-  ACADEMIC: "bg-primary-subtle text-primary border border-primary-subtle",
-  HOLIDAY: "bg-danger-subtle text-danger border border-danger-subtle",
-  EXAM: "bg-warning-subtle text-warning border border-warning-subtle",
-  EVENT: "bg-success-subtle text-success border border-success-subtle",
-  VACATION: "bg-info-subtle text-info border border-info-subtle",
+const TYPE_COLORS_STYLE: Record<string, React.CSSProperties> = {
+  ACADEMIC: { background: "rgba(37,161,148,0.12)", color: "#25A194", border: "1px solid rgba(37,161,148,0.3)" },
+  HOLIDAY: { background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5" },
+  EXAM: { background: "#fffbeb", color: "#d97706", border: "1px solid #fcd34d" },
+  EVENT: { background: "#f5f3ff", color: "#7c3aed", border: "1px solid #c4b5fd" },
+  VACATION: { background: "#eff6ff", color: "#2563eb", border: "1px solid #93c5fd" },
 };
 const EMPTY_FORM = {
   title: "",
@@ -50,6 +50,9 @@ function eventOnDate(ev: any, date: Date) {
   if (!s || !e) return false;
   return date.getTime() >= s && date.getTime() <= e;
 }
+
+const th: React.CSSProperties = { padding: "12px 16px", fontSize: 12, fontWeight: 600, color: "#6b7280", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap", textAlign: "left" };
+const td: React.CSSProperties = { padding: "12px 16px", fontSize: 13, color: "#374151", borderBottom: "1px solid #f3f4f6", verticalAlign: "middle", whiteSpace: "nowrap" };
 
 export default function Schedule() {
   const now = new Date();
@@ -172,6 +175,8 @@ export default function Schedule() {
   };
 
   const cells = buildCalendar(year, month);
+
+  const navBtnStyle: React.CSSProperties = { padding: "6px 12px", border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", fontSize: 13, color: "#374151", cursor: "pointer" };
 
   return (
     <AdminLayout>
@@ -326,7 +331,7 @@ export default function Schedule() {
                 {editId !== null && (
                   <button
                     type="button"
-                    className="btn btn-outline-danger radius-8 me-auto"
+                    style={{ padding: "7px 16px", background: "#fff", border: "1px solid #ef4444", borderRadius: 8, fontSize: 14, color: "#ef4444", cursor: "pointer", marginRight: "auto" }}
                     onClick={() => {
                       handleDelete(editId!);
                       setShowModal(false);
@@ -337,12 +342,15 @@ export default function Schedule() {
                 )}
                 <button
                   type="button"
-                  className="btn btn-outline-secondary radius-8"
+                  style={{ padding: "7px 16px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 14, color: "#374151", cursor: "pointer" }}
                   onClick={() => setShowModal(false)}
                 >
                   취소
                 </button>
-                <button type="submit" className="btn btn-primary-600 radius-8">
+                <button
+                  type="submit"
+                  style={{ padding: "7px 16px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                >
                   {editId !== null ? "수정" : "등록"}
                 </button>
               </div>
@@ -353,15 +361,14 @@ export default function Schedule() {
 
       {importing && (
         <div
-          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-          style={{ background: "rgba(0,0,0,0.5)", zIndex: 9999 }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}
         >
-          <div className="text-center">
+          <div style={{ textAlign: "center" }}>
             <div
               className="spinner-border text-light"
               style={{ width: "3rem", height: "3rem" }}
             />
-            <h5 className="text-white mt-3">일정 데이터를 등록 중입니다...</h5>
+            <h5 style={{ color: "#fff", marginTop: 12 }}>일정 데이터를 등록 중입니다...</h5>
           </div>
         </div>
       )}
@@ -374,28 +381,28 @@ export default function Schedule() {
       />
 
       {/* 헤더 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h6 className="fw-semibold mb-0">학사 일정 관리</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
+          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>학사 일정 관리</h5>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
             학년도별 학사 일정을 등록하고 관리합니다.
           </p>
         </div>
-        <div className="d-flex gap-2">
+        <div style={{ display: "flex", gap: 8 }}>
           <button
-            className="btn btn-secondary radius-8 text-white px-16"
+            style={{ padding: "9px 16px", background: "#6b7280", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#fff", cursor: "pointer" }}
             onClick={exportCsv}
           >
             <i className="bi bi-file-earmark-arrow-down" /> CSV 내보내기
           </button>
           <button
-            className="btn btn-success radius-8 text-white px-16"
+            style={{ padding: "9px 16px", background: "#22c55e", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#fff", cursor: "pointer" }}
             onClick={() => csvRef.current?.click()}
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
           </button>
           <button
-            className="btn btn-primary-600 radius-8"
+            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
             onClick={() => openCreate()}
           >
             <i className="bi bi-plus-lg" /> 일정 등록
@@ -403,27 +410,27 @@ export default function Schedule() {
         </div>
       </div>
 
-      <div className="card">
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
         {/* 네비게이션: 간격 및 정렬 개선 */}
-        <div className="d-flex align-items-center px-4 py-3 border-bottom border-neutral-200">
+        <div style={{ display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid #e5e7eb" }}>
           {/* 1. 좌측 (월 이동 및 오늘 버튼) */}
-          <div className="d-flex align-items-center gap-2" style={{ flex: 1 }}>
-            <div className="btn-group">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+            <div style={{ display: "flex" }}>
               <button
-                className="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center justify-content-center"
+                style={navBtnStyle}
                 onClick={() => goMonth(-1)}
               >
                 <i className="bi bi-chevron-left" />
               </button>
               <button
-                className="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center justify-content-center"
+                style={navBtnStyle}
                 onClick={() => goMonth(1)}
               >
                 <i className="bi bi-chevron-right" />
               </button>
             </div>
             <button
-              className="btn btn-outline-secondary btn-sm px-3"
+              style={navBtnStyle}
               onClick={goToday}
             >
               Today
@@ -431,23 +438,27 @@ export default function Schedule() {
           </div>
 
           {/* 2. 중앙 (현재 년/월 타이틀) */}
-          <div className="text-center" style={{ flex: 1 }}>
-            <h5 className="mb-0 fw-bold fs-5 text-primary-light">
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <h5 style={{ margin: 0, fontWeight: 700, fontSize: 18, color: "#25A194" }}>
               {year}년 {month}월
             </h5>
           </div>
 
           {/* 3. 우측 (Month / List 토글 버튼) */}
-          <div className="d-flex justify-content-end" style={{ flex: 1 }}>
-            <div className="btn-group">
+          <div style={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
+            <div style={{ display: "flex" }}>
               <button
-                className={`btn btn-outline-secondary btn-sm px-3 ${view === "month" ? "active" : ""}`}
+                style={view === "month"
+                  ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
+                  : navBtnStyle}
                 onClick={() => setView("month")}
               >
                 Month
               </button>
               <button
-                className={`btn btn-outline-secondary btn-sm px-3 ${view === "list" ? "active" : ""}`}
+                style={view === "list"
+                  ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
+                  : navBtnStyle}
                 onClick={() => setView("list")}
               >
                 List
@@ -470,10 +481,12 @@ export default function Schedule() {
               {DAYS.map((d, i) => (
                 <div
                   key={d}
-                  className="text-center py-2 small fw-semibold"
                   style={{
-                    color:
-                      i === 0 ? "#dc3545" : i === 6 ? "#0d6efd" : "#6c757d",
+                    textAlign: "center",
+                    padding: "8px 0",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: i === 0 ? "#dc3545" : i === 6 ? "#0d6efd" : "#6c757d",
                   }}
                 >
                   {d}
@@ -548,12 +561,7 @@ export default function Schedule() {
                       {dayEvents.slice(0, 3).map((ev) => (
                         <div
                           key={ev.id}
-                          className={`text-truncate px-8 py-2 mb-4 rounded-2 ${TYPE_COLORS[ev.eventType] || "bg-secondary"}`}
-                          style={{
-                            fontSize: "0.68rem",
-                            cursor: "pointer",
-                            lineHeight: "1.4",
-                          }}
+                          style={{ fontSize: "0.68rem", cursor: "pointer", lineHeight: "1.4", borderRadius: 4, padding: "2px 6px", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...(TYPE_COLORS_STYLE[ev.eventType] ?? {}) }}
                           onClick={(e) => {
                             e.stopPropagation();
                             openEdit(ev);
@@ -565,8 +573,7 @@ export default function Schedule() {
                       ))}
                       {dayEvents.length > 3 && (
                         <div
-                          className="text-muted px-1"
-                          style={{ fontSize: "0.7rem" }}
+                          style={{ color: "#6c757d", paddingLeft: 4, fontSize: "0.7rem" }}
                         >
                           +{dayEvents.length - 3}개 더
                         </div>
@@ -578,47 +585,45 @@ export default function Schedule() {
             </div>
           </div>
         ) : (
-          /* 리스트 뷰: p-4 클래스를 추가하여 여백 확보 */
-          <div className="card-body p-4">
+          /* 리스트 뷰 */
+          <div style={{ padding: 16 }}>
             <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0">
-                <thead className="table-heading-dark-mode">
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
                   <tr>
-                    <th className="ps-3">제목</th>
-                    <th>유형</th>
-                    <th>시작일</th>
-                    <th>종료일</th>
-                    <th>대상 학년</th>
-                    <th>설명</th>
-                    <th className="text-end pe-3">관리</th>
+                    <th style={th}>제목</th>
+                    <th style={th}>유형</th>
+                    <th style={th}>시작일</th>
+                    <th style={th}>종료일</th>
+                    <th style={th}>대상 학년</th>
+                    <th style={th}>설명</th>
+                    <th style={{ ...th, textAlign: "right" }}>관리</th>
                   </tr>
                 </thead>
                 <tbody>
                   {events.map((ev: any) => (
                     <tr key={ev.id}>
-                      <td className="ps-3 fw-bold">{ev.title}</td>
-                      <td>
-                        <span
-                          className={`badge ${TYPE_COLORS[ev.eventType] ?? "bg-secondary"}`}
-                        >
+                      <td style={{ ...td, fontWeight: 600 }}>{ev.title}</td>
+                      <td style={td}>
+                        <span style={{ ...TYPE_COLORS_STYLE[ev.eventType], borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 }}>
                           {TYPE_LABELS[ev.eventType] ?? ev.eventType}
                         </span>
                       </td>
-                      <td>{ev.start?.split("T")[0]}</td>
-                      <td>{ev.end?.split("T")[0]}</td>
-                      <td>
+                      <td style={td}>{ev.start?.split("T")[0]}</td>
+                      <td style={td}>{ev.end?.split("T")[0]}</td>
+                      <td style={td}>
                         {ev.targetGrade ? `${ev.targetGrade}학년` : "전체"}
                       </td>
-                      <td className="text-muted small">{ev.description}</td>
-                      <td className="text-end pe-3">
+                      <td style={{ ...td, color: "#9ca3af", fontSize: 12 }}>{ev.description}</td>
+                      <td style={{ ...td, textAlign: "right" }}>
                         <button
-                          className="btn btn-sm btn-outline-primary me-2"
+                          style={{ padding: "5px 12px", background: "#fff", border: "1px solid #22c55e", borderRadius: 6, fontSize: 13, color: "#22c55e", cursor: "pointer", marginRight: 8 }}
                           onClick={() => openEdit(ev)}
                         >
                           수정
                         </button>
                         <button
-                          className="btn btn-sm btn-outline-danger"
+                          style={{ padding: "5px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 13, color: "#ef4444", cursor: "pointer" }}
                           onClick={() => handleDelete(ev.id)}
                         >
                           삭제
@@ -628,7 +633,7 @@ export default function Schedule() {
                   ))}
                   {events.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-5 text-muted">
+                      <td colSpan={7} style={{ ...td, textAlign: "center", padding: "40px 16px", color: "#9ca3af" }}>
                         이 달의 일정이 없습니다.
                       </td>
                     </tr>

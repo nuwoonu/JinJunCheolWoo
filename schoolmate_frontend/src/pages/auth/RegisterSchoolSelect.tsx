@@ -2,24 +2,10 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import api from '@/api/auth'
 import { auth } from '@/shared/auth'
+import { useSchoolSearch } from '@/hooks/useSchoolSearch'
 
 // 이메일 가입: 학교 선택 후 /register로 이동 (state에 role+schoolId 전달)
 // SNS/Hub 가입: 학교 선택 후 POST /auth/select-role → /hub로 이동
-
-interface SchoolSummary {
-  id: number
-  name: string
-  schoolKind: string
-  officeOfEducation: string
-  address: string
-}
-
-interface PageResponse {
-  content: SchoolSummary[]
-  totalPages: number
-  totalElements: number
-  number: number
-}
 
 const SCHOOL_KINDS = ['', '초등학교', '중학교', '고등학교', '특수학교', '각종학교']
 
@@ -33,49 +19,26 @@ export default function RegisterSchoolSelect() {
   const { state } = useLocation()
   const { role, source } = (state ?? {}) as { role?: string; source?: string }
 
-  const [name, setName] = useState('')
-  const [schoolKind, setSchoolKind] = useState('')
-  const [schools, setSchools] = useState<SchoolSummary[]>([])
-  const [totalPages, setTotalPages] = useState(0)
-  const [totalElements, setTotalElements] = useState(0)
-  const [page, setPage] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  const {
+    name, setName,
+    schoolKind, setSchoolKind,
+    schools,
+    totalPages,
+    totalElements,
+    page,
+    loading,
+    searched,
+    fetchSchools,
+    handleSearch,
+  } = useSchoolSearch((params) => api.get('/schools', { params }))
 
   // state 없이 직접 접근 시 select-info로 보냄
   if (!role || !source) {
     window.location.replace('/select-info?source=email')
     return null
-  }
-
-  const fetchSchools = (pageNum = 0) => {
-    setLoading(true)
-    api
-      .get('/auth/schools', {
-        params: {
-          name: name.trim() || undefined,
-          schoolKind: schoolKind || undefined,
-          page: pageNum,
-          size: 10,
-        },
-      })
-      .then((r) => {
-        const data: PageResponse = r.data
-        setSchools(data.content)
-        setTotalPages(data.totalPages)
-        setTotalElements(data.totalElements)
-        setPage(data.number)
-        setSearched(true)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    fetchSchools(0)
   }
 
   const handleSelect = async (school: SchoolSummary) => {
@@ -104,14 +67,14 @@ export default function RegisterSchoolSelect() {
     <div className="d-flex">
       {/* 왼쪽 - 로고 */}
       <div className="register-left d-none d-lg-flex">
-        <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+        <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
       </div>
 
       {/* 오른쪽 - 학교 선택 */}
       <div className="register-right">
         <div className="register-form" style={{ maxWidth: 600 }}>
           <div className="d-lg-none text-center mb-4">
-            <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} />
+            <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} /></a>
           </div>
 
           <div className="text-center mb-4">

@@ -138,6 +138,7 @@ public class AdminStudentApiController {
         ParentDTO.ParentSearchCondition cond = new ParentDTO.ParentSearchCondition();
         cond.setType("name");
         cond.setKeyword(keyword);
+        cond.setIgnoreSchoolFilter(true); // 타 학교 자녀가 연동된 학부모도 검색 가능하도록
         return ResponseEntity.ok(parentService.getParentList(cond, pageable));
     }
 

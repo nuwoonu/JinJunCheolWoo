@@ -49,7 +49,9 @@ export default function Login() {
       <div className="login-container">
         {/* 왼쪽 - 로고 */}
         <div className="login-left">
-          <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+          <a href="/main">
+            <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+          </a>
         </div>
 
         {/* 오른쪽 - 폼 */}
@@ -57,7 +59,9 @@ export default function Login() {
           <div className="login-form-wrapper">
             {/* 모바일 로고 */}
             <div className="mobile-logo">
-              <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+              <a href="/main">
+                <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+              </a>
             </div>
 
             {/* 에러 메시지 */}

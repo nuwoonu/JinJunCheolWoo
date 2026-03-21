@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import PageLoader from '@/components/PageLoader'
 
 interface Props {
   children: React.ReactNode
@@ -16,7 +17,7 @@ interface Props {
 export default function PrivateRoute({ children, allowedRoles, requiredGrants }: Props) {
   const { user, loading } = useAuth()
 
-  if (loading) return null
+  if (loading) return <PageLoader />
   if (!user?.authenticated) return <Navigate to="/login" replace />
 
   const userRoles = user.roles && user.roles.length > 0

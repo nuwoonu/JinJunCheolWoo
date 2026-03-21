@@ -24,7 +24,7 @@ export default function ParentCreate() {
 
   return (
     <ParentAdminLayout requireSchool={false}>
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+      <div className="breadcrumb d-flex align-items-center gap-3" style={{ marginBottom: 24 }}>
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -41,7 +41,7 @@ export default function ParentCreate() {
         </button>
         <div>
           <h6 className="fw-semibold mb-0">신규 학부모 등록</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
+          <p style={{ color: "#6b7280" }} className="mt-4 mb-0">
             새 학부모 계정을 등록합니다.
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function ParentCreate() {
             </div>
           </div>
         </div>
-        <div className="d-flex justify-content-end gap-2 px-24 py-16 border-top border-neutral-200">
+        <div className="d-flex justify-content-end gap-2" style={{ padding: "16px 24px", borderTop: "1px solid #e5e7eb" }}>
           <button
             type="button"
             className="btn btn-secondary px-4 me-2"
@@ -118,7 +118,10 @@ export default function ParentCreate() {
           >
             취소
           </button>
-          <button type="submit" className="btn btn-primary-600 radius-8 px-5">
+          <button
+            type="submit"
+            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+          >
             등록 완료
           </button>
         </div>

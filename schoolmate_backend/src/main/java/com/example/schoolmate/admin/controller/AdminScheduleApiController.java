@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.config.SchoolmateUrls;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.common.dto.SchoolCalendarDTO;
 import com.example.schoolmate.common.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class AdminScheduleApiController {
     public ResponseEntity<List<SchoolCalendarDTO.Response>> getEvents(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return ResponseEntity.ok(adminScheduleService.getEvents(start, end));
+        return ResponseEntity.ok(adminScheduleService.getEvents(start, end, SchoolContextHolder.getSchoolId()));
     }
 
     @PostMapping

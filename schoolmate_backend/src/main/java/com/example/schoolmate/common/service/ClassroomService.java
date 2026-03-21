@@ -198,9 +198,16 @@ public class ClassroomService {
 
     public Long createClass(ClassDTO.CreateRequest request) {
         log.info("[AdminClassService] createClass 호출됨");
-        // 중복 확인
-        boolean exists = classroomRepository.existsByYearAndGradeAndClassNum(
-                request.getYear(), request.getGrade(), request.getClassNum());
+
+        // 학교 소속 설정 (X-School-Id 헤더 기반)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+
+        // 중복 확인 (같은 학교 내에서만 체크)
+        boolean exists = schoolId != null
+                ? classroomRepository.existsByYearAndGradeAndClassNumAndSchool_Id(
+                        request.getYear(), request.getGrade(), request.getClassNum(), schoolId)
+                : classroomRepository.existsByYearAndGradeAndClassNum(
+                        request.getYear(), request.getGrade(), request.getClassNum());
         if (exists) {
             throw new IllegalArgumentException("이미 존재하는 학급입니다.");
         }
@@ -210,8 +217,6 @@ public class ClassroomService {
         classroom.setGrade(request.getGrade());
         classroom.setClassNum(request.getClassNum());
 
-        // 학교 소속 설정 (X-School-Id 헤더 기반)
-        Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
         }
@@ -247,8 +252,12 @@ public class ClassroomService {
         // 1. 학년/반 변경 시 중복 체크
         if (request.getGrade() != null && request.getClassNum() != null) {
             if (classroom.getGrade() != request.getGrade() || classroom.getClassNum() != request.getClassNum()) {
-                boolean exists = classroomRepository.existsByYearAndGradeAndClassNum(
-                        classroom.getYear(), request.getGrade(), request.getClassNum());
+                Long schoolId = classroom.getSchool() != null ? classroom.getSchool().getId() : null;
+                boolean exists = schoolId != null
+                        ? classroomRepository.existsByYearAndGradeAndClassNumAndSchool_Id(
+                                classroom.getYear(), request.getGrade(), request.getClassNum(), schoolId)
+                        : classroomRepository.existsByYearAndGradeAndClassNum(
+                                classroom.getYear(), request.getGrade(), request.getClassNum());
                 if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 학급(학년/반)입니다.");
                 }
