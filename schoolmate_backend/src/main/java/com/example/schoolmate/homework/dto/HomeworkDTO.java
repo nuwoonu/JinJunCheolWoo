@@ -55,6 +55,7 @@ public class HomeworkDTO {
         private Long id;
         private String title;
         private String teacherName;
+        private String subjectName;
         private String classroomName;
         private Long classroomId;
         private HomeworkStatus status;
@@ -79,6 +80,7 @@ public class HomeworkDTO {
                     .id(homework.getId())
                     .title(homework.getTitle())
                     .teacherName(homework.getTeacher().getUser().getName())
+                    .subjectName(homework.getTeacher().getSubject() != null ? homework.getTeacher().getSubject().getName() : null)
                     .classroomName(homework.getClassroom().getClassName())
                     .classroomId(homework.getClassroom().getCid())
                     .status(homework.getStatus())

@@ -25,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+import org.springframework.http.HttpMethod; // [soojin] 학생 출석 조회 GET 허용을 위해 추가
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -137,6 +138,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/quiz/**")
                                                 .hasAnyRole("TEACHER", "STUDENT", "ADMIN")
                                                 // [woo] 출결 API - 역할별 접근
+                                                // [soojin] 학생도 자기 반 출석 현황 조회 가능 (GET /attendance/student?date= 한정)
+                                                .requestMatchers(HttpMethod.GET, "/api/attendance/student")
+                                                .hasAnyRole("TEACHER", "ADMIN", "STUDENT")
                                                 .requestMatchers("/api/attendance/student/**")
                                                 .hasAnyRole("TEACHER", "ADMIN")
                                                 // [woo] 교사 출근관리 - 관리자 전용

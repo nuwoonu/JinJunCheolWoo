@@ -6,7 +6,7 @@ interface Props {
   classroomId: number | null
 }
 
-const MOCK_PHOTOS = Array.from({ length: 8 }, (_, i) => i)
+const MOCK_PHOTOS = Array.from({ length: 5 }, (_, i) => i)
 
 export default function ClassAlbumWidget({ classroomId: _classroomId }: Props) {
   return (

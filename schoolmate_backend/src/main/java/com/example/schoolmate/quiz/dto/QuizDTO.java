@@ -104,6 +104,7 @@ public class QuizDTO {
         private String description;
         private Integer week;
         private String teacherName;
+        private String subjectName;
         private String classroomName;
         private Long classroomId;
         private Quiz.QuizStatus status;
@@ -125,6 +126,7 @@ public class QuizDTO {
                     .description(quiz.getDescription())
                     .week(quiz.getWeek())
                     .teacherName(quiz.getTeacher().getUser().getName())
+                    .subjectName(quiz.getTeacher().getSubject() != null ? quiz.getTeacher().getSubject().getName() : null)
                     .classroomName(quiz.getClassroom().getClassName())
                     .classroomId(quiz.getClassroom().getCid())
                     .status(quiz.getStatus())

@@ -1,21 +1,36 @@
 // [soojin] 우리 반 친구들 위젯
 // GET /api/students/search?grade=&classNum= 로 같은 반 학생 목록 조회
+// GET /api/attendance/student?date={today} 로 오늘 출석 상태 조회 (병렬 fetch 후 studentNumber로 merge)
 // 프로필 이미지 없으면 기본 아이콘 표시
-// TODO: role(반장/부반장), attendanceStatus(출석/결석) 백엔드 연동 필요
 
 import { useEffect, useState } from 'react'
 import api from '../../api/auth'
 
 interface Student {
+  id?: number          // StudentInfo.id (studentInfoId와 동일)
   uid?: number
   studentId?: number
   userName: string
   studentNumber?: number
   profileImageUrl?: string
-  // TODO: 백엔드 연동 시 실제 데이터로 교체
   role?: 'CLASS_PRESIDENT' | 'VICE_PRESIDENT' | null
-  attendanceStatus?: 'PRESENT' | 'ABSENT' | null
+  attendanceStatus?: 'PRESENT' | 'ABSENT' | 'LATE' | 'EARLY_LEAVE' | 'SICK' | 'NONE' | null
 }
+
+interface AttendanceRecord {
+  studentInfoId: number
+  studentNumber: number | string
+  status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EARLY_LEAVE' | 'SICK' | 'NONE'
+}
+
+const STATUS_CONFIG = {
+  PRESENT:     { label: '출석', color: '#22c55e' },
+  LATE:        { label: '지각', color: '#f97316' },
+  ABSENT:      { label: '결석', color: '#ef4444' },
+  EARLY_LEAVE: { label: '조퇴', color: '#3b82f6' },
+  SICK:        { label: '병결', color: '#a855f7' },
+  NONE:        { label: '미처리', color: '#9ca3af' },
+} as const
 
 interface Props {
   grade: number
@@ -27,10 +42,30 @@ export default function ClassFriendsWidget({ grade, classNum }: Props) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get(`/students/search?grade=${grade}&classNum=${classNum}`)
-      .then(res => {
-        const data = res.data
-        setStudents(Array.isArray(data) ? data : (data.content ?? []))
+    const today = new Date().toISOString().split('T')[0]
+    Promise.all([
+      api.get(`/students/search?grade=${grade}&classNum=${classNum}`),
+      api.get(`/attendance/student?date=${today}`).catch(() => ({ data: [] })),
+    ])
+      .then(([studentsRes, attendanceRes]) => {
+        const studentData: Student[] = Array.isArray(studentsRes.data)
+          ? studentsRes.data
+          : (studentsRes.data.content ?? [])
+        const attendanceData: AttendanceRecord[] = Array.isArray(attendanceRes.data)
+          ? attendanceRes.data
+          : []
+
+        // studentInfoId(출석 API) = id(학생 검색 API) 로 merge
+        const attendanceMap = new Map(
+          attendanceData.map(a => [a.studentInfoId, a.status])
+        )
+
+        setStudents(
+          studentData.map(s => ({
+            ...s,
+            attendanceStatus: s.id != null ? (attendanceMap.get(s.id) ?? 'NONE') : 'NONE',
+          }))
+        )
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -51,10 +86,10 @@ export default function ClassFriendsWidget({ grade, classNum }: Props) {
       {loading ? (
         <p className="text-secondary-light text-sm text-center py-20 mb-0">불러오는 중...</p>
       ) : students.length > 0 ? (
-        <div className="d-flex flex-column gap-0" style={{ overflowY: 'auto', maxHeight: 360 }}>
+        <div className="d-flex flex-column gap-0" style={{ overflowY: 'auto', maxHeight: 240 }}>
           {students.map((s, i) => (
             <div
-              key={s.uid ?? s.studentId ?? i}
+              key={s.id ?? s.uid ?? s.studentId ?? i}
               className="d-flex align-items-center py-10 px-4"
               style={{ borderBottom: '1px solid #f3f4f6' }}
             >
@@ -115,18 +150,18 @@ export default function ClassFriendsWidget({ grade, classNum }: Props) {
               </button>
 
               {/* 출석 상태 배지 */}
-              <span
-                className="text-xs fw-semibold px-8 py-3 rounded"
-                style={{
-                  background: s.attendanceStatus === 'ABSENT' ? '#6b7280' : '#22c55e',
-                  color: '#fff',
-                  fontSize: 11,
-                  minWidth: 30,
-                  textAlign: 'center',
-                }}
-              >
-                {s.attendanceStatus === 'ABSENT' ? '결석' : '출석'}
-              </span>
+              {(() => {
+                const key = (s.attendanceStatus ?? 'NONE') as keyof typeof STATUS_CONFIG
+                const cfg = STATUS_CONFIG[key] ?? STATUS_CONFIG.NONE
+                return (
+                  <span
+                    className="text-xs fw-semibold px-8 py-3 rounded"
+                    style={{ background: cfg.color, color: '#fff', fontSize: 11, minWidth: 36, textAlign: 'center' }}
+                  >
+                    {cfg.label}
+                  </span>
+                )
+              })()}
             </div>
           ))}
         </div>
