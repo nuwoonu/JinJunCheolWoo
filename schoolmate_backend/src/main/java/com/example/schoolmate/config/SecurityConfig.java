@@ -24,7 +24,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -62,8 +61,10 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
-                                                                "/api/auth/schools",
-                                                                "/api/auth/schools/**",
+                                                                "/api/schools",
+                                                                "/api/schools/**",
+                                                                "/api/service-notices",
+                                                                "/api/service-notices/**",
                                                                 // [woo] /me는 컨트롤러가 직접 인증 여부 판단 (미인증 시
                                                                 // authenticated:false 반환)
                                                                 "/api/auth/me",
@@ -96,11 +97,9 @@ public class SecurityConfig {
                                                                 "/api/admin/subjects/**",
                                                                 "/api/admin/audit/**")
                                                 .hasRole("ADMIN")
-                                                // 일반 어드민 영역: ADMIN role 또는 SchoolAdminGrant 보유자
-                                                // (개별 컨트롤러에서 @PreAuthorize로 기능별 세분화)
+                                                // 일반 어드민 영역: 인증된 사용자만 허용 (기능별 세분화는 각 컨트롤러 @PreAuthorize에서 처리)
                                                 .requestMatchers("/api/admin/**")
-                                                .access(new WebExpressionAuthorizationManager(
-                                                                "hasRole('ADMIN') or @grants.canAccessAdmin()"))
+                                                .authenticated()
                                                 // 교사 관리(추가/수정/삭제) - ADMIN만
                                                 .requestMatchers("/api/teacher/add", "/api/teacher/edit",
                                                                 "/api/teacher/delete")

@@ -37,6 +37,17 @@ interface Teacher {
   displayName: string;
 }
 
+const thStyle: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+
 export default function ClassDetail() {
   const { cid } = useParams<{ cid: string }>();
   const navigate = useNavigate();
@@ -158,7 +169,7 @@ export default function ClassDetail() {
 
   return (
     <AdminLayout>
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+      <div className="breadcrumb d-flex align-items-center gap-3" style={{ marginBottom: 24 }}>
         <button
           type="button"
           onClick={() => navigate(ADMIN_ROUTES.CLASSES.LIST)}
@@ -221,7 +232,7 @@ export default function ClassDetail() {
         {/* 우측 탭 */}
         <div className="col-md-8">
           <div className="card">
-            <div className="d-flex border-bottom border-neutral-200">
+            <div className="d-flex" style={{ borderBottom: "1px solid #e5e7eb" }}>
               {(
                 [
                   ["students", "학생 명단"],
@@ -307,7 +318,7 @@ export default function ClassDetail() {
                         />
                         <span className="text-muted small">명</span>
                         <button
-                          className="btn btn-sm btn-primary-600 radius-8"
+                          style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                           onClick={() => addStudents([])}
                         >
                           랜덤 배정
@@ -317,9 +328,9 @@ export default function ClassDetail() {
                   )}
                   <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
-                      <thead className="table-heading-dark-mode">
+                      <thead>
                         <tr>
-                          <th style={{ width: 40 }}>
+                          <th style={{ ...thStyle, width: 40 }}>
                             <input
                               type="checkbox"
                               className="form-check-input"
@@ -336,11 +347,11 @@ export default function ClassDetail() {
                               }
                             />
                           </th>
-                          <th>번호</th>
-                          <th>이름</th>
-                          <th>학번</th>
-                          <th>상태</th>
-                          <th className="text-end">관리</th>
+                          <th style={thStyle}>번호</th>
+                          <th style={thStyle}>이름</th>
+                          <th style={thStyle}>학번</th>
+                          <th style={thStyle}>상태</th>
+                          <th style={{ ...thStyle, textAlign: "right" }}>관리</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -408,12 +419,12 @@ export default function ClassDetail() {
                   <h6 className="fw-bold mb-3">학급 관리 로그</h6>
                   <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
-                      <thead className="table-heading-dark-mode">
+                      <thead>
                         <tr>
-                          <th>일시</th>
-                          <th>작업</th>
-                          <th>내용</th>
-                          <th>작업자</th>
+                          <th style={thStyle}>일시</th>
+                          <th style={thStyle}>작업</th>
+                          <th style={thStyle}>내용</th>
+                          <th style={thStyle}>작업자</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -433,7 +444,7 @@ export default function ClassDetail() {
                                 {h.createdAt}
                               </td>
                               <td>
-                                <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
+                                <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12 }}>
                                   {h.actionType}
                                 </span>
                               </td>
@@ -575,12 +586,15 @@ export default function ClassDetail() {
               >
                 <button
                   type="button"
-                  className="btn btn-outline-secondary radius-8"
+                  className="btn btn-outline-secondary"
                   onClick={() => setShowEdit(false)}
                 >
                   취소
                 </button>
-                <button type="submit" className="btn btn-primary-600 radius-8">
+                <button
+                  type="submit"
+                  style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                >
                   수정 저장
                 </button>
               </div>

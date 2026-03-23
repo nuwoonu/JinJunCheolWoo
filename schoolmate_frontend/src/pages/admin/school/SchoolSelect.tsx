@@ -1,28 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import admin from '@/api/adminApi';
-import { ADMIN_ROUTES } from '@/constants/routes';
-import { useSchool, type SelectedSchool } from '@/context/SchoolContext';
-import { useAuth } from '@/contexts/AuthContext';
-import NotificationDropdown from '@/components/fragments/NotificationDropdown';
+import api from "@/api/auth";
+import admin from "@/api/adminApi";
+import { ADMIN_ROUTES } from "@/constants/routes";
+import { useSchool, type SelectedSchool } from "@/context/SchoolContext";
+import { useAuth } from "@/contexts/AuthContext";
+import NotificationDropdown from "@/components/fragments/NotificationDropdown";
+import { useSchoolSearch, type SchoolSummary } from "@/hooks/useSchoolSearch";
 
 // [joon] 관리 학교 선택 — 사이드바 없는 독립 페이지
-
-interface SchoolSummary {
-  id: number;
-  name: string;
-  schoolCode: string;
-  schoolKind: string;
-  officeOfEducation: string;
-  address: string;
-}
-
-interface PageResponse {
-  content: SchoolSummary[];
-  totalPages: number;
-  totalElements: number;
-  number: number;
-}
 
 const SCHOOL_KINDS = [
   "",
@@ -62,14 +48,20 @@ export default function SchoolSelect() {
   const { signOut } = useAuth();
   const theme = useTheme(); // 다크모드 객체 생성
 
-  const [name, setName] = useState("");
-  const [schoolKind, setSchoolKind] = useState("");
-  const [schools, setSchools] = useState<SchoolSummary[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const {
+    name,
+    setName,
+    schoolKind,
+    setSchoolKind,
+    schools,
+    totalPages,
+    totalElements,
+    page,
+    loading,
+    searched,
+    fetchSchools,
+    handleSearch,
+  } = useSchoolSearch((params) => api.get("/schools", { params }));
 
   const [syncRunning, setSyncRunning] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -89,40 +81,11 @@ export default function SchoolSelect() {
     };
   }, []);
 
-  const fetchSchools = (pageNum = 0) => {
-    setLoading(true);
-    admin
-      .get("/schools", {
-        params: {
-          name: name.trim() || undefined,
-          schoolKind: schoolKind || undefined,
-          page: pageNum,
-          size: 10,
-          sort: "name,asc",
-        },
-      })
-      .then((r) => {
-        const data: PageResponse = r.data;
-        setSchools(data.content);
-        setTotalPages(data.totalPages);
-        setTotalElements(data.totalElements);
-        setPage(data.number);
-        setSearched(true);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchSchools(0);
-  };
-
   const handleSelect = (school: SchoolSummary) => {
     const selected: SelectedSchool = {
       id: school.id,
       name: school.name,
-      schoolCode: school.schoolCode,
+      schoolCode: school.schoolCode ?? "",
       schoolKind: school.schoolKind,
       officeOfEducation: school.officeOfEducation,
     };
@@ -185,13 +148,23 @@ export default function SchoolSelect() {
               borderRadius: 8,
               transition: "background 0.15s",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = theme.isDark ? "#2d2d2d" : "#f3f4f6")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = theme.isDark
+                ? "#2d2d2d"
+                : "#f3f4f6")
+            }
             onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
           >
             <i className="ri-arrow-left-line" style={{ fontSize: 16 }} />
             <span>관리자 메뉴</span>
           </Link>
-          <div style={{ width: 1, height: 20, background: theme.isDark ? "#444" : "#e5e7eb" }} />
+          <div
+            style={{
+              width: 1,
+              height: 20,
+              background: theme.isDark ? "#444" : "#e5e7eb",
+            }}
+          />
           <img
             src="/images/schoolmateLogo.png"
             alt="SchoolMate"
@@ -203,13 +176,10 @@ export default function SchoolSelect() {
           <button
             type="button"
             onClick={theme.toggle}
-            className="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center me-2 border-0"
             aria-label="Dark & Light Mode Button"
+            style={{ width: 40, height: 40, background: theme.isDark ? "#2d2d2d" : "#f3f4f6", borderRadius: "50%", display: "flex", justifyContent: "center", alignItems: "center", marginRight: 8, border: "none", cursor: "pointer", fontSize: 18, color: theme.isDark ? "#f3f4f6" : "#374151" }}
           >
-            <iconify-icon
-              icon={theme.isDark ? "ri:sun-line" : "ri:moon-line"}
-              className="text-primary-light text-xl"
-            />
+            {theme.isDark ? "☀" : "🌙"}
           </button>
           <NotificationDropdown />
           <button
@@ -239,7 +209,7 @@ export default function SchoolSelect() {
       {/* 본문 */}
       <main style={{ maxWidth: 820, margin: "0 auto", padding: "48px 24px" }}>
         {/* 타이틀 */}
-        <div className="text-center mb-40">
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div
             style={{
               width: 56,

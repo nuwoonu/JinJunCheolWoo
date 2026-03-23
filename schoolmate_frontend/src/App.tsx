@@ -1,6 +1,7 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import PrivateRoute from "@/components/PrivateRoute";
+import PageLoader from "@/components/PageLoader";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import { useSchool } from "@/context/SchoolContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -105,11 +106,13 @@ import JoonSubjects from "@/pages/admin/master/Subjects";
 import JoonSettings from "@/pages/admin/master/Settings";
 import JoonAccessLogs from "@/pages/admin/audit/AccessLogs";
 import JoonChangeLogs from "@/pages/admin/audit/ChangeLogs";
+import ServiceNoticeList from "@/pages/admin/servicenotices/ServiceNoticeList";
+import ServiceNoticeForm from "@/pages/admin/servicenotices/ServiceNoticeForm";
+import ServiceNoticeDetail from "@/pages/admin/servicenotices/ServiceNoticeDetail";
 
 function SchoolSelectGuard() {
   const { selectedSchool, setSelectedSchool } = useSchool();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   const isSuperAdmin = user?.roles?.includes("ADMIN") || user?.role === "ADMIN";
   const firstGrant = !isSuperAdmin ? user?.grants?.find((g) => g.schoolId) : undefined;
@@ -126,14 +129,9 @@ function SchoolSelectGuard() {
     });
   }, [shouldAutoSelect]);
 
-  useEffect(() => {
-    if (selectedSchool && !isSuperAdmin) {
-      navigate(ADMIN_ROUTES.DASHBOARD, { replace: true });
-    }
-  }, [selectedSchool, isSuperAdmin, navigate]);
-
+  if (loading) return <PageLoader />;
   if (selectedSchool) return <Navigate to={ADMIN_ROUTES.DASHBOARD} replace />;
-  if (shouldAutoSelect) return null;
+  if (shouldAutoSelect) return <PageLoader />;
   return <JoonSchoolSelect />;
 }
 
@@ -791,6 +789,40 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.AUDIT}>
             <JoonChangeLogs />
+          </PrivateRoute>
+        }
+      />
+
+      {/* 서비스 공지 관리 (SUPER_ADMIN 전용) */}
+      <Route
+        path={ADMIN_ROUTES.SERVICE_NOTICES.LIST}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <ServiceNoticeList />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={ADMIN_ROUTES.SERVICE_NOTICES.CREATE}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <ServiceNoticeForm />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={ADMIN_ROUTES.SERVICE_NOTICES.DETAIL_PATTERN}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <ServiceNoticeDetail />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={ADMIN_ROUTES.SERVICE_NOTICES.EDIT_PATTERN}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <ServiceNoticeForm />
           </PrivateRoute>
         }
       />

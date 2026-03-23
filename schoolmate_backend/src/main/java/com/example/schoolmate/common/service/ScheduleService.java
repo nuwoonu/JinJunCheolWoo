@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.common.dto.SchoolCalendarDTO;
+import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.soojin.entity.SchoolCalendar;
 import com.example.schoolmate.soojin.entity.constant.EventType;
 import com.example.schoolmate.soojin.repository.SchoolCalendarRepository;
@@ -25,10 +27,19 @@ import lombok.RequiredArgsConstructor;
 public class ScheduleService {
 
     private final SchoolCalendarRepository schoolCalendarRepository;
+    private final SchoolRepository schoolRepository;
 
     @Transactional(readOnly = true)
     public List<SchoolCalendarDTO.Response> getEvents(LocalDate start, LocalDate end) {
-        return schoolCalendarRepository.findOverlappingEvents(start, end).stream()
+        return getEvents(start, end, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SchoolCalendarDTO.Response> getEvents(LocalDate start, LocalDate end, Long schoolId) {
+        List<SchoolCalendar> events = schoolId != null
+                ? schoolCalendarRepository.findOverlappingEventsBySchool(start, end, schoolId)
+                : schoolCalendarRepository.findOverlappingEvents(start, end);
+        return events.stream()
                 .map(SchoolCalendarDTO.Response::from)
                 .collect(Collectors.toList());
     }
@@ -42,6 +53,12 @@ public class ScheduleService {
                 .targetGrade(request.getTargetGrade())
                 .description(request.getDescription())
                 .build();
+
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(event::setSchool);
+        }
+
         return schoolCalendarRepository.save(event).getId();
     }
 

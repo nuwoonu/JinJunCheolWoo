@@ -11,6 +11,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.QClassroom;
+import com.example.schoolmate.common.entity.info.QFamilyRelation;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.QStudentAssignment;
@@ -37,6 +38,9 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
 
+        BooleanExpression schoolPredicate = cond.isIgnoreSchoolFilter() ? null : schoolFilter(info);
+        BooleanExpression excludeLinkedPredicate = excludeLinkedFilter(info, cond.getExcludeParentId());
+
         JPAQuery<User> contentQuery = query.selectFrom(user).distinct()
                 .leftJoin(info).on(info.user.eq(user))
                 .leftJoin(info.currentAssignment, QStudentAssignment.studentAssignment)
@@ -45,7 +49,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
                         statusFilter(cond.getStatus(), info),
-                        schoolFilter(info))
+                        schoolPredicate,
+                        excludeLinkedPredicate)
                 .orderBy(user.uid.desc());
 
         if (pageable.isPaged()) {
@@ -62,7 +67,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
                         statusFilter(cond.getStatus(), info),
-                        schoolFilter(info));
+                        schoolPredicate,
+                        excludeLinkedPredicate);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -330,6 +336,16 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         return info.school.id.eq(schoolId);
     }
 
+    private BooleanExpression excludeLinkedFilter(QStudentInfo info, Long parentId) {
+        if (parentId == null)
+            return null;
+        QFamilyRelation fr = QFamilyRelation.familyRelation;
+        return query.selectOne()
+                .from(fr)
+                .where(fr.studentInfo.eq(info).and(fr.parentInfo.id.eq(parentId)))
+                .notExists();
+    }
+
     private BooleanExpression statusFilter(String status, QStudentInfo info) {
         if (status == null || status.isEmpty())
             return null;
@@ -339,11 +355,13 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     private BooleanExpression searchPredicate(String type, String keyword, QUser user, QStudentInfo info) {
         if (keyword == null || keyword.isEmpty())
             return null;
+        if (type == null || type.isEmpty())
+            return user.name.contains(keyword).or(info.code.contains(keyword));
         return switch (type) {
             case "name" -> user.name.contains(keyword);
             case "email" -> user.email.contains(keyword);
             case "idNum" -> info.code.contains(keyword);
-            default -> null;
+            default -> user.name.contains(keyword).or(info.code.contains(keyword));
         };
     }
 }

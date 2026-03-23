@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
-import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
+import { STUDENT_STATUS } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
 // [joon] 학생 목록
@@ -19,6 +19,49 @@ function formatClass(raw: string | null | undefined) {
   if (legacy) return `${legacy[1]}년 ${legacy[2]}학년 ${legacy[3]}반`;
   return raw;
 }
+
+function studentStatusBadge(statusName: string) {
+  const map: Record<string, { bg: string; color: string; label: string }> = {
+    ENROLLED:         { bg: 'rgba(22,163,74,0.1)',   color: '#16a34a', label: '재학' },
+    LEAVE_OF_ABSENCE: { bg: 'rgba(234,179,8,0.1)',   color: '#a16207', label: '휴학' },
+    DROPOUT:          { bg: 'rgba(239,68,68,0.1)',    color: '#dc2626', label: '자퇴' },
+    EXPELLED:         { bg: 'rgba(239,68,68,0.1)',    color: '#dc2626', label: '제적' },
+    GRADUATED:        { bg: 'rgba(99,102,241,0.1)',   color: '#4f46e5', label: '졸업' },
+    TRANSFERRED:      { bg: 'rgba(107,114,128,0.1)',  color: '#6b7280', label: '전학' },
+  };
+  const cfg = map[statusName] ?? { bg: 'rgba(107,114,128,0.1)', color: '#6b7280', label: statusName ?? '-' };
+  return (
+    <span style={{ padding: '3px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', background: cfg.bg, color: cfg.color }}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function roleRequestBadge(status: string) {
+  const map: Record<string, { bg: string; color: string; label: string }> = {
+    ACTIVE:    { bg: 'rgba(22,163,74,0.1)',   color: '#16a34a', label: '활성'    },
+    PENDING:   { bg: 'rgba(14,165,233,0.1)',  color: '#0284c7', label: '승인대기' },
+    REJECTED:  { bg: 'rgba(239,68,68,0.1)',   color: '#dc2626', label: '거절됨'  },
+    SUSPENDED: { bg: 'rgba(234,179,8,0.1)',   color: '#a16207', label: '정지됨'  },
+  };
+  const cfg = map[status] ?? { bg: 'rgba(107,114,128,0.1)', color: '#6b7280', label: status };
+  return (
+    <span style={{ padding: '3px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', background: cfg.bg, color: cfg.color }}>
+      {cfg.label}
+    </span>
+  );
+}
+
+const pgBtn = (active: boolean, disabled: boolean): React.CSSProperties => ({
+  padding: '5px 10px',
+  border: `1px solid ${active ? '#25A194' : '#d1d5db'}`,
+  borderRadius: 6,
+  background: active ? '#25A194' : '#fff',
+  color: active ? '#fff' : '#374151',
+  fontSize: 13,
+  cursor: disabled ? 'default' : 'pointer',
+  opacity: disabled ? 0.4 : 1,
+});
 
 export default function StudentList() {
   const navigate = useNavigate();
@@ -111,265 +154,210 @@ export default function StudentList() {
   return (
     <AdminLayout>
       {loading && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-          style={{ background: "rgba(0,0,0,0.5)", zIndex: 9999 }}
-        >
-          <div className="text-center">
-            <div
-              className="spinner-border text-light"
-              style={{ width: "3rem", height: "3rem" }}
-            />
-            <h5 className="text-white mt-3">데이터 처리 중입니다...</h5>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div className="spinner-border text-light" style={{ width: '3rem', height: '3rem' }} />
+            <h5 style={{ color: '#fff', marginTop: 16 }}>데이터 처리 중입니다...</h5>
           </div>
         </div>
       )}
 
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h6 className="fw-semibold mb-0">학생 정보 관리</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
-            학생 계정 및 학적 정보를 관리합니다.
-          </p>
-        </div>
-        <div className="d-flex align-items-center gap-2">
-          <input
-            type="file"
-            ref={csvRef}
-            accept=".csv"
-            style={{ display: "none" }}
-            onChange={uploadCsv}
-          />
-          <div className="dropdown">
-            <button
-              className="btn btn-outline-dark dropdown-toggle"
-              type="button"
-              onClick={() => setShowDropdown((v) => !v)}
-            >
-              <i className="bi bi-pencil-square" /> 선택 상태 변경
-            </button>
-            <ul className={`dropdown-menu${showDropdown ? " show" : ""}`}>
-              {STATUSES.map((s) => (
-                <li key={s.value}>
-                  <button
-                    className={`dropdown-item${s.danger ? " text-danger" : ""}`}
-                    onClick={() => {
-                      bulkStatus(s.value, s.label);
-                      setShowDropdown(false);
-                    }}
-                  >
-                    {s.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
+      {/* 헤더 */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>학생 정보 관리</h5>
+            <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>학생 계정 및 학적 정보를 관리합니다.</p>
           </div>
-          <button
-            className="btn btn-outline-success"
-            onClick={() => csvRef.current?.click()}
-          >
-            <i className="bi bi-file-earmark-spreadsheet" /> CSV 등록
-          </button>
-          <Link
-            to={ADMIN_ROUTES.STUDENTS.CREATE}
-            className="btn btn-primary-600 radius-8"
-          >
-            <i className="bi bi-person-plus-fill" /> 신규 학생 등록
-          </Link>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <input type="file" ref={csvRef} accept=".csv" style={{ display: 'none' }} onChange={uploadCsv} />
+            {/* 선택 상태 변경 드롭다운 */}
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                style={{ padding: '9px 14px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' }}
+                onClick={() => setShowDropdown((v) => !v)}
+              >
+                선택 상태 변경 ▾
+              </button>
+              {showDropdown && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: 140, marginTop: 4, overflow: 'hidden' }}>
+                  {STATUSES.map((s) => (
+                    <button
+                      key={s.value}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 16px', background: 'none', border: 'none', fontSize: 14, cursor: 'pointer', color: s.danger ? '#dc2626' : '#374151' }}
+                      onClick={() => { bulkStatus(s.value, s.label); setShowDropdown(false); }}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              style={{ padding: '9px 14px', background: '#fff', border: '1px solid #22c55e', borderRadius: 8, fontSize: 14, cursor: 'pointer', color: '#16a34a', whiteSpace: 'nowrap' }}
+              onClick={() => csvRef.current?.click()}
+            >
+              CSV 등록
+            </button>
+            <Link
+              to={ADMIN_ROUTES.STUDENTS.CREATE}
+              style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-block' }}
+            >
+              + 신규 학생 등록
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-body p-0">
-          <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
-            <h6 className="fw-semibold mb-0">전체 학생 목록</h6>
-            <div className="d-flex gap-2">
-              <form className="input-group input-group-sm" onSubmit={search}>
-                <select
-                  className="form-select"
-                  style={{ maxWidth: 120 }}
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <option value="">전체 상태</option>
-                  {STATUSES.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="form-select"
-                  style={{ maxWidth: 120 }}
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                >
-                  <option value="name">이름</option>
-                  <option value="email">이메일</option>
-                  <option value="idNum">학번</option>
-                </select>
-                <input
-                  className="form-control"
-                  placeholder="검색어 입력..."
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  style={{ minWidth: 150 }}
-                />
-                <button className="btn btn-primary-600 radius-8" type="submit">
-                  <i className="bi bi-search" /> 검색
-                </button>
-                <button
-                  className="btn btn-outline-secondary"
-                  type="button"
-                  onClick={() => {
-                    setStatus("");
-                    setType("name");
-                    setKeyword("");
-                    load(0);
-                  }}
-                >
-                  초기화
-                </button>
-              </form>
-            </div>
-          </div>
-          <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="table-heading-dark-mode">
-                <tr>
-                  <th className="text-center" style={{ width: 50 }}>
+      {/* 카드 */}
+      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        {/* 검색 바 */}
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <span style={{ fontWeight: 600, fontSize: 15, color: '#111827' }}>전체 학생 목록</span>
+          <form style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} onSubmit={search}>
+            <select
+              style={{ padding: '7px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, color: '#374151', maxWidth: 120 }}
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="">전체 상태</option>
+              {STATUSES.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+            <select
+              style={{ padding: '7px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, color: '#374151', maxWidth: 120 }}
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            >
+              <option value="name">이름</option>
+              <option value="email">이메일</option>
+              <option value="idNum">학번</option>
+            </select>
+            <input
+              style={{ padding: '7px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, minWidth: 150 }}
+              placeholder="검색어 입력..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            <button type="submit" style={{ padding: '7px 14px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
+              검색
+            </button>
+            <button
+              type="button"
+              style={{ padding: '7px 12px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, cursor: 'pointer', color: '#374151' }}
+              onClick={() => { setStatus(""); setType("name"); setKeyword(""); load(0); }}
+            >
+              초기화
+            </button>
+          </form>
+        </div>
+
+        {/* 테이블 */}
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: 50 }} />
+              <col style={{ width: 140 }} />
+              <col style={{ width: 110 }} />
+              <col />
+              <col style={{ width: 160 }} />
+              <col style={{ width: 100 }} />
+              <col style={{ width: 160 }} />
+              <col style={{ width: 100 }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    style={{ borderColor: '#6b7280' }}
+                    onChange={(e) => toggleAll(e.target.checked)}
+                    checked={selected.length > 0 && selected.length === list.length}
+                  />
+                </th>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap', textAlign: 'left' }}>학번</th>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap', textAlign: 'left' }}>이름</th>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap', textAlign: 'left' }}>계정 (이메일)</th>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap', textAlign: 'left' }}>최근 소속 정보</th>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap', textAlign: 'left' }}>학적 상태</th>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap', textAlign: 'left' }}>승인 상태</th>
+                <th style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap', textAlign: 'right' }}>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((s: any) => (
+                <tr key={s.uid} style={{ background: '#fff' }}>
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: '#374151', borderBottom: '1px solid #f3f4f6', textAlign: 'center', verticalAlign: 'middle' }}>
                     <input
                       type="checkbox"
-                      className="form-check-input"
-                      style={{ borderColor: "#6b7280" }}
-                      onChange={(e) => toggleAll(e.target.checked)}
-                      checked={
-                        selected.length > 0 && selected.length === list.length
-                      }
+                      style={{ borderColor: '#6b7280' }}
+                      checked={selected.includes(s.uid)}
+                      onChange={() => toggleOne(s.uid)}
                     />
-                  </th>
-                  <th className="ps-4" style={{ width: 150 }}>
-                    학번
-                  </th>
-                  <th>이름</th>
-                  <th>계정 (이메일)</th>
-                  <th>최근 소속 정보</th>
-                  <th>학적 상태</th>
-                  <th>승인 상태</th>
-                  <th className="text-end pe-4">관리</th>
+                  </td>
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: '#6b7280', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{s.code ?? "-"}</td>
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: '#374151', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <Link to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)} style={{ color: '#1d4ed8', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}>
+                      {s.name}
+                    </Link>
+                  </td>
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: '#374151', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{s.email}</td>
+                  <td style={{ padding: '14px 16px', fontSize: 13, color: '#6b7280', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{formatClass(s.latestClass)}</td>
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: '#374151', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    {studentStatusBadge(s.statusName)}
+                  </td>
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: '#374151', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    {s.roleRequestStatus ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {roleRequestBadge(s.roleRequestStatus)}
+                        {s.roleRequestStatus === 'PENDING' && (
+                          <>
+                            <button
+                              style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', background: 'rgba(22,163,74,0.1)', color: '#16a34a' }}
+                              onClick={() => approveRequest(s.roleRequestId)}
+                            >승인</button>
+                            <button
+                              style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.1)', color: '#dc2626' }}
+                              onClick={() => rejectRequest(s.roleRequestId)}
+                            >거절</button>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <span style={{ color: '#9ca3af', fontSize: 13 }}>-</span>
+                    )}
+                  </td>
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: '#374151', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap', verticalAlign: 'middle', textAlign: 'right' }}>
+                    <Link
+                      to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
+                      style={{ padding: '5px 12px', border: '1px solid #25A194', borderRadius: 6, fontSize: 13, color: '#25A194', textDecoration: 'none', fontWeight: 500 }}
+                    >
+                      상세보기
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {list.map((s: any) => (
-                  <tr key={s.uid}>
-                    <td className="text-center">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        style={{ borderColor: "#6b7280" }}
-                        checked={selected.includes(s.uid)}
-                        onChange={() => toggleOne(s.uid)}
-                      />
-                    </td>
-                    <td className="ps-4 text-secondary">{s.code ?? "-"}</td>
-                    <td>
-                      <Link
-                        to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
-                        className="fw-bold text-decoration-none text-primary-light"
-                      >
-                        {s.name}
-                      </Link>
-                    </td>
-                    <td>{s.email}</td>
-                    <td>
-                      <small className="text-muted">
-                        {formatClass(s.latestClass)}
-                      </small>
-                    </td>
-                    <td>
-                      {(() => {
-                        const cfg = STUDENT_STATUS[s.statusName] ?? STATUS_DEFAULT;
-                        return <span className={`badge ${cfg.badge}`}>{cfg.label}</span>;
-                      })()}
-                    </td>
-                    <td>
-                      {s.roleRequestStatus ? (
-                        <div className="d-flex align-items-center gap-1">
-                          <span className={`badge ${(ROLE_REQUEST_STATUS[s.roleRequestStatus] ?? ROLE_REQUEST_STATUS.PENDING).badge}`}>
-                            {(ROLE_REQUEST_STATUS[s.roleRequestStatus] ?? ROLE_REQUEST_STATUS.PENDING).label}
-                          </span>
-                          {s.roleRequestStatus === 'PENDING' && (
-                            <>
-                              <button
-                                className="btn btn-xs btn-success py-0 px-1"
-                                style={{ fontSize: 11 }}
-                                onClick={() => approveRequest(s.roleRequestId)}
-                              >승인</button>
-                              <button
-                                className="btn btn-xs btn-outline-danger py-0 px-1"
-                                style={{ fontSize: 11 }}
-                                onClick={() => rejectRequest(s.roleRequestId)}
-                              >거절</button>
-                            </>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-muted small">-</span>
-                      )}
-                    </td>
-                    <td className="text-end pe-4">
-                      <Link
-                        to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
-                        className="btn btn-sm btn-outline-primary"
-                      >
-                        상세보기
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-                {list.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="text-center py-5 text-muted">
-                      검색 결과가 없습니다.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              ))}
+              {list.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ padding: '40px 16px', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>
+                    검색 결과가 없습니다.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
+
+        {/* 페이지네이션 */}
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-base py-16">
-            <nav>
-              <ul className="pagination pagination-sm justify-content-center mb-0">
-                <li className={`page-item${page.first ? " disabled" : ""}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => load(currentPage - 1)}
-                  >
-                    &laquo;
-                  </button>
-                </li>
-                {Array.from({ length: page.totalPages }, (_, i) => (
-                  <li
-                    key={i}
-                    className={`page-item${i === currentPage ? " active" : ""}`}
-                  >
-                    <button className="page-link" onClick={() => load(i)}>
-                      {i + 1}
-                    </button>
-                  </li>
-                ))}
-                <li className={`page-item${page.last ? " disabled" : ""}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => load(currentPage + 1)}
-                  >
-                    &raquo;
-                  </button>
-                </li>
-              </ul>
-            </nav>
+          <div style={{ padding: '16px', display: 'flex', justifyContent: 'center', gap: 4 }}>
+            <button style={pgBtn(false, page.first)} disabled={page.first} onClick={() => load(currentPage - 1)}>&laquo;</button>
+            {Array.from({ length: page.totalPages }, (_, i) => (
+              <button key={i} style={pgBtn(i === currentPage, false)} onClick={() => load(i)}>{i + 1}</button>
+            ))}
+            <button style={pgBtn(false, page.last)} disabled={page.last} onClick={() => load(currentPage + 1)}>&raquo;</button>
           </div>
         )}
       </div>

@@ -17,4 +17,11 @@ public interface SchoolCalendarRepository extends JpaRepository<SchoolCalendar, 
             "WHERE s.startDate < :end " +
             "AND COALESCE(s.endDate, s.startDate) >= :start")
     List<SchoolCalendar> findOverlappingEvents(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    // 학교별 기간이 겹치는 일정 조회
+    @Query("SELECT s FROM SchoolCalendar s " +
+            "WHERE s.startDate < :end " +
+            "AND COALESCE(s.endDate, s.startDate) >= :start " +
+            "AND s.school.id = :schoolId")
+    List<SchoolCalendar> findOverlappingEventsBySchool(@Param("start") LocalDate start, @Param("end") LocalDate end, @Param("schoolId") Long schoolId);
 }

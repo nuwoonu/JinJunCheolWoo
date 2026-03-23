@@ -5,6 +5,17 @@ import admin from '@/api/adminApi';
 import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
+const TH_STYLE: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+
 export default function StudentDetail() {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
@@ -109,7 +120,7 @@ export default function StudentDetail() {
 
   return (
     <AdminLayout msg={msg}>
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+      <div className="breadcrumb d-flex align-items-center gap-3" style={{ marginBottom: 24 }}>
         <button
           type="button"
           onClick={() => navigate(ADMIN_ROUTES.STUDENTS.LIST)}
@@ -130,18 +141,18 @@ export default function StudentDetail() {
       <div className="row">
         <div className="col-md-4">
           <div className="card mb-4">
-            <div className="card-body px-20 py-24 text-center">
+            <div className="card-body text-center" style={{ padding: "24px 20px" }}>
               {/* 프로필 아이콘 */}
               <div
-                className="rounded-circle mx-auto mb-12 d-flex align-items-center justify-content-center"
-                style={{ width: 80, height: 80, background: "rgba(37,161,148,0.12)" }}
+                className="rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                style={{ width: 80, height: 80, background: "rgba(37,161,148,0.12)", marginBottom: 12 }}
               >
                 <span style={{ fontSize: 32, color: "#25A194", fontWeight: 700 }}>
                   {student.name?.[0]}
                 </span>
               </div>
               <h5 className="fw-bold text-primary-light mb-4">{student.name}</h5>
-              <p className="text-secondary-light mb-12" style={{ fontSize: 13 }}>
+              <p className="text-secondary-light mb-0" style={{ fontSize: 13, marginBottom: 12 }}>
                 학번 {student.code ?? "-"}
               </p>
               {/* 상태 뱃지 */}
@@ -155,9 +166,9 @@ export default function StudentDetail() {
               })()}
             </div>
             {/* 구분선 */}
-            <div className="border-top border-neutral-200" />
+            <div style={{ borderTop: "1px solid #e5e7eb" }} />
             {/* 추가 정보 */}
-            <div className="px-20 py-16">
+            <div style={{ padding: "16px 20px" }}>
               <div className="d-flex align-items-start gap-10 mb-12">
                 <i className="ri-mail-line text-neutral-400 mt-1" style={{ fontSize: 15 }} />
                 <div className="min-w-0">
@@ -187,7 +198,7 @@ export default function StudentDetail() {
 
         <div className="col-md-8">
           <div className="card">
-            <div className="d-flex border-bottom border-neutral-200">
+            <div className="d-flex" style={{ borderBottom: "1px solid #e5e7eb" }}>
               {[
                 ["basic", "기본 정보"],
                 ["history", "학적 이력"],
@@ -290,7 +301,7 @@ export default function StudentDetail() {
                     <div className="col-12 text-end mt-4">
                       <button
                         type="submit"
-                        className="btn btn-primary-600 radius-8 px-4 fw-bold"
+                        style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                       >
                         정보 수정 저장
                       </button>
@@ -306,11 +317,11 @@ export default function StudentDetail() {
                     <h6 className="fw-semibold text-primary-light mb-0">학년도별 학급 배정 이력</h6>
                   </div>
                   <table className="table table-hover align-middle">
-                    <thead className="table-heading-dark-mode">
+                    <thead>
                       <tr>
-                        <th>학년도</th>
-                        <th>소속 (학년-반-번호)</th>
-                        <th className="text-end">관리</th>
+                        <th style={TH_STYLE}>학년도</th>
+                        <th style={TH_STYLE}>소속 (학년-반-번호)</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>관리</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -360,12 +371,12 @@ export default function StudentDetail() {
                     </button>
                   </div>
                   <table className="table table-hover align-middle">
-                    <thead className="table-heading-dark-mode">
+                    <thead>
                       <tr>
-                        <th>보호자명</th>
-                        <th>연락처</th>
-                        <th>관계</th>
-                        <th className="text-end">관리</th>
+                        <th style={TH_STYLE}>보호자명</th>
+                        <th style={TH_STYLE}>연락처</th>
+                        <th style={TH_STYLE}>관계</th>
+                        <th style={{ ...TH_STYLE, textAlign: "right" }}>관리</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -374,7 +385,7 @@ export default function StudentDetail() {
                           <td className="fw-bold">{g.name}</td>
                           <td>{g.phone}</td>
                           <td>
-                            <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
+                            <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12 }}>
                               {g.relationship}
                             </span>
                           </td>
@@ -504,7 +515,7 @@ export default function StudentDetail() {
                   onKeyUp={(e) => e.key === "Enter" && searchParents()}
                 />
                 <button
-                  className="btn btn-primary-600 radius-8"
+                  style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                   onClick={searchParents}
                 >
                   검색

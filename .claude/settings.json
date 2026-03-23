@@ -6,7 +6,9 @@
       "Bash(python3:*)",
       "Bash(node -e \":*)",
       "Bash(node fix-imports.mjs)",
-      "Bash(find /c/git/JinJunCheolWoo -name *.csv -o -name *template* -o -name *sample*)"
+      "Bash(find /c/git/JinJunCheolWoo -name *.csv -o -name *template* -o -name *sample*)",
+      "Read(//c/Users/soldesk/AppData/Local/Temp/claude/c--git-JinJunCheolWoo/1119bf68-8626-47bd-8851-eba7a2b0d749/tasks//**)",
+      "Bash(find c:gitJinJunCheolWooschoolmate_backend -name *.sql -o -name V*.sql)"
     ]
   }
 }

@@ -4,6 +4,17 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
+const thStyle: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+
 export default function ClassList() {
   const [page, setPage] = useState<any>(null);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -93,10 +104,10 @@ export default function ClassList() {
           </div>
         </div>
       )}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3" style={{ marginBottom: 24 }}>
         <div>
           <h6 className="fw-semibold mb-0">학급 관리</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
+          <p style={{ color: "#6b7280" }} className="mt-4 mb-0">
             학급 편성 및 담임 배정 정보를 관리합니다.
           </p>
         </div>
@@ -153,7 +164,7 @@ export default function ClassList() {
           </button>
           <Link
             to={ADMIN_ROUTES.CLASSES.CREATE}
-            className="btn btn-primary-600 radius-8"
+            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", textDecoration: "none", display: "inline-block" }}
           >
             <i className="bi bi-plus-lg" /> 학급 생성
           </Link>
@@ -162,7 +173,7 @@ export default function ClassList() {
 
       <div className="card">
         <div className="card-body p-0">
-          <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+          <div className="d-flex align-items-center justify-content-between" style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
             <h6 className="fw-semibold mb-0">전체 학급 목록</h6>
             <div className="d-flex gap-2">
               <form className="input-group input-group-sm" onSubmit={search}>
@@ -195,7 +206,10 @@ export default function ClassList() {
                   <option value="ACTIVE">활성</option>
                   <option value="FINISHED">종료</option>
                 </select>
-                <button className="btn btn-primary-600 radius-8" type="submit">
+                <button
+                  type="submit"
+                  style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                >
                   <i className="bi bi-search" /> 검색
                 </button>
                 <button
@@ -214,9 +228,9 @@ export default function ClassList() {
             </div>
           </div>
           <table className="table table-hover align-middle mb-0">
-            <thead className="table-heading-dark-mode">
+            <thead>
               <tr>
-                <th className="text-center" style={{ width: 50 }}>
+                <th style={{ ...thStyle, textAlign: "center", width: 50 }}>
                   <input
                     type="checkbox"
                     className="form-check-input"
@@ -224,13 +238,13 @@ export default function ClassList() {
                     onChange={(e) => toggleAll(e.target.checked)}
                   />
                 </th>
-                <th className="ps-4">학년도</th>
-                <th>학년</th>
-                <th>반</th>
-                <th>담임교사</th>
-                <th>학생 수</th>
-                <th>상태</th>
-                <th className="text-end pe-4">관리</th>
+                <th style={{ ...thStyle, paddingLeft: "1.5rem" }}>학년도</th>
+                <th style={thStyle}>학년</th>
+                <th style={thStyle}>반</th>
+                <th style={thStyle}>담임교사</th>
+                <th style={thStyle}>학생 수</th>
+                <th style={thStyle}>상태</th>
+                <th style={{ ...thStyle, textAlign: "right", paddingRight: "1.5rem" }}>관리</th>
               </tr>
             </thead>
             <tbody>
@@ -254,7 +268,7 @@ export default function ClassList() {
                     )}
                   </td>
                   <td>
-                    <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
+                    <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12 }}>
                       {c.studentCount ?? 0}명
                     </span>
                   </td>
@@ -286,7 +300,7 @@ export default function ClassList() {
           </table>
         </div>
         {page && page.totalPages >= 1 && (
-          <div className="card-footer border-0 bg-base py-16">
+          <div style={{ padding: "16px 24px", borderTop: "1px solid #e5e7eb", background: "#f9fafb" }}>
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
                 <li className={`page-item${page.first ? " disabled" : ""}`}>

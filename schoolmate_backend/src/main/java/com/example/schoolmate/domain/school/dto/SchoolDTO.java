@@ -15,6 +15,8 @@ public class SchoolDTO {
         private String schoolKind;
         private String officeOfEducation;
         private String address;
+        private String phoneNumber;
+        private String homepage;
 
         public static Summary from(School school) {
             return Summary.builder()
@@ -24,6 +26,8 @@ public class SchoolDTO {
                     .schoolKind(school.getSchoolKind())
                     .officeOfEducation(school.getOfficeOfEducation())
                     .address(school.getAddress())
+                    .phoneNumber(school.getPhoneNumber())
+                    .homepage(school.getHomepage())
                     .build();
         }
     }

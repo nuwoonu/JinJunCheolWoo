@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Navigate } from "react-router-dom";
+import PageLoader from "@/components/PageLoader";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import type { RoleRequestInfo, GrantInfo } from "@/api/auth";
 import NotificationDropdown from "@/components/fragments/NotificationDropdown";
@@ -82,7 +83,7 @@ export default function Hub() {
     refetch();
   }, []);
 
-  if (loading) return null;
+  if (loading) return <PageLoader />;
   if (!user?.authenticated) return <Navigate to="/login" replace />;
 
   const userRoles = user.roles && user.roles.length > 0

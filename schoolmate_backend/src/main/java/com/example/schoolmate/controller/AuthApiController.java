@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,18 +154,6 @@ public class AuthApiController {
         return ResponseEntity.ok(Map.of("message", "로그아웃되었습니다."));
     }
 
-    /**
-     * 회원가입용 학교 검색 (인증 불필요 - public)
-     */
-    @GetMapping("/schools")
-    public ResponseEntity<Page<SchoolDTO.Summary>> searchSchools(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String schoolKind,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(
-                schoolService.searchSchools(name, schoolKind, null, PageRequest.of(page, size)));
-    }
 
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");

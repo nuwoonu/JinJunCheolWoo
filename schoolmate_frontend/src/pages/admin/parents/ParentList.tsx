@@ -12,6 +12,17 @@ const RR_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   REJECTED:  { label: "거절됨",  color: "#ef4444", bg: "rgba(239,68,68,0.1)"   },
 };
 
+const thStyle: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+
 export default function ParentList() {
   const [page, setPage] = useState<any>(null);
   const [status] = useState("");
@@ -105,10 +116,10 @@ export default function ParentList() {
       )}
 
       {/* 헤더 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3" style={{ marginBottom: 24 }}>
         <div>
           <h6 className="fw-semibold mb-0">학부모 정보 관리</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
+          <p style={{ color: "#6b7280" }} className="mt-4 mb-0">
             학부모 계정 및 자녀 연동 정보를 관리합니다.
           </p>
         </div>
@@ -128,7 +139,7 @@ export default function ParentList() {
           </button>
           <Link
             to={ADMIN_ROUTES.PARENTS.CREATE}
-            className="btn btn-primary-600 radius-8"
+            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", textDecoration: "none", display: "inline-block" }}
           >
             <i className="bi bi-person-plus-fill" /> 신규 학부모 등록
           </Link>
@@ -140,8 +151,8 @@ export default function ParentList() {
 
         {/* ── 좌측 통계 패널 ── */}
         <div className="col-lg-3">
-          <div className="card mb-24" style={{ borderTop: "3px solid #6366f1" }}>
-            <div className="px-20 py-16 border-bottom border-neutral-200">
+          <div className="card" style={{ borderTop: "3px solid #6366f1", marginBottom: 24 }}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
               <h6 className="fw-semibold mb-1" style={{ fontSize: 14 }}>학부모 현황</h6>
               <p className="text-secondary-light mb-0" style={{ fontSize: 12 }}>
                 전체{" "}
@@ -151,7 +162,7 @@ export default function ParentList() {
                 명
               </p>
             </div>
-            <div className="card-body px-20 py-16">
+            <div className="card-body" style={{ padding: "16px 20px" }}>
               <p className="text-secondary-light mb-12" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 계정 승인 현황
               </p>
@@ -160,7 +171,7 @@ export default function ParentList() {
                   key={key}
                   className="d-flex align-items-center justify-content-between mb-10"
                 >
-                  <div className="d-flex align-items-center gap-8">
+                  <div className="d-flex align-items-center" style={{ gap: 8 }}>
                     <span
                       style={{
                         display: "inline-block",
@@ -227,7 +238,7 @@ export default function ParentList() {
         <div className="col-lg-9">
           <div className="card">
             <div className="card-body p-0">
-              <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+              <div className="d-flex align-items-center justify-content-between" style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
                 <h6 className="fw-semibold mb-0">전체 학부모 목록</h6>
                 <div className="d-flex gap-2">
                   <form className="input-group input-group-sm" onSubmit={search}>
@@ -249,7 +260,10 @@ export default function ParentList() {
                       onChange={(e) => setKeyword(e.target.value)}
                       style={{ minWidth: 150 }}
                     />
-                    <button className="btn btn-primary-600 radius-8" type="submit">
+                    <button
+                      style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                      type="submit"
+                    >
                       <i className="bi bi-search" /> 검색
                     </button>
                     <button
@@ -267,14 +281,14 @@ export default function ParentList() {
                 </div>
               </div>
               <table className="table table-hover align-middle mb-0">
-                <thead className="table-heading-dark-mode">
+                <thead>
                   <tr>
-                    <th className="ps-4">이름</th>
-                    <th>이메일</th>
-                    <th>연락처</th>
-                    <th>자녀 수</th>
-                    <th>승인 상태</th>
-                    <th className="text-end pe-4">관리</th>
+                    <th style={{ ...thStyle, paddingLeft: 24 }}>이름</th>
+                    <th style={thStyle}>이메일</th>
+                    <th style={thStyle}>연락처</th>
+                    <th style={thStyle}>자녀 수</th>
+                    <th style={thStyle}>승인 상태</th>
+                    <th style={{ ...thStyle, textAlign: "right", paddingRight: 24 }}>관리</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -291,7 +305,7 @@ export default function ParentList() {
                       <td>{p.email}</td>
                       <td>{p.phone}</td>
                       <td>
-                        <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
+                        <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 }}>
                           {p.childrenStrings?.length ?? 0}명
                         </span>
                       </td>
@@ -341,7 +355,7 @@ export default function ParentList() {
               </table>
             </div>
             {page && page.totalPages >= 1 && (
-              <div className="card-footer border-0 bg-base py-16">
+              <div style={{ padding: "16px 24px", borderTop: "1px solid #e5e7eb", background: "#f9fafb" }}>
                 <nav>
                   <ul className="pagination pagination-sm justify-content-center mb-0">
                     <li className={`page-item${page.first ? " disabled" : ""}`}>
