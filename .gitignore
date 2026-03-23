@@ -118,3 +118,4 @@ schoolmate_backend/src/main/resources/application-secret.properties
 schoolmate_backend/.vscode/
 schoolmate_frontend/.vite/deps/package.json
 schoolmate_frontend/.vite/deps/_metadata.json
+.claude/settings.json
