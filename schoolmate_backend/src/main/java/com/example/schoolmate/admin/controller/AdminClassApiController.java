@@ -15,8 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.common.dto.ClassDTO;
+import com.example.schoolmate.domain.term.service.AcademicTermService;
 import com.example.schoolmate.common.service.ClassroomService;
-import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public class AdminClassApiController {
 
     private final ClassroomService classService;
-    private final SystemSettingService systemSettingService;
+    private final AcademicTermService academicTermService;
 
     @GetMapping
     public ResponseEntity<Page<ClassDTO.DetailResponse>> list(
@@ -40,7 +40,7 @@ public class AdminClassApiController {
         if (condition == null)
             condition = new ClassDTO.SearchCondition();
         if (condition.getYear() == null)
-            condition.setYear(systemSettingService.getCurrentSchoolYear());
+            condition.setYear(academicTermService.getCurrentSchoolYear());
         return ResponseEntity.ok(classService.getClassList(condition, pageable));
     }
 
@@ -141,7 +141,7 @@ public class AdminClassApiController {
     @GetMapping("/teachers/unassigned")
     public ResponseEntity<List<ClassDTO.TeacherSelectResponse>> unassignedTeachers(
             @RequestParam(required = false) Integer year) {
-        int y = (year != null) ? year : systemSettingService.getCurrentSchoolYear();
+        int y = (year != null) ? year : academicTermService.getCurrentSchoolYear();
         return ResponseEntity.ok(classService.getUnassignedTeachers(y));
     }
 
@@ -162,6 +162,6 @@ public class AdminClassApiController {
 
     @GetMapping("/current-year")
     public ResponseEntity<Integer> currentYear() {
-        return ResponseEntity.ok(systemSettingService.getCurrentSchoolYear());
+        return ResponseEntity.ok(academicTermService.getCurrentSchoolYear());
     }
 }

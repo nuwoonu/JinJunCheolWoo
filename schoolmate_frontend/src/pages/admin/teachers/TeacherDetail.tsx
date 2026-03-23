@@ -110,6 +110,12 @@ export default function TeacherDetail() {
   const [saving, setSaving] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
+  // 수업 분반 관련 state
+  const [sections, setSections] = useState<any[]>([]);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [selectedClassroomIds, setSelectedClassroomIds] = useState<number[]>([]);
+  const [sectionSaving, setSectionSaving] = useState(false);
+
   // 위임 권한 관련 state
   const [grants, setGrants] = useState<any[]>([]);
   const [newGrantRole, setNewGrantRole] = useState("");
@@ -132,6 +138,12 @@ export default function TeacherDetail() {
       });
     });
 
+  const loadSections = () =>
+    admin.get(`/teachers/${uid}/sections`).then(r => setSections(r.data ?? []));
+
+  const loadClassrooms = () =>
+    admin.get('/classes', { params: { size: 200 } }).then(r => setClassrooms(r.data?.content ?? []));
+
   const loadGrants = () =>
     admin.get("/grants", { params: { userId: uid } }).then((r) => setGrants(r.data ?? []));
 
@@ -144,6 +156,13 @@ export default function TeacherDetail() {
     load();
     if (isSuperAdmin) loadGrants();
   }, [uid]);
+
+  useEffect(() => {
+    if (activeTab === 'sections') {
+      loadSections();
+      loadClassrooms();
+    }
+  }, [activeTab]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,6 +277,7 @@ export default function TeacherDetail() {
             <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb' }}>
               {[
                 ["info", "기본 정보"],
+                ["sections", "수업 분반"],
                 ["noti", "알림 이력"],
                 ["role", "권한 관리"],
               ].map(([key, label]) => (
@@ -377,6 +397,116 @@ export default function TeacherDetail() {
                   </button>
                 </div>
               </form>
+            )}
+
+            {activeTab === "sections" && (
+              <div style={{ padding: 24 }}>
+                {/* 현재 분반 목록 */}
+                <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>현재 학기 수업 분반</p>
+                {sections.length === 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px dashed #d1d5db', minHeight: 60, background: '#f9fafb', marginBottom: 20 }}>
+                    <span style={{ fontSize: 13, color: '#9ca3af' }}>등록된 수업 분반이 없습니다.</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                    {sections.map((s: any) => (
+                      <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(37,161,148,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <i className="ri-book-2-line" style={{ color: '#25A194', fontSize: 15 }} />
+                          </span>
+                          <div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', display: 'block' }}>
+                              {s.grade}학년 {s.classNum}반 · {s.subjectName}
+                            </span>
+                            <span style={{ fontSize: 11, color: '#9ca3af' }}>{s.termName} · 학생 {s.studentCount}명</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!confirm(`${s.grade}학년 ${s.classNum}반 ${s.subjectName} 분반을 삭제합니까?`)) return;
+                            await admin.delete(`/teachers/${uid}/sections/${s.id}`);
+                            loadSections();
+                          }}
+                          style={{ padding: '3px 10px', background: 'rgba(239,68,68,0.1)', color: '#dc2626', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <hr style={{ borderColor: '#e5e7eb' }} />
+
+                {/* 분반 추가 */}
+                <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>분반 추가</p>
+                {teacher.subject ? (
+                  <>
+                    <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>
+                      담당 과목 <strong style={{ color: '#111827' }}>{teacher.subject}</strong> 으로 수업할 학급을 선택하세요.
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                      {classrooms.map((c: any) => {
+                        const alreadyAdded = sections.some((s: any) => s.classroomId === c.cid);
+                        const checked = selectedClassroomIds.includes(c.cid);
+                        return (
+                          <label
+                            key={c.cid}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              padding: '6px 12px', borderRadius: 8, border: `1px solid ${checked ? '#25A194' : '#e5e7eb'}`,
+                              background: alreadyAdded ? '#f3f4f6' : checked ? 'rgba(37,161,148,0.08)' : '#fff',
+                              cursor: alreadyAdded ? 'not-allowed' : 'pointer',
+                              fontSize: 13, color: alreadyAdded ? '#9ca3af' : '#374151',
+                              opacity: alreadyAdded ? 0.6 : 1,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              disabled={alreadyAdded}
+                              checked={checked}
+                              onChange={e => {
+                                if (e.target.checked) setSelectedClassroomIds(ids => [...ids, c.cid]);
+                                else setSelectedClassroomIds(ids => ids.filter(id => id !== c.cid));
+                              }}
+                            />
+                            {c.grade}학년 {c.classNum}반
+                            {alreadyAdded && <span style={{ fontSize: 11, color: '#9ca3af' }}>(등록됨)</span>}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={sectionSaving || selectedClassroomIds.length === 0}
+                      onClick={async () => {
+                        setSectionSaving(true);
+                        try {
+                          await admin.post(`/teachers/${uid}/sections`, { classroomIds: selectedClassroomIds });
+                          setSelectedClassroomIds([]);
+                          loadSections();
+                        } catch {
+                          alert('분반 등록에 실패했습니다.');
+                        } finally {
+                          setSectionSaving(false);
+                        }
+                      }}
+                      style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#fff', cursor: (sectionSaving || selectedClassroomIds.length === 0) ? 'not-allowed' : 'pointer', opacity: (sectionSaving || selectedClassroomIds.length === 0) ? 0.6 : 1 }}
+                    >
+                      {sectionSaving ? <><span className="spinner-border spinner-border-sm me-2" />등록 중...</> : `선택한 ${selectedClassroomIds.length}개 학급에 분반 등록`}
+                    </button>
+                  </>
+                ) : (
+                  <div style={{ padding: '16px', borderRadius: 8, background: '#fffbeb', border: '1px solid #fde68a' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: '#92400e' }}>
+                      <i className="bi bi-exclamation-triangle me-2" />
+                      담당 과목이 설정되지 않았습니다. 기본 정보 탭에서 담당 과목을 먼저 설정해주세요.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === "noti" && (

@@ -17,19 +17,19 @@ import com.example.schoolmate.homework.entity.HomeworkStatus;
 public interface HomeworkRepository extends JpaRepository<Homework, Long> {
 
     // [woo] 학급별 과제 목록 (학생이 자기 학급 과제 조회)
-    Page<Homework> findByClassroomCidAndIsDeletedFalseOrderByCreateDateDesc(
-            Long classroomId, Pageable pageable);
+    @Query("SELECT h FROM Homework h WHERE h.courseSection.classroom.cid = :classroomId AND h.isDeleted = false ORDER BY h.createDate DESC")
+    Page<Homework> findByClassroomId(@Param("classroomId") Long classroomId, Pageable pageable);
 
     // [woo] 교사가 출제한 과제 목록
-    @Query("SELECT h FROM Homework h WHERE h.teacher.id = :teacherInfoId AND h.isDeleted = false ORDER BY h.createDate DESC")
+    @Query("SELECT h FROM Homework h WHERE h.courseSection.teacher.id = :teacherInfoId AND h.isDeleted = false ORDER BY h.createDate DESC")
     Page<Homework> findByTeacherInfoId(@Param("teacherInfoId") Long teacherInfoId, Pageable pageable);
 
     // [woo] 학급별 + 상태별 과제 조회
-    Page<Homework> findByClassroomCidAndStatusAndIsDeletedFalseOrderByCreateDateDesc(
-            Long classroomId, HomeworkStatus status, Pageable pageable);
+    @Query("SELECT h FROM Homework h WHERE h.courseSection.classroom.cid = :classroomId AND h.status = :status AND h.isDeleted = false ORDER BY h.createDate DESC")
+    Page<Homework> findByClassroomIdAndStatus(@Param("classroomId") Long classroomId, @Param("status") HomeworkStatus status, Pageable pageable);
 
     // [woo] 특정 학생의 학급에 해당하는 과제 목록 (학부모 조회용)
-    @Query("SELECT h FROM Homework h WHERE h.classroom.cid = :classroomId AND h.isDeleted = false ORDER BY h.createDate DESC")
+    @Query("SELECT h FROM Homework h WHERE h.courseSection.classroom.cid = :classroomId AND h.isDeleted = false ORDER BY h.createDate DESC")
     List<Homework> findAllByClassroomId(@Param("classroomId") Long classroomId);
 
 }
