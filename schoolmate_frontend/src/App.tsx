@@ -38,8 +38,8 @@ import TeacherScheduleAdd from "@/pages/woo/teacher/ScheduleAdd";
 import TeacherScheduleEdit from "@/pages/woo/teacher/ScheduleEdit";
 import TeacherList from "@/pages/woo/teacher/TeacherList";
 import ParentList from "@/pages/woo/teacher/ParentList";
-// [cheol] 교사 성적 채점 학급 선택 페이지
 import TeacherGradeClasses from "@/pages/woo/teacher/GradeClasses";
+
 // [woo] 게시판
 import SchoolNotice from "@/pages/woo/board/SchoolNotice";
 import SchoolNoticeDetail from "@/pages/woo/board/SchoolNoticeDetail";
@@ -111,8 +111,8 @@ function SchoolSelectGuard() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const isSuperAdmin = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN';
-  const firstGrant = !isSuperAdmin ? user?.grants?.find(g => g.schoolId) : undefined;
+  const isSuperAdmin = user?.roles?.includes("ADMIN") || user?.role === "ADMIN";
+  const firstGrant = !isSuperAdmin ? user?.grants?.find((g) => g.schoolId) : undefined;
   const shouldAutoSelect = !!firstGrant && !selectedSchool;
 
   useEffect(() => {
@@ -120,9 +120,9 @@ function SchoolSelectGuard() {
     setSelectedSchool({
       id: firstGrant.schoolId!,
       name: firstGrant.schoolName!,
-      schoolCode: firstGrant.schoolCode ?? '',
-      schoolKind: firstGrant.schoolKind ?? '',
-      officeOfEducation: firstGrant.officeOfEducation ?? '',
+      schoolCode: firstGrant.schoolCode ?? "",
+      schoolKind: firstGrant.schoolKind ?? "",
+      officeOfEducation: firstGrant.officeOfEducation ?? "",
     });
   }, [shouldAutoSelect]);
 
@@ -195,6 +195,15 @@ function App() {
         <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
 
+      {/* [cheol] 교사 성적 채점 - 학급 선택 */}
+      <Route
+        path="/teacher/grade-classes"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER"]}>
+            <TeacherGradeClasses />
+          </PrivateRoute>
+        }
+      />
       {/* [cheol] 성적/시험 */}
       <Route
         path="/exam"
@@ -298,15 +307,6 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherDashboard />
-          </PrivateRoute>
-        }
-      />
-      {/* [cheol] 교사 성적 채점 — 학급 선택 페이지 */}
-      <Route
-        path="/teacher/grade-classes"
-        element={
-          <PrivateRoute allowedRoles={["TEACHER"]}>
-            <TeacherGradeClasses />
           </PrivateRoute>
         }
       />
@@ -517,7 +517,7 @@ function App() {
       <Route
         path="/attendance/parent"
         element={
-          <PrivateRoute allowedRoles={["PARENT"]}>
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
             <ParentAttendance />
           </PrivateRoute>
         }

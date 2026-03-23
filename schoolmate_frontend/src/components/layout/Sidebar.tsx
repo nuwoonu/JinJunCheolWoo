@@ -372,6 +372,17 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
                   </Link>
                 </li>
+                {/* [woo] 성적 조회 */}
+                <li>
+                  <Link to="/exam">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/exam/schedule">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
+                  </Link>
+                </li>
                 {/* [cheol] 기숙사 */}
                 <li>
                   <Link to="/student/dormitory">
@@ -398,11 +409,17 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/parent/children/status">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 자녀 현황
+                  </Link>
+                </li>
+                {/* [woo] 학부모 출결 조회 페이지 연결 */}
+                <li>
+                  <Link to="/attendance/parent">
                     <i className="ri-circle-fill circle-icon w-auto" /> 출결 현황
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parent/dashboard">
+                  <Link to="/parent/grades">
                     <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
                   </Link>
                 </li>
