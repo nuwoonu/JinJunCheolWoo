@@ -176,7 +176,7 @@ public class TeacherService {
                     throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());
-            
+            }
             TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
             // cheol
             Subject subject = null;
@@ -189,8 +189,7 @@ public class TeacherService {
             NotificationHelper.send(
                     user,
                     "교사 상태 변경 알림",
-                    "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다."
-            );
+                    "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다.");
         }
     }
 
