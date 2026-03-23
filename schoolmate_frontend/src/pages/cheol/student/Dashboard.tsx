@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import NeisEventsWidget from "@/components/NeisEventsWidget";
+import { getTodayMeal, type MealInfo } from "@/api/mealCache";
 
 // [cheol] 학생 대시보드 - cheol/student-dashboard.html 마이그레이션
 
@@ -80,6 +81,7 @@ export default function StudentDashboard() {
   const [timetableLoading, setTimetableLoading] = useState(true);
   // [woo] 출결 현황
   const [attendance, setAttendance] = useState<AttendanceSummary>({});
+  const [meal, setMeal] = useState<MealInfo | null>(null);
 
   useEffect(() => {
     api
@@ -107,6 +109,9 @@ export default function StudentDashboard() {
       .get('/attendance/my/summary')
       .then((res) => setAttendance(res.data))
       .catch(() => setAttendance({}));
+
+    // 급식 캐시 조회
+    getTodayMeal().then(setMeal).catch(() => {});
 
     // [woo] 오늘의 학사일정 (NEIS) - 이번달 일정에서 오늘 날짜만 필터
     const now = new Date();
@@ -285,14 +290,31 @@ export default function StudentDashboard() {
             {/* 오늘의 급식 */}
             <div className="col-xl-4">
               <div className="card border-0 shadow-sm p-20 h-100" style={{ borderRadius: 16 }}>
-                <h6 className="fw-bold mb-20 text-sm">
-                  <i className="ri-restaurant-2-line text-primary-600 me-2" />
-                  오늘의 급식
-                </h6>
-                <p className="text-sm mb-12">잡곡밥, 미역국, 제육볶음, 배추김치, 과일</p>
-                <span className="badge bg-primary-100 text-primary-600 px-8 py-4 rounded-pill text-xs">
-                  칼로리: 645kcal
-                </span>
+                <div className="d-flex align-items-center justify-content-between mb-16">
+                  <h6 className="fw-bold mb-0 text-sm">
+                    <i className="ri-restaurant-2-line text-primary-600 me-2" />
+                    오늘의 급식
+                  </h6>
+                  {meal?.mealType && (
+                    <span className="badge bg-primary-100 text-primary-600 px-8 py-4 rounded-pill text-xs">
+                      {meal.mealType}
+                    </span>
+                  )}
+                </div>
+                {meal ? (
+                  <>
+                    <p className="text-sm mb-12" style={{ lineHeight: 1.8, whiteSpace: 'pre-line' }}>
+                      {meal.menu}
+                    </p>
+                    {meal.calories && (
+                      <span className="badge bg-primary-100 text-primary-600 px-8 py-4 rounded-pill text-xs">
+                        칼로리: {meal.calories} kcal
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-secondary-light text-sm">급식 정보가 없습니다.</p>
+                )}
               </div>
             </div>
           </div>
