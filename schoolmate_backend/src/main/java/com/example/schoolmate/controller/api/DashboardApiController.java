@@ -13,7 +13,7 @@ import com.example.schoolmate.common.repository.info.student.StudentAssignmentRe
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.service.BoardService;
-import com.example.schoolmate.common.service.SystemSettingService;
+import com.example.schoolmate.domain.term.service.AcademicTermService;
 import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
@@ -40,7 +40,7 @@ public class DashboardApiController {
     private final BoardService boardService;
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
-    private final SystemSettingService systemSettingService;
+    private final AcademicTermService academicTermService;
     private final StudentAssignmentRepository studentAssignmentRepository;
 
     @GetMapping("/student")
@@ -85,7 +85,7 @@ public class DashboardApiController {
         User teacher = userRepository.findById(uid).orElse(null);
         data.put("teacherName", teacher != null && teacher.getName() != null ? teacher.getName() : "선생님");
 
-        int currentYear = systemSettingService.getCurrentSchoolYear();
+        int currentYear = academicTermService.getCurrentSchoolYear();
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
         if (teacherInfo != null) {
             data.put("teacherInfoId", teacherInfo.getId());

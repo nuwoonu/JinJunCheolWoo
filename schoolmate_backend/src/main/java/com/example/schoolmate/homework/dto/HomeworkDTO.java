@@ -33,16 +33,13 @@ public class HomeworkDTO {
         @NotBlank(message = "내용은 필수입니다")
         private String content;
 
-        @NotNull(message = "대상 학급은 필수입니다")
-        private Long classroomId;
+        @NotNull(message = "수업 분반은 필수입니다")
+        private Long courseSectionId;
 
         @NotNull(message = "마감일은 필수입니다")
         private LocalDateTime dueDate;
 
-        // [woo] 최대 점수 (선택, 기본 100)
         private Integer maxScore;
-
-        // 파일은 MultipartFile로 별도 처리
     }
 
     // ========== 과제 응답 (목록용) ==========
@@ -57,10 +54,12 @@ public class HomeworkDTO {
         private String teacherName;
         private String classroomName;
         private Long classroomId;
+        private String subjectName;
+        private String termName;
+        private Long courseSectionId;
         private HomeworkStatus status;
         private LocalDateTime dueDate;
         private boolean hasAttachment;
-        // [woo] 최대 점수
         private Integer maxScore;
         private int submissionCount;
         private int totalStudentCount;
@@ -78,9 +77,12 @@ public class HomeworkDTO {
             return ListResponse.builder()
                     .id(homework.getId())
                     .title(homework.getTitle())
-                    .teacherName(homework.getTeacher().getUser().getName())
-                    .classroomName(homework.getClassroom().getClassName())
-                    .classroomId(homework.getClassroom().getCid())
+                    .teacherName(homework.getCourseSection().getTeacher().getUser().getName())
+                    .classroomName(homework.getCourseSection().getClassroom().getClassName())
+                    .classroomId(homework.getCourseSection().getClassroom().getCid())
+                    .courseSectionId(homework.getCourseSection().getId())
+                    .subjectName(homework.getCourseSection().getSubject().getName())
+                    .termName(homework.getCourseSection().getTerm().getDisplayName())
                     .status(homework.getStatus())
                     .dueDate(homework.getDueDate())
                     .hasAttachment(homework.getAttachmentUrl() != null)
@@ -106,11 +108,13 @@ public class HomeworkDTO {
         private Long teacherUserId;
         private String classroomName;
         private Long classroomId;
+        private String subjectName;
+        private String termName;
+        private Long courseSectionId;
         private HomeworkStatus status;
         private LocalDateTime dueDate;
         private String attachmentUrl;
         private String attachmentOriginalName;
-        // [woo] 최대 점수
         private Integer maxScore;
         private int submissionCount;
         private int totalStudentCount;
@@ -128,10 +132,13 @@ public class HomeworkDTO {
                     .id(homework.getId())
                     .title(homework.getTitle())
                     .content(homework.getContent())
-                    .teacherName(homework.getTeacher().getUser().getName())
-                    .teacherUserId(homework.getTeacher().getUser().getUid())
-                    .classroomName(homework.getClassroom().getClassName())
-                    .classroomId(homework.getClassroom().getCid())
+                    .teacherName(homework.getCourseSection().getTeacher().getUser().getName())
+                    .teacherUserId(homework.getCourseSection().getTeacher().getUser().getUid())
+                    .classroomName(homework.getCourseSection().getClassroom().getClassName())
+                    .classroomId(homework.getCourseSection().getClassroom().getCid())
+                    .courseSectionId(homework.getCourseSection().getId())
+                    .subjectName(homework.getCourseSection().getSubject().getName())
+                    .termName(homework.getCourseSection().getTerm().getDisplayName())
                     .status(homework.getStatus())
                     .dueDate(homework.getDueDate())
                     .attachmentUrl(homework.getAttachmentUrl())
@@ -153,7 +160,6 @@ public class HomeworkDTO {
     @AllArgsConstructor
     public static class SubmitRequest {
         private String content;
-        // 파일은 MultipartFile로 별도 처리
     }
 
     // ========== 제출 응답 ==========

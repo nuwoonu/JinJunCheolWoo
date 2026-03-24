@@ -1,77 +1,77 @@
 // [soojin] 오늘의 급식 위젯
-// 기존 Dashboard.tsx 하드코딩 교체 → GET /api/meals/daily?date=YYYY-MM-DD 실제 API 연동
-// 백엔드 팀원 작업 중 - API 응답 없으면 "급식 정보가 없습니다" 표시
+// NEIS API → 백엔드 프록시(/api/neis/meal/today) → 클라이언트 메모리 캐시
+// 브라우저 탭이 열려 있는 동안 캐시 유지, 탭 닫으면 자동 소멸
 
 import { useEffect, useState } from 'react'
-
-interface MealInfo {
-  menu: string       // 급식 메뉴 (줄바꿈 구분)
-  calories?: string  // 칼로리 정보
-}
+import { getTodayMeal, type MealInfo } from '@/api/mealCache'
 
 export default function TodayMealWidget() {
   const [meal, setMeal] = useState<MealInfo | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const d = new Date()
-    const pad = (n: number) => String(n).padStart(2, '0')
-    const today = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-    fetch(`/api/meals/daily?date=${today}`)
-      .then(r => r.ok ? r.json() : null)
+    getTodayMeal()
       .then(data => { setMeal(data); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
-  const MOCK_MENU = '잡곡밥, 미역국, 제육볶음, 배추김치, 과일'
-  const MOCK_CALORIES = 646
-
-  const displayMenu = meal?.menu ?? MOCK_MENU
-  const displayCalories = meal?.calories ?? MOCK_CALORIES
+  const menuLines = meal?.menu?.split('\n') ?? []
 
   return (
     <div className="card shadow-sm h-100 d-flex flex-column" style={{ borderRadius: 16, border: '1px solid #e5e7eb' }}>
       {/* 헤더 */}
-      <div className="p-16 border-bottom">
+      <div className="p-16 border-bottom d-flex align-items-center justify-content-between">
         <h6 className="fw-bold mb-0 text-sm">
           <i className="ri-restaurant-line text-primary-600 me-2" />
           오늘의 급식
         </h6>
+        {meal?.mealType && (
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: '#25A194',
+            background: '#e6f7f6', borderRadius: 20, padding: '2px 10px',
+          }}>
+            {meal.mealType}
+          </span>
+        )}
       </div>
 
-      {/* 본문: 세로 중앙 정렬 */}
-      <div className="d-flex flex-column align-items-center justify-content-center p-20" style={{ flex: 1 }}>
+      {/* 본문 */}
+      <div className="d-flex flex-column p-20" style={{ flex: 1 }}>
         {loading ? (
-          <p className="text-secondary-light text-sm mb-0">급식 정보를 불러오는 중...</p>
-        ) : (
+          <div className="d-flex align-items-center justify-content-center h-100">
+            <p className="text-secondary-light text-sm mb-0">급식 정보를 불러오는 중...</p>
+          </div>
+        ) : meal ? (
           <>
-            <p className="text-sm mb-12 text-center" style={{ color: '#374151', lineHeight: 1.7 }}>{displayMenu}</p>
-            <span style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'center',
-              background: '#25A194',
-              color: 'white',
-              borderRadius: 20,
-              padding: '5px 0',
-              fontSize: 12,
-              fontWeight: 500,
-              marginBottom: 16,
-            }}>
-              칼로리: {displayCalories}kcal
-            </span>
-            <div style={{
-              width: '100%',
-              height: 110,
-              borderRadius: 10,
-              background: '#f3f4f6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <i className="ri-image-line" style={{ fontSize: 32, color: '#9ca3af' }} />
-            </div>
+            {/* 메뉴 목록 */}
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0', flex: 1 }}>
+              {menuLines.map((line, i) => (
+                <li key={i} style={{
+                  fontSize: 13, color: '#374151', lineHeight: 1.8,
+                  borderBottom: i < menuLines.length - 1 ? '1px solid #f3f4f6' : 'none',
+                  padding: '3px 0',
+                }}>
+                  {line}
+                </li>
+              ))}
+            </ul>
+
+            {/* 칼로리 */}
+            {meal.calories && (
+              <span style={{
+                display: 'block', textAlign: 'center',
+                background: '#25A194', color: 'white',
+                borderRadius: 20, padding: '5px 0',
+                fontSize: 12, fontWeight: 500,
+              }}>
+                칼로리: {meal.calories} kcal
+              </span>
+            )}
           </>
+        ) : (
+          <div className="d-flex align-items-center justify-content-center h-100">
+            <p className="text-secondary-light text-sm mb-0 text-center">오늘의 급식 정보가 없습니다.</p>
+          </div>
         )}
       </div>
     </div>

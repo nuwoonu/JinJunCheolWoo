@@ -15,9 +15,9 @@ import com.example.schoolmate.common.dto.ClassDTO;
 import com.example.schoolmate.common.dto.ParentDTO;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.info.constant.FamilyRelationship;
+import com.example.schoolmate.domain.term.service.AcademicTermService;
 import com.example.schoolmate.common.service.ParentService;
 import com.example.schoolmate.common.service.StudentService;
-import com.example.schoolmate.common.service.SystemSettingService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class AdminStudentApiController {
 
     private final StudentService studentService;
     private final ParentService parentService;
-    private final SystemSettingService systemSettingService;
+    private final AcademicTermService academicTermService;
 
     // 목록 조회
     @GetMapping
@@ -103,14 +103,14 @@ public class AdminStudentApiController {
     // 학급 목록 (등록/수정 폼용)
     @GetMapping("/classrooms")
     public ResponseEntity<List<ClassDTO.DetailResponse>> classrooms(@RequestParam(required = false) Integer year) {
-        int y = (year != null) ? year : systemSettingService.getCurrentSchoolYear();
+        int y = (year != null) ? year : academicTermService.getCurrentSchoolYear();
         return ResponseEntity.ok(studentService.getOpenClassrooms(y));
     }
 
     // 현재 학년도
     @GetMapping("/current-year")
     public ResponseEntity<Integer> currentYear() {
-        return ResponseEntity.ok(systemSettingService.getCurrentSchoolYear());
+        return ResponseEntity.ok(academicTermService.getCurrentSchoolYear());
     }
 
     // 학적 이력 수정

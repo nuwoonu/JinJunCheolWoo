@@ -22,7 +22,7 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
-import com.example.schoolmate.common.service.SystemSettingService;
+import com.example.schoolmate.domain.term.service.AcademicTermService;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.common.service.TeacherService;
@@ -59,7 +59,7 @@ public class TeacherClassController {
 
     private final TeacherService teacherService;
     private final ClassroomRepository classroomRepository;
-    private final SystemSettingService systemSettingService;
+    private final AcademicTermService academicTermService;
 
     // ==================================================================================
     // ========== [cheol] 학년별 학급 목록 조회 ==========
@@ -73,7 +73,7 @@ public class TeacherClassController {
     @GetMapping("/by-grade")
     public ResponseEntity<List<Map<String, Object>>> getClassesByGrade(
             @RequestParam int grade) {
-        int currentYear = systemSettingService.getCurrentSchoolYear();
+        int currentYear = academicTermService.getCurrentSchoolYear();
         List<Classroom> classrooms = classroomRepository.findByYearAndGrade(currentYear, grade);
         List<Map<String, Object>> result = classrooms.stream()
                 .sorted((a, b) -> Integer.compare(a.getClassNum(), b.getClassNum()))
