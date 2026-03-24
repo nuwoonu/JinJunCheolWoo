@@ -52,6 +52,7 @@ public class HomeworkDTO {
         private Long id;
         private String title;
         private String teacherName;
+        private String subjectName;
         private String classroomName;
         private Long classroomId;
         private String subjectName;

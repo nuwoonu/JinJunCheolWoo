@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import AdminTopBar from "@/components/layout/admin/AdminTopBar";
 import { ADMIN_ROUTES } from "@/constants/routes";
+import Footer from "@/components/layout/Footer";
 
 interface ParentAdminLayoutProps {
   children: ReactNode;
@@ -67,16 +68,7 @@ export default function ParentAdminLayout({
         {children}
       </main>
 
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          color: "var(--text-secondary-light)",
-          fontSize: 12,
-        }}
-      >
-        Copyright 2026 SchoolMate. All Rights Reserved.
-      </footer>
+      <Footer />
     </div>
   );
 }

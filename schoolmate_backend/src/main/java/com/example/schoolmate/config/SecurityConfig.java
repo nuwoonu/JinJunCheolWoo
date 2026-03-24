@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -136,6 +137,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/quiz/**")
                                                 .hasAnyRole("TEACHER", "STUDENT", "ADMIN")
                                                 // [woo] 출결 API - 역할별 접근
+                                                // [soojin] 학생도 자기 반 출석 현황 조회 가능 (GET /attendance/student?date= 한정)
+                                                .requestMatchers(HttpMethod.GET, "/api/attendance/student")
+                                                .hasAnyRole("TEACHER", "ADMIN", "STUDENT")
                                                 .requestMatchers("/api/attendance/student/**")
                                                 .hasAnyRole("TEACHER", "ADMIN")
                                                 // [woo] 교사 출근관리 - 관리자 전용
@@ -165,7 +169,9 @@ public class SecurityConfig {
                                                 .accessDeniedHandler(accessDeniedHandler())
                                                 // API 요청은 /login redirect 대신 401 JSON 반환 (CORS 우회 방지)
                                                 .authenticationEntryPoint((request, response, authException) -> {
-                                                        log.warn("[401] {} {} - {}", request.getMethod(), request.getRequestURI(), authException.getMessage());
+                                                        log.warn("[401] {} {} - {}", request.getMethod(),
+                                                                        request.getRequestURI(),
+                                                                        authException.getMessage());
                                                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                                                         response.setContentType("application/json;charset=UTF-8");
                                                         response.getWriter().write("{\"authenticated\":false}");

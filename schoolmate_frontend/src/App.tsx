@@ -16,6 +16,7 @@ import SelectRole from "@/pages/auth/SelectRole";
 import SelectInfo from "@/pages/auth/SelectInfo";
 import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
+import Intro from "@/pages/Intro";
 import UserProfile from "@/pages/user/Profile";
 // [cheol] 학생 관련
 import StudentList from "@/pages/cheol/student/StudentList";
@@ -138,7 +139,7 @@ function SchoolSelectGuard() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/hub" replace />} />
+      <Route path="/" element={<Intro />} />
       <Route path="/main" element={<Main />} />
       <Route path="/login" element={<Login />} />
       <Route path="/hub" element={<Hub />} />

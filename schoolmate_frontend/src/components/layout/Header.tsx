@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useSidebar } from '@/contexts/SidebarContext'
 import NotificationDropdown from '@/components/fragments/NotificationDropdown'
 
@@ -28,7 +28,7 @@ export default function Header() {
   const theme = useTheme()
 
   return (
-    <div className="navbar-header shadow-1">
+    <div className="navbar-header" style={{ borderBottom: "1px solid #e0e0e0" }}>
       <div className="row align-items-center justify-content-between">
         <div className="col-auto">
           <div className="d-flex flex-wrap align-items-center gap-4">
