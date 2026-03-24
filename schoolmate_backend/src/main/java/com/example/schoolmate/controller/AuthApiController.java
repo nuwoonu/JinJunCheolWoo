@@ -1,11 +1,19 @@
 package com.example.schoolmate.controller;
 
+import com.example.schoolmate.common.entity.info.SchoolMemberInfo;
+import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
@@ -56,6 +64,9 @@ public class AuthApiController {
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolRepository schoolRepository;
     private final com.example.schoolmate.common.repository.ProfileRepository profileRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
 
     /**
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
@@ -268,7 +279,6 @@ public class AuthApiController {
      * - 역할 설정 후 해당 역할의 새 JWT 발급
      */
     @PostMapping("/select-role")
-    @Transactional
     public ResponseEntity<?> selectRole(
             @AuthenticationPrincipal AuthUserDTO user,
             @RequestBody Map<String, String> body) {
@@ -311,5 +321,99 @@ public class AuthApiController {
             log.error("역할 선택 처리 중 오류", e);
             return ResponseEntity.status(500).body(Map.of("message", "역할 선택 중 오류가 발생했습니다."));
         }
+    }
+
+    /**
+     * Hub — 현재 유저의 모든 역할 인스턴스 목록 반환.
+     * 프론트엔드 Hub 페이지에서 역할 카드를 표시할 때 사용합니다.
+     */
+    @GetMapping("/role-contexts")
+    public ResponseEntity<?> roleContexts(@AuthenticationPrincipal AuthUserDTO auth) {
+        if (auth == null) return ResponseEntity.status(401).build();
+        Long uid = auth.getCustomUserDTO().getUid();
+
+        List<Map<String, Object>> contexts = new ArrayList<>();
+
+        studentInfoRepository.findAllByUserUid(uid).forEach(s ->
+                contexts.add(buildContext(s, "STUDENT", s.getStatus().name(), s.getStatus().getDescription(),
+                        s.getStatus().isCurrentStudent())));
+
+        teacherInfoRepository.findAllByUserUid(uid).forEach(t ->
+                contexts.add(buildContext(t, "TEACHER", t.getStatus().name(), t.getStatus().getDescription(),
+                        t.getStatus() == TeacherStatus.EMPLOYED || t.getStatus() == TeacherStatus.LEAVE)));
+
+        staffInfoRepository.findAllByUserUid(uid).forEach(st ->
+                contexts.add(buildContext(st, "STAFF", st.getStatus().name(), st.getStatus().getDescription(),
+                        st.getStatus() == StaffStatus.EMPLOYED || st.getStatus() == StaffStatus.LEAVE
+                                || st.getStatus() == StaffStatus.DISPATCHED)));
+
+        return ResponseEntity.ok(Map.of("contexts", contexts));
+    }
+
+    /**
+     * Hub — 다른 역할 인스턴스로 컨텍스트 전환. 새 JWT 쌍을 반환합니다.
+     * body: { infoId: 42, role: "STUDENT" }
+     */
+    @PostMapping("/switch-context")
+    public ResponseEntity<?> switchContext(@AuthenticationPrincipal AuthUserDTO auth,
+                                           @RequestBody Map<String, Object> body) {
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long infoId = body.get("infoId") instanceof Number n ? n.longValue() : null;
+        String role = (String) body.get("role");
+        if (infoId == null || role == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "infoId와 role이 필요합니다."));
+        }
+
+        try {
+            Long uid = auth.getCustomUserDTO().getUid();
+            String email = auth.getUsername();
+            Map<String, String> tokens = authService.switchContext(uid, email, infoId, role.toUpperCase());
+            return ResponseEntity.ok(tokens);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Hub — 특정 역할 인스턴스를 primary(메인)로 지정합니다.
+     * body: { infoId: 42, role: "STUDENT" }
+     */
+    @PatchMapping("/primary-role")
+    @Transactional
+    public ResponseEntity<?> setPrimaryRole(@AuthenticationPrincipal AuthUserDTO auth,
+                                            @RequestBody Map<String, Object> body) {
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long infoId = body.get("infoId") instanceof Number n ? n.longValue() : null;
+        String role = (String) body.get("role");
+        if (infoId == null || role == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "infoId와 role이 필요합니다."));
+        }
+
+        try {
+            authService.setPrimary(auth.getCustomUserDTO().getUid(), infoId, role.toUpperCase());
+            return ResponseEntity.ok(Map.of("message", "메인 역할이 변경되었습니다."));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    private Map<String, Object> buildContext(SchoolMemberInfo info, String roleType,
+                                              String statusCode, String statusDesc, boolean isActive) {
+        Map<String, Object> ctx = new HashMap<>();
+        ctx.put("infoId",     info.getId());
+        ctx.put("roleType",   roleType);
+        ctx.put("schoolId",   info.getSchool() != null ? info.getSchool().getId()   : null);
+        ctx.put("schoolName", info.getSchool() != null ? info.getSchool().getName() : null);
+        ctx.put("status",     statusCode);
+        ctx.put("statusDesc", statusDesc);
+        ctx.put("isPrimary",  info.isPrimary());
+        ctx.put("isActive",   isActive);
+        return ctx;
     }
 }

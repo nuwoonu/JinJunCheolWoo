@@ -9,16 +9,16 @@ package com.example.schoolmate.config.school;
 public class SchoolContextHolder {
 
     private static final ThreadLocal<Long> SCHOOL_ID = new ThreadLocal<>();
+    private static final ThreadLocal<Long> INFO_ID   = new ThreadLocal<>();
 
-    public static void setSchoolId(Long schoolId) {
-        SCHOOL_ID.set(schoolId);
-    }
+    public static void setSchoolId(Long schoolId) { SCHOOL_ID.set(schoolId); }
+    public static Long  getSchoolId()              { return SCHOOL_ID.get(); }
 
-    public static Long getSchoolId() {
-        return SCHOOL_ID.get();
-    }
+    public static void setInfoId(Long infoId) { INFO_ID.set(infoId); }
+    public static Long  getInfoId()           { return INFO_ID.get(); }
 
     public static void clear() {
         SCHOOL_ID.remove();
+        INFO_ID.remove();
     }
 }

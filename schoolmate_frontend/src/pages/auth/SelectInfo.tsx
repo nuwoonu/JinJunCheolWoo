@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import api, { getMe } from '@/api/auth'
+import api from '@/api/auth'
 import { auth } from '@/shared/auth'
 
 // 이메일 가입: /select-info?source=email → 역할 선택 → 학교 선택 or 폼 입력
@@ -50,18 +50,6 @@ export default function SelectInfo() {
         } else {
           navigate('/register/school-select', { state: { role: selected, source: 'email' } })
         }
-        setLoading(false)
-        return
-      }
-
-      // Hub에서 역할 추가 또는 SNS 가입 시: 중복 신청 여부 체크
-      const me = await getMe()
-      const existingRequest = me.roleRequests?.find(
-        (r) => r.role === selected && (r.status === 'PENDING' || r.status === 'ACTIVE')
-      )
-      if (existingRequest) {
-        const statusLabel = existingRequest.status === 'PENDING' ? '승인 대기 중' : '이미 활성화됨'
-        setError(`해당 역할은 이미 ${statusLabel}입니다.`)
         setLoading(false)
         return
       }

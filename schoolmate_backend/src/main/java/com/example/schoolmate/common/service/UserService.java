@@ -114,6 +114,7 @@ public class UserService {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setUser(user);
         studentInfo.setStatus(StudentStatus.ENROLLED);
+        studentInfo.setPrimary(true); // 신규 가입 = 최초 인스턴스 → 항상 primary
         studentInfo.setPhone(dto.getPhoneNumber());
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(studentInfo::setSchool);
@@ -156,6 +157,7 @@ public class UserService {
         TeacherInfo teacherInfo = new TeacherInfo();
         teacherInfo.setUser(user);
         teacherInfo.setStatus(TeacherStatus.EMPLOYED);
+        teacherInfo.setPrimary(true); // 신규 가입 = 최초 인스턴스 → 항상 primary
         teacherInfo.setPhone(dto.getPhoneNumber());
         if (dto.getSchoolId() != null) {
             schoolRepository.findById(dto.getSchoolId()).ifPresent(teacherInfo::setSchool);
@@ -203,20 +205,24 @@ public class UserService {
     public void createSocialUserInfo(User user, UserRole role, Long schoolId) {
         switch (role) {
             case STUDENT -> {
+                boolean isFirst = user.getInfos().stream().noneMatch(i -> i instanceof StudentInfo);
                 StudentInfo studentInfo = new StudentInfo();
                 studentInfo.setUser(user);
                 studentInfo.setStatus(StudentStatus.ENROLLED);
                 studentInfo.setCode(java.util.UUID.randomUUID().toString());
+                studentInfo.setPrimary(isFirst);
                 if (schoolId != null) {
                     schoolRepository.findById(schoolId).ifPresent(studentInfo::setSchool);
                 }
                 user.getInfos().add(studentInfo);
             }
             case TEACHER -> {
+                boolean isFirst = user.getInfos().stream().noneMatch(i -> i instanceof TeacherInfo);
                 TeacherInfo teacherInfo = new TeacherInfo();
                 teacherInfo.setUser(user);
                 teacherInfo.setStatus(TeacherStatus.EMPLOYED);
                 teacherInfo.setCode(java.util.UUID.randomUUID().toString());
+                teacherInfo.setPrimary(isFirst);
                 if (schoolId != null) {
                     schoolRepository.findById(schoolId).ifPresent(teacherInfo::setSchool);
                 }
@@ -238,8 +244,14 @@ public class UserService {
         }
         userRepository.save(user);
 
-        // RoleRequest 생성 — ADMIN 보유 계정은 즉시 ACTIVE, 그 외는 PENDING 대기
+        // RoleRequest 생성 — 같은 (user, role, schoolId) 조합이 이미 있으면 skip
         if (role != UserRole.ADMIN) {
+            boolean alreadyExists = schoolId != null
+                    ? roleRequestRepository.existsByUserAndRoleAndSchoolId(user, role, schoolId)
+                    : roleRequestRepository.existsByUserAndRoleAndSchoolIdIsNull(user, role);
+            if (alreadyExists) {
+                return; // 중복 신청 무시
+            }
             boolean isAdmin = user.getRoles().contains(UserRole.ADMIN);
             RoleRequest roleRequest = isAdmin
                     ? RoleRequest.createActive(user, role, schoolId, null)

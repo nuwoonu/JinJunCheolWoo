@@ -27,9 +27,11 @@ function todayKey(): string {
  * 당일 급식 정보를 반환합니다.
  * 캐시가 있으면 API 호출 없이 즉시 반환하고,
  * 없으면 /api/neis/meal/today 를 호출한 뒤 캐싱합니다.
+ *
+ * @param schoolId 학교 ID — 다중 학교 지원을 위해 캐시 키에 포함
  */
-export async function getTodayMeal(): Promise<MealInfo | null> {
-  const key = todayKey()
+export async function getTodayMeal(schoolId?: number | null): Promise<MealInfo | null> {
+  const key = schoolId != null ? `${schoolId}-${todayKey()}` : todayKey()
 
   // 캐시 HIT (null 포함 — 급식 없는 날도 재요청 방지)
   if (Object.prototype.hasOwnProperty.call(cache, key)) {

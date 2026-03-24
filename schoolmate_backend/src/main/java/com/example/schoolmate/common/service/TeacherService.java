@@ -135,6 +135,7 @@ public class TeacherService {
 
         TeacherInfo info = new TeacherInfo();
         info.setCode(request.getCode());
+        info.setPrimary(true);
         // cheol
         if (request.getSubject() != null && !request.getSubject().isBlank()) {
             Subject subject = subjectRepository.findByCode(request.getSubject())

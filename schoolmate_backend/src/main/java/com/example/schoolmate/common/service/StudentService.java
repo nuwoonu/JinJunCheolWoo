@@ -133,6 +133,7 @@ public class StudentService {
         StudentInfo info = new StudentInfo();
         info.setCode(request.getCode());
         info.setStatus(StudentStatus.ENROLLED);
+        info.setPrimary(true);
         info.setUser(user);
         user.getInfos().add(info);
 
@@ -434,6 +435,7 @@ public class StudentService {
         StudentInfo student = new StudentInfo();
         student.setCode(code);
         student.setStatus(StudentStatus.ENROLLED);
+        student.setPrimary(true);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());

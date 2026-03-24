@@ -34,6 +34,7 @@ interface StudentInfo {
   studentNumber?: number
   status?: string
   classroomId?: number | null
+  schoolId?: number | null
 }
 
 interface DashboardData {
@@ -69,6 +70,7 @@ export default function StudentDashboard() {
   const year = student?.year ?? 0
   const classNum = student?.classNum ?? 0
   const classroomId = student?.classroomId ?? null
+  const schoolId = student?.schoolId ?? null
 
   if (loading) {
     return (
@@ -136,7 +138,7 @@ export default function StudentDashboard() {
           <ClassBoardWidget classroomId={classroomId} />
         </div>
         <div className="col-xl-4 d-flex flex-column">
-          <TodayMealWidget />
+          <TodayMealWidget schoolId={schoolId} />
         </div>
       </div>
 

@@ -25,6 +25,12 @@ public interface RoleRequestRepository extends JpaRepository<RoleRequest, Long> 
     /** 특정 유저가 해당 역할로 신청 중인지 (PENDING or ACTIVE) */
     boolean existsByUserAndRoleAndStatusIn(User user, UserRole role, List<RoleRequestStatus> statuses);
 
+    /** 같은 (user, role, schoolId) 조합 존재 여부 — schoolId 있는 역할용 */
+    boolean existsByUserAndRoleAndSchoolId(User user, UserRole role, Long schoolId);
+
+    /** 같은 (user, role) 조합 존재 여부 — schoolId가 null인 역할(PARENT 등)용 */
+    boolean existsByUserAndRoleAndSchoolIdIsNull(User user, UserRole role);
+
     /** 학교별 대기 중인 신청 목록 (어드민 관리용) */
     Page<RoleRequest> findBySchoolIdAndStatus(Long schoolId, RoleRequestStatus status, Pageable pageable);
 

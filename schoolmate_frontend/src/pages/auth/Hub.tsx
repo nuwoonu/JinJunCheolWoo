@@ -3,7 +3,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Navigate } from "react-router-dom";
 import PageLoader from "@/components/PageLoader";
 import { ADMIN_ROUTES } from "@/constants/routes";
-import type { RoleRequestInfo, GrantInfo } from "@/api/auth";
+import type { RoleRequestInfo, GrantInfo, RoleContext } from "@/api/auth";
+import { getRoleContexts, switchContext, setPrimaryRole } from "@/api/auth";
+import { auth } from "@/shared/auth";
 import NotificationDropdown from "@/components/fragments/NotificationDropdown";
 import ProfileDropdown from "@/components/profile/ProfileDropdown";
 
@@ -60,45 +62,71 @@ const ROLE_CONFIG: RoleConfig[] = [
   },
 ];
 
-function getRoleRequestStatus(roleRequests: RoleRequestInfo[] | undefined, role: string) {
-  return roleRequests?.find((r) => r.role === role)?.status ?? null;
-}
-
-
 export default function Hub() {
   const { user, loading, refetch } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
 
-  // 역할 추가 후 돌아왔을 때 최신 roleRequests 반영
+  const [contexts, setContexts] = useState<RoleContext[]>([]);
+  const [switchingId, setSwitchingId] = useState<number | null>(null);
+
   useEffect(() => {
     refetch();
+    getRoleContexts()
+      .then(setContexts)
+      .catch(() => setContexts([]));
   }, []);
 
   if (loading) return <PageLoader />;
   if (!user?.authenticated) return <Navigate to="/login" replace />;
 
-  const userRoles = user.roles && user.roles.length > 0
-    ? user.roles
-    : user.role ? [user.role] : [];
-
   const grants: GrantInfo[] = user.grants ?? [];
-  const isSuperAdmin = grants.some(g => g.grantedRole === "SUPER_ADMIN");
-  // grants가 하나라도 있으면 어드민 카드 표시
-  const roleRequests = user.roleRequests;
+  const isSuperAdmin = grants.some((g) => g.grantedRole === "SUPER_ADMIN");
+  const roleRequests: RoleRequestInfo[] = user.roleRequests ?? [];
 
-  // ACTIVE RoleRequest가 있는 역할만 클릭 가능 카드로 표시
-  // PENDING이면 흐릿하게 (대기 중 표시), REJECTED/없음이면 숨김
-  const roleCards = ROLE_CONFIG.map((cfg) => {
-    const rr = roleRequests?.find((r) => r.role === cfg.role);
-    const status = rr?.status ?? null;
-    const schoolName = rr?.schoolName ?? null;
-    const hasActiveRole = userRoles.includes(cfg.role);
+  // 컨텍스트 전환 후 해당 역할 대시보드로 이동
+  async function handleContextClick(ctx: RoleContext) {
+    const cfg = ROLE_CONFIG.find((r) => r.role === ctx.roleType);
+    if (!cfg || !ctx.isActive || switchingId !== null) return;
+    try {
+      setSwitchingId(ctx.infoId);
+      const tokens = await switchContext(ctx.infoId, ctx.roleType);
+      auth.setTokens(tokens.accessToken, tokens.refreshToken);
+      navigate(cfg.path);
+    } catch {
+      setSwitchingId(null);
+    }
+  }
 
-    if (!status && !hasActiveRole) return null; // 신청 기록 없음
+  // 메인 역할 지정
+  async function handleSetPrimary(ctx: RoleContext, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (ctx.isPrimary) return;
+    try {
+      await setPrimaryRole(ctx.infoId, ctx.roleType);
+      setContexts((prev) =>
+        prev.map((c) =>
+          c.roleType === ctx.roleType
+            ? { ...c, isPrimary: c.infoId === ctx.infoId }
+            : c
+        )
+      );
+    } catch {
+      // 에러 무시 (이미 primary인 경우 등)
+    }
+  }
 
-    return { cfg, status: status ?? (hasActiveRole ? 'ACTIVE' : null), schoolName };
-  }).filter(Boolean) as { cfg: RoleConfig; status: string; schoolName: string | null }[];
+  // PARENT: roleRequests 기반 (SchoolMemberInfo가 아니므로 role-contexts에 없음)
+  const parentRequest = roleRequests.find((r) => r.role === "PARENT");
+  const parentCfg = ROLE_CONFIG.find((r) => r.role === "PARENT")!;
+
+  // PENDING 신청 중이지만 아직 contexts에 없는 역할 (STUDENT/TEACHER/STAFF)
+  const pendingRequests = roleRequests.filter(
+    (rr) =>
+      rr.role !== "PARENT" &&
+      rr.status === "PENDING" &&
+      !contexts.some((c) => c.roleType === rr.role)
+  );
 
   const s = getStyles(theme.isDark);
 
@@ -115,11 +143,7 @@ export default function Hub() {
             <span style={s.userEmail}>{user.email}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              onClick={theme.toggle}
-              style={s.iconBtn}
-              aria-label="다크모드 전환"
-            >
+            <button onClick={theme.toggle} style={s.iconBtn} aria-label="다크모드 전환">
               <i className={theme.isDark ? "ri-sun-line" : "ri-moon-line"} style={{ fontSize: 18 }} />
             </button>
             <NotificationDropdown />
@@ -135,47 +159,149 @@ export default function Hub() {
 
         {/* 역할 카드 목록 */}
         <div style={s.cardGrid}>
-          {roleCards.map(({ cfg, status, schoolName }) => {
-            const isPending = status === 'PENDING';
-            const isSuspended = status === 'SUSPENDED';
-            const isActive = status === 'ACTIVE';
+
+          {/* role-contexts 기반 카드 (STUDENT / TEACHER / STAFF) */}
+          {contexts.map((ctx) => {
+            const cfg = ROLE_CONFIG.find((r) => r.role === ctx.roleType);
+            if (!cfg) return null;
+            const isLoading = switchingId === ctx.infoId;
 
             return (
               <button
-                key={cfg.role}
+                key={ctx.infoId}
                 style={{
                   ...s.roleCard,
-                  borderTop: `4px solid ${isPending || isSuspended ? '#94a3b8' : cfg.color}`,
-                  opacity: isPending || isSuspended ? 0.55 : 1,
-                  cursor: isActive ? 'pointer' : 'default',
-                  position: 'relative',
+                  borderTop: `4px solid ${ctx.isActive ? cfg.color : "#94a3b8"}`,
+                  opacity: ctx.isActive ? 1 : 0.55,
+                  cursor: ctx.isActive && switchingId === null ? "pointer" : "default",
+                  position: "relative",
                 }}
-                onClick={() => isActive && navigate(cfg.path)}
-                disabled={!isActive}
-                title={isPending ? '관리자 승인 대기 중입니다.' : isSuspended ? '역할이 정지되었습니다.' : undefined}
+                onClick={() => handleContextClick(ctx)}
+                disabled={!ctx.isActive || switchingId !== null}
+                title={
+                  !ctx.isActive
+                    ? ctx.statusDesc
+                    : ctx.isPrimary
+                    ? "현재 메인 역할"
+                    : undefined
+                }
               >
-                <i
-                  className={cfg.icon}
-                  style={{ ...s.roleIcon, color: isPending || isSuspended ? '#94a3b8' : cfg.color }}
-                />
-                <span style={s.roleLabel}>{cfg.label}</span>
-                {schoolName && (
-                  <span style={s.roleSchool}>
-                    <i className="ri-building-line" />
-                    {schoolName}
+                {/* 메인 배지 */}
+                {ctx.isPrimary && (
+                  <span style={s.primaryBadge}>
+                    <i className="ri-star-fill" /> 메인
                   </span>
                 )}
-                <span style={s.roleDesc}>{cfg.description}</span>
-                {isPending && (
+
+                <i
+                  className={cfg.icon}
+                  style={{ ...s.roleIcon, color: ctx.isActive ? cfg.color : "#94a3b8" }}
+                />
+                <span style={s.roleLabel}>{cfg.label}</span>
+
+                {ctx.schoolName && (
+                  <span style={s.roleSchool}>
+                    <i className="ri-building-line" />
+                    {ctx.schoolName}
+                  </span>
+                )}
+
+                <span style={s.roleDesc}>
+                  {ctx.isActive ? cfg.description : ctx.statusDesc}
+                </span>
+
+                {/* 비활성 상태 배지 */}
+                {!ctx.isActive && (
+                  <span style={{ ...s.statusBadge, background: "#fef2f2", color: "#dc2626", borderColor: "#fecaca" }}>
+                    <i className="ri-forbid-line" /> {ctx.statusDesc}
+                  </span>
+                )}
+
+                {/* 로딩 표시 */}
+                {isLoading && (
+                  <span style={s.loadingText}>
+                    <i className="ri-loader-4-line" /> 이동 중...
+                  </span>
+                )}
+
+                {/* 메인으로 지정 버튼 (활성 인스턴스이고 primary 아닐 때) */}
+                {ctx.isActive && !ctx.isPrimary && !isLoading && (
+                  <button
+                    style={s.setPrimaryBtn}
+                    onClick={(e) => handleSetPrimary(ctx, e)}
+                    title="메인 역할로 지정"
+                  >
+                    <i className="ri-star-line" /> 메인으로
+                  </button>
+                )}
+              </button>
+            );
+          })}
+
+          {/* 학부모 카드 (roleRequests 기반) */}
+          {parentRequest &&
+            (parentRequest.status === "ACTIVE" || parentRequest.status === "PENDING") && (
+              <button
+                style={{
+                  ...s.roleCard,
+                  borderTop: `4px solid ${parentRequest.status === "ACTIVE" ? parentCfg.color : "#94a3b8"}`,
+                  opacity: parentRequest.status === "ACTIVE" ? 1 : 0.55,
+                  cursor: parentRequest.status === "ACTIVE" ? "pointer" : "default",
+                }}
+                onClick={() => parentRequest.status === "ACTIVE" && navigate(parentCfg.path)}
+                disabled={parentRequest.status !== "ACTIVE"}
+              >
+                <i
+                  className={parentCfg.icon}
+                  style={{
+                    ...s.roleIcon,
+                    color: parentRequest.status === "ACTIVE" ? parentCfg.color : "#94a3b8",
+                  }}
+                />
+                <span style={s.roleLabel}>{parentCfg.label}</span>
+                {parentRequest.schoolName && (
+                  <span style={s.roleSchool}>
+                    <i className="ri-building-line" />
+                    {parentRequest.schoolName}
+                  </span>
+                )}
+                <span style={s.roleDesc}>{parentCfg.description}</span>
+                {parentRequest.status === "PENDING" && (
                   <span style={s.statusBadge}>
                     <i className="ri-time-line" /> 승인 대기
                   </span>
                 )}
-                {isSuspended && (
-                  <span style={{ ...s.statusBadge, background: '#fef2f2', color: '#dc2626' }}>
-                    <i className="ri-forbid-line" /> 정지됨
+              </button>
+            )}
+
+          {/* PENDING 신청 카드 (아직 contexts에 없는 역할) */}
+          {pendingRequests.map((rr) => {
+            const cfg = ROLE_CONFIG.find((r) => r.role === rr.role);
+            if (!cfg) return null;
+            return (
+              <button
+                key={`pending-${rr.role}`}
+                style={{
+                  ...s.roleCard,
+                  borderTop: "4px solid #94a3b8",
+                  opacity: 0.55,
+                  cursor: "default",
+                }}
+                disabled
+                title="관리자 승인 대기 중입니다."
+              >
+                <i className={cfg.icon} style={{ ...s.roleIcon, color: "#94a3b8" }} />
+                <span style={s.roleLabel}>{cfg.label}</span>
+                {rr.schoolName && (
+                  <span style={s.roleSchool}>
+                    <i className="ri-building-line" />
+                    {rr.schoolName}
                   </span>
                 )}
+                <span style={s.roleDesc}>{cfg.description}</span>
+                <span style={s.statusBadge}>
+                  <i className="ri-time-line" /> 승인 대기
+                </span>
               </button>
             );
           })}
@@ -202,7 +328,6 @@ export default function Hub() {
             <span style={s.roleDesc}>새로운 역할을 등록합니다.</span>
           </button>
         </div>
-
       </div>
     </div>
   );
@@ -353,6 +478,41 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       borderRadius: 20,
       padding: "2px 8px",
       marginTop: 4,
+    },
+    primaryBadge: {
+      position: "absolute",
+      top: 8,
+      right: 8,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 3,
+      fontSize: 10,
+      fontWeight: 600,
+      color: "#d97706",
+      background: isDark ? "#292524" : "#fffbeb",
+      border: "1px solid #fde68a",
+      borderRadius: 20,
+      padding: "2px 6px",
+    },
+    setPrimaryBtn: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 4,
+      padding: "3px 10px",
+      fontSize: 11,
+      color: textSecondary,
+      background: "transparent",
+      border: `1px solid ${border}`,
+      borderRadius: 20,
+      cursor: "pointer",
+    },
+    loadingText: {
+      fontSize: 11,
+      color: textSecondary,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 4,
     },
   };
 }

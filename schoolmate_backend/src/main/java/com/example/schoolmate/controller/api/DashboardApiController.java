@@ -11,7 +11,9 @@ import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.student.StudentAssignmentRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.service.BoardService;
 import com.example.schoolmate.domain.term.service.AcademicTermService;
@@ -41,6 +43,7 @@ public class DashboardApiController {
     private final BoardService boardService;
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
+    private final StudentInfoRepository studentInfoRepository;
     private final AcademicTermService academicTermService;
     private final StudentAssignmentRepository studentAssignmentRepository;
 
@@ -52,7 +55,13 @@ public class DashboardApiController {
         if (uid != null) {
             User user = userRepository.findById(uid).orElse(null);
             if (user != null) {
-                StudentInfo info = user.getInfo(StudentInfo.class);
+                // JWT 컨텍스트(infoId)로 정확한 인스턴스 조회, 없으면 primary → 첫 번째 순으로 fallback
+                Long infoId = SchoolContextHolder.getInfoId();
+                StudentInfo info = (infoId != null)
+                        ? studentInfoRepository.findById(infoId)
+                                .filter(s -> s.getUser().getUid().equals(uid))
+                                .orElseGet(() -> user.getPrimaryInfo(StudentInfo.class))
+                        : user.getPrimaryInfo(StudentInfo.class);
                 if (info != null) {
                     data.put("student", StudentResponseDTO.from(info));
                 }
