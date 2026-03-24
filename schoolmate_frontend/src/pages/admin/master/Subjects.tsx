@@ -1,15 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import admin from "@/api/adminApi";
 
-const YEAR_OPTIONS = [
-  { value: "FIRST",  label: "1학년" },
-  { value: "SECOND", label: "2학년" },
-  { value: "THIRD",  label: "3학년" },
-];
-const YEAR_LABEL: Record<string, string> = { FIRST: "1학년", SECOND: "2학년", THIRD: "3학년" };
-
-const EMPTY = { originCode: "", code: "", name: "", year: "" };
+const EMPTY = { originCode: "", code: "", name: "" };
 
 const th: React.CSSProperties = {
   padding: "12px 16px",
@@ -36,6 +29,8 @@ export default function Subjects() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ ...EMPTY });
   const [isEdit, setIsEdit] = useState(false);
+  const [csvResults, setCsvResults] = useState<string[] | null>(null);
+  const csvRef = useRef<HTMLInputElement>(null);
 
   const load = () =>
     admin.get("/subjects").then((r) => setSubjects(r.data ?? []));
@@ -49,14 +44,14 @@ export default function Subjects() {
   };
 
   const openUpdateModal = (s: any) => {
-    setForm({ originCode: s.code, code: s.code, name: s.name, year: s.year ?? "" });
+    setForm({ originCode: s.code, code: s.code, name: s.name });
     setIsEdit(true);
     setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const payload = { originCode: form.originCode, code: form.code, name: form.name, year: form.year || null };
+    const payload = { originCode: form.originCode, code: form.code, name: form.name };
     if (isEdit) {
       await admin.put(`/subjects`, payload);
     } else {
@@ -72,8 +67,55 @@ export default function Subjects() {
     load();
   };
 
+  const uploadCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await admin.post("/subjects/import-csv", fd);
+      setCsvResults(res.data ?? []);
+      load();
+    } catch {
+      setCsvResults(["CSV 등록 중 오류가 발생했습니다."]);
+    }
+    e.target.value = "";
+  };
+
   return (
     <AdminLayout>
+      {/* CSV 결과 모달 */}
+      {csvResults && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#fff", borderRadius: 12, width: "100%", maxWidth: 480, margin: "0 16px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>CSV 등록 결과</h6>
+              <button onClick={() => setCsvResults(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#6b7280" }}>✕</button>
+            </div>
+            <div style={{ padding: 20, maxHeight: 360, overflowY: "auto" }}>
+              {csvResults.map((r, i) => {
+                const isSkip = r.startsWith("건너뜀");
+                const isFail = r.startsWith("실패");
+                return (
+                  <div key={i} style={{ fontSize: 13, padding: "4px 0", color: isFail ? "#ef4444" : isSkip ? "#f59e0b" : "#16a34a" }}>
+                    {r}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ padding: "12px 20px", borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setCsvResults(null)}
+                style={{ padding: "8px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 과목 등록/수정 모달 */}
       {showModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
           <div style={{ background: "#fff", borderRadius: 12, width: "100%", maxWidth: 440, margin: "0 16px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
@@ -94,28 +136,15 @@ export default function Subjects() {
                     placeholder="예: MATH01"
                   />
                 </div>
-                <div style={{ marginBottom: 16 }}>
+                <div style={{ marginBottom: 4 }}>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "#374151" }}>과목명</label>
                   <input
                     className="form-control"
                     required
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    placeholder="예: 수학"
+                    placeholder="예: 1학년 수학"
                   />
-                </div>
-                <div style={{ marginBottom: 4 }}>
-                  <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "#374151" }}>학년</label>
-                  <select
-                    className="form-select"
-                    value={form.year}
-                    onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))}
-                  >
-                    <option value="">-- 학년 선택 --</option>
-                    {YEAR_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
                 </div>
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 20px", borderTop: "1px solid #e5e7eb" }}>
@@ -143,27 +172,40 @@ export default function Subjects() {
           <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>과목 관리</h5>
           <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>교과목 코드 및 과목명을 관리합니다.</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
-        >
-          + 과목 등록
-        </button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input
+            type="file"
+            ref={csvRef}
+            accept=".csv"
+            style={{ display: "none" }}
+            onChange={uploadCsv}
+          />
+          <button
+            onClick={() => csvRef.current?.click()}
+            style={{ padding: "9px 20px", background: "#fff", border: "1px solid #25A194", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#25A194", cursor: "pointer", whiteSpace: "nowrap" }}
+          >
+            CSV 일괄 등록
+          </button>
+          <button
+            onClick={openCreateModal}
+            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
+          >
+            + 과목 등록
+          </button>
+        </div>
       </div>
 
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
           <colgroup>
-            <col style={{ width: 140 }} />
+            <col style={{ width: 160 }} />
             <col />
-            <col style={{ width: 120 }} />
             <col style={{ width: 140 }} />
           </colgroup>
           <thead>
             <tr>
               <th style={th}>과목 코드</th>
               <th style={th}>과목명</th>
-              <th style={{ ...th, textAlign: "center" }}>학년</th>
               <th style={{ ...th, textAlign: "center" }}>관리</th>
             </tr>
           </thead>
@@ -172,7 +214,6 @@ export default function Subjects() {
               <tr key={s.code}>
                 <td style={{ ...td, fontWeight: 600, color: "#1d4ed8" }}>{s.code}</td>
                 <td style={td}>{s.name}</td>
-                <td style={{ ...td, textAlign: "center", color: "#6b7280" }}>{s.year ? YEAR_LABEL[s.year] : "-"}</td>
                 <td style={{ ...td, textAlign: "center" }}>
                   <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
                     <button
@@ -193,7 +234,7 @@ export default function Subjects() {
             ))}
             {subjects.length === 0 && (
               <tr>
-                <td colSpan={4} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "40px 0", whiteSpace: "normal" }}>
+                <td colSpan={3} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "40px 0", whiteSpace: "normal" }}>
                   등록된 과목이 없습니다.
                 </td>
               </tr>

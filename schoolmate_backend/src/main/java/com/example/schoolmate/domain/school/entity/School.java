@@ -25,7 +25,8 @@ public class School extends BaseEntity {
     private String phoneNumber; // 전화번호 (ORG_TELNO)
     private String homepage; // 홈페이지 (HMPG_ADRES)
 
-    private String officeOfEducation; // 관할 교육청 (ATPT_OFCDC_SC_NM)
+    private String officeOfEducation; // 관할 교육청 명 (ATPT_OFCDC_SC_NM)
+    private String officeCode;        // 관할 교육청 코드 (ATPT_OFCDC_SC_CODE) - NEIS API 파라미터용
     private String schoolKind; // 학교 종류 (SCHUL_KND_SC_NM - 초/중/고)
     private String foundationType; // 설립 구분 (FOND_SC_NM - 공립/사립)
     private String coeduType; // 남녀공학 구분 (COEDU_SC_NM)

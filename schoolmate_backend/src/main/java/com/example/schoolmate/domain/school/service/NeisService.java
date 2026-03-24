@@ -151,6 +151,7 @@ public class NeisService {
                     school.setSchoolCode(code);
                     school.setName(getText(row, "SCHUL_NM"));
                     school.setOfficeOfEducation(getText(row, "ATPT_OFCDC_SC_NM"));
+                    school.setOfficeCode(getText(row, "ATPT_OFCDC_SC_CODE"));
                     school.setSchoolKind(getText(row, "SCHUL_KND_SC_NM"));
                     school.setAddress(getText(row, "ORG_RDNMA"));
                     school.setPhoneNumber(getText(row, "ORG_TELNO"));

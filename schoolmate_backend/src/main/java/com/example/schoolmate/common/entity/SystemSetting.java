@@ -12,6 +12,14 @@ import lombok.Setter;
 
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
+/**
+ * @deprecated AcademicTerm 으로 대체되었습니다.
+ * 현재 학기 조회: AcademicTermService.getCurrentTerm()
+ * 학기 관리:     AdminSettingApiController (/admin/settings)
+ *
+ * 기존 데이터 마이그레이션 완료 전까지 테이블은 유지됩니다.
+ */
+@Deprecated
 @Entity
 @Getter
 @Setter
@@ -23,6 +31,11 @@ public class SystemSetting extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** @deprecated AcademicTerm.schoolYear 사용 */
+    @Deprecated
     private int currentSchoolYear;
+
+    /** @deprecated AcademicTerm.semester 사용 */
+    @Deprecated
     private int currentSemester; // 1 or 2
 }

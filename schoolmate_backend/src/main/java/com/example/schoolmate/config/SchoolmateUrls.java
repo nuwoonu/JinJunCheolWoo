@@ -45,6 +45,8 @@ public class SchoolmateUrls {
     public static class Api {
         // 나이스 학교 기본 정보 API
         public static final String NEIS_SCHOOL_INFO = "https://open.neis.go.kr/hub/schoolInfo";
+        // 나이스 급식 식단 정보 API
+        public static final String NEIS_MEAL_INFO = "https://open.neis.go.kr/hub/mealServiceDietInfo";
     }
 
     // 이미지 업로드 경로 (Web Access URL)

@@ -4,8 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.schoolmate.common.entity.Classroom;
-import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.domain.term.entity.CourseSection;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
 import jakarta.persistence.CascadeType;
@@ -30,14 +29,11 @@ import lombok.Setter;
 
 /**
  * [woo] 과제 엔티티
- * - 교사가 특정 학급에 과제를 출제
- * - Classroom을 통해 해당 학급 학생들이 조회
- * - TeacherInfo로 출제 교사 연결
+ * - CourseSection(분반)을 통해 출제 교사·대상 학급·과목·학기 정보를 모두 참조
  */
 @Entity
 @Table(name = "homework", indexes = {
-        @Index(name = "idx_homework_classroom", columnList = "classroom_id"),
-        @Index(name = "idx_homework_teacher", columnList = "teacher_info_id"),
+        @Index(name = "idx_homework_course_section", columnList = "course_section_id"),
         @Index(name = "idx_homework_status", columnList = "status")
 })
 @Getter
@@ -57,15 +53,10 @@ public class Homework extends SchoolBaseEntity {
     @Column(nullable = false, length = 5000)
     private String content;
 
-    // [woo] 출제 교사 - TeacherInfo와 직접 연결
+    // 수업 분반 - 출제 교사·대상 학급·과목·학기 정보를 CourseSection 하나로 참조
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_info_id", nullable = false)
-    private TeacherInfo teacher;
-
-    // [woo] 대상 학급 - Classroom과 연결하여 해당 학급 학생만 조회 가능
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "classroom_id", nullable = false)
-    private Classroom classroom;
+    @JoinColumn(name = "course_section_id", nullable = false)
+    private CourseSection courseSection;
 
     // [woo] 과제 상태
     @Builder.Default
