@@ -27,6 +27,15 @@ export default defineConfig({
         target: "http://localhost:8080",
         changeOrigin: true,
       },
+      // 업로드 파일 서빙 (/upload/**, /uploads/**)
+      "/upload": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/uploads": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
     },
   },
 });

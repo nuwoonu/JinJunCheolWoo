@@ -17,7 +17,7 @@ import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.service.FileService;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
@@ -38,7 +38,7 @@ public class UserProfileController {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
-    private final FileService fileService;
+    private final FileManager fileManager;
     private final UserService userService;
 
     /**
@@ -59,14 +59,10 @@ public class UserProfileController {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 기존 이미지 파일 삭제
-        profileRepository.findByUser(user).ifPresent(existing -> {
-            if (existing.getUuid() != null) {
-                fileService.delete(existing.getUuid(), "profile");
-            }
-        });
-
-        String savedFilename = fileService.upload(file, "profile");
+        // 기존 이미지 파일 삭제 후 새 파일 업로드
+        String oldFilename = profileRepository.findByUser(user)
+                .map(p -> p.getUuid()).orElse(null);
+        String savedFilename = fileManager.replace(file, oldFilename, FileManager.UploadType.PROFILE);
         if (savedFilename == null) {
             return ResponseEntity.internalServerError().body(Map.of("message", "파일 저장에 실패했습니다."));
         }
@@ -79,7 +75,7 @@ public class UserProfileController {
         profileRepository.save(profile);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("profileImageUrl", "/upload/profile/" + savedFilename);
+        result.put("profileImageUrl", FileManager.UploadType.PROFILE.toUrl(savedFilename));
         return ResponseEntity.ok(result);
     }
 

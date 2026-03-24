@@ -8,6 +8,7 @@ import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.student.StudentAssignmentRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -57,8 +58,7 @@ public class DashboardApiController {
                 }
                 profileRepository.findByUser(user).ifPresent(p -> {
                     if (p.getUuid() != null) {
-                        data.put("profileImageUrl",
-                                "/upload/" + p.getPath() + "/" + p.getUuid() + "_" + p.getImgName());
+                        data.put("profileImageUrl", FileManager.UploadType.PROFILE.toUrl(p.getUuid()));
                     }
                 });
             }
@@ -180,7 +180,7 @@ public class DashboardApiController {
         String imageUrl = null;
         Profile profile = profileRepository.findByUser(user).orElse(null);
         if (profile != null && profile.getUuid() != null) {
-            imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
+            imageUrl = FileManager.UploadType.PROFILE.toUrl(profile.getUuid());
         }
         StudentAssignment assignment = info.getCurrentAssignment();
 

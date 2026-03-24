@@ -110,6 +110,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+### Upload files (업로드된 파일은 git 추적 제외) ###
+schoolmate_backend/uploads/*
+!schoolmate_backend/uploads/.gitkeep
+schoolmate_backend/src/main/resources/static/uploads/
+
 ### Claude AI ###
 .claude/settings.local.json
 schoolmate_backend/src/main/resources/application-oauth.properties

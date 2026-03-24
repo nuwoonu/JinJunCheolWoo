@@ -19,7 +19,7 @@ import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.domain.term.repository.CourseSectionRepository;
-import com.example.schoolmate.common.service.FileService;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.homework.dto.HomeworkDTO;
 import com.example.schoolmate.homework.entity.Homework;
@@ -49,9 +49,7 @@ public class HomeworkService {
     private final TeacherInfoRepository teacherInfoRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
-    private final FileService fileService;
-
-    private static final String UPLOAD_SUB_DIR = "homework";
+    private final FileManager fileManager;
 
     // ========== [woo] 과제 출제 (교사) ==========
 
@@ -68,12 +66,8 @@ public class HomeworkService {
             throw new SecurityException("본인이 담당하는 수업 분반에만 과제를 출제할 수 있습니다.");
         }
 
-        String savedFilename = null;
-        String originalFilename = null;
-        if (file != null && !file.isEmpty()) {
-            savedFilename = fileService.upload(file, UPLOAD_SUB_DIR);
-            originalFilename = file.getOriginalFilename();
-        }
+        String savedFilename = fileManager.upload(file, FileManager.UploadType.HOMEWORK);
+        String originalFilename = (savedFilename != null) ? file.getOriginalFilename() : null;
 
         Homework homework = Homework.builder()
                 .title(request.getTitle())
@@ -212,10 +206,7 @@ public class HomeworkService {
         }
 
         if (file != null && !file.isEmpty()) {
-            if (homework.getAttachmentUrl() != null) {
-                fileService.delete(homework.getAttachmentUrl(), UPLOAD_SUB_DIR);
-            }
-            homework.setAttachmentUrl(fileService.upload(file, UPLOAD_SUB_DIR));
+            homework.setAttachmentUrl(fileManager.replace(file, homework.getAttachmentUrl(), FileManager.UploadType.HOMEWORK));
             homework.setAttachmentOriginalName(file.getOriginalFilename());
         }
 
@@ -231,6 +222,7 @@ public class HomeworkService {
         Homework homework = findHomeworkOrThrow(homeworkId);
         validateTeacherOwner(homework, userDTO);
 
+        fileManager.delete(homework.getAttachmentUrl(), FileManager.UploadType.HOMEWORK);
         homework.delete();
         log.info("[woo] 과제 삭제: {} by {}", homeworkId, userDTO.getName());
     }
@@ -259,12 +251,8 @@ public class HomeworkService {
             throw new IllegalArgumentException("이미 제출한 과제입니다.");
         }
 
-        String savedFilename = null;
-        String originalFilename = null;
-        if (file != null && !file.isEmpty()) {
-            savedFilename = fileService.upload(file, UPLOAD_SUB_DIR);
-            originalFilename = file.getOriginalFilename();
-        }
+        String savedFilename = fileManager.upload(file, FileManager.UploadType.HOMEWORK);
+        String originalFilename = (savedFilename != null) ? file.getOriginalFilename() : null;
 
         HomeworkSubmission.SubmissionStatus status = homework.isOverdue()
                 ? HomeworkSubmission.SubmissionStatus.LATE

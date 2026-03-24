@@ -1,6 +1,5 @@
 package com.example.schoolmate.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -11,9 +10,6 @@ import com.example.schoolmate.config.school.SchoolInterceptor;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-        @Value("${com.example.schoolmate.upload.path}")
-        private String uploadPath;
-
         @Override
         public void addInterceptors(InterceptorRegistry registry) {
                 // 어드민 API 요청에 X-School-Id 헤더를 처리하여 SchoolContextHolder에 저장
@@ -23,14 +19,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
-                // /upload/** URL로 접근하면 실제 파일 시스템의 uploadPath에서 파일을 제공
+                // FileManager가 저장하는 절대 경로({user.dir}/uploads/)와 동일하게 매핑
+                String uploadsAbsPath = "file:///" + System.getProperty("user.dir") + "/uploads/";
                 registry.addResourceHandler("/upload/**")
-                                .addResourceLocations("file:" + uploadPath + "/");
-
-                // [woo] 업로드 파일 제공 - src 밖 schoolmate_backend/uploads/ 매핑
+                                .addResourceLocations(uploadsAbsPath);
                 registry.addResourceHandler("/uploads/**")
-                                .addResourceLocations(
-                                                "file:///" + System.getProperty("user.dir")
-                                                                + "/uploads/");
+                                .addResourceLocations(uploadsAbsPath);
         }
 }

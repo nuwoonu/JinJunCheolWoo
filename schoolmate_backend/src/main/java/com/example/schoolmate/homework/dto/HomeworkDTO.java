@@ -3,6 +3,7 @@ package com.example.schoolmate.homework.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.homework.entity.Homework;
 import com.example.schoolmate.homework.entity.HomeworkStatus;
 import com.example.schoolmate.homework.entity.HomeworkSubmission;
@@ -141,7 +142,7 @@ public class HomeworkDTO {
                     .termName(homework.getCourseSection().getTerm().getDisplayName())
                     .status(homework.getStatus())
                     .dueDate(homework.getDueDate())
-                    .attachmentUrl(homework.getAttachmentUrl())
+                    .attachmentUrl(homework.getAttachmentUrl() != null ? FileManager.UploadType.HOMEWORK.toUrl(homework.getAttachmentUrl()) : null)
                     .attachmentOriginalName(homework.getAttachmentOriginalName())
                     .maxScore(homework.getMaxScore())
                     .submissionCount(homework.getSubmissions().size())
@@ -188,7 +189,7 @@ public class HomeworkDTO {
                     .studentName(submission.getStudent().getUser().getName())
                     .studentNumber(submission.getStudent().getFullStudentNumber())
                     .content(submission.getContent())
-                    .attachmentUrl(submission.getAttachmentUrl())
+                    .attachmentUrl(submission.getAttachmentUrl() != null ? FileManager.UploadType.HOMEWORK.toUrl(submission.getAttachmentUrl()) : null)
                     .attachmentOriginalName(submission.getAttachmentOriginalName())
                     .submittedAt(submission.getSubmittedAt())
                     .score(submission.getScore())

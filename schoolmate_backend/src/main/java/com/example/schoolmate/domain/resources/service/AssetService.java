@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.common.service.FileService;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.resources.constant.AssetStatus;
 import com.example.schoolmate.domain.resources.dto.AssetDTO;
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AssetService {
     private final SchoolAssetRepository assetRepository;
     private final AssetModelRepository modelRepository;
-    private final FileService fileService;
+    private final FileManager fileManager;
     private final SchoolRepository schoolRepository;
 
     @Transactional(readOnly = true)
@@ -51,10 +51,7 @@ public class AssetService {
 
     public void createAssetModel(AssetModelDTO.Request request) {
         log.info("기자재 모델 생성: name={}, category={}", request.getName(), request.getCategory());
-        String filename = null;
-        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
-            filename = fileService.upload(request.getImageFile(), "assets");
-        }
+        String filename = fileManager.upload(request.getImageFile(), FileManager.UploadType.ASSET);
 
         AssetModel model = AssetModel.builder()
                 .name(request.getName())
@@ -83,10 +80,7 @@ public class AssetService {
         model.setDescription(request.getDescription());
 
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
-            if (model.getImageFilename() != null) {
-                fileService.delete(model.getImageFilename(), "assets");
-            }
-            model.setImageFilename(fileService.upload(request.getImageFile(), "assets"));
+            model.setImageFilename(fileManager.replace(request.getImageFile(), model.getImageFilename(), FileManager.UploadType.ASSET));
         }
     }
 
@@ -101,7 +95,7 @@ public class AssetService {
             throw new IllegalArgumentException("해당 모델을 참조하는 자산(재고)이 존재하여 삭제할 수 없습니다.\n먼저 등록된 자산을 삭제해주세요.");
         }
 
-        // TODO: 이미지 파일 삭제 로직 추가 (fileService.delete)
+        fileManager.delete(model.getImageFilename(), FileManager.UploadType.ASSET);
         modelRepository.delete(model);
         log.info("기자재 모델 삭제 완료: id={}", id);
     }

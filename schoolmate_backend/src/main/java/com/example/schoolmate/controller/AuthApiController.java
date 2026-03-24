@@ -6,6 +6,7 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
 import com.example.schoolmate.common.util.LogHelper;
@@ -241,7 +242,7 @@ public class AuthApiController {
         if (dbUser != null) {
             profileImageUrl = profileRepository.findByUser(dbUser)
                     .filter(p -> p.getUuid() != null)
-                    .map(p -> "/upload/profile/" + p.getUuid())
+                    .map(p -> FileManager.UploadType.PROFILE.toUrl(p.getUuid()))
                     .orElse(null);
         }
 
