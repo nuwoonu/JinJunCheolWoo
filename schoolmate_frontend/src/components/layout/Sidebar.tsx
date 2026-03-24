@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { ADMIN_ROUTES } from "@/constants/routes";
@@ -188,9 +189,14 @@ export default function Sidebar() {
                   <span className="text-secondary-light text-sm mb-0 d-block">{ROLE_LABEL[role] ?? role}</span>
                 </span>
               </span>
-              <span className="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
-                <i className={`ri-arrow-${profile.isOpen ? "down" : "right"}-s-line`} />
-              </span>
+              {/* [woo] framer-motion 화살표 회전 애니메이션 */}
+              <motion.span
+                animate={{ rotate: profile.isOpen ? 90 : 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="profile-dropdown__icon pe-8 text-xl d-flex line-height-1"
+              >
+                <i className="ri-arrow-right-s-line" />
+              </motion.span>
             </button>
             <ul className={`dropdown-menu dropdown-menu-lg-end border p-12${profile.isOpen ? " show" : ""}`}>
               <li>
