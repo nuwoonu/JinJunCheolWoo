@@ -16,7 +16,6 @@ import SelectRole from "@/pages/auth/SelectRole";
 import SelectInfo from "@/pages/auth/SelectInfo";
 import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
-import UserProfile from "@/pages/user/Profile";
 // [cheol] 학생 관련
 import StudentList from "@/pages/cheol/student/StudentList";
 import StudentMyInfo from "@/pages/cheol/student/MyInfo";
@@ -448,15 +447,6 @@ function App() {
         }
       />
 
-      {/* [woo] 프로필 - 전체 역할 */}
-      <Route
-        path="/user/profile"
-        element={
-          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
-            <UserProfile />
-          </PrivateRoute>
-        }
-      />
 
       {/* [woo] 교직원 게시판 */}
       <Route

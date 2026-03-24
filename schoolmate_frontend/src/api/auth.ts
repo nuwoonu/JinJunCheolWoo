@@ -47,6 +47,10 @@ export type AuthUser = {
   grants?: GrantInfo[];
   /** 역할 신청 목록 (Hub 카드 상태 표시용) */
   roleRequests?: RoleRequestInfo[];
+  /** 소셜 로그인 제공자 (null=이메일, "google", "kakao") */
+  provider?: string | null;
+  /** 프로필 이미지 URL */
+  profileImageUrl?: string | null;
 };
 
 export async function getMe(): Promise<AuthUser> {

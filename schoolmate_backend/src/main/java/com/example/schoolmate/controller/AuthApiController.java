@@ -54,6 +54,7 @@ public class AuthApiController {
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolRepository schoolRepository;
+    private final com.example.schoolmate.common.repository.ProfileRepository profileRepository;
 
     /**
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
@@ -232,6 +233,18 @@ public class AuthApiController {
         // hasAdminAccess: grants가 하나라도 있으면 어드민 페이지 접근 가능
         boolean hasAdminAccess = !grants.isEmpty();
 
+        // provider (소셜 로그인 구분: null=이메일, "google", "kakao")
+        String provider = dbUser != null ? dbUser.getProvider() : null;
+
+        // 프로필 이미지 URL
+        String profileImageUrl = null;
+        if (dbUser != null) {
+            profileImageUrl = profileRepository.findByUser(dbUser)
+                    .filter(p -> p.getUuid() != null)
+                    .map(p -> "/upload/profile/" + p.getUuid())
+                    .orElse(null);
+        }
+
         Map<String, Object> response = new HashMap<>();
         response.put("authenticated", true);
         response.put("uid", uid);
@@ -242,6 +255,8 @@ public class AuthApiController {
         response.put("hasAdminAccess", hasAdminAccess);
         response.put("grants", grants);
         response.put("roleRequests", roleRequests);
+        response.put("provider", provider);
+        response.put("profileImageUrl", profileImageUrl);
 
         return ResponseEntity.ok(response);
     }

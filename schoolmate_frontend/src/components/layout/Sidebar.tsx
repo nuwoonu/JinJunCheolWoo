@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -17,24 +17,6 @@ function useSubmenu() {
 // [woo] 열린 상태일 때 'open dropdown-open' 두 클래스 모두 붙여야 CSS가 작동함
 function dc(isOpen: boolean) {
   return `dropdown${isOpen ? " open dropdown-open" : ""}`;
-}
-
-// [woo] 사이드바 내 프로필 드롭다운 - Bootstrap JS 없이 React state로 제어
-function useProfileDropdown() {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return { isOpen, toggle: () => setIsOpen((prev) => !prev), ref };
 }
 
 // [soojin] 학생 대시보드 사이드바 프로필 패널용 학생 정보 타입
@@ -61,7 +43,6 @@ export default function Sidebar() {
   const { user, signOut } = useAuth();
   const { open, toggle } = useSubmenu();
   const { isOpen, isCollapsed, closeSidebar, toggleCollapse } = useSidebar();
-  const profile = useProfileDropdown();
   const role = user?.role ?? "";
   const location = useLocation();
 
@@ -81,12 +62,6 @@ export default function Sidebar() {
       })
       .catch(() => {});
   }, [isStudentDashboard]);
-  const ROLE_LABEL: Record<string, string> = {
-    STUDENT: "학생",
-    TEACHER: "선생님",
-    PARENT: "학부모",
-    ADMIN: "관리자",
-  };
 
   // [woo] 학생일 때 대시보드 API에서 프로필 정보 + 출결 통계 가져오기
   const [studentInfo, setStudentInfo] = useState<StudentProfile | null>(null);
@@ -166,69 +141,10 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* 사용자 프로필 드롭다운
-          [soojin] 학생 대시보드에서는 아래 프로필 패널로 대체하므로 숨김 */}
-      {!isStudentDashboard && user?.authenticated && (
-        <div className="mx-16 py-12">
-          {/* [woo] 프로필 드롭다운 - React state로 제어 (Bootstrap JS 불필요) */}
-          <div className="dropdown profile-dropdown" ref={profile.ref}>
-            <button
-              type="button"
-              className="profile-dropdown__button d-flex align-items-center justify-content-between p-10 w-100 overflow-hidden bg-neutral-50 radius-12"
-              onClick={profile.toggle}
-            >
-              <span className="d-flex align-items-start gap-10">
-                <img
-                  src="/images/thumbs/leave-request-img2.png"
-                  alt="Thumbnail"
-                  className="w-40-px h-40-px rounded-circle object-fit-cover flex-shrink-0"
-                />
-                <span className="profile-dropdown__contents">
-                  <span className="h6 mb-0 text-md d-block text-primary-light">{user.name ?? user.email}</span>
-                  <span className="text-secondary-light text-sm mb-0 d-block">{ROLE_LABEL[role] ?? role}</span>
-                </span>
-              </span>
-              <span className="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
-                <i className={`ri-arrow-${profile.isOpen ? "down" : "right"}-s-line`} />
-              </span>
-            </button>
-            <ul className={`dropdown-menu dropdown-menu-lg-end border p-12${profile.isOpen ? " show" : ""}`}>
-              <li>
-                <Link
-                  to="/user/profile"
-                  className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                >
-                  <i className="ri-user-3-line" /> 나의 프로필
-                </Link>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6 w-100 border-0 bg-transparent"
-                  onClick={signOut}
-                >
-                  <i className="ri-shut-down-line" /> 로그아웃
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      )}
-
       {/* [soojin] 학생 대시보드 전용 프로필 패널
           /student/dashboard 경로일 때만 렌더링 (다른 역할 대시보드에서는 표시 안 함) */}
       {isStudentDashboard && studentProfile && !isCollapsed && (
         <div className="mx-16 mt-16 mb-12 p-16 bg-neutral-50 radius-12 text-center position-relative">
-          {/* [soojin] 프로필 페이지 링크 - 패널 우측 상단
-              d-flex 없이 인라인 단일 링크로 처리 (분리된 요소처럼 보이는 현상 방지) */}
-          <Link
-            to="/user/profile"
-            className="position-absolute text-xs text-primary-600"
-            style={{ top: 10, right: 12 }}
-          >
-            <i className="ri-user-3-line me-4" />
-            프로필
-          </Link>
           {/* 프로필 이미지 */}
           <div className="w-120-px h-120-px rounded-circle mx-auto mb-16 overflow-hidden border border-4 border-white shadow-sm">
             {studentProfile.profileImageUrl ? (

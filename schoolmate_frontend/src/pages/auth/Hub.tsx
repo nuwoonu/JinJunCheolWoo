@@ -5,6 +5,7 @@ import PageLoader from "@/components/PageLoader";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import type { RoleRequestInfo, GrantInfo } from "@/api/auth";
 import NotificationDropdown from "@/components/fragments/NotificationDropdown";
+import ProfileDropdown from "@/components/profile/ProfileDropdown";
 
 function useTheme() {
   const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
@@ -63,19 +64,10 @@ function getRoleRequestStatus(roleRequests: RoleRequestInfo[] | undefined, role:
   return roleRequests?.find((r) => r.role === role)?.status ?? null;
 }
 
-const ROLE_LABEL: Record<string, string> = {
-  STUDENT: "학생",
-  TEACHER: "교사",
-  ADMIN: "관리자",
-  PARENT: "학부모",
-  STAFF: "교직원",
-  GUEST: "게스트",
-};
 
 export default function Hub() {
-  const { user, loading, signOut, refetch } = useAuth();
+  const { user, loading, refetch } = useAuth();
   const navigate = useNavigate();
-  const [showProfile, setShowProfile] = useState(false);
   const theme = useTheme();
 
   // 역할 추가 후 돌아왔을 때 최신 roleRequests 반영
@@ -131,10 +123,7 @@ export default function Hub() {
               <i className={theme.isDark ? "ri-sun-line" : "ri-moon-line"} style={{ fontSize: 18 }} />
             </button>
             <NotificationDropdown />
-            <button style={s.signOutBtn} onClick={signOut}>
-              <i className="ri-logout-box-line" />
-              로그아웃
-            </button>
+            <ProfileDropdown />
           </div>
         </div>
 
@@ -214,62 +203,7 @@ export default function Hub() {
           </button>
         </div>
 
-        {/* 프로필 링크 */}
-        <div style={s.footer}>
-          <button style={s.profileLink} onClick={() => setShowProfile(true)}>
-            <i className="ri-user-settings-line" />
-            내 프로필 설정
-          </button>
-        </div>
       </div>
-
-      {/* 프로필 모달 */}
-      {showProfile && (
-        <div
-          style={s.modalBackdrop}
-          onClick={(e) => e.target === e.currentTarget && setShowProfile(false)}
-        >
-          <div style={s.modalBox}>
-            {/* 모달 헤더 */}
-            <div style={s.modalHeader}>
-              <span style={s.modalTitle}>내 프로필</span>
-              <button style={s.modalClose} onClick={() => setShowProfile(false)}>
-                <i className="ri-close-line" />
-              </button>
-            </div>
-
-            {/* 아바타 */}
-            <div style={s.modalAvatarArea}>
-              <div style={s.modalAvatar}>
-                <span style={s.modalAvatarText}>
-                  {user?.name?.[0] ?? user?.email?.[0] ?? "?"}
-                </span>
-              </div>
-              <p style={s.modalAvatarName}>{user?.name ?? "-"}</p>
-              <span style={s.modalRoleBadge}>
-                {ROLE_LABEL[user?.role ?? ""] ?? user?.role ?? "-"}
-              </span>
-            </div>
-
-            {/* 정보 목록 */}
-            <div style={s.modalInfoList}>
-              {[
-                { icon: "ri-user-line",  label: "이름",   value: user?.name },
-                { icon: "ri-mail-line",  label: "이메일", value: user?.email },
-                { icon: "ri-shield-line", label: "역할",  value: ROLE_LABEL[user?.role ?? ""] ?? user?.role },
-              ].map(({ icon, label, value }) => (
-                <div key={label} style={s.modalInfoRow}>
-                  <div style={s.modalInfoIcon}>
-                    <i className={icon} style={{ fontSize: 16, color: theme.isDark ? "#94a3b8" : "#6b7280" }} />
-                  </div>
-                  <span style={s.modalInfoLabel}>{label}</span>
-                  <span style={s.modalInfoValue}>{value ?? "-"}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -282,8 +216,6 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
   const textSecondary = isDark ? "#94a3b8" : "#6b7280";
   const iconBtnBg = isDark ? "#334155" : "#f3f4f6";
   const addCardBg = isDark ? "#1e293b" : "#fafafa";
-  const rowDivider = isDark ? "#334155" : "#f9fafb";
-  const sectionDivider = isDark ? "#334155" : "#f3f4f6";
 
   return {
     page: {
@@ -335,18 +267,6 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
-    },
-    signOutBtn: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      background: "none",
-      border: `1px solid ${border}`,
-      borderRadius: 8,
-      padding: "6px 12px",
-      fontSize: 13,
-      color: textSecondary,
-      cursor: "pointer",
     },
     iconBtn: {
       display: "flex",
@@ -433,132 +353,6 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       borderRadius: 20,
       padding: "2px 8px",
       marginTop: 4,
-    },
-    footer: {
-      display: "flex",
-      justifyContent: "center",
-    },
-    profileLink: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      background: "none",
-      border: "none",
-      fontSize: 13,
-      color: textSecondary,
-      cursor: "pointer",
-      textDecoration: "underline",
-    },
-
-    // 모달
-    modalBackdrop: {
-      position: "fixed",
-      inset: 0,
-      background: "rgba(0,0,0,0.55)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-      padding: "16px",
-    },
-    modalBox: {
-      background: surface,
-      borderRadius: 16,
-      width: "100%",
-      maxWidth: 400,
-      boxShadow: isDark ? "0 20px 60px rgba(0,0,0,0.5)" : "0 20px 60px rgba(0,0,0,0.18)",
-      overflow: "hidden",
-    },
-    modalHeader: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: "16px 20px",
-      borderBottom: `1px solid ${sectionDivider}`,
-    },
-    modalTitle: {
-      fontSize: 15,
-      fontWeight: 600,
-      color: textPrimary,
-    },
-    modalClose: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      fontSize: 20,
-      color: textSecondary,
-      lineHeight: 1,
-      padding: 0,
-    },
-    modalAvatarArea: {
-      display: "flex",
-      flexDirection: "column" as const,
-      alignItems: "center",
-      padding: "28px 20px 20px",
-      borderBottom: `1px solid ${sectionDivider}`,
-    },
-    modalAvatar: {
-      width: 72,
-      height: 72,
-      borderRadius: "50%",
-      background: "linear-gradient(135deg, #25A194, #1d4ed8)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 12,
-    },
-    modalAvatarText: {
-      fontSize: 28,
-      fontWeight: 700,
-      color: "#fff",
-    },
-    modalAvatarName: {
-      fontSize: 16,
-      fontWeight: 600,
-      color: textPrimary,
-      margin: "0 0 8px",
-    },
-    modalRoleBadge: {
-      fontSize: 12,
-      fontWeight: 500,
-      color: "#25A194",
-      background: "rgba(37,161,148,0.15)",
-      padding: "3px 12px",
-      borderRadius: 20,
-    },
-    modalInfoList: {
-      padding: "8px 20px 20px",
-    },
-    modalInfoRow: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      padding: "12px 0",
-      borderBottom: `1px solid ${rowDivider}`,
-    },
-    modalInfoIcon: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
-      background: iconBtnBg,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
-    },
-    modalInfoLabel: {
-      fontSize: 13,
-      color: textSecondary,
-      flex: "0 0 72px",
-    },
-    modalInfoValue: {
-      fontSize: 13,
-      fontWeight: 500,
-      color: textPrimary,
-      flex: 1,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap" as const,
     },
   };
 }
