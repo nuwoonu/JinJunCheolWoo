@@ -1,35 +1,40 @@
 /* Register Page Styles */
-.register-left {
-  width: 30%;
-  max-width: 30%;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+
+.register-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   min-height: 100vh;
-  padding: 30px;
-}
-
-.register-left img {
-  max-width: 320px;
-  width: 100%;
-  height: auto;
-}
-
-.register-right {
-  width: 70%;
-  max-width: 70%;
   background-color: #ffffff;
+  padding: 36px 48px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* 왼쪽 상단 로고 (로그인 페이지와 동일) */
+.register-logo {
+  display: block;
+  flex-shrink: 0;
+  margin-bottom: 28px;
+  text-decoration: none;
+}
+
+.register-logo img {
+  max-width: 160px;
+  height: auto;
+  display: block;
+}
+
+/* 폼 중앙 배치 */
+.register-body {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: 40px;
 }
 
 .register-form {
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
 }
 
 .register-title {
@@ -38,76 +43,6 @@
   color: #1a1a2e;
   margin-bottom: 32px;
   text-align: center;
-}
-
-.btn-kakao {
-  width: 100%;
-  padding: 14px 24px;
-  background-color: #fee500;
-  color: #000000;
-  border: 1px solid #fee500;
-  border-radius: 12px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.btn-kakao:hover {
-  background-color: #e6cf00;
-  border-color: #e6cf00;
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 28px 0;
-  color: #a0aec0;
-  font-size: 0.875rem;
-}
-
-.divider::before,
-.divider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background-color: #e2e8f0;
-}
-
-.divider span {
-  padding: 0 20px;
-}
-
-.social-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.btn-social {
-  width: 100%;
-  padding: 14px 24px;
-  background-color: #ffffff;
-  color: #1a1a2e;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.btn-social:hover {
-  background-color: #f7fafc;
-  border-color: #cbd5e0;
 }
 
 .login-link {
@@ -127,30 +62,30 @@
   text-decoration: underline;
 }
 
-/* 태블릿 모바일로 접속시 보여지는 크기 (991px이하)*/
+/* 모바일 */
 @media (max-width: 991px) {
-  .register-left {
-    display: none;
-  }
-
-  .register-right {
-    width: 100%;
-    max-width: 100%;
+  .register-container {
     padding: 24px;
   }
 
-  .register-form {
-    max-width: 400px;
-    margin: 0 auto;
+  .register-logo {
+    display: none;
   }
 
-  .register-title {
+  .mobile-logo {
+    display: block;
     text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .mobile-logo img {
+    max-width: 160px;
+    height: auto;
   }
 }
 
 @media (min-width: 992px) {
-  .d-lg-none {
-    display: none !important;
+  .mobile-logo {
+    display: none;
   }
 }

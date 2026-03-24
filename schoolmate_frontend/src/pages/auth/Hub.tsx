@@ -78,7 +78,6 @@ export default function Hub() {
   const [showProfile, setShowProfile] = useState(false);
   const theme = useTheme();
 
-  // 역할 추가 후 돌아왔을 때 최신 roleRequests 반영
   useEffect(() => {
     refetch();
   }, []);
@@ -92,133 +91,398 @@ export default function Hub() {
 
   const grants: GrantInfo[] = user.grants ?? [];
   const isSuperAdmin = grants.some(g => g.grantedRole === "SUPER_ADMIN");
-  // grants가 하나라도 있으면 어드민 카드 표시
   const roleRequests = user.roleRequests;
 
-  // ACTIVE RoleRequest가 있는 역할만 클릭 가능 카드로 표시
-  // PENDING이면 흐릿하게 (대기 중 표시), REJECTED/없음이면 숨김
   const roleCards = ROLE_CONFIG.map((cfg) => {
     const rr = roleRequests?.find((r) => r.role === cfg.role);
     const status = rr?.status ?? null;
     const schoolName = rr?.schoolName ?? null;
     const hasActiveRole = userRoles.includes(cfg.role);
 
-    if (!status && !hasActiveRole) return null; // 신청 기록 없음
+    if (!status && !hasActiveRole) return null;
 
-    return { cfg, status: status ?? (hasActiveRole ? 'ACTIVE' : null), schoolName };
+    return { cfg, status: status ?? (hasActiveRole ? "ACTIVE" : null), schoolName };
   }).filter(Boolean) as { cfg: RoleConfig; status: string; schoolName: string | null }[];
 
-  const s = getStyles(theme.isDark);
-
   return (
-    <div style={s.page}>
-      <div style={s.container}>
-        {/* 헤더 */}
-        <div style={s.header}>
-          <div style={s.logoArea}>
-            <img src="/images/schoolmateLogo.png" alt="Schoolmate" style={s.logo} />
-          </div>
-          <div style={s.userInfo}>
-            <span style={s.userName}>{user.name}</span>
-            <span style={s.userEmail}>{user.email}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              onClick={theme.toggle}
-              style={s.iconBtn}
-              aria-label="다크모드 전환"
+    <div style={{ minHeight: "100vh", backgroundColor: "#f4f6f8" }}>
+      {/* 헤더 */}
+      <div
+        style={{
+          backgroundColor: "#fff",
+          borderBottom: "1px solid #e5e7eb",
+          padding: "0 24px",
+          height: 72,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src="/images/schoolmateLogo.png" alt="Schoolmate" width={173} height={40} style={{ objectFit: "contain" }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+<button
+            onClick={theme.toggle}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              background: "#f3f4f6",
+              border: "none",
+              cursor: "pointer",
+              color: "#6b7280",
+              fontSize: 17,
+            }}
+            aria-label="다크모드 전환"
+          >
+            <i className={theme.isDark ? "ri-sun-line" : "ri-moon-line"} />
+          </button>
+          <NotificationDropdown />
+          <button
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "none",
+              border: "1px solid #e5e7eb",
+              borderRadius: 8,
+              padding: "6px 14px",
+              fontSize: 13,
+              color: "#6b7280",
+              cursor: "pointer",
+            }}
+            onClick={signOut}
+          >
+            <i className="ri-logout-box-line" />
+            로그아웃
+          </button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "36px 24px" }}>
+        {/* 사용자 프로필 섹션 */}
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            border: "1px solid #e5e7eb",
+            padding: "28px 32px",
+            marginBottom: 28,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 20,
+            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #25A194, #1d4ed8)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
             >
-              <i className={theme.isDark ? "ri-sun-line" : "ri-moon-line"} style={{ fontSize: 18 }} />
-            </button>
-            <NotificationDropdown />
-            <button style={s.signOutBtn} onClick={signOut}>
-              <i className="ri-logout-box-line" />
-              로그아웃
-            </button>
+              <span style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}>
+                {user?.name?.[0] ?? user?.email?.[0] ?? "?"}
+              </span>
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 4 }}>
+                안녕하세요, {user.name}님
+              </div>
+              <div style={{ fontSize: 13, color: "#6b7280" }}>{user.email}</div>
+            </div>
           </div>
+          <button
+            onClick={() => setShowProfile(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#f9fafb",
+              border: "1px solid #e5e7eb",
+              borderRadius: 8,
+              padding: "7px 14px",
+              fontSize: 13,
+              color: "#374151",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <i className="ri-user-settings-line" />
+            내 프로필
+          </button>
         </div>
 
-        {/* 안내 문구 */}
-        <div style={s.welcomeBox}>
-          <h4 style={s.welcomeTitle}>이동할 페이지를 선택하세요</h4>
-          <p style={s.welcomeDesc}>보유한 역할에 맞는 페이지로 이동하거나, 새 역할을 추가할 수 있습니다.</p>
+        {/* 타이틀 */}
+        <div style={{ marginBottom: 20 }}>
+          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>이동할 페이지를 선택하세요</h5>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+            보유한 역할에 맞는 페이지로 이동하거나, 새 역할을 추가할 수 있습니다.
+          </p>
         </div>
 
-        {/* 역할 카드 목록 */}
-        <div style={s.cardGrid}>
+        {/* 역할 카드 그리드 */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+            gap: 16,
+            marginBottom: 16,
+          }}
+        >
           {roleCards.map(({ cfg, status, schoolName }) => {
-            const isPending = status === 'PENDING';
-            const isSuspended = status === 'SUSPENDED';
-            const isActive = status === 'ACTIVE';
+            const isPending = status === "PENDING";
+            const isSuspended = status === "SUSPENDED";
+            const isActive = status === "ACTIVE";
+            const accentColor = isPending || isSuspended ? "#94a3b8" : cfg.color;
 
             return (
               <button
                 key={cfg.role}
-                style={{
-                  ...s.roleCard,
-                  borderTop: `4px solid ${isPending || isSuspended ? '#94a3b8' : cfg.color}`,
-                  opacity: isPending || isSuspended ? 0.55 : 1,
-                  cursor: isActive ? 'pointer' : 'default',
-                  position: 'relative',
-                }}
                 onClick={() => isActive && navigate(cfg.path)}
                 disabled={!isActive}
-                title={isPending ? '관리자 승인 대기 중입니다.' : isSuspended ? '역할이 정지되었습니다.' : undefined}
+                style={{
+                  background: "#fff",
+                  border: "1px solid #e5e7eb",
+                  borderTop: `3px solid ${accentColor}`,
+                  borderRadius: 12,
+                  padding: "24px 20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  gap: 0,
+                  cursor: isActive ? "pointer" : "default",
+                  opacity: isPending || isSuspended ? 0.6 : 1,
+                  textAlign: "left",
+                  transition: "box-shadow 0.15s, transform 0.1s",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                }}
+                onMouseEnter={(e) => {
+                  if (isActive) {
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)";
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                }}
               >
-                <i
-                  className={cfg.icon}
-                  style={{ ...s.roleIcon, color: isPending || isSuspended ? '#94a3b8' : cfg.color }}
-                />
-                <span style={s.roleLabel}>{cfg.label}</span>
+                {/* 아이콘 */}
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
+                    background: `${accentColor}18`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 14,
+                  }}
+                >
+                  <i className={cfg.icon} style={{ fontSize: 24, color: accentColor }} />
+                </div>
+
+                {/* 역할명 + 상태 */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, width: "100%" }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{cfg.label}</span>
+                  {isPending && (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: "#92400e",
+                        background: "#fffbeb",
+                        border: "1px solid #fde68a",
+                        borderRadius: 20,
+                        padding: "1px 7px",
+                      }}
+                    >
+                      승인 대기
+                    </span>
+                  )}
+                  {isSuspended && (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: "#dc2626",
+                        background: "#fef2f2",
+                        border: "1px solid #fecaca",
+                        borderRadius: 20,
+                        padding: "1px 7px",
+                      }}
+                    >
+                      정지됨
+                    </span>
+                  )}
+                </div>
+
+                {/* 학교명 */}
                 {schoolName && (
-                  <span style={s.roleSchool}>
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 11,
+                      color: "#6b7280",
+                      background: "#f3f4f6",
+                      borderRadius: 20,
+                      padding: "2px 8px",
+                      marginBottom: 8,
+                    }}
+                  >
                     <i className="ri-building-line" />
                     {schoolName}
-                  </span>
+                  </div>
                 )}
-                <span style={s.roleDesc}>{cfg.description}</span>
-                {isPending && (
-                  <span style={s.statusBadge}>
-                    <i className="ri-time-line" /> 승인 대기
-                  </span>
-                )}
-                {isSuspended && (
-                  <span style={{ ...s.statusBadge, background: '#fef2f2', color: '#dc2626' }}>
-                    <i className="ri-forbid-line" /> 정지됨
-                  </span>
+
+                {/* 설명 */}
+                <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, lineHeight: 1.5 }}>
+                  {cfg.description}
+                </p>
+
+                {/* 이동 화살표 (ACTIVE만) */}
+                {isActive && (
+                  <div
+                    style={{
+                      marginTop: 14,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: accentColor,
+                    }}
+                  >
+                    바로가기 <i className="ri-arrow-right-line" />
+                  </div>
                 )}
               </button>
             );
           })}
 
-          {/* 관리자 페이지 (SUPER_ADMIN 전용) */}
+          {/* 관리자 카드 (SUPER_ADMIN 전용) */}
           {isSuperAdmin && (
             <button
-              style={{ ...s.roleCard, borderTop: "4px solid #ef4444" }}
               onClick={() => navigate(ADMIN_ROUTES.MAIN)}
+              style={{
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderTop: "3px solid #ef4444",
+                borderRadius: 12,
+                padding: "24px 20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 0,
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "box-shadow 0.15s, transform 0.1s",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)";
+                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)";
+                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+              }}
             >
-              <i className="ri-shield-user-line" style={{ ...s.roleIcon, color: "#ef4444" }} />
-              <span style={s.roleLabel}>관리자</span>
-              <span style={s.roleDesc}>전체 시스템을 관리합니다.</span>
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: "rgba(239,68,68,0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 14,
+                }}
+              >
+                <i className="ri-shield-user-line" style={{ fontSize: 24, color: "#ef4444" }} />
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 6 }}>관리자</div>
+              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, lineHeight: 1.5 }}>
+                전체 시스템을 관리합니다.
+              </p>
+              <div
+                style={{
+                  marginTop: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#ef4444",
+                }}
+              >
+                바로가기 <i className="ri-arrow-right-line" />
+              </div>
             </button>
           )}
 
-          {/* 역할 추가 */}
+          {/* 역할 추가 카드 */}
           <button
-            style={{ ...s.roleCard, ...s.addRoleCard }}
             onClick={() => navigate("/select-info?source=hub")}
+            style={{
+              background: "#fafafa",
+              border: "1.5px dashed #d1d5db",
+              borderRadius: 12,
+              padding: "24px 20px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: 0,
+              cursor: "pointer",
+              textAlign: "left",
+              transition: "border-color 0.15s, background 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "#9ca3af";
+              (e.currentTarget as HTMLElement).style.background = "#f3f4f6";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "#d1d5db";
+              (e.currentTarget as HTMLElement).style.background = "#fafafa";
+            }}
           >
-            <i className="ri-add-circle-line" style={{ ...s.roleIcon, color: "#94a3b8" }} />
-            <span style={{ ...s.roleLabel, color: "#94a3b8" }}>역할 추가</span>
-            <span style={s.roleDesc}>새로운 역할을 등록합니다.</span>
-          </button>
-        </div>
-
-        {/* 프로필 링크 */}
-        <div style={s.footer}>
-          <button style={s.profileLink} onClick={() => setShowProfile(true)}>
-            <i className="ri-user-settings-line" />
-            내 프로필 설정
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: "#f3f4f6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 14,
+              }}
+            >
+              <i className="ri-add-line" style={{ fontSize: 24, color: "#9ca3af" }} />
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#6b7280", marginBottom: 6 }}>역할 추가</div>
+            <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, lineHeight: 1.5 }}>
+              새로운 역할을 등록합니다.
+            </p>
           </button>
         </div>
       </div>
@@ -226,44 +490,135 @@ export default function Hub() {
       {/* 프로필 모달 */}
       {showProfile && (
         <div
-          style={s.modalBackdrop}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: 16,
+          }}
           onClick={(e) => e.target === e.currentTarget && setShowProfile(false)}
         >
-          <div style={s.modalBox}>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              width: "100%",
+              maxWidth: 400,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+              overflow: "hidden",
+            }}
+          >
             {/* 모달 헤더 */}
-            <div style={s.modalHeader}>
-              <span style={s.modalTitle}>내 프로필</span>
-              <button style={s.modalClose} onClick={() => setShowProfile(false)}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 20px",
+                borderBottom: "1px solid #f3f4f6",
+              }}
+            >
+              <span style={{ fontSize: 15, fontWeight: 600, color: "#111827" }}>내 프로필</span>
+              <button
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#9ca3af", lineHeight: 1, padding: 0 }}
+                onClick={() => setShowProfile(false)}
+              >
                 <i className="ri-close-line" />
               </button>
             </div>
 
-            {/* 아바타 */}
-            <div style={s.modalAvatarArea}>
-              <div style={s.modalAvatar}>
-                <span style={s.modalAvatarText}>
+            {/* 아바타 영역 */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "28px 20px 20px",
+                borderBottom: "1px solid #f3f4f6",
+              }}
+            >
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #25A194, #1d4ed8)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 12,
+                }}
+              >
+                <span style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}>
                   {user?.name?.[0] ?? user?.email?.[0] ?? "?"}
                 </span>
               </div>
-              <p style={s.modalAvatarName}>{user?.name ?? "-"}</p>
-              <span style={s.modalRoleBadge}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: "#111827", margin: "0 0 8px" }}>
+                {user?.name ?? "-"}
+              </p>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#25A194",
+                  background: "rgba(37,161,148,0.12)",
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
+              >
                 {ROLE_LABEL[user?.role ?? ""] ?? user?.role ?? "-"}
               </span>
             </div>
 
             {/* 정보 목록 */}
-            <div style={s.modalInfoList}>
+            <div style={{ padding: "8px 20px 20px" }}>
               {[
-                { icon: "ri-user-line",  label: "이름",   value: user?.name },
-                { icon: "ri-mail-line",  label: "이메일", value: user?.email },
-                { icon: "ri-shield-line", label: "역할",  value: ROLE_LABEL[user?.role ?? ""] ?? user?.role },
+                { icon: "ri-user-line", label: "이름", value: user?.name },
+                { icon: "ri-mail-line", label: "이메일", value: user?.email },
+                { icon: "ri-shield-line", label: "역할", value: ROLE_LABEL[user?.role ?? ""] ?? user?.role },
               ].map(({ icon, label, value }) => (
-                <div key={label} style={s.modalInfoRow}>
-                  <div style={s.modalInfoIcon}>
-                    <i className={icon} style={{ fontSize: 16, color: theme.isDark ? "#94a3b8" : "#6b7280" }} />
+                <div
+                  key={label}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "12px 0",
+                    borderBottom: "1px solid #f9fafb",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      background: "#f3f4f6",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <i className={icon} style={{ fontSize: 16, color: "#6b7280" }} />
                   </div>
-                  <span style={s.modalInfoLabel}>{label}</span>
-                  <span style={s.modalInfoValue}>{value ?? "-"}</span>
+                  <span style={{ fontSize: 13, color: "#6b7280", flex: "0 0 56px" }}>{label}</span>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#111827",
+                      flex: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {value ?? "-"}
+                  </span>
                 </div>
               ))}
             </div>
@@ -272,293 +627,4 @@ export default function Hub() {
       )}
     </div>
   );
-}
-
-function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
-  const bg = isDark ? "#0f172a" : "#f3f4f6";
-  const surface = isDark ? "#1e293b" : "#fff";
-  const border = isDark ? "#334155" : "#e5e7eb";
-  const textPrimary = isDark ? "#f1f5f9" : "#111827";
-  const textSecondary = isDark ? "#94a3b8" : "#6b7280";
-  const iconBtnBg = isDark ? "#334155" : "#f3f4f6";
-  const addCardBg = isDark ? "#1e293b" : "#fafafa";
-  const rowDivider = isDark ? "#334155" : "#f9fafb";
-  const sectionDivider = isDark ? "#334155" : "#f3f4f6";
-
-  return {
-    page: {
-      minHeight: "100vh",
-      background: bg,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "24px 16px",
-    },
-    container: {
-      width: "100%",
-      maxWidth: 640,
-    },
-    header: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      marginBottom: 28,
-      background: surface,
-      borderRadius: 12,
-      padding: "16px 20px",
-      boxShadow: isDark ? "0 1px 4px rgba(0,0,0,0.3)" : "0 1px 4px rgba(0,0,0,0.07)",
-    },
-    logoArea: {
-      flex: "0 0 auto",
-    },
-    logo: {
-      height: 32,
-      objectFit: "contain",
-    },
-    userInfo: {
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      minWidth: 0,
-    },
-    userName: {
-      fontSize: 14,
-      fontWeight: 600,
-      color: textPrimary,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-    },
-    userEmail: {
-      fontSize: 12,
-      color: textSecondary,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-    },
-    signOutBtn: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      background: "none",
-      border: `1px solid ${border}`,
-      borderRadius: 8,
-      padding: "6px 12px",
-      fontSize: 13,
-      color: textSecondary,
-      cursor: "pointer",
-    },
-    iconBtn: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 36,
-      height: 36,
-      borderRadius: "50%",
-      background: iconBtnBg,
-      border: "none",
-      cursor: "pointer",
-      color: textSecondary,
-    },
-    welcomeBox: {
-      marginBottom: 20,
-      paddingLeft: 4,
-    },
-    welcomeTitle: {
-      fontSize: 18,
-      fontWeight: 700,
-      color: textPrimary,
-      margin: "0 0 6px",
-    },
-    welcomeDesc: {
-      fontSize: 13,
-      color: textSecondary,
-      margin: 0,
-    },
-    cardGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-      gap: 16,
-      marginBottom: 20,
-    },
-    roleCard: {
-      background: surface,
-      border: `1px solid ${border}`,
-      borderRadius: 12,
-      padding: "24px 16px",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 8,
-      cursor: "pointer",
-      transition: "box-shadow 0.15s, transform 0.1s",
-      textAlign: "center",
-    },
-    addRoleCard: {
-      borderStyle: "dashed",
-      background: addCardBg,
-    },
-    roleIcon: {
-      fontSize: 32,
-    },
-    roleLabel: {
-      fontSize: 15,
-      fontWeight: 600,
-      color: textPrimary,
-    },
-    roleSchool: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 4,
-      fontSize: 11,
-      color: textSecondary,
-      background: isDark ? "#334155" : "#f3f4f6",
-      borderRadius: 20,
-      padding: "2px 8px",
-    },
-    roleDesc: {
-      fontSize: 12,
-      color: textSecondary,
-      lineHeight: 1.4,
-    },
-    statusBadge: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 4,
-      fontSize: 11,
-      fontWeight: 500,
-      color: "#92400e",
-      background: "#fffbeb",
-      border: "1px solid #fde68a",
-      borderRadius: 20,
-      padding: "2px 8px",
-      marginTop: 4,
-    },
-    footer: {
-      display: "flex",
-      justifyContent: "center",
-    },
-    profileLink: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      background: "none",
-      border: "none",
-      fontSize: 13,
-      color: textSecondary,
-      cursor: "pointer",
-      textDecoration: "underline",
-    },
-
-    // 모달
-    modalBackdrop: {
-      position: "fixed",
-      inset: 0,
-      background: "rgba(0,0,0,0.55)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-      padding: "16px",
-    },
-    modalBox: {
-      background: surface,
-      borderRadius: 16,
-      width: "100%",
-      maxWidth: 400,
-      boxShadow: isDark ? "0 20px 60px rgba(0,0,0,0.5)" : "0 20px 60px rgba(0,0,0,0.18)",
-      overflow: "hidden",
-    },
-    modalHeader: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: "16px 20px",
-      borderBottom: `1px solid ${sectionDivider}`,
-    },
-    modalTitle: {
-      fontSize: 15,
-      fontWeight: 600,
-      color: textPrimary,
-    },
-    modalClose: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      fontSize: 20,
-      color: textSecondary,
-      lineHeight: 1,
-      padding: 0,
-    },
-    modalAvatarArea: {
-      display: "flex",
-      flexDirection: "column" as const,
-      alignItems: "center",
-      padding: "28px 20px 20px",
-      borderBottom: `1px solid ${sectionDivider}`,
-    },
-    modalAvatar: {
-      width: 72,
-      height: 72,
-      borderRadius: "50%",
-      background: "linear-gradient(135deg, #25A194, #1d4ed8)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 12,
-    },
-    modalAvatarText: {
-      fontSize: 28,
-      fontWeight: 700,
-      color: "#fff",
-    },
-    modalAvatarName: {
-      fontSize: 16,
-      fontWeight: 600,
-      color: textPrimary,
-      margin: "0 0 8px",
-    },
-    modalRoleBadge: {
-      fontSize: 12,
-      fontWeight: 500,
-      color: "#25A194",
-      background: "rgba(37,161,148,0.15)",
-      padding: "3px 12px",
-      borderRadius: 20,
-    },
-    modalInfoList: {
-      padding: "8px 20px 20px",
-    },
-    modalInfoRow: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      padding: "12px 0",
-      borderBottom: `1px solid ${rowDivider}`,
-    },
-    modalInfoIcon: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
-      background: iconBtnBg,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
-    },
-    modalInfoLabel: {
-      fontSize: 13,
-      color: textSecondary,
-      flex: "0 0 72px",
-    },
-    modalInfoValue: {
-      fontSize: 13,
-      fontWeight: 500,
-      color: textPrimary,
-      flex: 1,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap" as const,
-    },
-  };
 }

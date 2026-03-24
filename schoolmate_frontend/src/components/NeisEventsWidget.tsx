@@ -45,7 +45,7 @@ export default function NeisEventsWidget() {
   }, [])
 
   return (
-    <div className="card border-0 shadow-sm h-100 overflow-hidden" style={{ borderRadius: 16 }}>
+    <div className="card shadow-sm h-100 overflow-hidden" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
       <div className="d-flex align-items-center justify-content-between p-16 border-bottom">
         <h6 className="fw-bold mb-0 text-sm">
           <i className="ri-calendar-event-line text-primary-600 me-2" />학교 일정

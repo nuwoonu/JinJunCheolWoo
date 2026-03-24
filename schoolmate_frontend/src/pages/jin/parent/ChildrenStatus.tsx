@@ -201,7 +201,7 @@ export default function ParentChildrenStatus() {
           <div className="row gy-4 mb-24">
             {/* 자녀 프로필 + 출결 현황 */}
             <div className="col-xl-4 col-md-5">
-              <div className="card border-0 shadow-sm p-24 h-100 text-center" style={{ borderRadius: 16 }}>
+              <div className="card shadow-sm p-24 h-100 text-center" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
                 <div className="w-120-px h-120-px rounded-circle bg-neutral-200 mx-auto mb-16 d-flex align-items-center justify-content-center text-secondary-light overflow-hidden">
                   {selectedChild.profileImageUrl ? (
                     <img
@@ -270,7 +270,7 @@ export default function ParentChildrenStatus() {
 
             {/* 오늘의 시간표 */}
             <div className="col-xl-4 col-md-7">
-              <div className="card border-0 shadow-sm h-100 overflow-hidden" style={{ borderRadius: 16 }}>
+              <div className="card shadow-sm h-100 overflow-hidden" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
                 <div className="p-16 border-bottom">
                   <h6 className="fw-bold mb-0 text-sm">
                     <i className="ri-time-line text-primary-600 me-2" />
@@ -335,7 +335,7 @@ export default function ParentChildrenStatus() {
           {/* 하단: 가정통신문 + 오늘의 급식 */}
           <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
             <div className="col-xl-8 d-flex flex-column">
-              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 16 }}>
+              <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
                 <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
                   <h6 className="fw-bold mb-0 text-sm">
                     <i className="ri-file-list-3-line text-primary-600 me-2" />
@@ -402,7 +402,7 @@ export default function ParentChildrenStatus() {
             </div>
 
             <div className="col-xl-4 d-flex flex-column">
-              <div className="card border-0 shadow-sm d-flex flex-column h-100" style={{ borderRadius: 16 }}>
+              <div className="card shadow-sm d-flex flex-column h-100" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
                 {/* 헤더 */}
                 <div className="p-16 border-bottom">
                   <h6 className="fw-bold mb-0 text-sm">
@@ -478,7 +478,7 @@ export default function ParentChildrenStatus() {
               <ClassNotebookWidget classroomId={null} readonly moreHref="/board/notebook" />
             </div>
             <div className="col-xl-6 d-flex flex-column">
-              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 16 }}>
+              <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
                 <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
                   <h6 className="fw-bold mb-0 text-sm">
                     <i className="ri-parent-line text-primary-600 me-2" />

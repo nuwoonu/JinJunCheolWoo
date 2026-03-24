@@ -141,7 +141,7 @@ export default function Sidebar() {
           - 펼친 상태(isCollapsed=false): 로고 + ri-contract-left-line 아이콘 표시
           - 접힌 상태(isCollapsed=true): 로고 숨기고 ri-contract-right-line 아이콘만 표시 */}
       <div>
-        <div className="sidebar-logo d-flex align-items-center justify-content-between">
+        <div className="sidebar-logo d-flex align-items-center justify-content-between" style={{ paddingInlineStart: "1.5rem", paddingInlineEnd: "1.5rem" }}>
           {!isCollapsed && (
             <a href="/main">
               <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
@@ -171,7 +171,7 @@ export default function Sidebar() {
       {!isStudentDashboard && user?.authenticated && (
         <div className="mx-16 py-12">
           {/* [woo] 프로필 드롭다운 - React state로 제어 (Bootstrap JS 불필요) */}
-          <div className="dropdown profile-dropdown" ref={profile.ref}>
+          <div className="position-relative" ref={profile.ref}>
             <button
               type="button"
               className="profile-dropdown__button d-flex align-items-center justify-content-between p-10 w-100 overflow-hidden bg-neutral-50 radius-12"
@@ -189,28 +189,33 @@ export default function Sidebar() {
                 </span>
               </span>
               <span className="profile-dropdown__icon pe-8 text-xl d-flex line-height-1">
-                <i className={`ri-arrow-${profile.isOpen ? "down" : "right"}-s-line`} />
+                <i className="ri-arrow-down-s-line" />
               </span>
             </button>
-            <ul className={`dropdown-menu dropdown-menu-lg-end border p-12${profile.isOpen ? " show" : ""}`}>
-              <li>
-                <Link
-                  to="/user/profile"
-                  className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
-                >
-                  <i className="ri-user-3-line" /> 나의 프로필
-                </Link>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6 w-100 border-0 bg-transparent"
-                  onClick={signOut}
-                >
-                  <i className="ri-shut-down-line" /> 로그아웃
-                </button>
-              </li>
-            </ul>
+            {profile.isOpen && (
+              <ul
+                className="dropdown-menu border p-12 show"
+                style={{ position: "absolute", top: "100%", right: 0, left: "auto", minWidth: "160px", zIndex: 1050 }}
+              >
+                <li>
+                  <Link
+                    to="/user/profile"
+                    className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6"
+                  >
+                    <i className="ri-user-3-line" /> 나의 프로필
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2 py-6 w-100 border-0 bg-transparent"
+                    onClick={signOut}
+                  >
+                    <i className="ri-shut-down-line" /> 로그아웃
+                  </button>
+                </li>
+              </ul>
+            )}
           </div>
         </div>
       )}

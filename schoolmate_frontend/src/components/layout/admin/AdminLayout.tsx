@@ -7,6 +7,7 @@ import { useSchool } from '@/context/SchoolContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { ADMIN_ROUTES } from '@/constants/routes'
 import PageLoader from '@/components/PageLoader'
+import Footer from '@/components/layout/Footer'
 
 function Layout({ children, msg, error, requireSchool = true }: { children: ReactNode; msg?: string; error?: string; requireSchool?: boolean }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
@@ -74,13 +75,7 @@ function Layout({ children, msg, error, requireSchool = true }: { children: Reac
           )}
           {children}
         </div>
-        <footer className="d-footer">
-          <div className="row align-items-center justify-content-between">
-            <div className="col-auto">
-              <p className="mb-0">Copyright 2026 SchoolMate. All Rights Reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </main>
     </>
   )

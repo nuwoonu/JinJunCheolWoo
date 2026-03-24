@@ -14536,6 +14536,7 @@ table.dataTable td.dt-type-date {
   width: 15.625rem;
   height: 100vh;
   background-color: var(--white);
+  border-inline-end: 1px solid #e0e0e0;
   z-index: 3;
 }
 
@@ -14667,8 +14668,7 @@ table.dataTable td.dt-type-date {
 .sidebar-logo {
   height: 4.5rem;
   padding: 0.875rem 1rem;
-  border-inline-end: 1px solid var(--neutral-200);
-  border-block-end: 1px solid var(--neutral-200);
+  border-block-end: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -14690,7 +14690,6 @@ table.dataTable td.dt-type-date {
   height: calc(100vh - 166px);
   padding: 0.75rem 1rem;
   overflow-y: auto;
-  border-inline-end: 1px solid var(--neutral-200);
 }
 
 .sidebar-menu-area:hover::-webkit-scrollbar-thumb {
@@ -14941,8 +14940,12 @@ table.dataTable td.dt-type-date {
 /* === footer css start === */
 .d-footer {
   padding: 1.375rem 1.5rem;
-  background-color: var(--white);
   margin-block-start: auto;
+  text-align: center;
+}
+
+.d-footer p {
+  font-size: 0.75rem !important;
 }
 
 /* === footer css end === */
