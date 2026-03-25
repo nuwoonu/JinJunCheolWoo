@@ -71,7 +71,7 @@ export default function Register() {
         '/auth/register',
         body
       )
-      const { accessToken, refreshToken, role: returnedRole } = res.data
+      const { accessToken, refreshToken, role: _returnedRole } = res.data
       auth.setTokens(accessToken, refreshToken)
       document.cookie = `accessToken=${accessToken}; path=/; SameSite=Strict`
 

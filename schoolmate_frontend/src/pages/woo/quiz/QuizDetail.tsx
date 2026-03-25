@@ -363,7 +363,7 @@ export default function QuizDetail() {
       {/* ========== 학생: 퀴즈 풀기 화면 ========== */}
       {isStudent && takingQuiz && (
         <div>
-          {quiz.questions.map((q, qIdx) => (
+          {quiz.questions.map((q) => (
             <div key={q.id} className="card radius-12 mb-16">
               <div className="card-header py-12 px-24 border-bottom d-flex justify-content-between align-items-center">
                 <div className="d-flex align-items-center gap-8">
@@ -439,7 +439,7 @@ export default function QuizDetail() {
             <h6 className="mb-0">문제 목록 ({quiz.questions.length}문제)</h6>
           </div>
           <div className="card-body p-24">
-            {quiz.questions.map((q, qIdx) => (
+            {quiz.questions.map((q) => (
               <div key={q.id} className="p-16 mb-12 radius-8 bg-neutral-50">
                 <div className="d-flex align-items-center gap-8 mb-8">
                   <span className="fw-semibold">문제 {q.questionOrder}</span>

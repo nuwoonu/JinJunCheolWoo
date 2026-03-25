@@ -72,7 +72,9 @@ export default function StudentDashboard() {
   }, []);
 
   const { student } = data;
+  // @ts-ignore [woo] 추후 사용 예정
   const year = student?.year ?? 0;
+  // @ts-ignore [woo] 추후 사용 예정
   const classNum = student?.classNum ?? 0;
   const classroomId = student?.classroomId ?? null;
 

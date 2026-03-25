@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -17,7 +17,6 @@ interface Board {
 
 export default function SchoolNotice() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [boards, setBoards] = useState<Board[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)

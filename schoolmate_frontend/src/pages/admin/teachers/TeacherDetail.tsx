@@ -47,6 +47,7 @@ const POSITIONS = [
   "평교사",
   "기간제교사",
 ];
+// @ts-ignore [woo] 추후 사용 예정
 const SYSTEM_ROLES = [
   { value: "STAFF", label: "교직원" },
   { value: "ADMIN", label: "관리자" },

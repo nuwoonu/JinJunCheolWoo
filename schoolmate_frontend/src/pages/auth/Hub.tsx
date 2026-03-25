@@ -59,6 +59,7 @@ const ROLE_CONFIG: RoleConfig[] = [
   },
 ];
 
+// @ts-ignore [woo] 추후 사용 예정
 function getRoleRequestStatus(roleRequests: RoleRequestInfo[] | undefined, role: string) {
   return roleRequests?.find((r) => r.role === role)?.status ?? null;
 }

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+// [woo] unused: motion 제거
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { ADMIN_ROUTES } from "@/constants/routes";
@@ -90,8 +90,8 @@ export default function Sidebar() {
   };
 
   // [woo] 학생일 때 대시보드 API에서 프로필 정보 + 출결 통계 가져오기
-  const [studentInfo, setStudentInfo] = useState<StudentProfile | null>(null);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [, setStudentInfo] = useState<StudentProfile | null>(null);
+  const [, setProfileImageUrl] = useState<string | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
   // [woo] 교사일 때 소속 학교 이름
   const [schoolName, setSchoolName] = useState<string | null>(null);

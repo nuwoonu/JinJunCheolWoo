@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import NeisEventsWidget from "@/components/NeisEventsWidget";
@@ -350,7 +350,7 @@ export default function ParentChildrenStatus() {
                     <i className="ri-file-list-3-line text-primary-600 me-2" />
                     가정통신문
                   </h6>
-                  <a href="/board/parent-notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>더보기</a>
+                  <Link to="/board/parent-notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>더보기</Link>
                 </div>
                 <div className="p-16">
                   {/* 기존 UI 주석처리
@@ -371,9 +371,9 @@ export default function ParentChildrenStatus() {
                 */}
                 {/* [woo] 가정통신문 실제 API 연동 */}
                 {parentNotices.length > 0 ? parentNotices.map((b, i) => (
-                  <a
+                  <Link
                     key={b.id}
-                    href={`/board/parent-notice/${b.id}`}
+                    to={`/board/parent-notice/${b.id}`}
                     className={`d-flex align-items-center justify-content-between py-12 text-decoration-none${i < parentNotices.length - 1 ? ' border-bottom' : ''}`}
                   >
                     <div className="d-flex align-items-center gap-12">
@@ -384,7 +384,7 @@ export default function ParentChildrenStatus() {
                       )}
                     </div>
                     {b.createDate && <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{b.createDate.slice(0, 10)}</span>}
-                  </a>
+                  </Link>
                 )) : (
                   <p className="text-secondary-light text-sm mb-0 text-center py-20">등록된 가정통신문이 없습니다.</p>
                 )}

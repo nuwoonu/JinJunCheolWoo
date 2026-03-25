@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Bed, User, UserPlus, UserMinus } from 'lucide-react';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 // [cheol] 기숙사 관리 - react_front/src/cheol/DormitoryManagement.tsx 마이그레이션
 
