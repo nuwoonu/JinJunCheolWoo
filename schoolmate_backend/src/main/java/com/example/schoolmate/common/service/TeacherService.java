@@ -122,6 +122,9 @@ public class TeacherService {
      */
     @Transactional
     public void createTeacher(TeacherDTO.CreateRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
+        }
         if (request.getCode() != null && codeExistsForTeacher(request.getCode())) {
             throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
         }

@@ -14,7 +14,7 @@ import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -33,7 +33,7 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
         BooleanExpression isTeacher = user.roles.contains(UserRole.TEACHER);
         BooleanExpression searchFilter = searchPredicate(cond.getType(), cond.getKeyword());
         BooleanExpression statusFilter = statusFilter(cond.getStatus());
-        BooleanExpression schoolFilter = schoolFilter(info);
+        BooleanExpression schoolFilter = SchoolQueryFilter.schoolIdEq(info.school.id);
 
         // cheol
         QSubject subject = QSubject.subject;
@@ -59,12 +59,6 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
                 .where(isTeacher, searchFilter, statusFilter, schoolFilter);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-    }
-
-    private BooleanExpression schoolFilter(QTeacherInfo info) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null) return null;
-        return info.school.id.eq(schoolId);
     }
 
     private BooleanExpression statusFilter(String status) {
@@ -98,7 +92,7 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
 
         User result = query.selectFrom(user)
                 .join(info).on(info.user.eq(user))
-                .where(info.code.eq(code), schoolFilter(info))
+                .where(info.code.eq(code), SchoolQueryFilter.schoolIdEq(info.school.id))
                 .fetchOne();
         return Optional.ofNullable(result);
     }
@@ -106,15 +100,10 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
     @Override
     public long countByStatus(TeacherStatus status) {
         QTeacherInfo info = QTeacherInfo.teacherInfo;
-        Long schoolId = SchoolContextHolder.getSchoolId();
-
-        JPAQuery<Long> q = query.select(info.count())
+        Long count = query.select(info.count())
                 .from(info)
-                .where(info.status.eq(status));
-        if (schoolId != null) {
-            q.where(info.school.id.eq(schoolId));
-        }
-        Long count = q.fetchOne();
+                .where(info.status.eq(status), SchoolQueryFilter.schoolIdEq(info.school.id))
+                .fetchOne();
         return count != null ? count : 0L;
     }
 }

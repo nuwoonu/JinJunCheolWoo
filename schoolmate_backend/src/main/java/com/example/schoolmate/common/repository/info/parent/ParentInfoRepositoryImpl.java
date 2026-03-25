@@ -12,7 +12,7 @@ import com.example.schoolmate.common.entity.info.QFamilyRelation;
 import com.example.schoolmate.common.entity.info.QParentInfo;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.user.QUser;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -74,17 +74,8 @@ public class ParentInfoRepositoryImpl implements ParentInfoRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
-    /**
-     * [woo] 학부모는 school_id가 없으므로, 자녀(StudentInfo)의 school로 범위를 제한합니다.
-     * schoolId가 null이면 전체 조회 (필터 미적용)
-     * 자녀가 없는 학부모도 포함 (student가 null이거나 school이 일치)
-     */
     private BooleanExpression schoolFilter(QStudentInfo student) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null)
-            return null;
-        // [woo] 자녀가 없는 학부모도 목록에 포함되도록 OR 조건
-        return student.id.isNull().or(student.school.id.eq(schoolId));
+        return SchoolQueryFilter.childSchoolIdEqOrNoChild(student.id, student.school.id);
     }
 
     private BooleanExpression searchPredicate(String type, String keyword,
