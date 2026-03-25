@@ -125,6 +125,10 @@ public class StudentService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
+        // 학번 중복 체크 (학교 범위 내)
+        if (request.getCode() != null && codeExistsForStudent(request.getCode())) {
+            throw new IllegalArgumentException("이미 존재하는 학번입니다: " + request.getCode());
+        }
 
         // 1. 유저 및 권한 설정
         User user = User.builder()
@@ -587,6 +591,13 @@ public class StudentService {
     public java.util.Optional<Classroom> findHomeroomClassroom(Long teacherUid) {
         int year = java.time.LocalDate.now().getYear();
         return classroomRepository.findByTeacherUidAndYear(teacherUid, year);
+    }
+
+    /** 학번 중복 체크 — 학교 범위 내에서만 체크 (TeacherService.codeExistsForTeacher와 동일 패턴) */
+    private boolean codeExistsForStudent(String code) {
+        // existsByCode 구현체(QueryDSL)가 내부적으로 SchoolContextHolder 기반 schoolFilter를 적용하므로
+        // 별도 schoolId 파라미터 없이 학교 범위 중복 체크가 가능
+        return studentInfoRepository.existsByCode(code);
     }
 
     // 승철님 작업물

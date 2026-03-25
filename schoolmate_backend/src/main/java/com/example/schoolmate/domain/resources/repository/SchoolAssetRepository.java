@@ -12,4 +12,5 @@ import com.example.schoolmate.domain.resources.entity.SchoolAsset;
 @Repository
 public interface SchoolAssetRepository extends JpaRepository<SchoolAsset, Long>, SchoolAssetRepositoryCustom {
     boolean existsByAssetCode(String assetCode);
+    boolean existsByAssetCodeAndSchool_Id(String assetCode, Long schoolId);
 }
