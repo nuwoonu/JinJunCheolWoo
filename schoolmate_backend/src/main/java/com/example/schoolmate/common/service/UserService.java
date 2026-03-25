@@ -20,6 +20,7 @@ import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.common.util.NotificationHelper;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.dto.PasswordDTO;
@@ -136,8 +137,10 @@ public class UserService {
         // 초기 학급 배정
         if (dto.getGrade() != null && dto.getClassNum() != null) {
             int currentYear = LocalDate.now().getYear();
+            // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
+            Long schoolId = SchoolContextHolder.getSchoolId();
             Classroom classroom = classroomRepository
-                    .findByYearAndGradeAndClassNum(currentYear, dto.getGrade(), dto.getClassNum()).orElse(null);
+                    .findBySchoolIdAndYearAndGradeAndClassNum(schoolId, currentYear, dto.getGrade(), dto.getClassNum()).orElse(null);
             if (classroom != null) {
                 StudentAssignment assignment = StudentAssignment.builder()
                         .studentInfo(studentInfo)

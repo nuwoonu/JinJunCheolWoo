@@ -35,6 +35,9 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long>, Cla
     // 학년도, 학년, 반으로 학급 찾기
     Optional<Classroom> findByYearAndGradeAndClassNum(int year, int grade, int classNum);
 
+    // [woo 03/25] 학교별 학년도, 학년, 반으로 학급 찾기 (다중학교 대응)
+    Optional<Classroom> findBySchoolIdAndYearAndGradeAndClassNum(Long schoolId, int year, int grade, int classNum);
+
     // [새 방식] homeroomTeacher로 이력 조회
     List<Classroom> findByHomeroomTeacherId(Long teacherId);
 

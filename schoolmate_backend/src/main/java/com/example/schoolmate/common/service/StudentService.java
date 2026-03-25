@@ -121,6 +121,11 @@ public class StudentService {
      * 인적 사항 위주로 계정을 생성합니다. 학급 정보는 선택 사항입니다.
      */
     public Long createStudent(StudentDTO.CreateRequest request) {
+        // [woo 03/25] 이메일 중복 체크
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
+        }
+
         // 1. 유저 및 권한 설정
         User user = User.builder()
                 .name(request.getName())
@@ -163,9 +168,9 @@ public class StudentService {
                         info.setCurrentAssignment(assignment);
                     });
         } else if (request.getYear() != null && request.getGrade() != null && request.getClassNum() != null) {
-            // 기존 방식 또는 CSV 업로드 (학년/반 정보로 배정)
-            classroomRepository.findByYearAndGradeAndClassNum(
-                    request.getYear(), request.getGrade(), request.getClassNum())
+            // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
+            classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(
+                    schoolId, request.getYear(), request.getGrade(), request.getClassNum())
                     .ifPresent(classroom -> {
                         StudentAssignment assignment = new StudentAssignment();
                         assignment.setSchoolYear(request.getYear());
@@ -407,9 +412,11 @@ public class StudentService {
                     .orElseThrow(
                             () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
         } else {
+            // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
             int year = java.time.LocalDate.now().getYear();
+            Long schoolId = SchoolContextHolder.getSchoolId();
             classroom = classroomRepository
-                    .findByYearAndGradeAndClassNum(year, createDTO.getGrade(), createDTO.getClassNum())
+                    .findBySchoolIdAndYearAndGradeAndClassNum(schoolId, year, createDTO.getGrade(), createDTO.getClassNum())
                     .orElseThrow(() -> new IllegalArgumentException(
                             createDTO.getGrade() + "학년 " + createDTO.getClassNum() + "반 학급을 찾을 수 없습니다."));
         }
