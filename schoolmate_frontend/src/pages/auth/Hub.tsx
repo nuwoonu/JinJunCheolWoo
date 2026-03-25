@@ -137,6 +137,8 @@ export default function Hub() {
   const hasSecondarySection =
     secondaryContexts.length > 0 || pendingRequests.length > 0;
 
+  const s = getStyles(theme.isDark);
+
   return (
     <div style={s.page}>
       <div style={s.container}>
@@ -167,24 +169,6 @@ export default function Hub() {
             <NotificationDropdown />
             <ProfileDropdown />
           </div>
-          <button
-            onClick={() => setShowProfile(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#f9fafb",
-              border: "1px solid #e5e7eb",
-              borderRadius: 8,
-              padding: "7px 14px",
-              fontSize: 13,
-              color: "#374151",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <i className="ri-user-settings-line" />내 프로필
-          </button>
         </div>
 
         {/* 안내 문구 */}
