@@ -144,8 +144,8 @@ export default function Sidebar() {
         <div className="sidebar-logo d-flex align-items-center justify-content-between" style={{ paddingInlineStart: "1.5rem", paddingInlineEnd: "1.5rem" }}>
           {!isCollapsed && (
             <a href="/main">
-              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
-              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="173" height="40" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="160" height="37" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="160" height="37" />
               <img src="/images/schoolmateLogo.png" alt="홈" className="logo-icon" />
             </a>
           )}

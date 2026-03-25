@@ -16,7 +16,7 @@ import SelectRole from "@/pages/auth/SelectRole";
 import SelectInfo from "@/pages/auth/SelectInfo";
 import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
-import Intro from "@/pages/Intro";
+import MainDesign from "@/pages/Main-design";
 import UserProfile from "@/pages/user/Profile";
 // [cheol] 학생 관련
 import StudentList from "@/pages/cheol/student/StudentList";
@@ -81,7 +81,8 @@ import StudentDashboard from "@/pages/jin/student/StudentDashboard";
 import { ADMIN_GRANTS } from "@/constants/adminPermissions";
 import JoonAdminMain from "@/pages/admin/AdminMain";
 import JoonSchoolSelect from "@/pages/admin/school/SchoolSelect";
-import JoonDashboard from "@/pages/admin/Dashboard";
+// import JoonDashboard from "@/pages/admin/Dashboard";
+import JoonDashboard from "@/pages/jin/admin/Dashboard";
 import JoonStudentList from "@/pages/admin/students/StudentList";
 import JoonStudentCreate from "@/pages/admin/students/StudentCreate";
 import JoonStudentDetail from "@/pages/admin/students/StudentDetail";
@@ -139,8 +140,9 @@ function SchoolSelectGuard() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Intro />} />
+      <Route path="/" element={<Main />} />
       <Route path="/main" element={<Main />} />
+      <Route path="/main-design" element={<MainDesign />} />
       <Route path="/login" element={<Login />} />
       <Route path="/hub" element={<Hub />} />
       {/* [woo] OAuth2 소셜 로그인 콜백 - 토큰 저장 후 역할별 대시보드로 이동 */}
