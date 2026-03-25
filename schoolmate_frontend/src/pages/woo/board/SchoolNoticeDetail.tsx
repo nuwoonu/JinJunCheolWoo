@@ -47,6 +47,12 @@ export default function SchoolNoticeDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showEditModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showEditModal])
+
   const handleEdit = async () => {
     if (!editForm.title.trim() || !editForm.content.trim()) {
       alert('제목과 내용을 입력해주세요.')

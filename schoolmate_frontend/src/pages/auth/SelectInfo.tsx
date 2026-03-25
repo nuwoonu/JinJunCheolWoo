@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api, { getMe } from '@/api/auth'
 import { auth } from '@/shared/auth'
 
 // 이메일 가입: /select-info?source=email → 역할 선택 → 학교 선택 or 폼 입력
 // SNS 가입:   /select-info?source=sns  → 역할 선택 → 학교 선택 or 가입 완료
-// Hub 역할 추가: /select-info?source=hub → 중복 체크 후 동일 플로우 진행
+// Hub 역할 추가: /select-info?source=hub → 동일 플로우 진행
 export default function SelectInfo() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -14,8 +14,20 @@ export default function SelectInfo() {
   const [selected, setSelected] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hasParent, setHasParent] = useState(false)
 
-  const roles = [
+  // 기존 학부모 역할 여부 확인 (신규 이메일 가입 제외)
+  useEffect(() => {
+    if (source === 'email') return
+    getMe().then(me => {
+      const parentExists = me.roleRequests?.some(
+        r => r.role === 'PARENT' && (r.status === 'ACTIVE' || r.status === 'PENDING')
+      ) ?? false
+      setHasParent(parentExists)
+    }).catch(() => {})
+  }, [source])
+
+  const allRoles = [
     {
       value: 'STUDENT',
       label: '학생',
@@ -36,6 +48,9 @@ export default function SelectInfo() {
     },
   ]
 
+  // 학부모는 이미 보유 중이면 목록에서 제외
+  const roles = allRoles.filter(r => !(r.value === 'PARENT' && hasParent))
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!selected) return
@@ -54,26 +69,17 @@ export default function SelectInfo() {
         return
       }
 
-      // Hub에서 역할 추가 또는 SNS 가입 시: 중복 신청 여부 체크
-      const me = await getMe()
-      const existingRequest = me.roleRequests?.find(
-        (r) => r.role === selected && (r.status === 'PENDING' || r.status === 'ACTIVE')
-      )
-      if (existingRequest) {
-        const statusLabel = existingRequest.status === 'PENDING' ? '승인 대기 중' : '이미 활성화됨'
-        setError(`해당 역할은 이미 ${statusLabel}입니다.`)
-        setLoading(false)
-        return
-      }
-
       // SNS 가입 / Hub 역할 추가
       if (selected === 'PARENT') {
         // 학부모: 학교 선택 없이 바로 역할 확정
-        const res = await api.post<{ accessToken: string; refreshToken: string; role: string }>(
+        const res = await api.post<{ accessToken?: string; refreshToken?: string; role?: string; status: string }>(
           '/auth/select-role',
           { role: selected }
         )
-        auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        // 슈퍼 어드민은 즉시 활성화 → 새 토큰 교체. 일반 사용자는 PENDING → 토큰 유지
+        if (res.data.status !== 'pending' && res.data.accessToken && res.data.refreshToken) {
+          auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        }
         navigate('/hub')
       } else {
         // 교사/학생: 학교 선택 단계로 이동
@@ -100,6 +106,25 @@ export default function SelectInfo() {
           <div className="mobile-logo">
             <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
           </div>
+
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'none',
+              border: 'none',
+              color: '#666',
+              fontSize: 14,
+              cursor: 'pointer',
+              padding: '4px 0',
+              marginBottom: 16,
+            }}
+          >
+            <i className="fa-solid fa-arrow-left" />
+            이전으로
+          </button>
 
           <div className="text-center mb-4">
             <h1 style={{ fontSize: 24, fontWeight: 700, color: '#333', marginBottom: 8 }}>

@@ -10,7 +10,8 @@
       "Read(//c/Users/soldesk/AppData/Local/Temp/claude/c--git-JinJunCheolWoo/1119bf68-8626-47bd-8851-eba7a2b0d749/tasks//**)",
       "Bash(find c:gitJinJunCheolWooschoolmate_backend -name *.sql -o -name V*.sql)",
       "Bash(grep -E '\\\\.\\(java|kt\\)$')",
-      "Bash(find c:/git/JinJunCheolWoo/schoolmate_backend/src/main/java -name \"*.java\" -exec grep -l \"private.*int.*year\\\\|private.*int.*semester\\\\|private.*Integer.*year\\\\|private.*Integer.*semester\" {})"
+      "Bash(find c:/git/JinJunCheolWoo/schoolmate_backend/src/main/java -name \"*.java\" -exec grep -l \"private.*int.*year\\\\|private.*int.*semester\\\\|private.*Integer.*year\\\\|private.*Integer.*semester\" {})",
+      "Read(//c/Users/soldesk/AppData/Local/Temp/claude/c--git-JinJunCheolWoo/5664127e-75ca-4a23-bdba-2ead8c9683ec/tasks//**)"
     ]
   }
 }

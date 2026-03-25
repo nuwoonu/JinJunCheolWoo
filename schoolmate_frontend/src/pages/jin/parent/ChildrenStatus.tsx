@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import NeisEventsWidget from "@/components/NeisEventsWidget";
@@ -45,15 +45,18 @@ interface TimetableItem {
 }
 
 interface ParentDashboardData {
-  children?: Child[];
-  boards?: Board[];
+  children?: Child[]
 }
 
-const MOCK_BOARDS: Board[] = [
-  { title: "3월 가정통신문 안내", writerName: "담임", createDate: "2026-03-18" },
-  { title: "학교 폭력 예방 교육 안내", writerName: "담임", createDate: "2026-03-15" },
-  { title: "2026학년도 학사일정 안내", writerName: "교무", createDate: "2026-03-10" },
-];
+
+
+// [woo] 가정통신문 API 응답 타입
+interface ParentNoticeItem {
+  id: number
+  title: string
+  writerName?: string
+  createDate?: string
+}
 
 const MOCK_PARENT_POSTS: Board[] = [
   { title: "3월 학급 사진 공유드립니다", writerName: "담임", createDate: "2026-03-18" },
@@ -61,8 +64,9 @@ const MOCK_PARENT_POSTS: Board[] = [
   { title: "3월 학부모 모임 공지", writerName: "학부모회", createDate: "2026-03-12" },
 ];
 
+// [woo] 새글 표시: 오늘 작성된 글만
 function isNew(dateStr: string) {
-  return new Date().getTime() - new Date(dateStr).getTime() < 3 * 24 * 60 * 60 * 1000;
+  return new Date(dateStr).toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10)
 }
 
 // [woo] 학부모 자녀 출결 통계 타입
@@ -74,9 +78,10 @@ interface AttendanceSummary {
 }
 
 export default function ParentChildrenStatus() {
-  const location = useLocation();
-  const [children, setChildren] = useState<Child[]>([]);
-  const [boards, setBoards] = useState<Board[]>([]);
+  const location = useLocation()
+  const [children, setChildren] = useState<Child[]>([])
+  // [woo] 가정통신문 실제 API 데이터
+  const [parentNotices, setParentNotices] = useState<ParentNoticeItem[]>([])
   const [selectedChildId, setSelectedChildId] = useState<number | null>(
     (location.state as { childId?: number } | null)?.childId ?? null,
   );
@@ -88,21 +93,17 @@ export default function ParentChildrenStatus() {
   const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceSummary>>({});
 
   useEffect(() => {
-    api
-      .get("/dashboard/parent")
-      .then((res) => {
-        const d: ParentDashboardData = res.data;
-        setChildren(d.children ?? []);
-        setBoards(d.boards ?? []);
-        if (d.children && d.children.length > 0) {
-          const fromState = (location.state as { childId?: number } | null)?.childId;
-          const valid = fromState && d.children.some((c) => c.id === fromState);
-          const resolvedId = valid ? fromState : d.children[0].id;
-          setSelectedChildId(resolvedId);
-          sessionStorage.setItem("selectedChildId", String(resolvedId));
-        }
-      })
-      .catch(() => {});
+    api.get('/dashboard/parent').then(res => {
+      const d: ParentDashboardData = res.data
+      setChildren(d.children ?? [])
+      if (d.children && d.children.length > 0) {
+        const fromState = (location.state as { childId?: number } | null)?.childId
+        const valid = fromState && d.children.some(c => c.id === fromState)
+        const resolvedId = valid ? fromState : d.children[0].id
+        setSelectedChildId(resolvedId)
+        sessionStorage.setItem("selectedChildId", String(resolvedId))
+      }
+    }).catch(() => {})
 
     // [woo] 오늘의 학사일정 (NEIS) - 오늘 날짜만 필터
     const now = new Date();
@@ -139,6 +140,14 @@ export default function ParentChildrenStatus() {
       })
       .catch(() => {});
   }, []);
+
+  // [woo] 선택된 자녀 기준 가정통신문 API 호출
+  useEffect(() => {
+    if (!selectedChildId) return
+    api.get(`/board/parent-notice?page=0&size=5&studentUserUid=${selectedChildId}`)
+      .then(res => setParentNotices(res.data.content ?? []))
+      .catch(() => setParentNotices([]))
+  }, [selectedChildId])
 
   // [woo] 선택된 자녀의 학년/반으로 NEIS 시간표 조회
   useEffect(() => {
@@ -341,9 +350,7 @@ export default function ParentChildrenStatus() {
                     <i className="ri-file-list-3-line text-primary-600 me-2" />
                     가정통신문
                   </h6>
-                  <a href="/board/notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>
-                    더보기
-                  </a>
+                  <Link to="/board/parent-notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>더보기</Link>
                 </div>
                 <div className="p-16">
                   {/* 기존 UI 주석처리
@@ -362,41 +369,25 @@ export default function ParentChildrenStatus() {
                   <p className="text-secondary-light text-sm mb-0">등록된 가정통신문이 없습니다.</p>
                 )}
                 */}
-                  {(() => {
-                    const list = boards.length > 0 ? boards : MOCK_BOARDS;
-                    return list.map((b, i) => (
-                      <div
-                        key={i}
-                        className={`d-flex align-items-center justify-content-between py-12${i < list.length - 1 ? " border-bottom" : ""}`}
-                      >
-                        <div className="d-flex align-items-center gap-12">
-                          <i className="ri-file-text-line text-secondary-light" />
-                          <span className="text-sm" style={{ color: "#374151" }}>
-                            {b.title}
-                          </span>
-                          {b.createDate && isNew(b.createDate) && (
-                            <span
-                              style={{
-                                background: "#25A194",
-                                color: "white",
-                                borderRadius: 4,
-                                padding: "1px 7px",
-                                fontSize: 11,
-                                fontWeight: 600,
-                              }}
-                            >
-                              새글
-                            </span>
-                          )}
-                        </div>
-                        {b.createDate && (
-                          <span className="text-xs text-secondary-light flex-shrink-0 ms-8">
-                            {b.createDate.slice(0, 10)}
-                          </span>
-                        )}
-                      </div>
-                    ));
-                  })()}
+                {/* [woo] 가정통신문 실제 API 연동 */}
+                {parentNotices.length > 0 ? parentNotices.map((b, i) => (
+                  <Link
+                    key={b.id}
+                    to={`/board/parent-notice/${b.id}`}
+                    className={`d-flex align-items-center justify-content-between py-12 text-decoration-none${i < parentNotices.length - 1 ? ' border-bottom' : ''}`}
+                  >
+                    <div className="d-flex align-items-center gap-12">
+                      <i className="ri-file-text-line text-secondary-light" />
+                      <span className="text-sm" style={{ color: '#374151' }}>{b.title}</span>
+                      {b.createDate && isNew(b.createDate) && (
+                        <span style={{ background: '#25A194', color: 'white', borderRadius: 4, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>새글</span>
+                      )}
+                    </div>
+                    {b.createDate && <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{b.createDate.slice(0, 10)}</span>}
+                  </Link>
+                )) : (
+                  <p className="text-secondary-light text-sm mb-0 text-center py-20">등록된 가정통신문이 없습니다.</p>
+                )}
                 </div>
               </div>
             </div>

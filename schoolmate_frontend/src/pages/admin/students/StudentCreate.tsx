@@ -45,6 +45,13 @@ export default function StudentCreate() {
       .catch(() => {});
   }, []);
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    const open = showModal || !!relModal
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal, relModal]);
+
   const searchParents = async () => {
     const r = await admin.get("/students/search-parent", { params: { keyword: searchKeyword } });
     setSearchResult(Array.isArray(r.data) ? r.data : (r.data?.content ?? []));
@@ -66,14 +73,20 @@ export default function StudentCreate() {
     setRelModal(null);
   };
 
+  // [woo 03/25] 이메일 중복 등 에러 시 alert 표시
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await admin.post("/students", {
-      ...form,
-      classroomId: form.classroomId || null,
-      guardians: guardians.map((g) => ({ parentId: g.parentId, relationship: g.relation })),
-    });
-    navigate(ADMIN_ROUTES.STUDENTS.LIST);
+    try {
+      await admin.post("/students", {
+        ...form,
+        classroomId: form.classroomId || null,
+        guardians: guardians.map((g) => ({ parentId: g.parentId, relationship: g.relation })),
+      });
+      navigate(ADMIN_ROUTES.STUDENTS.LIST);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: string } })?.response?.data || "학생 등록에 실패했습니다.";
+      alert(msg);
+    }
   };
 
   return (

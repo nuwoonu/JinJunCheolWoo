@@ -34,6 +34,7 @@ interface StudentInfo {
   studentNumber?: number;
   status?: string;
   classroomId?: number | null;
+  schoolId?: number | null;
 }
 
 interface DashboardData {
@@ -54,7 +55,9 @@ export default function StudentDashboard() {
         setData(res.data);
         const s = res.data?.student;
         if (s?.year && s?.classNum) {
-          fetch(`/api/calendar/timetable?grade=${s.year}&classNum=${s.classNum}`)
+          fetch(
+            `/api/calendar/timetable?grade=${s.year}&classNum=${s.classNum}`,
+          )
             .then((r) => (r.ok ? r.json() : []))
             .then((d) => {
               setTimetable(d);
@@ -75,11 +78,15 @@ export default function StudentDashboard() {
   const year = student?.year ?? 0;
   const classNum = student?.classNum ?? 0;
   const classroomId = student?.classroomId ?? null;
+  const schoolId = student?.schoolId ?? null;
 
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="d-flex align-items-center justify-content-center" style={{ minHeight: 400 }}>
+        <div
+          className="d-flex align-items-center justify-content-center"
+          style={{ minHeight: 400 }}
+        >
           <p className="text-secondary-light">불러오는 중...</p>
         </div>
       </DashboardLayout>
@@ -89,9 +96,17 @@ export default function StudentDashboard() {
   if (!student) {
     return (
       <DashboardLayout>
-        <div className="card shadow-sm p-80 text-center" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
-          <i className="ri-user-search-line text-secondary-light mb-16" style={{ fontSize: 48 }} />
-          <h5 className="text-secondary-light">학생 정보를 불러올 수 없습니다.</h5>
+        <div
+          className="card shadow-sm p-80 text-center"
+          style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}
+        >
+          <i
+            className="ri-user-search-line text-secondary-light mb-16"
+            style={{ fontSize: 48 }}
+          />
+          <h5 className="text-secondary-light">
+            학생 정보를 불러올 수 없습니다.
+          </h5>
         </div>
       </DashboardLayout>
     );
@@ -132,17 +147,24 @@ export default function StudentDashboard() {
           <SubmissionStatusWidget />
         </div>
         <div className="col-xl-4 d-flex flex-column">
-          <TodayTimetableWidget timetable={timetable} loading={timetableLoading} />
+          <TodayTimetableWidget
+            timetable={timetable}
+            loading={timetableLoading}
+          />
         </div>
       </div>
 
       {/* 3행: 우리 반 알림장 (col-8) | 오늘의 급식 (col-4) */}
       <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
         <div className="col-xl-8 d-flex flex-column">
-          <ClassNotebookWidget classroomId={classroomId} readonly moreHref="/board/notebook" />
+          <ClassNotebookWidget
+            classroomId={classroomId}
+            readonly
+            moreHref="/board/notebook"
+          />
         </div>
         <div className="col-xl-4 d-flex flex-column">
-          <TodayMealWidget />
+          <TodayMealWidget schoolId={schoolId} />
         </div>
       </div>
 

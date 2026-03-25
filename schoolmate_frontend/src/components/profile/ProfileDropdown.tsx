@@ -1,0 +1,99 @@
+import { useState, useRef, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useProfileModal } from '@/contexts/ProfileModalContext'
+
+const menuItemStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 8,
+  width: '100%', background: 'none', border: 'none',
+  padding: '10px 14px', fontSize: 13, fontWeight: 500,
+  color: 'var(--text-primary-light, #111827)', cursor: 'pointer',
+  textAlign: 'left',
+}
+
+export default function ProfileDropdown() {
+  const { user, signOut } = useAuth()
+  const { openProfileModal } = useProfileModal()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const imgSrc = user?.profileImageUrl ?? null
+  const initial = (user?.name ?? user?.email ?? '?')[0].toUpperCase()
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(p => !p)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: 'none', border: 'none', cursor: 'pointer',
+          padding: '4px 6px', borderRadius: 8,
+        }}
+        aria-label="프로필 메뉴"
+      >
+        {/* 아바타 */}
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: '#25A194', overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          {imgSrc ? (
+            <img src={imgSrc} alt="프로필" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{initial}</span>
+          )}
+        </div>
+        {/* 이름 */}
+        <span style={{
+          fontSize: 13, fontWeight: 600,
+          color: 'var(--text-primary-light, #111827)',
+          maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {user?.name ?? user?.email ?? '-'}
+        </span>
+        <i
+          className={open ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}
+          style={{ fontSize: 14, color: 'var(--neutral-400, #9ca3af)' }}
+        />
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+          background: 'var(--body-bg, #fff)', border: '1px solid var(--neutral-200, #e5e7eb)',
+          borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          minWidth: 160, zIndex: 9999, overflow: 'hidden',
+        }}>
+          <button
+            onClick={() => { setOpen(false); openProfileModal() }}
+            style={menuItemStyle}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--neutral-100, #f3f4f6)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+          >
+            <i className="ri-user-settings-line" style={{ fontSize: 15 }} />
+            프로필 보기
+          </button>
+          <div style={{ height: 1, background: 'var(--neutral-100, #f3f4f6)' }} />
+          <button
+            onClick={() => { setOpen(false); signOut() }}
+            style={{ ...menuItemStyle, color: '#ef4444' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--neutral-100, #f3f4f6)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+          >
+            <i className="ri-logout-box-line" style={{ fontSize: 15 }} />
+            로그아웃
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}

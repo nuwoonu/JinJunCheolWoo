@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.domain.resources.constant.AssetStatus;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.domain.resources.entity.AssetModel;
 import com.example.schoolmate.domain.resources.entity.SchoolAsset;
 
@@ -64,8 +65,8 @@ public class AssetDTO {
                     .purchaseDate(entity.getPurchaseDate())
                     .imageUrl(
                             model != null && model.getImageFilename() != null
-                                    ? "/uploads/assets/" + model.getImageFilename()
-                                    : null) // 모델 이미지 사용
+                                    ? FileManager.UploadType.ASSET.toUrl(model.getImageFilename())
+                                    : null)
                     .build();
         }
     }

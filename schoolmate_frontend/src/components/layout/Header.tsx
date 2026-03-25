@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSidebar } from '@/contexts/SidebarContext'
 import NotificationDropdown from '@/components/fragments/NotificationDropdown'
+import ProfileDropdown from '@/components/profile/ProfileDropdown'
 
 // [woo] Bootstrap data-bs-toggle 대신 React state로 드롭다운 제어
 function useTheme() {
@@ -56,6 +57,7 @@ export default function Header({ showLogo }: { showLogo?: boolean } = {}) {
             </button>
 
             <NotificationDropdown />
+            <ProfileDropdown />
           </div>
         </div>
       </div>

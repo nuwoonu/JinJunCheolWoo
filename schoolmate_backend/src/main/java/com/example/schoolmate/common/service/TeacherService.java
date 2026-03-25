@@ -87,7 +87,7 @@ public class TeacherService {
         Page<User> userPage = teacherInfoRepository.search(cond, pageable);
         return userPage.map(user -> {
             TeacherDTO.DetailResponse dto = new TeacherDTO.DetailResponse(user);
-            roleRequestRepository.findByUserAndRole(user, UserRole.TEACHER).ifPresent(rr -> {
+            roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst().ifPresent(rr -> {
                 dto.setRoleRequestId(rr.getId());
                 dto.setRoleRequestStatus(rr.getStatus().name());
             });
@@ -109,7 +109,7 @@ public class TeacherService {
                 .map(NotificationDTO.NotificationHistory::new)
                 .toList());
 
-        roleRequestRepository.findByUserAndRole(user, UserRole.TEACHER).ifPresent(rr -> {
+        roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst().ifPresent(rr -> {
             response.setRoleRequestId(rr.getId());
             response.setRoleRequestStatus(rr.getStatus().name());
         });
@@ -122,6 +122,9 @@ public class TeacherService {
      */
     @Transactional
     public void createTeacher(TeacherDTO.CreateRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
+        }
         if (request.getCode() != null && codeExistsForTeacher(request.getCode())) {
             throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
         }
@@ -135,9 +138,10 @@ public class TeacherService {
 
         TeacherInfo info = new TeacherInfo();
         info.setCode(request.getCode());
+        info.setPrimary(true);
         // cheol
         if (request.getSubject() != null && !request.getSubject().isBlank()) {
-            Subject subject = subjectRepository.findByCode(request.getSubject())
+            Subject subject = findSubjectByCode(request.getSubject())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
             info.setSubject(subject);
         }
@@ -181,7 +185,7 @@ public class TeacherService {
             // cheol
             Subject subject = null;
             if (request.getSubject() != null && !request.getSubject().isBlank()) {
-                subject = subjectRepository.findByCode(request.getSubject())
+                subject = findSubjectByCode(request.getSubject())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
             }
             info.update(subject, request.getDepartment(), request.getPosition(), newStatus);
@@ -189,8 +193,7 @@ public class TeacherService {
             NotificationHelper.send(
                     user,
                     "교사 상태 변경 알림",
-                    "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다."
-            );
+                    "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다.");
         }
     }
 
@@ -220,7 +223,7 @@ public class TeacherService {
                     }
                     // 담당과목 코드가 DB에 없으면 경고 후 null로 등록 (에러 없이 진행)
                     if (csvReq.getSubject() != null && !csvReq.getSubject().isBlank()
-                            && subjectRepository.findByCode(csvReq.getSubject()).isEmpty()) {
+                            && findSubjectByCode(csvReq.getSubject()).isEmpty()) {
                         log.warn("존재하지 않는 과목 코드, 담당과목 null로 등록: {}", csvReq.getSubject());
                         csvReq.setSubject(null);
                     }
@@ -251,8 +254,7 @@ public class TeacherService {
                 NotificationHelper.send(
                         user,
                         "교사 상태 변경 알림",
-                        "귀하의 교사 상태가 '" + status.getDescription() + "'(으)로 변경되었습니다."
-                );
+                        "귀하의 교사 상태가 '" + status.getDescription() + "'(으)로 변경되었습니다.");
             }
         }
     }
@@ -309,7 +311,7 @@ public class TeacherService {
 
         // cheol
         if (updateDTO.getSubject() != null) {
-            Subject subject = subjectRepository.findByCode(updateDTO.getSubject())
+            Subject subject = findSubjectByCode(updateDTO.getSubject())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + updateDTO.getSubject()));
             teacher.setSubject(subject);
         }
@@ -442,7 +444,9 @@ public class TeacherService {
      */
     public ClassStudentDTO getClassStudents(int schoolYear, int grade, int classNum) {
         log.info("학급 학생 조회 - {}학년도 {}학년 {}반", schoolYear, grade, classNum);
-        Classroom classroom = classroomRepository.findByYearAndGradeAndClassNum(schoolYear, grade, classNum)
+        // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        Classroom classroom = classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(schoolId, schoolYear, grade, classNum)
                 .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
         return buildClassStudentDTO(classroom);
     }
@@ -462,7 +466,7 @@ public class TeacherService {
         TeacherInfo teacherInfo = teacherInfoRepository.findById(teacherId)
                 .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
 
-        Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())
+        Subject subject = findSubjectByCode(gradeDTO.getSubjectCode())
                 .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
 
         if (teacherInfo.getSubject() == null || !teacherInfo.getSubject().getCode().equals(subject.getCode())) {
@@ -665,7 +669,7 @@ public class TeacherService {
             throw new IllegalArgumentException("담당 학급 학생이 아닙니다. 본인 반 학생의 성적만 입력할 수 있습니다.");
         }
 
-        Subject subject = subjectRepository.findByCode(gradeDTO.getSubjectCode())
+        Subject subject = findSubjectByCode(gradeDTO.getSubjectCode())
                 .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
 
         // 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
@@ -758,6 +762,14 @@ public class TeacherService {
             throw new IllegalArgumentException("교사의 사용자 정보가 없습니다. ID: " + teacherId);
         }
         return teacher.getUser().getUid();
+    }
+
+    /** 학교 범위 내 과목 코드로 Subject 조회 (schoolId가 없으면 전체에서 첫 번째 매칭) */
+    private java.util.Optional<com.example.schoolmate.cheol.entity.Subject> findSubjectByCode(String code) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        return (schoolId != null)
+                ? subjectRepository.findByCodeAndSchool_Id(code, schoolId)
+                : subjectRepository.findAll().stream().filter(s -> s.getCode().equals(code)).findFirst();
     }
 
     /** 학교 범위 내 교사 사번 중복 여부 확인 (schoolId가 없으면 전역 체크) */

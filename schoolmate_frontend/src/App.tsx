@@ -17,7 +17,6 @@ import SelectInfo from "@/pages/auth/SelectInfo";
 import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
 import MainDesign from "@/pages/Main-design";
-import UserProfile from "@/pages/user/Profile";
 // [cheol] 학생 관련
 import StudentList from "@/pages/cheol/student/StudentList";
 import StudentMyInfo from "@/pages/cheol/student/MyInfo";
@@ -40,8 +39,8 @@ import TeacherScheduleAdd from "@/pages/woo/teacher/ScheduleAdd";
 import TeacherScheduleEdit from "@/pages/woo/teacher/ScheduleEdit";
 import TeacherList from "@/pages/woo/teacher/TeacherList";
 import ParentList from "@/pages/woo/teacher/ParentList";
-// [cheol] 교사 성적 채점 학급 선택 페이지
 import TeacherGradeClasses from "@/pages/woo/teacher/GradeClasses";
+
 // [woo] 게시판
 import SchoolNotice from "@/pages/woo/board/SchoolNotice";
 import SchoolNoticeDetail from "@/pages/woo/board/SchoolNoticeDetail";
@@ -116,8 +115,8 @@ function SchoolSelectGuard() {
   const { selectedSchool, setSelectedSchool } = useSchool();
   const { user, loading } = useAuth();
 
-  const isSuperAdmin = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN';
-  const firstGrant = !isSuperAdmin ? user?.grants?.find(g => g.schoolId) : undefined;
+  const isSuperAdmin = user?.roles?.includes("ADMIN") || user?.role === "ADMIN";
+  const firstGrant = !isSuperAdmin ? user?.grants?.find((g) => g.schoolId) : undefined;
   const shouldAutoSelect = !!firstGrant && !selectedSchool;
 
   useEffect(() => {
@@ -125,9 +124,9 @@ function SchoolSelectGuard() {
     setSelectedSchool({
       id: firstGrant.schoolId!,
       name: firstGrant.schoolName!,
-      schoolCode: firstGrant.schoolCode ?? '',
-      schoolKind: firstGrant.schoolKind ?? '',
-      officeOfEducation: firstGrant.officeOfEducation ?? '',
+      schoolCode: firstGrant.schoolCode ?? "",
+      schoolKind: firstGrant.schoolKind ?? "",
+      officeOfEducation: firstGrant.officeOfEducation ?? "",
     });
   }, [shouldAutoSelect]);
 
@@ -140,7 +139,7 @@ function SchoolSelectGuard() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Main />} />
+      <Route path="/" element={<Navigate to="/hub" replace />} />
       <Route path="/main" element={<Main />} />
       <Route path="/main-design" element={<MainDesign />} />
       <Route path="/login" element={<Login />} />
@@ -196,6 +195,15 @@ function App() {
         <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
 
+      {/* [cheol] 교사 성적 채점 - 학급 선택 */}
+      <Route
+        path="/teacher/grade-classes"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER"]}>
+            <TeacherGradeClasses />
+          </PrivateRoute>
+        }
+      />
       {/* [cheol] 성적/시험 */}
       <Route
         path="/exam"
@@ -299,15 +307,6 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherDashboard />
-          </PrivateRoute>
-        }
-      />
-      {/* [cheol] 교사 성적 채점 — 학급 선택 페이지 */}
-      <Route
-        path="/teacher/grade-classes"
-        element={
-          <PrivateRoute allowedRoles={["TEACHER"]}>
-            <TeacherGradeClasses />
           </PrivateRoute>
         }
       />
@@ -451,16 +450,6 @@ function App() {
         }
       />
 
-      {/* [woo] 프로필 - 전체 역할 */}
-      <Route
-        path="/user/profile"
-        element={
-          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
-            <UserProfile />
-          </PrivateRoute>
-        }
-      />
-
       {/* [woo] 교직원 게시판 */}
       <Route
         path="/board/teacher"
@@ -518,7 +507,7 @@ function App() {
       <Route
         path="/attendance/parent"
         element={
-          <PrivateRoute allowedRoles={["PARENT"]}>
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
             <ParentAttendance />
           </PrivateRoute>
         }

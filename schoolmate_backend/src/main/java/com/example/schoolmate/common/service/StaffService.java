@@ -94,6 +94,7 @@ public class StaffService {
 
         StaffInfo info = new StaffInfo();
         info.setCode(request.getCode());
+        info.setPrimary(true);
         info.setDepartment(request.getDepartment());
         info.setJobTitle(request.getJobTitle());
         info.setWorkLocation(request.getWorkLocation());

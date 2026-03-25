@@ -3,6 +3,7 @@ package com.example.schoolmate.homework.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.homework.entity.Homework;
 import com.example.schoolmate.homework.entity.HomeworkStatus;
 import com.example.schoolmate.homework.entity.HomeworkSubmission;
@@ -74,10 +75,13 @@ public class HomeworkDTO {
         private HomeworkSubmission.SubmissionStatus submissionStatus;
 
         public static ListResponse fromEntity(Homework homework, int totalStudentCount) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = homework.getCourseSection().getTeacher().getUser().getName();
+            String sName = homework.getCourseSection().getSubject().getName();
             return ListResponse.builder()
                     .id(homework.getId())
                     .title(homework.getTitle())
-                    .teacherName(homework.getCourseSection().getTeacher().getUser().getName())
+                    .teacherName(tName + "[" + sName + "]")
                     .classroomName(homework.getCourseSection().getClassroom().getClassName())
                     .classroomId(homework.getCourseSection().getClassroom().getCid())
                     .courseSectionId(homework.getCourseSection().getId())
@@ -128,11 +132,14 @@ public class HomeworkDTO {
         private SubmissionResponse mySubmission;
 
         public static DetailResponse fromEntity(Homework homework, int totalStudentCount) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = homework.getCourseSection().getTeacher().getUser().getName();
+            String sName = homework.getCourseSection().getSubject().getName();
             return DetailResponse.builder()
                     .id(homework.getId())
                     .title(homework.getTitle())
                     .content(homework.getContent())
-                    .teacherName(homework.getCourseSection().getTeacher().getUser().getName())
+                    .teacherName(tName + "[" + sName + "]")
                     .teacherUserId(homework.getCourseSection().getTeacher().getUser().getUid())
                     .classroomName(homework.getCourseSection().getClassroom().getClassName())
                     .classroomId(homework.getCourseSection().getClassroom().getCid())
@@ -141,7 +148,7 @@ public class HomeworkDTO {
                     .termName(homework.getCourseSection().getTerm().getDisplayName())
                     .status(homework.getStatus())
                     .dueDate(homework.getDueDate())
-                    .attachmentUrl(homework.getAttachmentUrl())
+                    .attachmentUrl(homework.getAttachmentUrl() != null ? FileManager.UploadType.HOMEWORK.toUrl(homework.getAttachmentUrl()) : null)
                     .attachmentOriginalName(homework.getAttachmentOriginalName())
                     .maxScore(homework.getMaxScore())
                     .submissionCount(homework.getSubmissions().size())
@@ -188,7 +195,7 @@ public class HomeworkDTO {
                     .studentName(submission.getStudent().getUser().getName())
                     .studentNumber(submission.getStudent().getFullStudentNumber())
                     .content(submission.getContent())
-                    .attachmentUrl(submission.getAttachmentUrl())
+                    .attachmentUrl(submission.getAttachmentUrl() != null ? FileManager.UploadType.HOMEWORK.toUrl(submission.getAttachmentUrl()) : null)
                     .attachmentOriginalName(submission.getAttachmentOriginalName())
                     .submittedAt(submission.getSubmittedAt())
                     .score(submission.getScore())

@@ -19,7 +19,7 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -300,15 +300,10 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     @Override
     public long countByStatus(StudentStatus status) {
         QStudentInfo info = QStudentInfo.studentInfo;
-        Long schoolId = SchoolContextHolder.getSchoolId();
-
-        JPAQuery<Long> q = query.select(info.count())
+        Long count = query.select(info.count())
                 .from(info)
-                .where(info.status.eq(status));
-        if (schoolId != null) {
-            q.where(info.school.id.eq(schoolId));
-        }
-        Long count = q.fetchOne();
+                .where(info.status.eq(status), SchoolQueryFilter.schoolIdEq(info.school.id))
+                .fetchOne();
         return count != null ? count : 0L;
     }
 
@@ -330,10 +325,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     // ── 공통 필터 ─────────────────────────────────────────────────────────────────
 
     private BooleanExpression schoolFilter(QStudentInfo info) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null)
-            return null;
-        return info.school.id.eq(schoolId);
+        return SchoolQueryFilter.schoolIdEq(info.school.id);
     }
 
     private BooleanExpression excludeLinkedFilter(QStudentInfo info, Long parentId) {

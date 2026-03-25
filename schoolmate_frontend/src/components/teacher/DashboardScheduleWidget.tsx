@@ -102,6 +102,12 @@ export default function DashboardScheduleWidget() {
     fetchToday();
   }, [fetchToday]);
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal]);
+
   // ── 모달 제어 ──────────────────────────────────────────────────────────────
 
   const openAdd = () => {

@@ -84,7 +84,8 @@ public class SecurityConfig {
                                                 // 정적 리소스
                                                 .requestMatchers(
                                                                 "/assets/**", "/images/**", "/img/**",
-                                                                "/js/**", "/css/**", "/uploads/**", "/error/**")
+                                                                "/js/**", "/css/**",
+                                                                "/upload/**", "/uploads/**", "/error/**")
                                                 .permitAll()
                                                 // [woo] NEIS 공개 API - 인증 불필요
                                                 .requestMatchers("/api/calendar/**", "/api/meals/**").permitAll()

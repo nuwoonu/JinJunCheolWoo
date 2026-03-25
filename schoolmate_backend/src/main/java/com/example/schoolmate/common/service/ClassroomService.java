@@ -445,12 +445,15 @@ public class ClassroomService {
                     .withIgnoreLeadingWhiteSpace(true)
                     .build().parse();
 
+            Long schoolId = SchoolContextHolder.getSchoolId();
+
             for (ClassDTO.CsvImportRequest req : beans) {
-                // 1. 학급 조회 또는 생성
-                Classroom classroom = classroomRepository.findAll().stream()
-                        .filter(c -> c.getYear() == req.getYear() && c.getGrade() == req.getGrade()
-                                && c.getClassNum() == req.getClassNum())
-                        .findFirst().orElse(null);
+                // 1. 학급 조회 또는 생성 (학교 ID 기반으로 스쿨-스코프 조회)
+                Classroom classroom = (schoolId != null)
+                        ? classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(
+                                schoolId, req.getYear(), req.getGrade(), req.getClassNum()).orElse(null)
+                        : classroomRepository.findByYearAndGradeAndClassNum(
+                                req.getYear(), req.getGrade(), req.getClassNum()).orElse(null);
 
                 if (classroom == null) {
                     classroom = new Classroom();
@@ -459,7 +462,6 @@ public class ClassroomService {
                     classroom.setClassNum(req.getClassNum());
 
                     // school context 설정 (createClass()와 동일하게)
-                    Long schoolId = SchoolContextHolder.getSchoolId();
                     if (schoolId != null) {
                         schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
                     }

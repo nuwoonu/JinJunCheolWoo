@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import api from '@/api/auth'
+import api, { getRoleContexts, type RoleContext } from '@/api/auth'
 import { auth } from '@/shared/auth'
 import { useSchoolSearch, type SchoolSummary } from '@/hooks/useSchoolSearch'
 
@@ -21,6 +21,13 @@ export default function RegisterSchoolSelect() {
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [existingContexts, setExistingContexts] = useState<RoleContext[]>([])
+
+  useEffect(() => {
+    if (source === 'hub') {
+      getRoleContexts().then(setExistingContexts).catch(() => {})
+    }
+  }, [source])
 
   const {
     name, setName,
@@ -46,11 +53,14 @@ export default function RegisterSchoolSelect() {
     setError('')
     try {
       if (source === 'sns' || source === 'hub') {
-        const res = await api.post<{ accessToken: string; refreshToken: string; role: string }>(
+        const res = await api.post<{ accessToken?: string; refreshToken?: string; role?: string; status: string }>(
           '/auth/select-role',
           { role, schoolId: String(school.id) }
         )
-        auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        // 슈퍼 어드민은 즉시 활성화 → 새 토큰 교체. 일반 사용자는 PENDING → 토큰 유지
+        if (res.data.status !== 'pending' && res.data.accessToken && res.data.refreshToken) {
+          auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        }
         navigate('/hub')
       } else {
         // 이메일 가입: 폼 단계로 이동
@@ -141,7 +151,11 @@ export default function RegisterSchoolSelect() {
                 <div className="text-center text-muted py-4">검색 결과가 없습니다.</div>
               ) : (
                 <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
-                  {schools.map((school, idx) => (
+                  {schools.map((school, idx) => {
+                    const isDuplicate = source === 'hub' && existingContexts.some(
+                      (c) => c.roleType === role && c.schoolId === school.id
+                    )
+                    return (
                     <div
                       key={school.id}
                       style={{
@@ -150,17 +164,32 @@ export default function RegisterSchoolSelect() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        background: '#fff',
+                        background: isDuplicate ? '#fafafa' : '#fff',
                       }}
                     >
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: '#1a1a1a' }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: isDuplicate ? '#9ca3af' : '#1a1a1a' }}>
                           {school.name}
                         </div>
                         <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
                           {school.schoolKind} · {school.officeOfEducation}
                         </div>
                       </div>
+                      {isDuplicate ? (
+                        <span style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: '#9ca3af',
+                          background: '#f3f4f6',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: 8,
+                          padding: '5px 12px',
+                          whiteSpace: 'nowrap',
+                          marginLeft: 12,
+                        }}>
+                          이미 등록됨
+                        </span>
+                      ) : (
                       <button
                         onClick={() => handleSelect(school)}
                         disabled={submitting}
@@ -180,8 +209,10 @@ export default function RegisterSchoolSelect() {
                       >
                         선택
                       </button>
+                      )}
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 

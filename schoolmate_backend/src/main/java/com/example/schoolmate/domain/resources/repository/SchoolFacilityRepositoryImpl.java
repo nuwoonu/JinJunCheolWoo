@@ -2,7 +2,7 @@ package com.example.schoolmate.domain.resources.repository;
 
 import java.util.List;
 
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.example.schoolmate.domain.resources.entity.QSchoolFacility;
 import com.example.schoolmate.domain.resources.entity.SchoolFacility;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -25,8 +25,6 @@ public class SchoolFacilityRepositoryImpl implements SchoolFacilityRepositoryCus
     }
 
     private BooleanExpression schoolFilter(QSchoolFacility facility) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null) return null;
-        return facility.school.id.eq(schoolId);
+        return SchoolQueryFilter.schoolIdEq(facility.school.id);
     }
 }

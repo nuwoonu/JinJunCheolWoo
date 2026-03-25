@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+// [woo] unused: useNavigate 제거
+import { Link } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
 export default function NoticeList() {
-  const navigate = useNavigate();
   const [page, setPage] = useState<any>(null);
   const [keyword, setKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(0);

@@ -5,15 +5,20 @@
 import { useEffect, useState } from 'react'
 import { getTodayMeal, type MealInfo } from '@/api/mealCache'
 
-export default function TodayMealWidget() {
+interface Props {
+  schoolId?: number | null
+}
+
+export default function TodayMealWidget({ schoolId }: Props) {
   const [meal, setMeal] = useState<MealInfo | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getTodayMeal()
+    setLoading(true)
+    getTodayMeal(schoolId)
       .then(data => { setMeal(data); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [])
+  }, [schoolId])
 
   const menuLines = meal?.menu?.split('\n') ?? []
 

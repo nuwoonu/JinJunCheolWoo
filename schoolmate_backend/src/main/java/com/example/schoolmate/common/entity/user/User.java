@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.example.schoolmate.common.entity.BaseEntity;
 import com.example.schoolmate.common.entity.info.BaseInfo;
+import com.example.schoolmate.common.entity.info.SchoolMemberInfo;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 
 import jakarta.persistence.Id;
@@ -102,6 +104,21 @@ public class User extends BaseEntity {
                 .map(clazz::cast)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * 해당 타입의 primary 인스턴스를 반환합니다.
+     * primary=true 인 것이 없으면 첫 번째 인스턴스를 반환합니다(하위 호환).
+     */
+    public <T extends SchoolMemberInfo> T getPrimaryInfo(Class<T> clazz) {
+        List<T> matched = infos.stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .collect(Collectors.toList());
+        return matched.stream()
+                .filter(SchoolMemberInfo::isPrimary)
+                .findFirst()
+                .orElse(matched.isEmpty() ? null : matched.get(0));
     }
 
     // --- 정보 변경 메서드 ---
