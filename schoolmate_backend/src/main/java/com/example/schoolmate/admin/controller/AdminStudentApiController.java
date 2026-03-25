@@ -58,13 +58,17 @@ public class AdminStudentApiController {
 
     // 등록
     @PostMapping
-    public ResponseEntity<Long> create(@RequestBody StudentDTO.CreateRequest request) {
+    public ResponseEntity<?> create(@RequestBody StudentDTO.CreateRequest request) {
         try {
             Long uid = studentService.createStudent(request);
             return ResponseEntity.ok(uid);
+        } catch (IllegalArgumentException e) {
+            // [woo 03/25] 이메일 중복 등 검증 실패 시 메시지 전달
+            log.warn("학생 등록 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             log.error("학생 등록 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("학생 등록 중 오류가 발생했습니다.");
         }
     }
 

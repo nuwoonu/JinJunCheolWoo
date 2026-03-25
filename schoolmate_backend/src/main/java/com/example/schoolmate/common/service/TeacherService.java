@@ -441,7 +441,9 @@ public class TeacherService {
      */
     public ClassStudentDTO getClassStudents(int schoolYear, int grade, int classNum) {
         log.info("학급 학생 조회 - {}학년도 {}학년 {}반", schoolYear, grade, classNum);
-        Classroom classroom = classroomRepository.findByYearAndGradeAndClassNum(schoolYear, grade, classNum)
+        // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        Classroom classroom = classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(schoolId, schoolYear, grade, classNum)
                 .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
         return buildClassStudentDTO(classroom);
     }
