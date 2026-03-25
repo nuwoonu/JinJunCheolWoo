@@ -18,6 +18,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,14 +35,16 @@ public class RoleRequestService {
      * REJECTED 상태면 재신청으로 전환
      */
     public RoleRequest createRequest(User user, UserRole role, Long schoolId) {
-        return roleRequestRepository.findByUserAndRole(user, role)
-                .map(existing -> {
-                    switch (existing.getStatus()) {
+        Optional<RoleRequest> existing = schoolId != null
+                ? roleRequestRepository.findByUserAndRoleAndSchoolId(user, role, schoolId)
+                : roleRequestRepository.findByUserAndRoleAndSchoolIdIsNull(user, role);
+        return existing.map(req -> {
+                    switch (req.getStatus()) {
                         case ACTIVE -> throw new IllegalStateException("이미 활성화된 역할입니다.");
                         case PENDING -> throw new IllegalStateException("이미 승인 대기 중인 역할입니다.");
                         case REJECTED -> {
-                            existing.reapply();
-                            return existing;
+                            req.reapply();
+                            return req;
                         }
                         case SUSPENDED -> throw new IllegalStateException("정지된 역할입니다. 관리자에게 문의하세요.");
                         default -> throw new IllegalStateException("처리할 수 없는 상태입니다.");
@@ -115,10 +118,12 @@ public class RoleRequestService {
      */
     public RoleRequest createActiveRequest(User user, UserRole role, Long schoolId, User createdBy) {
         // 기존 신청이 있으면 상태만 ACTIVE로 업데이트
-        return roleRequestRepository.findByUserAndRole(user, role)
-                .map(existing -> {
-                    existing.approve(createdBy);
-                    return existing;
+        Optional<RoleRequest> existing = schoolId != null
+                ? roleRequestRepository.findByUserAndRoleAndSchoolId(user, role, schoolId)
+                : roleRequestRepository.findByUserAndRoleAndSchoolIdIsNull(user, role);
+        return existing.map(req -> {
+                    req.approve(createdBy);
+                    return req;
                 })
                 .orElseGet(() -> roleRequestRepository.save(
                         RoleRequest.createActive(user, role, schoolId, createdBy)));

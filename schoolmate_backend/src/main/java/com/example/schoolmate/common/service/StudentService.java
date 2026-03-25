@@ -74,7 +74,7 @@ public class StudentService {
         return studentInfoRepository.search(cond, pageable)
                 .map(user -> {
                     StudentDTO.SummaryResponse dto = new StudentDTO.SummaryResponse(user);
-                    roleRequestRepository.findByUserAndRole(user, UserRole.STUDENT).ifPresent(rr -> {
+                    roleRequestRepository.findAllByUserAndRole(user, UserRole.STUDENT).stream().findFirst().ifPresent(rr -> {
                         dto.setRoleRequestId(rr.getId());
                         dto.setRoleRequestStatus(rr.getStatus().name());
                     });
@@ -108,7 +108,7 @@ public class StudentService {
                 .findByStudentInfo_User_Uid(uid);
         response.setGuardians(relations.stream().map(StudentDTO.LinkedGuardian::new).toList());
 
-        roleRequestRepository.findByUserAndRole(user, UserRole.STUDENT).ifPresent(rr -> {
+        roleRequestRepository.findAllByUserAndRole(user, UserRole.STUDENT).stream().findFirst().ifPresent(rr -> {
             response.setRoleRequestId(rr.getId());
             response.setRoleRequestStatus(rr.getStatus().name());
         });

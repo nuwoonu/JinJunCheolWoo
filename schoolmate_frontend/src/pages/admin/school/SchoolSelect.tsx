@@ -1,12 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "@/api/auth";
 import admin from "@/api/adminApi";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import { useSchool, type SelectedSchool } from "@/context/SchoolContext";
-import { useAuth } from "@/contexts/AuthContext";
-import NotificationDropdown from "@/components/fragments/NotificationDropdown";
+import AdminTopBar from "@/components/layout/admin/AdminTopBar";
 import { useSchoolSearch, type SchoolSummary } from "@/hooks/useSchoolSearch";
+
+function useTheme() {
+  const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
+  useEffect(() => {
+    const onStorage = () => setIsDark(localStorage.getItem("theme") === "dark");
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+  return { isDark };
+}
 
 // [joon] 관리 학교 선택 — 사이드바 없는 독립 페이지
 
@@ -19,34 +28,10 @@ const SCHOOL_KINDS = [
   "각종학교",
 ];
 
-// 다크모드 훅 (AdminHeader와 동일한 로직)
-function useTheme() {
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    return saved === "dark";
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDark ? "dark" : "light",
-    );
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme") ?? "light";
-    document.documentElement.setAttribute("data-theme", saved);
-  }, []);
-
-  return { isDark, toggle: () => setIsDark((prev) => !prev) };
-}
-
 export default function SchoolSelect() {
   const navigate = useNavigate();
   const { setSelectedSchool } = useSchool();
-  const { signOut } = useAuth();
-  const theme = useTheme(); // 다크모드 객체 생성
+  const theme = useTheme();
 
   const {
     name,
@@ -111,100 +96,9 @@ export default function SchoolSelect() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: theme.isDark ? "#121212" : "#f8fafc",
-        transition: "background 0.3s",
-      }}
-    >
-      {/* 상단 헤더 */}
-      <header
-        style={{
-          background: theme.isDark ? "#1e1e1e" : "#fff",
-          borderBottom: `1px solid ${theme.isDark ? "#333" : "#e5e7eb"}`,
-          padding: "0 32px",
-          height: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          transition: "background 0.3s, border-color 0.3s",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link
-            to={ADMIN_ROUTES.MAIN}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 13,
-              color: theme.isDark ? "#9ca3af" : "#6b7280",
-              textDecoration: "none",
-              padding: "4px 8px",
-              borderRadius: 8,
-              transition: "background 0.15s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = theme.isDark
-                ? "#2d2d2d"
-                : "#f3f4f6")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
-          >
-            <i className="ri-arrow-left-line" style={{ fontSize: 16 }} />
-            <span>관리자 메뉴</span>
-          </Link>
-          <div
-            style={{
-              width: 1,
-              height: 20,
-              background: theme.isDark ? "#444" : "#e5e7eb",
-            }}
-          />
-          <img
-            src="/images/schoolmateLogo.png"
-            alt="SchoolMate"
-            style={{ height: 32, width: "auto" }}
-          />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* 다크모드 토글 버튼 추가 */}
-          <button
-            type="button"
-            onClick={theme.toggle}
-            aria-label="Dark & Light Mode Button"
-            style={{ width: 40, height: 40, background: theme.isDark ? "#2d2d2d" : "#f3f4f6", borderRadius: "50%", display: "flex", justifyContent: "center", alignItems: "center", marginRight: 8, border: "none", cursor: "pointer", fontSize: 18, color: theme.isDark ? "#f3f4f6" : "#374151" }}
-          >
-            {theme.isDark ? "☀" : "🌙"}
-          </button>
-          <NotificationDropdown />
-          <button
-            className="btn btn-sm btn-outline-secondary"
-            onClick={handleSync}
-            disabled={syncRunning}
-            style={{
-              fontSize: 13,
-              borderColor: theme.isDark ? "#555" : undefined,
-              color: theme.isDark ? "#ccc" : undefined,
-            }}
-          >
-            <i className="bi bi-arrow-repeat me-1"></i>
-            {syncRunning ? "동기화 진행 중..." : "학교 DB 동기화 (NEIS)"}
-          </button>
-          <button
-            className="btn btn-sm btn-outline-danger"
-            onClick={signOut}
-            style={{ fontSize: 13 }}
-          >
-            <i className="bi bi-box-arrow-right me-1"></i>
-            로그아웃
-          </button>
-        </div>
-      </header>
+    <div style={{ minHeight: "100vh" }}>
+      {/* 표준 관리자 상단 바 */}
+      <AdminTopBar position="sticky" sectionBadge="학교 선택" />
 
       {/* 본문 */}
       <main style={{ maxWidth: 820, margin: "0 auto", padding: "48px 24px" }}>
@@ -238,11 +132,30 @@ export default function SchoolSelect() {
             style={{
               color: theme.isDark ? "#9ca3af" : "#6b7280",
               fontSize: 14,
-              margin: 0,
+              margin: "0 0 16px",
             }}
           >
             관리할 학교를 검색하여 선택해 주세요.
           </p>
+          {/* NEIS 동기화 버튼 */}
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={handleSync}
+            disabled={syncRunning}
+            style={{
+              border: `1px solid ${theme.isDark ? "#444" : "#ced4da"}`,
+              background: theme.isDark ? "#2d2d2d" : "#f9fafb",
+              color: theme.isDark ? "#d1d5db" : "#374151",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 500,
+              padding: "6px 14px",
+            }}
+          >
+            <i className={`ri-refresh-line me-1${syncRunning ? " spin" : ""}`} />
+            {syncRunning ? "동기화 진행 중..." : "학교 DB 동기화 (NEIS)"}
+          </button>
         </div>
 
         {/* 검색 폼 */}
@@ -693,7 +606,7 @@ export default function SchoolSelect() {
               학교명을 입력하고 검색하세요.
             </p>
             <p style={{ margin: "6px 0 0", fontSize: 13 }}>
-              학교 DB가 비어있다면 상단의{" "}
+              학교 DB가 비어있다면 위의{" "}
               <strong style={{ color: theme.isDark ? "#d1d5db" : "#374151" }}>
                 학교 DB 동기화 (NEIS)
               </strong>{" "}

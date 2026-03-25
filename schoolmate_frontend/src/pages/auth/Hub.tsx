@@ -171,10 +171,31 @@ export default function Hub() {
           </div>
         </div>
 
-        {/* 안내 문구 */}
-        <div style={s.welcomeBox}>
-          <h4 style={s.welcomeTitle}>이동할 페이지를 선택하세요</h4>
-          <p style={s.welcomeDesc}>보유한 역할에 맞는 페이지로 이동합니다.</p>
+        {/* 안내 문구 + 역할 추가 버튼 */}
+        <div style={{ ...s.welcomeBox, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h4 style={s.welcomeTitle}>이동할 페이지를 선택하세요</h4>
+            <p style={s.welcomeDesc}>보유한 역할에 맞는 페이지로 이동합니다.</p>
+          </div>
+          <button
+            style={s.addRoleBtn}
+            onClick={() => navigate("/select-info?source=hub")}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(37,161,148,0.18)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(37,161,148,0.7)";
+              (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = theme.isDark
+                ? "rgba(37,161,148,0.12)"
+                : "rgba(37,161,148,0.08)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(37,161,148,0.4)";
+              (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+            }}
+          >
+            <i className="ri-add-circle-line" style={{ fontSize: 16 }} />
+            역할 추가
+          </button>
         </div>
 
         {/* ── 메인 카드 그리드 ── */}
@@ -480,15 +501,6 @@ export default function Hub() {
           </div>
         )}
 
-        {/* ── 역할 추가 버튼 ── */}
-        <div style={s.addRoleRow}>
-          <button
-            style={s.addRoleBtn}
-            onClick={() => navigate("/select-info?source=hub")}
-          >
-            <i className="ri-add-line" /> 역할 추가
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -661,6 +673,9 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       display: "flex",
       flexDirection: "column" as const,
       gap: 6,
+      maxHeight: 224,
+      overflowY: "auto" as const,
+      paddingRight: 2,
     },
     secondaryRow: {
       display: "flex",
@@ -704,23 +719,19 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       whiteSpace: "nowrap" as const,
     },
     // 역할 추가
-    addRoleRow: {
-      display: "flex",
-      justifyContent: "center",
-      paddingBottom: 8,
-    },
     addRoleBtn: {
       display: "inline-flex",
       alignItems: "center",
-      gap: 6,
-      padding: "7px 18px",
-      fontSize: 13,
-      fontWeight: 500,
-      color: textSecondary,
-      background: "transparent",
-      border: `1px solid ${border}`,
-      borderRadius: 20,
+      gap: 8,
+      padding: "10px 24px",
+      fontSize: 14,
+      fontWeight: 600,
+      color: "#25A194",
+      background: isDark ? "rgba(37,161,148,0.12)" : "rgba(37,161,148,0.08)",
+      border: "1.5px solid rgba(37,161,148,0.4)",
+      borderRadius: 24,
       cursor: "pointer",
+      transition: "background 0.15s, border-color 0.15s, transform 0.1s",
     },
   };
 }

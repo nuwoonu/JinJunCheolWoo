@@ -16,8 +16,14 @@ public interface RoleRequestRepository extends JpaRepository<RoleRequest, Long> 
     /** 특정 유저의 모든 역할 신청 목록 */
     List<RoleRequest> findByUser(User user);
 
-    /** 특정 유저 + 역할의 신청 조회 (중복 신청 체크용) */
-    Optional<RoleRequest> findByUserAndRole(User user, UserRole role);
+    /** 특정 유저 + 역할의 신청 목록 (학교 무관, 여러 건 가능) */
+    List<RoleRequest> findAllByUserAndRole(User user, UserRole role);
+
+    /** 특정 유저 + 역할 + 학교 — 단일 결과 보장 (STUDENT/TEACHER 학교 별) */
+    Optional<RoleRequest> findByUserAndRoleAndSchoolId(User user, UserRole role, Long schoolId);
+
+    /** 특정 유저 + 역할 (schoolId=null, PARENT 등) */
+    Optional<RoleRequest> findByUserAndRoleAndSchoolIdIsNull(User user, UserRole role);
 
     /** 특정 유저 + 역할 + 상태 */
     Optional<RoleRequest> findByUserAndRoleAndStatus(User user, UserRole role, RoleRequestStatus status);

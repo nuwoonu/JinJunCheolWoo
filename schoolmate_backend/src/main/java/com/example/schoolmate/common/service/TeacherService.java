@@ -87,7 +87,7 @@ public class TeacherService {
         Page<User> userPage = teacherInfoRepository.search(cond, pageable);
         return userPage.map(user -> {
             TeacherDTO.DetailResponse dto = new TeacherDTO.DetailResponse(user);
-            roleRequestRepository.findByUserAndRole(user, UserRole.TEACHER).ifPresent(rr -> {
+            roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst().ifPresent(rr -> {
                 dto.setRoleRequestId(rr.getId());
                 dto.setRoleRequestStatus(rr.getStatus().name());
             });
@@ -109,7 +109,7 @@ public class TeacherService {
                 .map(NotificationDTO.NotificationHistory::new)
                 .toList());
 
-        roleRequestRepository.findByUserAndRole(user, UserRole.TEACHER).ifPresent(rr -> {
+        roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst().ifPresent(rr -> {
             response.setRoleRequestId(rr.getId());
             response.setRoleRequestStatus(rr.getStatus().name());
         });
