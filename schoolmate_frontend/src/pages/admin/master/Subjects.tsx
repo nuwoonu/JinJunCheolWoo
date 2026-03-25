@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import admin from "@/api/adminApi";
 
-const EMPTY = { originCode: "", code: "", name: "" };
+const EMPTY = { id: null as number | null, originCode: "", code: "", name: "" };
 
 const th: React.CSSProperties = {
   padding: "12px 16px",
@@ -44,14 +44,14 @@ export default function Subjects() {
   };
 
   const openUpdateModal = (s: any) => {
-    setForm({ originCode: s.code, code: s.code, name: s.name });
+    setForm({ id: s.id, originCode: s.code, code: s.code, name: s.name });
     setIsEdit(true);
     setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const payload = { originCode: form.originCode, code: form.code, name: form.name };
+    const payload = { id: form.id, originCode: form.originCode, code: form.code, name: form.name };
     if (isEdit) {
       await admin.put(`/subjects`, payload);
     } else {
@@ -61,9 +61,9 @@ export default function Subjects() {
     load();
   };
 
-  const handleDelete = async (code: string) => {
-    if (!confirm(`"${code}" 과목을 삭제하시겠습니까?`)) return;
-    await admin.delete(`/subjects/${code}`);
+  const handleDelete = async (s: any) => {
+    if (!confirm(`"${s.code}" 과목을 삭제하시겠습니까?`)) return;
+    await admin.delete(`/subjects/${s.id}`);
     load();
   };
 
@@ -223,7 +223,7 @@ export default function Subjects() {
                       수정
                     </button>
                     <button
-                      onClick={() => handleDelete(s.code)}
+                      onClick={() => handleDelete(s)}
                       style={{ padding: "4px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#ef4444", cursor: "pointer" }}
                     >
                       삭제

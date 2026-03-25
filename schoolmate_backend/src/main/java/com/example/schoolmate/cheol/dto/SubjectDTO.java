@@ -34,7 +34,8 @@ public class SubjectDTO {
     @AllArgsConstructor
     @Builder
     public static class Request {
-        private String originCode; // 수정 시 기존 코드 식별용
+        private Long id;           // 수정 시 식별용 (신규 등록 시 null)
+        private String originCode; // 하위 호환용 (더 이상 사용 안 함)
         private String code;
         private String name;
     }
@@ -60,11 +61,13 @@ public class SubjectDTO {
     @Getter
     @Builder
     public static class Response {
+        private Long id;
         private String code;
         private String name;
 
         public static Response from(Subject subject) {
             return Response.builder()
+                    .id(subject.getId())
                     .code(subject.getCode())
                     .name(subject.getName())
                     .build();

@@ -52,10 +52,10 @@ public class AdminSubjectApiController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{code}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("@grants.isSuperAdmin()")
-    public ResponseEntity<Void> delete(@PathVariable String code) {
-        subjectService.deleteSubject(code);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        subjectService.deleteSubject(id);
         return ResponseEntity.ok().build();
     }
 

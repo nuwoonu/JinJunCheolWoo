@@ -32,8 +32,8 @@ import lombok.ToString;
  */
 @Entity
 @Table(name = "classroom", uniqueConstraints = {
-        // 같은 연도에 같은 학년 같은 반이 중복되면 안됨
-        @UniqueConstraint(columnNames = { "year", "grade", "class_num" })
+        // 같은 학교 내에서 같은 연도, 학년, 반이 중복되면 안됨
+        @UniqueConstraint(name = "uk_classroom_school_year_grade_classnum", columnNames = { "school_id", "year", "grade", "class_num" })
 })
 @Getter
 @Setter

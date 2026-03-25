@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import api from '@/api/auth'
+import api, { getMe } from '@/api/auth'
 import { auth } from '@/shared/auth'
 
 // 이메일 가입: /select-info?source=email → 역할 선택 → 학교 선택 or 폼 입력
 // SNS 가입:   /select-info?source=sns  → 역할 선택 → 학교 선택 or 가입 완료
-// Hub 역할 추가: /select-info?source=hub → 중복 체크 후 동일 플로우 진행
+// Hub 역할 추가: /select-info?source=hub → 동일 플로우 진행
 export default function SelectInfo() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -14,8 +14,20 @@ export default function SelectInfo() {
   const [selected, setSelected] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hasParent, setHasParent] = useState(false)
 
-  const roles = [
+  // 기존 학부모 역할 여부 확인 (신규 이메일 가입 제외)
+  useEffect(() => {
+    if (source === 'email') return
+    getMe().then(me => {
+      const parentExists = me.roleRequests?.some(
+        r => r.role === 'PARENT' && (r.status === 'ACTIVE' || r.status === 'PENDING')
+      ) ?? false
+      setHasParent(parentExists)
+    }).catch(() => {})
+  }, [source])
+
+  const allRoles = [
     {
       value: 'STUDENT',
       label: '학생',
@@ -35,6 +47,9 @@ export default function SelectInfo() {
       desc: '자녀의 학교 생활, 성적, 알림을 확인할 수 있습니다.',
     },
   ]
+
+  // 학부모는 이미 보유 중이면 목록에서 제외
+  const roles = allRoles.filter(r => !(r.value === 'PARENT' && hasParent))
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -88,6 +103,25 @@ export default function SelectInfo() {
           <div className="d-lg-none text-center mb-4">
             <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} /></a>
           </div>
+
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'none',
+              border: 'none',
+              color: '#666',
+              fontSize: 14,
+              cursor: 'pointer',
+              padding: '4px 0',
+              marginBottom: 16,
+            }}
+          >
+            <i className="fa-solid fa-arrow-left" />
+            이전으로
+          </button>
 
           <div className="text-center mb-4">
             <h1 style={{ fontSize: 24, fontWeight: 700, color: '#333', marginBottom: 8 }}>
