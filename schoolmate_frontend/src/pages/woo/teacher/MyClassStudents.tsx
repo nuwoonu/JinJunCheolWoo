@@ -54,7 +54,6 @@ export default function TeacherMyClassStudents() {
 
   // [woo] 승인대기 학생 상태
   const [pendingStudents, setPendingStudents] = useState<PendingStudent[]>([]);
-  const [pendingLoading, setPendingLoading] = useState(false);
   const [assigningId, setAssigningId] = useState<number | null>(null);
   // [woo] 배정 모달 상태
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -82,18 +81,23 @@ export default function TeacherMyClassStudents() {
 
   // [woo] 승인대기 학생 조회
   const fetchPendingStudents = () => {
-    setPendingLoading(true);
     api
       .get("/teacher/myclass/pending-students")
       .then((res) => setPendingStudents(res.data))
-      .catch(() => {})
-      .finally(() => setPendingLoading(false));
+      .catch(() => {});
   };
 
   useEffect(() => {
     fetchClassInfo();
     fetchPendingStudents();
   }, []);
+
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    const open = showAssignModal || showAddModal || !!selectedStudent
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showAssignModal, showAddModal, selectedStudent]);
 
   const filtered =
     classInfo?.students.filter((s) => s.name.includes(search) || String(s.studentNumber).includes(search)) ?? [];

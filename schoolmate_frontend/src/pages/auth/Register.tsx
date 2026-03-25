@@ -71,7 +71,7 @@ export default function Register() {
         '/auth/register',
         body
       )
-      const { accessToken, refreshToken, role: returnedRole } = res.data
+      const { accessToken, refreshToken, role: _returnedRole } = res.data
       auth.setTokens(accessToken, refreshToken)
       document.cookie = `accessToken=${accessToken}; path=/; SameSite=Strict`
 
@@ -94,17 +94,17 @@ export default function Register() {
   if (authLoading) return null
 
   return (
-    <div className="d-flex">
-      {/* 왼쪽 - 로고 */}
-      <div className="register-left d-none d-lg-flex">
-        <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
-      </div>
+    <div className="register-container">
+      {/* 왼쪽 상단 로고 */}
+      <a href="/main" className="register-logo">
+        <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+      </a>
 
-      {/* 오른쪽 - 폼 */}
-      <div className="register-right">
+      {/* 폼 중앙 배치 */}
+      <div className="register-body">
         <div className="register-form">
-          <div className="d-lg-none text-center mb-4">
-            <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} /></a>
+          <div className="mobile-logo">
+            <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
           </div>
 
           {/* 선택된 역할 / 학교 표시 */}
@@ -112,12 +112,10 @@ export default function Register() {
             style={{
               marginBottom: 20,
               padding: '10px 16px',
-              background: '#f0faf9',
-              borderRadius: 10,
-              border: '1px solid #c5e8e5',
               fontSize: 13,
               color: '#25a194',
               fontWeight: 600,
+              textAlign: 'center',
             }}
           >
             <i className="fa-solid fa-circle-check me-1" />

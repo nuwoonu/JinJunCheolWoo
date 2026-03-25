@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+// [woo] unused: useNavigate 제거
+import { Link } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { STUDENT_STATUS } from '@/constants/statusConfig';
@@ -64,7 +65,6 @@ const pgBtn = (active: boolean, disabled: boolean): React.CSSProperties => ({
 });
 
 export default function StudentList() {
-  const navigate = useNavigate();
   const [page, setPage] = useState<any>(null);
   const [status, setStatus] = useState("");
   const [type, setType] = useState("name");

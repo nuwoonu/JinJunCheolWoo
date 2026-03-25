@@ -7,38 +7,40 @@ import DashboardLayout from '../../../components/layout/DashboardLayout'
 // - 제목, 내용, 학급 선택, 마감일, 첨부파일
 // - POST /api/homework (multipart/form-data)
 
-interface ClassroomOption {
+// [woo] 수업 분반 (과목 + 학급)
+interface CourseSectionOption {
   id: number
   name: string
-  grade: number
-  classNum: number
+  subjectName: string
+  classroomName: string
+  classroomId: number
 }
 
 export default function HomeworkCreate() {
   const navigate = useNavigate()
-  const [classrooms, setClassrooms] = useState<ClassroomOption[]>([])
+  const [courseSections, setCourseSections] = useState<CourseSectionOption[]>([])
   const [saving, setSaving] = useState(false)
 
   const [form, setForm] = useState({
     title: '',
     content: '',
-    classroomId: '',
+    courseSectionId: '',
     dueDate: '',
     maxScore: '100',
   })
   const [file, setFile] = useState<File | null>(null)
 
-  // [woo] 학급 목록 로드
+  // [woo] 교사 수업 분반 목록 로드
   useEffect(() => {
-    api.get('/homework/classrooms')
-      .then(res => setClassrooms(res.data))
+    api.get('/homework/course-sections')
+      .then(res => setCourseSections(res.data))
       .catch(() => {})
   }, [])
 
   const handleSubmit = async () => {
     if (!form.title.trim()) return alert('제목을 입력해주세요.')
     if (!form.content.trim()) return alert('내용을 입력해주세요.')
-    if (!form.classroomId) return alert('대상 학급을 선택해주세요.')
+    if (!form.courseSectionId) return alert('수업 분반을 선택해주세요.')
     if (!form.dueDate) return alert('마감일을 선택해주세요.')
 
     setSaving(true)
@@ -48,7 +50,7 @@ export default function HomeworkCreate() {
       const jsonBlob = new Blob([JSON.stringify({
         title: form.title,
         content: form.content,
-        classroomId: Number(form.classroomId),
+        courseSectionId: Number(form.courseSectionId),
         dueDate: form.dueDate + 'T23:59:59',
         maxScore: form.maxScore ? Number(form.maxScore) : 100,
       })], { type: 'application/json' })
@@ -115,15 +117,15 @@ export default function HomeworkCreate() {
           {/* 학급 선택 + 마감일 + 최대점수 */}
           <div className="row mb-20">
             <div className="col-md-4 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">대상 학급 *</label>
+              <label className="form-label fw-semibold text-sm">수업 분반 *</label>
               <select
                 className="form-select radius-8"
-                value={form.classroomId}
-                onChange={e => setForm(f => ({ ...f, classroomId: e.target.value }))}
+                value={form.courseSectionId}
+                onChange={e => setForm(f => ({ ...f, courseSectionId: e.target.value }))}
               >
-                <option value="">학급을 선택하세요</option>
-                {classrooms.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                <option value="">수업 분반을 선택하세요</option>
+                {courseSections.map(cs => (
+                  <option key={cs.id} value={cs.id}>{cs.name}</option>
                 ))}
               </select>
             </div>

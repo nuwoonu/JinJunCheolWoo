@@ -53,9 +53,9 @@ public class HomeworkDTO {
         private Long id;
         private String title;
         private String teacherName;
+        private String subjectName;
         private String classroomName;
         private Long classroomId;
-        private String subjectName;
         private String termName;
         private Long courseSectionId;
         private HomeworkStatus status;
@@ -75,10 +75,13 @@ public class HomeworkDTO {
         private HomeworkSubmission.SubmissionStatus submissionStatus;
 
         public static ListResponse fromEntity(Homework homework, int totalStudentCount) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = homework.getCourseSection().getTeacher().getUser().getName();
+            String sName = homework.getCourseSection().getSubject().getName();
             return ListResponse.builder()
                     .id(homework.getId())
                     .title(homework.getTitle())
-                    .teacherName(homework.getCourseSection().getTeacher().getUser().getName())
+                    .teacherName(tName + "[" + sName + "]")
                     .classroomName(homework.getCourseSection().getClassroom().getClassName())
                     .classroomId(homework.getCourseSection().getClassroom().getCid())
                     .courseSectionId(homework.getCourseSection().getId())
@@ -129,11 +132,14 @@ public class HomeworkDTO {
         private SubmissionResponse mySubmission;
 
         public static DetailResponse fromEntity(Homework homework, int totalStudentCount) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = homework.getCourseSection().getTeacher().getUser().getName();
+            String sName = homework.getCourseSection().getSubject().getName();
             return DetailResponse.builder()
                     .id(homework.getId())
                     .title(homework.getTitle())
                     .content(homework.getContent())
-                    .teacherName(homework.getCourseSection().getTeacher().getUser().getName())
+                    .teacherName(tName + "[" + sName + "]")
                     .teacherUserId(homework.getCourseSection().getTeacher().getUser().getUid())
                     .classroomName(homework.getCourseSection().getClassroom().getClassName())
                     .classroomId(homework.getCourseSection().getClassroom().getCid())

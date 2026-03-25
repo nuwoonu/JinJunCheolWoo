@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+// [woo] unused: motion 제거
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { ADMIN_ROUTES } from "@/constants/routes";
@@ -64,8 +65,8 @@ export default function Sidebar() {
   }, [isStudentDashboard]);
 
   // [woo] 학생일 때 대시보드 API에서 프로필 정보 + 출결 통계 가져오기
-  const [studentInfo, setStudentInfo] = useState<StudentProfile | null>(null);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [, setStudentInfo] = useState<StudentProfile | null>(null);
+  const [, setProfileImageUrl] = useState<string | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
   // [woo] 교사일 때 소속 학교 이름
   const [schoolName, setSchoolName] = useState<string | null>(null);
@@ -116,7 +117,10 @@ export default function Sidebar() {
           - 펼친 상태(isCollapsed=false): 로고 + ri-contract-left-line 아이콘 표시
           - 접힌 상태(isCollapsed=true): 로고 숨기고 ri-contract-right-line 아이콘만 표시 */}
       <div>
-        <div className="sidebar-logo d-flex align-items-center justify-content-between">
+        <div
+          className="sidebar-logo d-flex align-items-center justify-content-between"
+          style={{ paddingInlineStart: "1.5rem", paddingInlineEnd: "1.5rem" }}
+        >
           {!isCollapsed && (
             <a href="/main">
               <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
@@ -288,6 +292,17 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
                   </Link>
                 </li>
+                {/* [woo] 성적 조회 */}
+                <li>
+                  <Link to="/exam">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/exam/schedule">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
+                  </Link>
+                </li>
                 {/* [cheol] 기숙사 */}
                 <li>
                   <Link to="/student/dormitory">
@@ -314,11 +329,17 @@ export default function Sidebar() {
               <ul className="sidebar-submenu">
                 <li>
                   <Link to="/parent/children/status">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 자녀 현황
+                  </Link>
+                </li>
+                {/* [woo] 학부모 출결 조회 페이지 연결 */}
+                <li>
+                  <Link to="/attendance/parent">
                     <i className="ri-circle-fill circle-icon w-auto" /> 출결 현황
                   </Link>
                 </li>
                 <li>
-                  <Link to="/parent/dashboard">
+                  <Link to="/parent/grades">
                     <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
                   </Link>
                 </li>
@@ -343,7 +364,7 @@ export default function Sidebar() {
                 }}
               >
                 <i className="ri-user-follow-line" />
-                <span>선생님</span>
+                <span>교직원</span>
               </a>
               <ul className="sidebar-submenu">
                 <li>

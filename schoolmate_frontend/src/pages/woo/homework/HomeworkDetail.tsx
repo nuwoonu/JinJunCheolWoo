@@ -92,6 +92,12 @@ export default function HomeworkDetailPage() {
 
   useEffect(() => { fetchHomework() }, [id])
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = gradeTarget !== null ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [gradeTarget])
+
   // [woo] 학생 과제 제출
   const handleSubmit = async () => {
     if (!submitContent.trim() && !submitFile) {

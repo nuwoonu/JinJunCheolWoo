@@ -32,7 +32,7 @@ export default function StudentGrades() {
   const { user } = useAuth()
   const [grades, setGrades] = useState<Grade[]>([])
   const [loading, setLoading] = useState(true)
-  const [studentInfoId, setStudentInfoId] = useState<number | null>(null)
+  const [, setStudentInfoId] = useState<number | null>(null)
   // [cheol] 필터: 학년/학기 선택
   const [filterYear, setFilterYear] = useState<string>('ALL')
   const [filterSemester, setFilterSemester] = useState<string>('ALL')

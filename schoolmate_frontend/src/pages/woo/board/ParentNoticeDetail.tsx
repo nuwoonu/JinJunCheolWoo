@@ -33,6 +33,9 @@ export default function ParentNoticeDetail() {
   // [woo] StrictMode 이중 실행 방지 - 조회수 POST를 최초 1회만 호출
   const viewedRef = useRef(false)
 
+  // [woo 03/25] 학부모 역할 확인
+  const isParent = user?.role === 'PARENT'
+
   useEffect(() => {
     if (!id) return
     api.get(`/board/${id}`)
@@ -42,11 +45,21 @@ export default function ParentNoticeDetail() {
         if (!viewedRef.current) {
           viewedRef.current = true
           api.post(`/board/${id}/view`).catch(() => {})
+          // [woo 03/25] 학부모: 상세 진입 시 읽음 처리 (목록 외 직접 접근 대응)
+          if (isParent) {
+            api.post(`/board/${id}/read`).catch(() => {})
+          }
         }
       })
       .catch(() => navigate('/board/parent-notice'))
       .finally(() => setLoading(false))
   }, [id])
+
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showEditModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showEditModal])
 
   const handleEdit = async () => {
     if (!editForm.title.trim() || !editForm.content.trim()) {

@@ -98,6 +98,7 @@ public class DashboardApiController {
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
         if (teacherInfo != null) {
             data.put("teacherInfoId", teacherInfo.getId());
+            // [woo] Subject 엔티티 직렬화 방지: name 문자열만 추출
             data.put("teacherSubject", teacherInfo.getSubject() != null ? teacherInfo.getSubject().getName() : "");
             data.put("teacherSubjectCode", teacherInfo.getSubject() != null ? teacherInfo.getSubject().getCode() : null);
             // [woo] 교사 소속 학교 이름

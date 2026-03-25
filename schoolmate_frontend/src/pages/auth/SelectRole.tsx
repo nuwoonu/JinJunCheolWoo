@@ -50,18 +50,17 @@ export default function SelectRole() {
   }
 
   return (
-    <div className="d-flex">
-      {/* 왼쪽 - 로고 */}
-      <div className="register-left d-none d-lg-flex">
-        <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
-      </div>
+    <div className="register-container">
+      {/* 왼쪽 상단 로고 */}
+      <a href="/main" className="register-logo">
+        <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+      </a>
 
-      {/* 오른쪽 - 역할 선택 폼 */}
-      <div className="register-right">
+      {/* 폼 중앙 배치 */}
+      <div className="register-body">
         <div className="register-form">
-          {/* 모바일 로고 */}
-          <div className="d-lg-none text-center mb-4">
-            <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} /></a>
+          <div className="mobile-logo">
+            <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
           </div>
 
           <div className="text-center mb-4">

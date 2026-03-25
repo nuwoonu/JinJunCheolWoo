@@ -1,15 +1,22 @@
 package com.example.schoolmate.domain.board.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 import com.example.schoolmate.domain.board.dto.BoardDTO;
 import com.example.schoolmate.domain.board.entity.Board;
+import com.example.schoolmate.domain.board.entity.BoardRead;
 import com.example.schoolmate.domain.board.entity.BoardType;
+import com.example.schoolmate.domain.board.repository.BoardReadRepository;
 import com.example.schoolmate.domain.board.repository.BoardRepository;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
@@ -39,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final BoardReadRepository boardReadRepository;
     private final UserRepository userRepository;
     private final ClassroomRepository classroomRepository;
     private final StudentInfoRepository studentInfoRepository;
@@ -94,7 +102,12 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getParentNotices(Pageable pageable) {
         return boardRepository.findByType(BoardType.PARENT_NOTICE, null, pageable)
-                .map(BoardDTO.Response::fromEntityForList);
+                .map(board -> {
+                    BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
+                    // [woo] 교사 확인용 읽음 수 포함
+                    dto.setReadCount(boardReadRepository.countByBoardId(board.getId()));
+                    return dto;
+                });
     }
 
     /**
@@ -102,28 +115,41 @@ public class BoardService {
      * 학부모: 자녀 학급 + 학년 전체 + 전체 공지만 표시
      * 교사/관리자: 전체 조회
      */
-    public Page<BoardDTO.Response> getParentNoticesFiltered(CustomUserDTO userDTO, Pageable pageable) {
+    public Page<BoardDTO.Response> getParentNoticesFiltered(CustomUserDTO userDTO, Long studentUserUid, Pageable pageable) {
         // 비로그인 또는 교사/관리자 → 전체 조회
         if (userDTO == null || isAdmin(userDTO) || isTeacher(userDTO)) {
             return getParentNotices(pageable);
         }
 
-        // 학부모 → 자녀의 학급 기준 필터링
+        // [woo] 학부모 → 선택된 자녀(studentUserUid) 기준 학급+학교 필터링
         if (isParent(userDTO)) {
-            List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
-            if (relations.isEmpty()) {
-                return getParentNotices(pageable); // 자녀 없으면 전체 표시
+            StudentInfo targetStudent = null;
+
+            // studentUserUid가 지정된 경우 해당 자녀
+            if (studentUserUid != null) {
+                targetStudent = studentInfoRepository.findByUserUid(studentUserUid).orElse(null);
             }
 
-            // 자녀들의 현재 학급/학년 정보 수집
-            for (FamilyRelation rel : relations) {
-                StudentInfo student = rel.getStudentInfo();
-                StudentAssignment assignment = student.getCurrentAssignment();
-                if (assignment != null && assignment.getClassroom() != null) {
-                    Classroom classroom = assignment.getClassroom();
-                    // 첫 번째 유효한 자녀의 학급으로 필터링 (여러 자녀면 가장 먼저 찾은 학급)
-                    return getParentNoticesByClassroom(classroom.getCid(), classroom.getGrade(), pageable);
+            // 없으면 첫 번째 유효한 자녀 사용
+            if (targetStudent == null) {
+                List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
+                for (FamilyRelation rel : relations) {
+                    StudentInfo s = rel.getStudentInfo();
+                    if (s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null) {
+                        targetStudent = s;
+                        break;
+                    }
                 }
+            }
+
+            if (targetStudent != null && targetStudent.getCurrentAssignment() != null
+                    && targetStudent.getCurrentAssignment().getClassroom() != null) {
+                Classroom classroom = targetStudent.getCurrentAssignment().getClassroom();
+                // [woo] 자녀의 학교 ID를 SchoolContext에 세팅 → schoolFilter 적용
+                if (targetStudent.getSchool() != null) {
+                    SchoolContextHolder.setSchoolId(targetStudent.getSchool().getId());
+                }
+                return getParentNoticesByClassroom(classroom.getCid(), classroom.getGrade(), pageable);
             }
         }
 
@@ -135,7 +161,11 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getParentNoticesByGrade(int grade, Pageable pageable) {
         return boardRepository.findParentByGrade(BoardType.PARENT_NOTICE, grade, pageable)
-                .map(BoardDTO.Response::fromEntityForList);
+                .map(board -> {
+                    BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
+                    dto.setReadCount(boardReadRepository.countByBoardId(board.getId()));
+                    return dto;
+                });
     }
 
     /**
@@ -143,7 +173,11 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getParentNoticesByClassroom(Long classroomId, int grade, Pageable pageable) {
         return boardRepository.findParentByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, pageable)
-                .map(BoardDTO.Response::fromEntityForList);
+                .map(board -> {
+                    BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
+                    dto.setReadCount(boardReadRepository.countByBoardId(board.getId()));
+                    return dto;
+                });
     }
 
     /**
@@ -245,15 +279,14 @@ public class BoardService {
         }
 
         // [woo] 가정통신문 작성 시 교사의 담임 학급 자동 연결
+        // teacher(User) 필드 기준 조회 — AdminService 담임 배정 방식과 통일
         if (request.getBoardType() == BoardType.PARENT_NOTICE && targetClassroom == null && isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
-            teacherInfoRepository.findByUserUid(userDTO.getUid()).ifPresent(teacherInfo -> {
-                classroomRepository.findByHomeroomTeacherIdAndYear(teacherInfo.getId(), currentYear)
-                        .ifPresent(classroom -> {
-                            request.setTargetClassroomId(classroom.getCid());
-                            request.setTargetGrade(classroom.getGrade());
-                        });
-            });
+            classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+                    .ifPresent(classroom -> {
+                        request.setTargetClassroomId(classroom.getCid());
+                        request.setTargetGrade(classroom.getGrade());
+                    });
             if (request.getTargetClassroomId() != null) {
                 targetClassroom = classroomRepository.findById(request.getTargetClassroomId())
                         .orElse(null);
@@ -527,6 +560,80 @@ public class BoardService {
     }
 
     /** 학교 전체 공지 작성 시 해당 학교 소속 교사/학생 전원에게 알림 발송 (작성자 제외) */
+    // ========== [woo] 읽음 처리 ==========
+
+    /**
+     * 게시물 읽음 처리 — 중복 저장 방지 (웹/앱 공통)
+     */
+    @Transactional
+    public void markAsRead(Long boardId, Long userId) {
+        if (boardReadRepository.existsByBoardIdAndUserUid(boardId, userId)) return;
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        boardReadRepository.save(BoardRead.builder().board(board).user(user).build());
+    }
+
+    /**
+     * 읽은 게시물 ID 목록 조회 (프론트 일괄 표시용)
+     */
+    public Set<Long> getReadBoardIds(Long userId, BoardType boardType) {
+        return boardReadRepository.findReadBoardIdsByUserAndType(userId, boardType);
+    }
+
+    /**
+     * [woo] 게시물별 학부모 읽음/안읽음 현황 — 교사 확인용
+     * 해당 공지의 대상 학급 학부모 전체 + 각 읽음 여부 반환
+     */
+    public List<Map<String, Object>> getParentReadStatus(Long boardId, Long teacherUid) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+
+        Set<Long> readUids = boardReadRepository.findReadUserUidsByBoardId(boardId);
+
+        // [woo] 대상 학급 결정: 게시물에 지정된 학급 → 교사 담임 학급 → 학교 전체 순서
+        Long classroomCid = null;
+        if (board.getTargetClassroom() != null) {
+            classroomCid = board.getTargetClassroom().getCid();
+        } else if (teacherUid != null) {
+            // [woo] targetClassroom이 null이면 교사의 담임 학급으로 fallback
+            int currentYear = java.time.LocalDate.now().getYear();
+            classroomCid = classroomRepository.findByTeacherUidAndYear(teacherUid, currentYear)
+                    .map(Classroom::getCid).orElse(null);
+        }
+
+        List<FamilyRelation> relations;
+        if (classroomCid != null) {
+            List<StudentInfo> students = studentInfoRepository.findByClassroomCid(classroomCid);
+            Set<Long> studentIds = students.stream().map(StudentInfo::getId).collect(Collectors.toSet());
+            relations = studentIds.isEmpty() ? List.of() : familyRelationRepository.findByStudentInfoIdIn(studentIds);
+        } else {
+            Long schoolId = SchoolContextHolder.getSchoolId();
+            relations = (schoolId != null) ? familyRelationRepository.findBySchoolId(schoolId) : List.of();
+        }
+
+        return relations.stream()
+                .map(rel -> {
+                    User parent = rel.getParentInfo().getUser();
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("uid", parent.getUid());
+                    item.put("name", parent.getName());
+                    item.put("studentName", rel.getStudentInfo().getUser().getName());
+                    item.put("read", readUids.contains(parent.getUid()));
+                    return item;
+                })
+                .sorted((a, b) -> Boolean.compare((Boolean) b.get("read"), (Boolean) a.get("read")))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 안읽은 가정통신문 수 조회 (앱 뱃지/알림용)
+     */
+    public long countUnreadParentNotice(Long userId) {
+        return boardReadRepository.countUnreadByUserAndType(userId, BoardType.PARENT_NOTICE);
+    }
+
     private void notifySchoolMembers(User writer, Long schoolId, String noticeTitle) {
         String title = "새 학교 공지가 등록되었습니다";
         String content = "공지: " + noticeTitle;

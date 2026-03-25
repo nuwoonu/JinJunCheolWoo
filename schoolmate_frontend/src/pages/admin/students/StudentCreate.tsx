@@ -45,6 +45,13 @@ export default function StudentCreate() {
       .catch(() => {});
   }, []);
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    const open = showModal || !!relModal
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal, relModal]);
+
   const searchParents = async () => {
     const r = await admin.get("/students/search-parent", { params: { keyword: searchKeyword } });
     setSearchResult(Array.isArray(r.data) ? r.data : (r.data?.content ?? []));

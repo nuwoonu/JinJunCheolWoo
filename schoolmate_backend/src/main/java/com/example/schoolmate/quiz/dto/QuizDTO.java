@@ -37,8 +37,9 @@ public class QuizDTO {
 
         private Integer week;
 
-        @NotNull(message = "대상 학급은 필수입니다")
-        private Long classroomId;
+        // [woo 03/25] 수업 분반으로 변경 (과목+학급)
+        @NotNull(message = "수업 분반은 필수입니다")
+        private Long courseSectionId;
 
         @NotNull(message = "마감일은 필수입니다")
         private LocalDateTime dueDate;
@@ -104,6 +105,7 @@ public class QuizDTO {
         private String description;
         private Integer week;
         private String teacherName;
+        private String subjectName;
         private String classroomName;
         private Long classroomId;
         private Quiz.QuizStatus status;
@@ -119,12 +121,16 @@ public class QuizDTO {
         private Integer myBestScore;
 
         public static ListResponse fromEntity(Quiz quiz) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = quiz.getTeacher().getUser().getName();
+            String sName = quiz.getTeacher().getSubject() != null ? quiz.getTeacher().getSubject().getName() : null;
             return ListResponse.builder()
                     .id(quiz.getId())
                     .title(quiz.getTitle())
                     .description(quiz.getDescription())
                     .week(quiz.getWeek())
-                    .teacherName(quiz.getTeacher().getUser().getName())
+                    .teacherName(sName != null ? tName + "[" + sName + "]" : tName)
+                    .subjectName(quiz.getTeacher().getSubject() != null ? quiz.getTeacher().getSubject().getName() : null)
                     .classroomName(quiz.getClassroom().getClassName())
                     .classroomId(quiz.getClassroom().getCid())
                     .status(quiz.getStatus())
@@ -170,12 +176,15 @@ public class QuizDTO {
         private List<SubmissionResponse> mySubmissions;
 
         public static DetailResponse fromEntity(Quiz quiz) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = quiz.getTeacher().getUser().getName();
+            String sName = quiz.getTeacher().getSubject() != null ? quiz.getTeacher().getSubject().getName() : null;
             return DetailResponse.builder()
                     .id(quiz.getId())
                     .title(quiz.getTitle())
                     .description(quiz.getDescription())
                     .week(quiz.getWeek())
-                    .teacherName(quiz.getTeacher().getUser().getName())
+                    .teacherName(sName != null ? tName + "[" + sName + "]" : tName)
                     .teacherUserId(quiz.getTeacher().getUser().getUid())
                     .classroomName(quiz.getClassroom().getClassName())
                     .classroomId(quiz.getClassroom().getCid())

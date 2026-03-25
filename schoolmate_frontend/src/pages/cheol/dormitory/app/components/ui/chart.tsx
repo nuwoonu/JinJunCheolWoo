@@ -1,4 +1,4 @@
-"use client";
+// @ts-nocheck — [woo] shadcn/ui 자동생성 코드, 패키지 버전 호환성 이슈로 타입체크 제외
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";

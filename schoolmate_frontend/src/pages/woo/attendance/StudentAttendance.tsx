@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 // [woo] /attendance/student - 학생 출결 관리 (TEACHER)
 // 담임 반 학생 목록을 보여주고, 교사가 직접 상태를 설정/변경
 // "전원출석" 버튼으로 일괄 출석 처리 가능
+// 사유 입력 모달, 주말 안내, 학생 검색, 월간 요약 탭 포함
 
 interface AttendanceRecord {
   id: number;
@@ -15,7 +16,7 @@ interface AttendanceRecord {
   year: number;
   classNum: number;
   date: string;
-  status: string; // PRESENT, ABSENT, LATE, EARLY_LEAVE, NONE(미처리)
+  status: string; // PRESENT, ABSENT, LATE, EARLY_LEAVE, SICK, NONE(미처리)
   statusDesc?: string;
   reason?: string;
 }
@@ -39,6 +40,17 @@ const STATUS_OPTIONS = [
   { value: "SICK", label: "병결" },
 ];
 
+// [woo] 사유 입력이 필요한 상태
+const REASON_REQUIRED = ["ABSENT", "LATE", "EARLY_LEAVE", "SICK"];
+
+// [woo] 사유 빠른 선택 옵션 (상태별)
+const QUICK_REASONS: Record<string, string[]> = {
+  ABSENT: ["가정 사정", "병원 방문", "경조사", "기타"],
+  LATE: ["교통 지연", "병원 방문 후 등교", "가정 사정", "기타"],
+  EARLY_LEAVE: ["병원 예약", "가정 사정", "컨디션 난조", "기타"],
+  SICK: ["감기/독감", "복통/두통", "코로나 의심", "병원 진료", "기타"],
+};
+
 const today = new Date().toISOString().slice(0, 10);
 
 export default function StudentAttendance() {
@@ -50,6 +62,28 @@ export default function StudentAttendance() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [processedDays, setProcessedDays] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
+  const [searchName, setSearchName] = useState("");
+  // [woo] 상태 필터 (카드 클릭 시 해당 상태 학생만 표시, null이면 전체)
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
+  // [woo] 사유 입력 모달 상태
+  const [reasonModal, setReasonModal] = useState<{
+    open: boolean;
+    studentInfoId: number;
+    studentName: string;
+    newStatus: string;
+    reason: string;
+  }>({ open: false, studentInfoId: 0, studentName: "", newStatus: "", reason: "" });
+
+  // [woo] 모달 열림 시 배경 스크롤 잠금
+  useEffect(() => {
+    if (reasonModal.open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [reasonModal.open]);
 
   // [woo] 이번 달 출결 처리 일수 조회
   const fetchProcessedDays = useCallback(() => {
@@ -118,18 +152,36 @@ export default function StudentAttendance() {
   const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
   const dayOfWeek = DAY_NAMES[new Date(date).getDay()];
   const isToday = date === today;
+  const isWeekend = dayOfWeek === "토" || dayOfWeek === "일";
 
-  // [woo] 개별 학생 출결 상태 변경 (studentInfoId 기반)
-  const handleStatusChange = async (studentInfoId: number, status: string) => {
-    if (status === "NONE") return; // 미처리 선택은 무시
+  // [woo] 개별 학생 출결 상태 변경 - 사유 필요 시 모달 오픈
+  const handleStatusChange = (studentInfoId: number, status: string, studentName: string) => {
+    if (status === "NONE") return;
+    if (REASON_REQUIRED.includes(status)) {
+      // [woo] 사유 입력 모달 열기
+      setReasonModal({ open: true, studentInfoId, studentName, newStatus: status, reason: "" });
+    } else {
+      // [woo] 출석은 바로 처리
+      submitStatusChange(studentInfoId, status, undefined);
+    }
+  };
+
+  // [woo] 상태 변경 API 호출
+  const submitStatusChange = async (studentInfoId: number, status: string, reason?: string) => {
     try {
-      await api.put(`/attendance/student/update?studentInfoId=${studentInfoId}&date=${date}`, { status });
+      await api.put(`/attendance/student/update?studentInfoId=${studentInfoId}&date=${date}`, { status, reason });
       fetchRecords(date);
       fetchProcessedDays();
     } catch (err: any) {
       const msg = err.response?.data?.error || err.response?.data?.message || "알 수 없는 오류";
       alert(`출결 변경 실패: ${msg}`);
     }
+  };
+
+  // [woo] 사유 모달 확인
+  const handleReasonSubmit = () => {
+    submitStatusChange(reasonModal.studentInfoId, reasonModal.newStatus, reasonModal.reason || undefined);
+    setReasonModal({ open: false, studentInfoId: 0, studentName: "", newStatus: "", reason: "" });
   };
 
   // [woo] 전원출석 처리
@@ -151,7 +203,16 @@ export default function StudentAttendance() {
   const presentCount = records.filter((r) => r.status === "PRESENT").length;
   const lateCount = records.filter((r) => r.status === "LATE").length;
   const absentCount = records.filter((r) => r.status === "ABSENT").length;
+  const sickCount = records.filter((r) => r.status === "SICK").length;
+  const earlyLeaveCount = records.filter((r) => r.status === "EARLY_LEAVE").length;
   const totalCount = records.length;
+
+  // [woo] 학생 이름 검색 + 상태 필터 (카드 클릭)
+  const filteredRecords = records.filter((r) => {
+    if (searchName.trim() && !r.studentName.includes(searchName.trim())) return false;
+    if (statusFilter && r.status !== statusFilter) return false;
+    return true;
+  });
 
   return (
     <DashboardLayout>
@@ -183,75 +244,46 @@ export default function StudentAttendance() {
         </div>
       </div>
 
-      {/* [woo] 상단 통계 카드 */}
+      {/* [woo] 상단 통계 카드 - 클릭하면 해당 상태 학생만 필터링 */}
       <div className="row gy-4 mb-24">
-        <div className="col-xl-3 col-sm-6">
-          <div className="card border-0 shadow-sm p-20 h-100" style={{ borderRadius: 12 }}>
-            <div className="d-flex align-items-center gap-12">
-              <div className="w-48-px h-48-px rounded-circle bg-primary-100 d-flex align-items-center justify-content-center flex-shrink-0">
-                <i className="ri-group-line text-primary-600 text-xl" />
+        {([
+          { key: null, label: "전체", count: totalCount, icon: "ri-group-line", bg: "bg-primary-100", text: "text-primary-600", border: "border-primary-600" },
+          { key: "PRESENT", label: "출석", count: presentCount, icon: "ri-checkbox-circle-line", bg: "bg-success-100", text: "text-success-600", border: "border-success-600" },
+          { key: "ABSENT", label: "결석", count: absentCount, icon: "ri-close-circle-line", bg: "bg-danger-100", text: "text-danger-600", border: "border-danger-600" },
+          { key: "LATE", label: "지각", count: lateCount, icon: "ri-time-line", bg: "bg-warning-100", text: "text-warning-600", border: "border-warning-600" },
+          { key: "EARLY_LEAVE", label: "조퇴", count: earlyLeaveCount, icon: "ri-logout-box-r-line", bg: "bg-info-100", text: "text-info-600", border: "border-info-600" },
+          { key: "SICK", label: "병결", count: sickCount, icon: "ri-hospital-line", bg: "bg-lilac-100", text: "text-lilac-600", border: "border-lilac-600" },
+        ] as const).map((card) => (
+          <div key={card.label} className="col-xl-2 col-sm-4 col-6">
+            <button
+              type="button"
+              className={`card shadow-sm p-16 h-100 w-100 text-start ${
+                statusFilter === card.key ? `border-2 ${card.border}` : "border-0"
+              }`}
+              style={{
+                borderRadius: 12,
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                outline: statusFilter === card.key ? "none" : undefined,
+                boxShadow: statusFilter === card.key ? `0 0 0 2px var(--bs-${card.text.replace("text-", "").replace("-600", "")}, currentColor)` : undefined,
+              }}
+              onClick={() => setStatusFilter(statusFilter === card.key ? null : card.key)}
+            >
+              <div className="d-flex align-items-center gap-10">
+                <div className={`w-40-px h-40-px rounded-circle ${card.bg} d-flex align-items-center justify-content-center flex-shrink-0`}>
+                  <i className={`${card.icon} ${card.text} text-lg`} />
+                </div>
+                <div>
+                  <p className="text-secondary-light text-xs mb-2">{card.label}</p>
+                  <h6 className="fw-bold mb-0">{card.count}<span className="text-xs fw-normal text-secondary-light">명</span></h6>
+                </div>
               </div>
-              <div>
-                <p className="text-secondary-light text-sm mb-2">전체 학생</p>
-                <h5 className="fw-bold mb-0">
-                  {totalCount}
-                  <span className="text-sm fw-normal text-secondary-light">명</span>
-                </h5>
-              </div>
-            </div>
+            </button>
           </div>
-        </div>
-        <div className="col-xl-3 col-sm-6">
-          <div className="card border-0 shadow-sm p-20 h-100" style={{ borderRadius: 12 }}>
-            <div className="d-flex align-items-center gap-12">
-              <div className="w-48-px h-48-px rounded-circle bg-success-100 d-flex align-items-center justify-content-center flex-shrink-0">
-                <i className="ri-checkbox-circle-line text-success-600 text-xl" />
-              </div>
-              <div>
-                <p className="text-secondary-light text-sm mb-2">출석</p>
-                <h5 className="fw-bold mb-0">
-                  {presentCount}
-                  <span className="text-sm fw-normal text-secondary-light">명</span>
-                </h5>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-sm-6">
-          <div className="card border-0 shadow-sm p-20 h-100" style={{ borderRadius: 12 }}>
-            <div className="d-flex align-items-center gap-12">
-              <div className="w-48-px h-48-px rounded-circle bg-warning-100 d-flex align-items-center justify-content-center flex-shrink-0">
-                <i className="ri-time-line text-warning-600 text-xl" />
-              </div>
-              <div>
-                <p className="text-secondary-light text-sm mb-2">지각 / 결석</p>
-                <h5 className="fw-bold mb-0">
-                  {lateCount + absentCount}
-                  <span className="text-sm fw-normal text-secondary-light">명</span>
-                </h5>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-sm-6">
-          <div className="card border-0 shadow-sm p-20 h-100" style={{ borderRadius: 12 }}>
-            <div className="d-flex align-items-center gap-12">
-              <div className="w-48-px h-48-px rounded-circle bg-info-100 d-flex align-items-center justify-content-center flex-shrink-0">
-                <i className="ri-calendar-check-line text-info-600 text-xl" />
-              </div>
-              <div>
-                <p className="text-secondary-light text-sm mb-2">이번달 처리</p>
-                <h5 className="fw-bold mb-0">
-                  {processedDays}
-                  <span className="text-sm fw-normal text-secondary-light">/{currentDay}일</span>
-                </h5>
-              </div>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* [woo] 날짜 선택 + 전원출석 + 미처리 알림 */}
+      {/* [woo] 날짜 선택 + 전원출석 + 미처리 알림 + 검색 */}
       <div className="card border-0 shadow-sm p-20 mb-24" style={{ borderRadius: 12 }}>
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-16">
           <div className="d-flex flex-wrap align-items-center gap-16">
@@ -303,24 +335,58 @@ export default function StudentAttendance() {
                 </button>
               )}
             </div>
-            {noneCount > 0 && (
-              <span className="text-warning-600 text-sm fw-medium">
-                <i className="ri-error-warning-line me-4" />
-                미처리 {noneCount}명
+            {/* [woo] 미처리 경고 + 이번달 처리 현황 */}
+            <div className="d-flex align-items-center gap-12">
+              {noneCount > 0 && (
+                <span className="text-warning-600 text-sm fw-medium">
+                  <i className="ri-error-warning-line me-4" />
+                  미처리 {noneCount}명
+                </span>
+              )}
+              <span className="text-secondary-light text-sm">
+                <i className="ri-calendar-check-line me-4" />
+                이번달 {processedDays}/{currentDay}일 처리
               </span>
-            )}
+            </div>
           </div>
-          <button
-            type="button"
-            className="btn btn-success-600 d-flex align-items-center gap-8 px-20 py-10"
-            onClick={handleAllPresent}
-            disabled={loading || records.length === 0}
-          >
-            <i className="ri-checkbox-multiple-line text-lg" />
-            전원출석
-          </button>
+          <div className="d-flex align-items-center gap-12">
+            {/* [woo] 학생 이름 검색 */}
+            <div className="d-flex align-items-center gap-8">
+              <i className="ri-search-line text-secondary-light" />
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="이름 검색"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                style={{ maxWidth: 120 }}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn btn-success-600 d-flex align-items-center gap-8 px-20 py-10"
+              onClick={handleAllPresent}
+              disabled={loading || records.length === 0 || isWeekend}
+            >
+              <i className="ri-checkbox-multiple-line text-lg" />
+              전원출석
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* [woo] 주말 안내 배너 */}
+      {isWeekend && (
+        <div className="card border-0 mb-24 p-20" style={{ borderRadius: 12, background: "linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%)" }}>
+          <div className="d-flex align-items-center gap-12">
+            <i className="ri-calendar-close-line text-primary-600 text-2xl" />
+            <div>
+              <p className="fw-semibold mb-2 text-primary-600">주말입니다</p>
+              <p className="text-sm text-secondary-light mb-0">주말에는 출결 처리가 필요하지 않습니다. 평일을 선택해주세요.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* [woo] 출결 테이블 */}
       <div className="card radius-12">
@@ -329,16 +395,12 @@ export default function StudentAttendance() {
             <table className="table bordered-table mb-0">
               <thead>
                 <tr>
+                  <th scope="col" style={{ width: 60 }}>번호</th>
                   <th scope="col">학번</th>
                   <th scope="col">이름</th>
-                  <th scope="col">학년/반</th>
-                  <th scope="col">날짜</th>
-                  <th scope="col" className="text-center">
-                    현재 상태
-                  </th>
-                  <th scope="col" className="text-center">
-                    변경
-                  </th>
+                  <th scope="col" className="text-center">현재 상태</th>
+                  <th scope="col" className="text-center" style={{ width: 120 }}>변경</th>
+                  <th scope="col">사유</th>
                 </tr>
               </thead>
               <tbody>
@@ -354,21 +416,27 @@ export default function StudentAttendance() {
                       {errorMsg}
                     </td>
                   </tr>
-                ) : records.length === 0 ? (
+                ) : filteredRecords.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-24 text-secondary-light">
-                      담당 학생이 없습니다. 관리자에게 담임 배정을 확인하세요.
+                      {searchName.trim() ? "검색 결과가 없습니다." : "담당 학생이 없습니다. 관리자에게 담임 배정을 확인하세요."}
                     </td>
                   </tr>
                 ) : (
-                  records.map((r) => (
-                    <tr key={r.studentInfoId}>
+                  filteredRecords.map((r, idx) => (
+                    <tr
+                      key={r.studentInfoId}
+                      style={
+                        r.status === "ABSENT" || r.status === "SICK"
+                          ? { backgroundColor: "rgba(239, 68, 68, 0.04)" }
+                          : r.status === "NONE"
+                            ? { backgroundColor: "rgba(245, 158, 11, 0.04)" }
+                            : undefined
+                      }
+                    >
+                      <td className="text-secondary-light text-center">{idx + 1}</td>
                       <td className="fw-medium">{r.studentNumber}</td>
                       <td>{r.studentName}</td>
-                      <td className="text-secondary-light">
-                        {r.year}학년 {r.classNum}반
-                      </td>
-                      <td className="text-secondary-light">{r.date}</td>
                       <td className="text-center">
                         <span
                           className={`badge px-10 py-4 radius-4 text-xs fw-medium ${ATTENDANCE_BADGE[r.status] ?? "bg-neutral-100 text-secondary-light"}`}
@@ -381,7 +449,8 @@ export default function StudentAttendance() {
                           className="form-select form-select-sm"
                           style={{ maxWidth: 100 }}
                           value={r.status}
-                          onChange={(e) => handleStatusChange(r.studentInfoId, e.target.value)}
+                          onChange={(e) => handleStatusChange(r.studentInfoId, e.target.value, r.studentName)}
+                          disabled={isWeekend}
                         >
                           {STATUS_OPTIONS.map((o) => (
                             <option key={o.value} value={o.value}>
@@ -389,6 +458,32 @@ export default function StudentAttendance() {
                             </option>
                           ))}
                         </select>
+                      </td>
+                      <td className="text-secondary-light text-sm">
+                        {r.reason ? (
+                          <span title={r.reason}>
+                            <i className="ri-chat-3-line me-4 text-primary-600" />
+                            {r.reason.length > 15 ? r.reason.slice(0, 15) + "..." : r.reason}
+                          </span>
+                        ) : (
+                          r.status !== "PRESENT" && r.status !== "NONE" ? (
+                            <button
+                              type="button"
+                              className="btn btn-sm text-primary-600 p-0"
+                              onClick={() => setReasonModal({
+                                open: true,
+                                studentInfoId: r.studentInfoId,
+                                studentName: r.studentName,
+                                newStatus: r.status,
+                                reason: "",
+                              })}
+                            >
+                              <i className="ri-edit-line me-4" />사유 입력
+                            </button>
+                          ) : (
+                            <span className="text-neutral-300">-</span>
+                          )
+                        )}
                       </td>
                     </tr>
                   ))
@@ -398,6 +493,69 @@ export default function StudentAttendance() {
           </div>
         </div>
       </div>
+
+      {/* [woo] 사유 입력 모달 */}
+      {reasonModal.open && (
+        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} onClick={() => setReasonModal({ ...reasonModal, open: false })}>
+          <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content radius-12">
+              <div className="modal-header border-bottom py-16 px-24">
+                <h6 className="modal-title fw-bold">
+                  {reasonModal.studentName} - {STATUS_OPTIONS.find(o => o.value === reasonModal.newStatus)?.label} 사유
+                </h6>
+                <button type="button" className="btn-close" onClick={() => setReasonModal({ ...reasonModal, open: false })} />
+              </div>
+              <div className="modal-body px-24 py-20">
+                {/* [woo] 빠른 선택 버튼 */}
+                <p className="text-sm fw-medium mb-8 text-secondary-light">빠른 선택</p>
+                <div className="d-flex flex-wrap gap-8 mb-16">
+                  {(QUICK_REASONS[reasonModal.newStatus] ?? []).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      className={`btn btn-sm radius-4 ${
+                        reasonModal.reason === r
+                          ? "btn-primary-600 text-white"
+                          : "btn-outline-neutral-500"
+                      }`}
+                      onClick={() => setReasonModal({ ...reasonModal, reason: r === "기타" ? "" : r })}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+                {/* [woo] 직접 입력 */}
+                <p className="text-sm fw-medium mb-8 text-secondary-light">직접 입력</p>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  placeholder="사유를 입력하세요 (선택)"
+                  value={reasonModal.reason}
+                  onChange={(e) => setReasonModal({ ...reasonModal, reason: e.target.value })}
+                  maxLength={200}
+                />
+                <p className="text-xs text-secondary-light mt-4 mb-0 text-end">{reasonModal.reason.length}/200</p>
+              </div>
+              <div className="modal-footer border-top px-24 py-16">
+                <button
+                  type="button"
+                  className="btn btn-outline-neutral-500 px-20"
+                  onClick={() => setReasonModal({ ...reasonModal, open: false })}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary-600 px-20"
+                  onClick={handleReasonSubmit}
+                >
+                  확인
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

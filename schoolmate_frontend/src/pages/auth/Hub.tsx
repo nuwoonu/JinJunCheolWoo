@@ -10,9 +10,14 @@ import NotificationDropdown from "@/components/fragments/NotificationDropdown";
 import ProfileDropdown from "@/components/profile/ProfileDropdown";
 
 function useTheme() {
-  const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const [isDark, setIsDark] = useState(
+    () => localStorage.getItem("theme") === "dark",
+  );
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDark ? "dark" : "light",
+    );
     localStorage.setItem("theme", isDark ? "dark" : "light");
   }, [isDark]);
   return { isDark, toggle: () => setIsDark((p) => !p) };
@@ -106,8 +111,8 @@ export default function Hub() {
         prev.map((c) =>
           c.roleType === ctx.roleType
             ? { ...c, isPrimary: c.infoId === ctx.infoId }
-            : c
-        )
+            : c,
+        ),
       );
     } catch {
       // no-op
@@ -126,13 +131,11 @@ export default function Hub() {
     (rr) =>
       rr.role !== "PARENT" &&
       rr.status === "PENDING" &&
-      !contexts.some((c) => c.roleType === rr.role)
+      !contexts.some((c) => c.roleType === rr.role),
   );
 
   const hasSecondarySection =
     secondaryContexts.length > 0 || pendingRequests.length > 0;
-
-  const s = getStyles(theme.isDark);
 
   return (
     <div style={s.page}>
@@ -140,19 +143,48 @@ export default function Hub() {
         {/* 헤더 */}
         <div style={s.header}>
           <div style={s.logoArea}>
-            <img src="/images/schoolmateLogo.png" alt="Schoolmate" style={s.logo} />
+            <img
+              src="/images/schoolmateLogo.png"
+              alt="Schoolmate"
+              style={s.logo}
+            />
           </div>
           <div style={s.userInfo}>
             <span style={s.userName}>{user.name}</span>
             <span style={s.userEmail}>{user.email}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button onClick={theme.toggle} style={s.iconBtn} aria-label="다크모드 전환">
-              <i className={theme.isDark ? "ri-sun-line" : "ri-moon-line"} style={{ fontSize: 18 }} />
+            <button
+              onClick={theme.toggle}
+              style={s.iconBtn}
+              aria-label="다크모드 전환"
+            >
+              <i
+                className={theme.isDark ? "ri-sun-line" : "ri-moon-line"}
+                style={{ fontSize: 18 }}
+              />
             </button>
             <NotificationDropdown />
             <ProfileDropdown />
           </div>
+          <button
+            onClick={() => setShowProfile(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#f9fafb",
+              border: "1px solid #e5e7eb",
+              borderRadius: 8,
+              padding: "7px 14px",
+              fontSize: 13,
+              color: "#374151",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <i className="ri-user-settings-line" />내 프로필
+          </button>
         </div>
 
         {/* 안내 문구 */}
@@ -163,7 +195,6 @@ export default function Hub() {
 
         {/* ── 메인 카드 그리드 ── */}
         <div style={s.cardGrid}>
-
           {/* primary 인스턴스 카드 */}
           {primaryContexts.map((ctx) => {
             const cfg = ROLE_CONFIG.find((r) => r.role === ctx.roleType);
@@ -176,14 +207,23 @@ export default function Hub() {
                   ...s.roleCard,
                   borderTop: `4px solid ${ctx.isActive ? cfg.color : "#94a3b8"}`,
                   opacity: ctx.isActive ? 1 : 0.55,
-                  cursor: ctx.isActive && switchingId === null ? "pointer" : "default",
+                  cursor:
+                    ctx.isActive && switchingId === null
+                      ? "pointer"
+                      : "default",
                   position: "relative",
                 }}
                 onClick={() => handleContextClick(ctx)}
                 disabled={!ctx.isActive || switchingId !== null}
                 title={!ctx.isActive ? ctx.statusDesc : undefined}
               >
-                <i className={cfg.icon} style={{ ...s.roleIcon, color: ctx.isActive ? cfg.color : "#94a3b8" }} />
+                <i
+                  className={cfg.icon}
+                  style={{
+                    ...s.roleIcon,
+                    color: ctx.isActive ? cfg.color : "#94a3b8",
+                  }}
+                />
                 <span style={s.roleLabel}>{cfg.label}</span>
                 {ctx.schoolName && (
                   <span style={s.roleSchool}>
@@ -195,7 +235,14 @@ export default function Hub() {
                   {ctx.isActive ? cfg.description : ctx.statusDesc}
                 </span>
                 {!ctx.isActive && (
-                  <span style={{ ...s.statusBadge, background: "#fef2f2", color: "#dc2626", borderColor: "#fecaca" }}>
+                  <span
+                    style={{
+                      ...s.statusBadge,
+                      background: "#fef2f2",
+                      color: "#dc2626",
+                      borderColor: "#fecaca",
+                    }}
+                  >
                     <i className="ri-forbid-line" /> {ctx.statusDesc}
                   </span>
                 )}
@@ -210,20 +257,30 @@ export default function Hub() {
 
           {/* 학부모 카드 (단일 역할) */}
           {parentRequest &&
-            (parentRequest.status === "ACTIVE" || parentRequest.status === "PENDING") && (
+            (parentRequest.status === "ACTIVE" ||
+              parentRequest.status === "PENDING") && (
               <button
                 style={{
                   ...s.roleCard,
                   borderTop: `4px solid ${parentRequest.status === "ACTIVE" ? parentCfg.color : "#94a3b8"}`,
                   opacity: parentRequest.status === "ACTIVE" ? 1 : 0.55,
-                  cursor: parentRequest.status === "ACTIVE" ? "pointer" : "default",
+                  cursor:
+                    parentRequest.status === "ACTIVE" ? "pointer" : "default",
                 }}
-                onClick={() => parentRequest.status === "ACTIVE" && navigate(parentCfg.path)}
+                onClick={() =>
+                  parentRequest.status === "ACTIVE" && navigate(parentCfg.path)
+                }
                 disabled={parentRequest.status !== "ACTIVE"}
               >
                 <i
                   className={parentCfg.icon}
-                  style={{ ...s.roleIcon, color: parentRequest.status === "ACTIVE" ? parentCfg.color : "#94a3b8" }}
+                  style={{
+                    ...s.roleIcon,
+                    color:
+                      parentRequest.status === "ACTIVE"
+                        ? parentCfg.color
+                        : "#94a3b8",
+                  }}
                 />
                 <span style={s.roleLabel}>{parentCfg.label}</span>
                 <span style={s.roleDesc}>{parentCfg.description}</span>
@@ -238,12 +295,85 @@ export default function Hub() {
           {/* 관리자 카드 (SUPER_ADMIN 전용) */}
           {isSuperAdmin && (
             <button
-              style={{ ...s.roleCard, borderTop: "4px solid #ef4444" }}
               onClick={() => navigate(ADMIN_ROUTES.MAIN)}
+              style={{
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderTop: "3px solid #ef4444",
+                borderRadius: 12,
+                padding: "24px 20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 0,
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "box-shadow 0.15s, transform 0.1s",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 4px 16px rgba(0,0,0,0.1)";
+                (e.currentTarget as HTMLElement).style.transform =
+                  "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 1px 3px rgba(0,0,0,0.06)";
+                (e.currentTarget as HTMLElement).style.transform =
+                  "translateY(0)";
+              }}
             >
-              <i className="ri-shield-user-line" style={{ ...s.roleIcon, color: "#ef4444" }} />
-              <span style={s.roleLabel}>관리자</span>
-              <span style={s.roleDesc}>전체 시스템을 관리합니다.</span>
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: "rgba(239,68,68,0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 14,
+                }}
+              >
+                <i
+                  className="ri-shield-user-line"
+                  style={{ fontSize: 24, color: "#ef4444" }}
+                />
+              </div>
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "#111827",
+                  marginBottom: 6,
+                }}
+              >
+                관리자
+              </div>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "#9ca3af",
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                전체 시스템을 관리합니다.
+              </p>
+              <div
+                style={{
+                  marginTop: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#ef4444",
+                }}
+              >
+                바로가기 <i className="ri-arrow-right-line" />
+              </div>
             </button>
           )}
         </div>
@@ -269,16 +399,25 @@ export default function Hub() {
                     style={{
                       ...s.secondaryRow,
                       opacity: ctx.isActive ? 1 : 0.55,
-                      cursor: ctx.isActive && switchingId === null ? "pointer" : "default",
+                      cursor:
+                        ctx.isActive && switchingId === null
+                          ? "pointer"
+                          : "default",
                     }}
                     onClick={() => handleContextClick(ctx)}
-                    title={!ctx.isActive ? ctx.statusDesc : "클릭하여 이 역할로 이동"}
+                    title={
+                      !ctx.isActive ? ctx.statusDesc : "클릭하여 이 역할로 이동"
+                    }
                   >
                     {/* 아이콘 + 이름 + 학교 */}
                     <div style={s.secondaryLeft}>
                       <i
                         className={cfg.icon}
-                        style={{ fontSize: 20, color: ctx.isActive ? cfg.color : "#94a3b8", flexShrink: 0 }}
+                        style={{
+                          fontSize: 20,
+                          color: ctx.isActive ? cfg.color : "#94a3b8",
+                          flexShrink: 0,
+                        }}
                       />
                       <span style={s.secondaryLabel}>{cfg.label}</span>
                       {ctx.schoolName && (
@@ -295,9 +434,14 @@ export default function Hub() {
                     </div>
 
                     {/* 오른쪽 액션 */}
-                    <div style={s.secondaryRight} onClick={(e) => e.stopPropagation()}>
+                    <div
+                      style={s.secondaryRight}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {isLoading ? (
-                        <span style={s.loadingText}><i className="ri-loader-4-line" /> 이동 중...</span>
+                        <span style={s.loadingText}>
+                          <i className="ri-loader-4-line" /> 이동 중...
+                        </span>
                       ) : ctx.isActive ? (
                         <button
                           style={s.promoteBtn}
@@ -319,10 +463,21 @@ export default function Hub() {
                 return (
                   <div
                     key={`pending-${rr.role}`}
-                    style={{ ...s.secondaryRow, opacity: 0.55, cursor: "default" }}
+                    style={{
+                      ...s.secondaryRow,
+                      opacity: 0.55,
+                      cursor: "default",
+                    }}
                   >
                     <div style={s.secondaryLeft}>
-                      <i className={cfg.icon} style={{ fontSize: 20, color: "#94a3b8", flexShrink: 0 }} />
+                      <i
+                        className={cfg.icon}
+                        style={{
+                          fontSize: 20,
+                          color: "#94a3b8",
+                          flexShrink: 0,
+                        }}
+                      />
                       <span style={s.secondaryLabel}>{cfg.label}</span>
                       {rr.schoolName && (
                         <span style={s.roleSchool}>
@@ -384,7 +539,9 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       background: surface,
       borderRadius: 12,
       padding: "16px 20px",
-      boxShadow: isDark ? "0 1px 4px rgba(0,0,0,0.3)" : "0 1px 4px rgba(0,0,0,0.07)",
+      boxShadow: isDark
+        ? "0 1px 4px rgba(0,0,0,0.3)"
+        : "0 1px 4px rgba(0,0,0,0.07)",
     },
     logoArea: { flex: "0 0 auto" },
     logo: { height: 32, objectFit: "contain" },

@@ -13,6 +13,7 @@ const DAY_LABELS: Record<string, string> = {
 
 const DAY_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
 
+// @ts-ignore [woo] 반복 유형 라벨 - 추후 사용 예정
 const REPEAT_LABELS: Record<string, string> = {
   WEEKLY: '매주', ONCE: '1회', BIWEEKLY: '2주마다',
 }
@@ -68,6 +69,12 @@ export default function TeacherSchedule() {
   }
 
   useEffect(() => { fetchSchedules() }, [])
+
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal])
 
   const openAdd = () => {
     setEditTarget(null)

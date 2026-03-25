@@ -2,6 +2,7 @@ package com.example.schoolmate.homework.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -88,6 +89,22 @@ public class HomeworkService {
                 teacher.getUser().getName());
 
         return HomeworkDTO.DetailResponse.fromEntity(saved, totalStudents);
+    }
+
+    // ========== [woo] 교사 수업 분반 목록 (과제 출제용) ==========
+
+    public List<Map<String, Object>> getTeacherCourseSections(CustomUserDTO userDTO) {
+        TeacherInfo teacher = teacherInfoRepository.findByUserUid(userDTO.getUid())
+                .orElseThrow(() -> new IllegalArgumentException("교사 정보를 찾을 수 없습니다."));
+
+        return courseSectionRepository.findAllByTeacherWithDetails(teacher).stream()
+                .map(cs -> Map.<String, Object>of(
+                        "id", cs.getId(),
+                        "name", cs.getSubject().getName() + " - " + cs.getClassroom().getClassName(),
+                        "subjectName", cs.getSubject().getName(),
+                        "classroomName", cs.getClassroom().getClassName(),
+                        "classroomId", cs.getClassroom().getCid()))
+                .collect(Collectors.toList());
     }
 
     // ========== [woo] 과제 목록 조회 ==========
