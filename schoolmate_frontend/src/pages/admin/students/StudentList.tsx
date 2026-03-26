@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 // [woo] unused: useNavigate 제거
 import { Link } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { STUDENT_STATUS } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
+import { useCsvUpload } from '@/hooks/useCsvUpload';
+import CsvErrorModal from '@/components/CsvErrorModal';
 
 // [joon] 학생 목록
 const STATUSES = Object.entries(STUDENT_STATUS).map(([value, cfg], i) => ({
@@ -71,9 +73,11 @@ export default function StudentList() {
   const [keyword, setKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const csvRef = useRef<HTMLInputElement>(null);
+  const { csvRef, loading, csvErrors, setCsvErrors, triggerUpload, handleFileChange } = useCsvUpload(
+    "/students/import-csv",
+    () => load(0)
+  );
 
   const load = (p = 0) =>
     admin
@@ -134,21 +138,6 @@ export default function StudentList() {
     load(currentPage);
   };
 
-  const uploadCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setLoading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      await admin.post("/students/import-csv", fd);
-    } finally {
-      setLoading(false);
-      load(0);
-    }
-    e.target.value = "";
-  };
-
   const list = page?.content ?? [];
 
   return (
@@ -162,6 +151,8 @@ export default function StudentList() {
         </div>
       )}
 
+      <CsvErrorModal errors={csvErrors} onClose={() => setCsvErrors([])} />
+
       {/* 헤더 */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
@@ -170,7 +161,7 @@ export default function StudentList() {
             <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>학생 계정 및 학적 정보를 관리합니다.</p>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <input type="file" ref={csvRef} accept=".csv" style={{ display: 'none' }} onChange={uploadCsv} />
+            <input type="file" ref={csvRef} accept=".csv" style={{ display: 'none' }} onChange={handleFileChange} />
             {/* 선택 상태 변경 드롭다운 */}
             <div style={{ position: 'relative' }}>
               <button
@@ -196,7 +187,7 @@ export default function StudentList() {
             </div>
             <button
               style={{ padding: '9px 14px', background: '#fff', border: '1px solid #22c55e', borderRadius: 8, fontSize: 14, cursor: 'pointer', color: '#16a34a', whiteSpace: 'nowrap' }}
-              onClick={() => csvRef.current?.click()}
+              onClick={triggerUpload}
             >
               CSV 등록
             </button>

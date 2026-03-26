@@ -26,6 +26,7 @@ import GradeBoard from "@/pages/cheol/board/GradeBoard";
 import GradeBoardDetail from "@/pages/cheol/board/GradeBoardDetail";
 // [cheol] 기숙사
 import DormitoryRoot from "@/pages/cheol/dormitory/app/components/Root";
+import DormitoryAdminRoot from "@/pages/cheol/dormitory/app/components/AdminRoot";
 import DormitoryBuildingList from "@/pages/cheol/dormitory/app/components/BuildingList";
 import DormitoryFloorList from "@/pages/cheol/dormitory/app/components/FloorList";
 import DormitoryRoomView from "@/pages/cheol/dormitory/app/components/RoomView";
@@ -825,6 +826,25 @@ function App() {
           </PrivateRoute>
         }
       />
+      {/* [cheol] 기숙사 관리 (관리자 영역) */}
+      <Route
+        path={ADMIN_ROUTES.DORMITORY}
+        element={
+          <PrivateRoute
+            allowedRoles={["ADMIN", "TEACHER", "STAFF"]}
+            requiredGrants={ADMIN_GRANTS.DORMITORY}
+          >
+            <DormitoryAdminRoot />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<DormitoryBuildingList />} />
+        <Route path="building/:buildingId" element={<DormitoryFloorList />} />
+        <Route
+          path="building/:buildingId/room/:roomNumber"
+          element={<DormitoryRoomView />}
+        />
+      </Route>
 
       {/* [joon] 기준 정보 관리 (SUPER_ADMIN 전용) */}
       <Route
@@ -843,7 +863,7 @@ function App() {
         element={
           <PrivateRoute
             allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.MASTER}
+            requiredGrants={ADMIN_GRANTS.SUBJECTS}
           >
             <JoonSubjects />
           </PrivateRoute>
@@ -854,7 +874,7 @@ function App() {
         element={
           <PrivateRoute
             allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.MASTER}
+            requiredGrants={ADMIN_GRANTS.SETTINGS}
           >
             <JoonSettings />
           </PrivateRoute>

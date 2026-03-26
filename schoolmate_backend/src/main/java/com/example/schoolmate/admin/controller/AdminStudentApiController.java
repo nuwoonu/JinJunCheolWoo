@@ -35,7 +35,8 @@ public class AdminStudentApiController {
     private final ParentService parentService;
     private final AcademicTermService academicTermService;
 
-    // 목록 조회
+    // 목록 조회 (대시보드 통계용으로 모든 어드민 grant 허용)
+    @PreAuthorize("@grants.canAccessAdmin()")
     @GetMapping
     public ResponseEntity<Page<StudentDTO.SummaryResponse>> list(
             StudentDTO.StudentSearchCondition condition,
@@ -94,13 +95,14 @@ public class AdminStudentApiController {
 
     // CSV 업로드
     @PostMapping("/import-csv")
-    public ResponseEntity<String> importCsv(@RequestParam MultipartFile file) {
+    public ResponseEntity<List<String>> importCsv(@RequestParam MultipartFile file) {
         try {
-            studentService.importStudentsFromCsv(file);
-            return ResponseEntity.ok("등록되었습니다.");
+            List<String> errors = studentService.importStudentsFromCsv(file);
+            return ResponseEntity.ok(errors);
         } catch (Exception e) {
             log.error("학생 CSV 가져오기 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of("CSV 처리 중 오류가 발생했습니다: " + e.getMessage()));
         }
     }
 

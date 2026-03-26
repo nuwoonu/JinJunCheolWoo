@@ -38,6 +38,8 @@ interface AdminTopBarProps {
   navLinks?: ReadonlyArray<NavLinkItem>;
   /** 섹션 간 빠른 이동 버튼 (예: 학부모 관리 → 학교 관리) */
   quickLink?: NavLinkItem;
+  /** 로고 클릭 시 이동할 경로 (기본값: /hub) */
+  logoTo?: string;
 }
 
 export default function AdminTopBar({
@@ -46,6 +48,7 @@ export default function AdminTopBar({
   sectionBadge,
   navLinks,
   quickLink,
+  logoTo = "/hub",
 }: AdminTopBarProps) {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -69,7 +72,7 @@ export default function AdminTopBar({
         {/* ── 좌측: 로고 → 구분선 → 관리자 메뉴 → (빠른 메뉴) ── */}
         <div className="col-auto">
           <div className="d-flex align-items-center gap-2">
-            <Link to="/hub" style={{ lineHeight: 0 }}>
+            <Link to={logoTo} style={{ lineHeight: 0 }}>
               <img
                 src="/images/schoolmateLogo.png"
                 alt="SchoolMate"

@@ -8,7 +8,25 @@ import api from '@/api/auth'
 
 const ROLE_LABEL: Record<string, string> = {
   STUDENT: '학생', TEACHER: '교사', ADMIN: '관리자',
-  PARENT: '학부모', GUEST: '게스트',
+  STAFF: '교직원', PARENT: '학부모', GUEST: '게스트',
+}
+
+const GRANT_LABEL: Record<string, string> = {
+  SUPER_ADMIN:      '최고 관리자',
+  SCHOOL_ADMIN:     '학교 관리자',
+  PARENT_MANAGER:   '학부모 관리',
+  STUDENT_MANAGER:  '학생 관리',
+  CLASS_MANAGER:    '학급 관리',
+  TEACHER_MANAGER:  '교사 관리',
+  STAFF_MANAGER:    '교직원 관리',
+  NOTICE_MANAGER:   '공지 관리',
+  SCHEDULE_MANAGER: '일정 관리',
+  FACILITY_MANAGER: '시설 관리',
+  ASSET_MANAGER:    '기자재 관리',
+  DORMITORY_MANAGER:'기숙사 관리',
+  LIBRARIAN:        '도서 관리',
+  NURSE:            '보건 관리',
+  NUTRITIONIST:     '급식 관리',
 }
 
 const PROVIDERS = [
@@ -344,6 +362,31 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                         })}
                       </div>
                     </div>
+
+                    {/* 위임 권한 — 교사·교직원만 표시 */}
+                    {(user?.role === 'TEACHER' || user?.role === 'STAFF') && (
+                      <div style={rowStyle}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={iconWrap}><i className="ri-shield-user-line" style={{ fontSize: 15, color: '#6b7280' }} /></div>
+                          <span style={labelStyle}>위임 권한</span>
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end', maxWidth: 240 }}>
+                          {(user?.grants ?? []).length === 0 ? (
+                            <span style={{ fontSize: 13, color: '#9ca3af' }}>없음</span>
+                          ) : (
+                            (user?.grants ?? []).map((g, i) => (
+                              <span key={i} style={{
+                                fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 20,
+                                background: '#e6f7f6', color: '#25A194',
+                                border: '1px solid #b2e8e4',
+                              }}>
+                                {GRANT_LABEL[g.grantedRole] ?? g.grantedRole}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* 비밀번호 변경 */}
                     <div style={{ ...rowStyle, borderBottom: 'none', paddingBottom: 0 }}>

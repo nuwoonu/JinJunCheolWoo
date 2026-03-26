@@ -3,6 +3,7 @@ package com.example.schoolmate.common.service;
 import java.io.Reader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -268,8 +269,13 @@ public class StudentService {
         return user.getUid();
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public void importStudentsFromCsv(MultipartFile file) throws Exception {
+    @Transactional
+    public List<String> importStudentsFromCsv(MultipartFile file) throws Exception {
+        List<String> errors = new ArrayList<>();
+        List<StudentDTO.CsvImportRequest> validRows = new ArrayList<>();
+        Set<String> seenEmails = new HashSet<>();
+        Set<String> seenCodes = new HashSet<>();
+
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             log.info("CSV 파일 읽기 시작: {}", file.getOriginalFilename());
             List<StudentDTO.CsvImportRequest> beans = new CsvToBeanBuilder<StudentDTO.CsvImportRequest>(reader)
@@ -277,28 +283,36 @@ public class StudentService {
                     .withIgnoreLeadingWhiteSpace(true)
                     .build()
                     .parse();
-
             log.info("파싱된 데이터 개수: {}", beans.size());
 
-            for (StudentDTO.CsvImportRequest csvReq : beans) {
-                // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
-                if (userRepository.existsByEmail(csvReq.getEmail())) {
-                    throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
-                }
-                // 학번 중복은 학교 범위 내에서만 체크 - 중복 행은 건너뜀
-                if (studentInfoRepository.existsByCode(csvReq.getCode())) {
-                    log.warn("이미 존재하는 학번 건너뜀: {}", csvReq.getCode());
+            // 1단계: 검증 (읽기 전용)
+            for (int i = 0; i < beans.size(); i++) {
+                StudentDTO.CsvImportRequest csvReq = beans.get(i);
+                String rowLabel = (i + 2) + "행" + (csvReq.getName() != null ? " (" + csvReq.getName() + ")" : "");
+
+                if (csvReq.getEmail() == null || csvReq.getEmail().isBlank()) {
+                    errors.add(rowLabel + ": 이메일이 비어있습니다.");
                     continue;
                 }
-
-                // 2. DTO 변환 및 생성 로직 재사용
-                StudentDTO.CreateRequest createReq = new StudentDTO.CreateRequest(csvReq);
-                createStudent(createReq);
+                if (userRepository.existsByEmail(csvReq.getEmail()) || seenEmails.contains(csvReq.getEmail())) {
+                    errors.add(rowLabel + ": 이미 존재하는 이메일입니다.");
+                    continue;
+                }
+                if (csvReq.getCode() != null && (studentInfoRepository.existsByCode(csvReq.getCode()) || seenCodes.contains(csvReq.getCode()))) {
+                    errors.add(rowLabel + ": 이미 존재하는 학번입니다.");
+                    continue;
+                }
+                seenEmails.add(csvReq.getEmail());
+                if (csvReq.getCode() != null) seenCodes.add(csvReq.getCode());
+                validRows.add(csvReq);
             }
-        } catch (Exception e) {
-            log.error("CSV 처리 중 오류 발생: ", e);
-            throw e;
+
+            // 2단계: 등록 (쓰기 전용)
+            for (StudentDTO.CsvImportRequest csvReq : validRows) {
+                createStudent(new StudentDTO.CreateRequest(csvReq));
+            }
         }
+        return errors;
     }
 
     public Long deleteAssignment(Long uid, int schoolYear) {

@@ -116,6 +116,7 @@ public class TeacherDTO {
         private String subject;
         private String department;
         private String position;
+        private String grantedRole; // 등록 시 즉시 부여할 권한 (선택)
 
         public CreateRequest(CsvImportRequest csv) {
             this.name = csv.getName();

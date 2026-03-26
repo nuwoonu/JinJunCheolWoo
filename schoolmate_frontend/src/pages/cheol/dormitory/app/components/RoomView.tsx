@@ -1,5 +1,5 @@
 // @ts-nocheck — [woo] unused 변수 빌드 에러 방지
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { ArrowLeft, User, UserPlus, UserMinus, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext"; // cheol
@@ -9,6 +9,8 @@ import type { StudentSummary } from "../types/dormitory";
 
 export default function RoomView() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin/dormitory" : "/student/dormitory";
   const { buildingId, roomNumber } = useParams<{ buildingId: string; roomNumber: string }>();
   const buildingName = decodeURIComponent(buildingId ?? "");
   const floor = parseInt(roomNumber?.charAt(0) ?? "1"); // 호수 첫 자리가 층 (예: "101" → 1층)
@@ -128,7 +130,7 @@ export default function RoomView() {
         {/* 헤더 */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
           <button
-            onClick={() => navigate(`/student/dormitory/building/${buildingId}`)}
+            onClick={() => navigate(`${baseRoute}/building/${buildingId}`)}
             style={{ padding: "8px", borderRadius: "8px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#e2e8f0")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}

@@ -40,13 +40,14 @@ export default function AdminSidebar() {
   const canSeeNotices     = isSchoolAdmin || hasGrant(grants, 'NOTICE_MANAGER');
   const canSeeFacilities  = isSchoolAdmin || hasGrant(grants, 'FACILITY_MANAGER');
   const canSeeAssets      = isSchoolAdmin || hasGrant(grants, 'ASSET_MANAGER');
+  const canSeeDormitory   = isSchoolAdmin || hasGrant(grants, 'DORMITORY_MANAGER');
   const canSeeSchedule    = isSchoolAdmin || hasGrant(grants, 'SCHEDULE_MANAGER');
-  // 기준 정보 · 감사 로그는 SUPER_ADMIN 전용
-  const canSeeMaster      = isSuperAdmin;
+  // 기준 정보(과목·학기)는 SCHOOL_ADMIN 이상, 감사 로그는 SUPER_ADMIN 전용
+  const canSeeMaster      = isSuperAdmin || isSchoolAdmin;
   const canSeeAudit       = isSuperAdmin;
 
   const canSeeMembers = canSeeStudents || canSeeTeachers || canSeeStaffs;
-  const canSeeFacilitiesGroup = canSeeFacilities || canSeeAssets;
+  const canSeeFacilitiesGroup = canSeeFacilities || canSeeAssets || canSeeDormitory;
 
   const handleChangeSchool = () => {
     clearSelectedSchool();
@@ -164,6 +165,13 @@ export default function AdminSidebar() {
                   <li>
                     <Link to={ADMIN_ROUTES.ASSETS}>
                       <i className="ri-circle-fill circle-icon w-auto" /> 기자재 관리
+                    </Link>
+                  </li>
+                )}
+                {canSeeDormitory && (
+                  <li>
+                    <Link to={ADMIN_ROUTES.DORMITORY}>
+                      <i className="ri-circle-fill circle-icon w-auto" /> 기숙사 관리
                     </Link>
                   </li>
                 )}

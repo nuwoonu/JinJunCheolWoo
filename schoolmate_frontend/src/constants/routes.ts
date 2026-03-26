@@ -45,6 +45,7 @@ export const ADMIN_ROUTES = {
   },
   FACILITIES: `${ADMIN_BASE}/facilities`,
   ASSETS: `${ADMIN_BASE}/assets`,
+  DORMITORY: `${ADMIN_BASE}/dormitory`,
   MASTER: {
     SCHEDULE: `${ADMIN_BASE}/master/schedule`,
     SUBJECTS: `${ADMIN_BASE}/master/subjects`,

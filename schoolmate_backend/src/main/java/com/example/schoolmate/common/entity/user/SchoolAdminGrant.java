@@ -41,7 +41,7 @@ public class SchoolAdminGrant extends BaseEntity {
     private School school;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "granted_role", nullable = false)
+    @Column(name = "granted_role", nullable = false, columnDefinition = "varchar(50)")
     private GrantedRole grantedRole;
 
     @ManyToOne(fetch = FetchType.LAZY)

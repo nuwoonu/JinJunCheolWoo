@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { Building2, Search, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext"; // cheol
@@ -17,6 +17,8 @@ function shadeColor(color: string, percent: number): string {
 
 export default function BuildingList() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin/dormitory" : "/student/dormitory";
   const { user } = useAuth(); // cheol
   const isStudent = user?.role === "STUDENT"; // cheol
   const [searchQuery, setSearchQuery] = useState(""); // cheol
@@ -369,7 +371,7 @@ export default function BuildingList() {
 
                 {/* 동 이름 버튼 */}
                 <button
-                  onClick={() => navigate(`/student/dormitory/building/${encodeURIComponent(building.name)}`)}
+                  onClick={() => navigate(`${baseRoute}/building/${encodeURIComponent(building.name)}`)}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-2px)";
                     e.currentTarget.style.boxShadow = `0 6px 18px ${building.color}80`;

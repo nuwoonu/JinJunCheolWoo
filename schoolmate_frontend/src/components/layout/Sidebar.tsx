@@ -247,12 +247,6 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
                   </Link>
                 </li>
-                {/* [cheol] 기숙사 */}
-                <li>
-                  <Link to="/student/dormitory">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
-                  </Link>
-                </li>
               </ul>
             </li>
           )}
@@ -301,12 +295,6 @@ export default function Sidebar() {
                 <li>
                   <Link to="/exam/schedule">
                     <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
-                  </Link>
-                </li>
-                {/* [cheol] 기숙사 */}
-                <li>
-                  <Link to="/student/dormitory">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
                 </li>
               </ul>
