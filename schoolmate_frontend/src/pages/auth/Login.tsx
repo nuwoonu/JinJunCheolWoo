@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "@/api/auth";
 import { useAuth } from "@/contexts/AuthContext";
+import ForgotPasswordModal from "@/components/auth/ForgotPasswordModal";
 import "../../styles/login.css";
 
 export default function Login() {
@@ -17,6 +18,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,9 +121,14 @@ export default function Login() {
                     로그인 상태 유지
                   </label>
                 </div>
-                <a href="#" className="forgot-link">
+                <button
+                  type="button"
+                  className="forgot-link"
+                  onClick={() => setIsForgotOpen(true)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
                   비밀번호 찾기
-                </a>
+                </button>
               </div>
 
               <button type="submit" className="btn-login" disabled={loading}>
@@ -172,6 +179,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <ForgotPasswordModal isOpen={isForgotOpen} onClose={() => setIsForgotOpen(false)} />
     </>
   );
 }

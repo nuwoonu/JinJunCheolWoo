@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfileModal } from '@/contexts/ProfileModalContext'
 
@@ -13,8 +14,19 @@ const menuItemStyle: React.CSSProperties = {
 export default function ProfileDropdown() {
   const { user, signOut } = useAuth()
   const { openProfileModal } = useProfileModal()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
+
+  const isHub = pathname === '/hub'
   const ref = useRef<HTMLDivElement>(null)
+
+  const roleRequests = user?.roleRequests ?? []
+  const isSuperAdmin = user?.grants?.some(g => g.grantedRole === 'SUPER_ADMIN') ?? false
+  // 역할이 2개 이상이거나 비활성(승인 대기·거부·차단) 역할이 존재하면 허브 진입 버튼 노출
+  const showHubButton =
+    roleRequests.length + (isSuperAdmin ? 1 : 0) >= 2 ||
+    roleRequests.some(r => r.status !== 'ACTIVE')
 
   useEffect(() => {
     if (!open) return
@@ -82,6 +94,28 @@ export default function ProfileDropdown() {
             <i className="ri-user-settings-line" style={{ fontSize: 15 }} />
             프로필 보기
           </button>
+          {!isHub && (
+            <button
+              onClick={() => { setOpen(false); navigate('/select-info?source=profile') }}
+              style={menuItemStyle}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--neutral-100, #f3f4f6)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+            >
+              <i className="ri-add-circle-line" style={{ fontSize: 15 }} />
+              역할 추가
+            </button>
+          )}
+          {!isHub && showHubButton && (
+            <button
+              onClick={() => { setOpen(false); navigate('/hub') }}
+              style={menuItemStyle}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--neutral-100, #f3f4f6)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+            >
+              <i className="ri-swap-box-line" style={{ fontSize: 15 }} />
+              역할 전환
+            </button>
+          )}
           <div style={{ height: 1, background: 'var(--neutral-100, #f3f4f6)' }} />
           <button
             onClick={() => { setOpen(false); signOut() }}

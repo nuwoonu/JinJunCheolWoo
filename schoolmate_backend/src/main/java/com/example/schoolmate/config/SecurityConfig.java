@@ -62,6 +62,8 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
+                                                                "/api/auth/password/send-code",
+                                                                "/api/auth/password/reset",
                                                                 "/api/schools",
                                                                 "/api/schools/**",
                                                                 "/api/service-notices",
