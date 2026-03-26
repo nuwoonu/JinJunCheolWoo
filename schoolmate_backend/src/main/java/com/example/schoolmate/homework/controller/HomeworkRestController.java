@@ -281,4 +281,16 @@ public class HomeworkRestController {
 
         return ResponseEntity.ok(result);
     }
+
+    // ========== [woo] 교사용 수업 분반 목록 (과제 출제 시 과목+학급 선택) ==========
+
+    /**
+     * GET /api/homework/course-sections
+     * 교사 본인이 담당하는 수업 분반 목록 반환 (과목 + 학급)
+     */
+    @GetMapping("/course-sections")
+    public ResponseEntity<?> getCourseSections(
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        return ResponseEntity.ok(homeworkService.getTeacherCourseSections(authUser.getCustomUserDTO()));
+    }
 }

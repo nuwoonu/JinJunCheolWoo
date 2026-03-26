@@ -47,18 +47,25 @@ export default function Login() {
   return (
     <>
       <div className="login-container">
-        {/* 왼쪽 - 로고 */}
-        <div className="login-left">
+        {/* 왼쪽 상단 로고 */}
+        <a href="/main" className="login-logo">
           <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
-        </div>
+        </a>
 
-        {/* 오른쪽 - 폼 */}
-        <div className="login-right">
-          <div className="login-form-wrapper">
-            {/* 모바일 로고 */}
-            <div className="mobile-logo">
-              <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
-            </div>
+        {/* 본문 영역 */}
+        <div className="login-body">
+          {/* 왼쪽 색상 박스 */}
+          <div className="login-left" />
+
+          {/* 오른쪽 - 폼 */}
+          <div className="login-right">
+            <div className="login-form-wrapper">
+              {/* 모바일 로고 */}
+              <div className="mobile-logo">
+                <a href="/main">
+                  <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
+                </a>
+              </div>
 
             {/* 에러 메시지 */}
             {error && (
@@ -160,6 +167,7 @@ export default function Login() {
 
             <div className="register-link">
               계정이 없으신가요? <a href="/register">회원가입</a>
+            </div>
             </div>
           </div>
         </div>

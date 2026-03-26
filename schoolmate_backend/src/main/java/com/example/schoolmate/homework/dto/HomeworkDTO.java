@@ -3,6 +3,7 @@ package com.example.schoolmate.homework.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.homework.entity.Homework;
 import com.example.schoolmate.homework.entity.HomeworkStatus;
 import com.example.schoolmate.homework.entity.HomeworkSubmission;
@@ -33,16 +34,13 @@ public class HomeworkDTO {
         @NotBlank(message = "내용은 필수입니다")
         private String content;
 
-        @NotNull(message = "대상 학급은 필수입니다")
-        private Long classroomId;
+        @NotNull(message = "수업 분반은 필수입니다")
+        private Long courseSectionId;
 
         @NotNull(message = "마감일은 필수입니다")
         private LocalDateTime dueDate;
 
-        // [woo] 최대 점수 (선택, 기본 100)
         private Integer maxScore;
-
-        // 파일은 MultipartFile로 별도 처리
     }
 
     // ========== 과제 응답 (목록용) ==========
@@ -55,12 +53,14 @@ public class HomeworkDTO {
         private Long id;
         private String title;
         private String teacherName;
+        private String subjectName;
         private String classroomName;
         private Long classroomId;
+        private String termName;
+        private Long courseSectionId;
         private HomeworkStatus status;
         private LocalDateTime dueDate;
         private boolean hasAttachment;
-        // [woo] 최대 점수
         private Integer maxScore;
         private int submissionCount;
         private int totalStudentCount;
@@ -75,12 +75,18 @@ public class HomeworkDTO {
         private HomeworkSubmission.SubmissionStatus submissionStatus;
 
         public static ListResponse fromEntity(Homework homework, int totalStudentCount) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = homework.getCourseSection().getTeacher().getUser().getName();
+            String sName = homework.getCourseSection().getSubject().getName();
             return ListResponse.builder()
                     .id(homework.getId())
                     .title(homework.getTitle())
-                    .teacherName(homework.getTeacher().getUser().getName())
-                    .classroomName(homework.getClassroom().getClassName())
-                    .classroomId(homework.getClassroom().getCid())
+                    .teacherName(tName + "[" + sName + "]")
+                    .classroomName(homework.getCourseSection().getClassroom().getClassName())
+                    .classroomId(homework.getCourseSection().getClassroom().getCid())
+                    .courseSectionId(homework.getCourseSection().getId())
+                    .subjectName(homework.getCourseSection().getSubject().getName())
+                    .termName(homework.getCourseSection().getTerm().getDisplayName())
                     .status(homework.getStatus())
                     .dueDate(homework.getDueDate())
                     .hasAttachment(homework.getAttachmentUrl() != null)
@@ -106,11 +112,13 @@ public class HomeworkDTO {
         private Long teacherUserId;
         private String classroomName;
         private Long classroomId;
+        private String subjectName;
+        private String termName;
+        private Long courseSectionId;
         private HomeworkStatus status;
         private LocalDateTime dueDate;
         private String attachmentUrl;
         private String attachmentOriginalName;
-        // [woo] 최대 점수
         private Integer maxScore;
         private int submissionCount;
         private int totalStudentCount;
@@ -124,17 +132,23 @@ public class HomeworkDTO {
         private SubmissionResponse mySubmission;
 
         public static DetailResponse fromEntity(Homework homework, int totalStudentCount) {
+            // [woo 03/25] 교사이름[과목] 형태로 표시
+            String tName = homework.getCourseSection().getTeacher().getUser().getName();
+            String sName = homework.getCourseSection().getSubject().getName();
             return DetailResponse.builder()
                     .id(homework.getId())
                     .title(homework.getTitle())
                     .content(homework.getContent())
-                    .teacherName(homework.getTeacher().getUser().getName())
-                    .teacherUserId(homework.getTeacher().getUser().getUid())
-                    .classroomName(homework.getClassroom().getClassName())
-                    .classroomId(homework.getClassroom().getCid())
+                    .teacherName(tName + "[" + sName + "]")
+                    .teacherUserId(homework.getCourseSection().getTeacher().getUser().getUid())
+                    .classroomName(homework.getCourseSection().getClassroom().getClassName())
+                    .classroomId(homework.getCourseSection().getClassroom().getCid())
+                    .courseSectionId(homework.getCourseSection().getId())
+                    .subjectName(homework.getCourseSection().getSubject().getName())
+                    .termName(homework.getCourseSection().getTerm().getDisplayName())
                     .status(homework.getStatus())
                     .dueDate(homework.getDueDate())
-                    .attachmentUrl(homework.getAttachmentUrl())
+                    .attachmentUrl(homework.getAttachmentUrl() != null ? FileManager.UploadType.HOMEWORK.toUrl(homework.getAttachmentUrl()) : null)
                     .attachmentOriginalName(homework.getAttachmentOriginalName())
                     .maxScore(homework.getMaxScore())
                     .submissionCount(homework.getSubmissions().size())
@@ -153,7 +167,6 @@ public class HomeworkDTO {
     @AllArgsConstructor
     public static class SubmitRequest {
         private String content;
-        // 파일은 MultipartFile로 별도 처리
     }
 
     // ========== 제출 응답 ==========
@@ -182,7 +195,7 @@ public class HomeworkDTO {
                     .studentName(submission.getStudent().getUser().getName())
                     .studentNumber(submission.getStudent().getFullStudentNumber())
                     .content(submission.getContent())
-                    .attachmentUrl(submission.getAttachmentUrl())
+                    .attachmentUrl(submission.getAttachmentUrl() != null ? FileManager.UploadType.HOMEWORK.toUrl(submission.getAttachmentUrl()) : null)
                     .attachmentOriginalName(submission.getAttachmentOriginalName())
                     .submittedAt(submission.getSubmittedAt())
                     .score(submission.getScore())

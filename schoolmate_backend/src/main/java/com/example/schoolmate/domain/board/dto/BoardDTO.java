@@ -73,6 +73,8 @@ public class BoardDTO {
         private String attachmentUrl;
         private LocalDateTime createDate;
         private LocalDateTime updateDate;
+        // [woo] 읽음 수 — 교사가 확인용 (PARENT_NOTICE)
+        private long readCount;
 
         /** 상세 조회용 (content 포함) */
         public static Response fromEntity(Board board) {

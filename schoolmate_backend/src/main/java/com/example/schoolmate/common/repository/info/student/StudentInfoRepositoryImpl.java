@@ -11,6 +11,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import com.example.schoolmate.common.dto.StudentDTO;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.QClassroom;
+import com.example.schoolmate.common.entity.info.QFamilyRelation;
 import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.QStudentAssignment;
@@ -18,7 +19,7 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -37,6 +38,9 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
 
+        BooleanExpression schoolPredicate = cond.isIgnoreSchoolFilter() ? null : schoolFilter(info);
+        BooleanExpression excludeLinkedPredicate = excludeLinkedFilter(info, cond.getExcludeParentId());
+
         JPAQuery<User> contentQuery = query.selectFrom(user).distinct()
                 .leftJoin(info).on(info.user.eq(user))
                 .leftJoin(info.currentAssignment, QStudentAssignment.studentAssignment)
@@ -45,7 +49,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
                         statusFilter(cond.getStatus(), info),
-                        schoolFilter(info))
+                        schoolPredicate,
+                        excludeLinkedPredicate)
                 .orderBy(user.uid.desc());
 
         if (pageable.isPaged()) {
@@ -62,7 +67,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
                         statusFilter(cond.getStatus(), info),
-                        schoolFilter(info));
+                        schoolPredicate,
+                        excludeLinkedPredicate);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -294,15 +300,10 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     @Override
     public long countByStatus(StudentStatus status) {
         QStudentInfo info = QStudentInfo.studentInfo;
-        Long schoolId = SchoolContextHolder.getSchoolId();
-
-        JPAQuery<Long> q = query.select(info.count())
+        Long count = query.select(info.count())
                 .from(info)
-                .where(info.status.eq(status));
-        if (schoolId != null) {
-            q.where(info.school.id.eq(schoolId));
-        }
-        Long count = q.fetchOne();
+                .where(info.status.eq(status), SchoolQueryFilter.schoolIdEq(info.school.id))
+                .fetchOne();
         return count != null ? count : 0L;
     }
 
@@ -324,10 +325,17 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     // ── 공통 필터 ─────────────────────────────────────────────────────────────────
 
     private BooleanExpression schoolFilter(QStudentInfo info) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null)
+        return SchoolQueryFilter.schoolIdEq(info.school.id);
+    }
+
+    private BooleanExpression excludeLinkedFilter(QStudentInfo info, Long parentId) {
+        if (parentId == null)
             return null;
-        return info.school.id.eq(schoolId);
+        QFamilyRelation fr = QFamilyRelation.familyRelation;
+        return query.selectOne()
+                .from(fr)
+                .where(fr.studentInfo.eq(info).and(fr.parentInfo.id.eq(parentId)))
+                .notExists();
     }
 
     private BooleanExpression statusFilter(String status, QStudentInfo info) {
@@ -339,11 +347,13 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     private BooleanExpression searchPredicate(String type, String keyword, QUser user, QStudentInfo info) {
         if (keyword == null || keyword.isEmpty())
             return null;
+        if (type == null || type.isEmpty())
+            return user.name.contains(keyword).or(info.code.contains(keyword));
         return switch (type) {
             case "name" -> user.name.contains(keyword);
             case "email" -> user.email.contains(keyword);
             case "idNum" -> info.code.contains(keyword);
-            default -> null;
+            default -> user.name.contains(keyword).or(info.code.contains(keyword));
         };
     }
 }

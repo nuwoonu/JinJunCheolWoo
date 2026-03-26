@@ -6,9 +6,11 @@ import DashboardLayout from '../../../components/layout/DashboardLayout'
 // [woo] 퀴즈 출제 페이지 (교사 전용)
 // - 기본 정보 + 문제 동적 추가 (객관식 / 단답형)
 
-interface ClassroomOption {
+// [woo 03/25] 수업 분반 (과목 + 학급)
+interface CourseSectionOption {
   id: number
   name: string
+  classroomId: number
 }
 
 interface OptionForm {
@@ -26,14 +28,14 @@ interface QuestionForm {
 
 export default function QuizCreate() {
   const navigate = useNavigate()
-  const [classrooms, setClassrooms] = useState<ClassroomOption[]>([])
+  const [courseSections, setCourseSections] = useState<CourseSectionOption[]>([])
   const [saving, setSaving] = useState(false)
 
   const [form, setForm] = useState({
     title: '',
     description: '',
     week: '',
-    classroomId: '',
+    courseSectionId: '',
     dueDate: '',
     maxAttempts: '',
     showAnswer: true,
@@ -49,8 +51,8 @@ export default function QuizCreate() {
   ])
 
   useEffect(() => {
-    api.get('/homework/classrooms')
-      .then(res => setClassrooms(res.data))
+    api.get('/homework/course-sections')
+      .then(res => setCourseSections(res.data))
       .catch(() => {})
   }, [])
 
@@ -115,7 +117,7 @@ export default function QuizCreate() {
   // [woo] 제출
   const handleSubmit = async () => {
     if (!form.title.trim()) return alert('제목을 입력해주세요.')
-    if (!form.classroomId) return alert('대상 학급을 선택해주세요.')
+    if (!form.courseSectionId) return alert('수업 분반을 선택해주세요.')
     if (!form.dueDate) return alert('마감일을 선택해주세요.')
 
     // 문제 검증
@@ -136,7 +138,7 @@ export default function QuizCreate() {
         title: form.title,
         description: form.description || null,
         week: form.week ? Number(form.week) : null,
-        classroomId: Number(form.classroomId),
+        courseSectionId: Number(form.courseSectionId),
         dueDate: form.dueDate + 'T23:59:59',
         maxAttempts: form.maxAttempts ? Number(form.maxAttempts) : null,
         showAnswer: form.showAnswer,
@@ -207,15 +209,15 @@ export default function QuizCreate() {
 
           <div className="row mb-20">
             <div className="col-md-3 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">대상 학급 *</label>
+              <label className="form-label fw-semibold text-sm">수업 분반 *</label>
               <select
                 className="form-select radius-8"
-                value={form.classroomId}
-                onChange={e => setForm(f => ({ ...f, classroomId: e.target.value }))}
+                value={form.courseSectionId}
+                onChange={e => setForm(f => ({ ...f, courseSectionId: e.target.value }))}
               >
-                <option value="">학급 선택</option>
-                {classrooms.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                <option value="">수업 분반 선택</option>
+                {courseSections.map(cs => (
+                  <option key={cs.id} value={cs.id}>{cs.name}</option>
                 ))}
               </select>
             </div>

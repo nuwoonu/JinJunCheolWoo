@@ -1,6 +1,9 @@
 package com.example.schoolmate.admin.controller;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.schoolmate.config.SchoolmateUrls;
 import com.example.schoolmate.common.dto.TeacherDTO;
 import com.example.schoolmate.common.service.TeacherService;
+import com.example.schoolmate.domain.term.entity.CourseSection;
+import com.example.schoolmate.domain.term.service.CourseSectionService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +33,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public class AdminTeacherApiController {
 
     private final TeacherService teacherService;
+    private final CourseSectionService courseSectionService;
 
     @GetMapping
     public ResponseEntity<Page<TeacherDTO.DetailResponse>> list(
@@ -101,5 +107,61 @@ public class AdminTeacherApiController {
     @GetMapping("/positions")
     public ResponseEntity<List<String>> positions() {
         return ResponseEntity.ok(List.of("교장", "교감", "수석교사", "부장교사", "평교사", "기간제교사"));
+    }
+
+    // ========== 수업 분반(CourseSection) 관리 ==========
+
+    /** 교사의 현재 학기 수업 분반 목록 */
+    @GetMapping("/{uid}/sections")
+    public ResponseEntity<List<Map<String, Object>>> getSections(@PathVariable Long uid) {
+        List<CourseSection> sections = courseSectionService.getSectionsForTeacherUser(uid);
+        List<Map<String, Object>> result = sections.stream()
+                .map(s -> toSectionMap(s))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
+
+    /** 교사에게 수업 분반 일괄 등록 */
+    @PostMapping("/{uid}/sections")
+    public ResponseEntity<List<Map<String, Object>>> createSections(
+            @PathVariable Long uid,
+            @RequestBody Map<String, List<Long>> body) {
+        List<Long> classroomIds = body.get("classroomIds");
+        if (classroomIds == null || classroomIds.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            List<CourseSection> created = courseSectionService.createSectionsForTeacher(uid, classroomIds);
+            List<Map<String, Object>> result = created.stream()
+                    .map(s -> toSectionMap(s))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            log.error("수업 분반 등록 실패: uid={}, msg={}", uid, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /** 수업 분반 삭제 */
+    @DeleteMapping("/{uid}/sections/{sectionId}")
+    public ResponseEntity<Void> deleteSection(
+            @PathVariable Long uid,
+            @PathVariable Long sectionId) {
+        courseSectionService.deleteSection(sectionId);
+        return ResponseEntity.ok().build();
+    }
+
+    private Map<String, Object> toSectionMap(CourseSection s) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", s.getId());
+        m.put("termId", s.getTerm().getId());
+        m.put("termName", s.getTerm().getDisplayName());
+        m.put("subjectName", s.getSubject().getName());
+        m.put("classroomId", s.getClassroom().getCid());
+        m.put("classroomName", s.getClassroom().getClassName());
+        m.put("grade", s.getClassroom().getGrade());
+        m.put("classNum", s.getClassroom().getClassNum());
+        m.put("studentCount", courseSectionService.getStudentCount(s));
+        return m;
     }
 }

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.common.service.FileService;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.resources.constant.FacilityStatus;
 import com.example.schoolmate.domain.resources.dto.FacilityDTO;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class FacilityService {
     private final SchoolFacilityRepository facilityRepository;
-    private final FileService fileService;
+    private final FileManager fileManager;
     private final SchoolRepository schoolRepository;
 
     @Transactional(readOnly = true)
@@ -35,10 +35,7 @@ public class FacilityService {
 
     public void createFacility(FacilityDTO.Request request) {
         log.info("시설 생성: name={}", request.getName());
-        String filename = null;
-        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
-            filename = fileService.upload(request.getImageFile(), "facilities");
-        }
+        String filename = fileManager.upload(request.getImageFile(), FileManager.UploadType.FACILITY);
 
         FacilityStatus status = request.getStatus() != null ? request.getStatus() : FacilityStatus.AVAILABLE;
 
@@ -81,16 +78,13 @@ public class FacilityService {
         }
 
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
-            // 이미지 교체 로직
-            if (facility.getImageFilename() != null) {
-                fileService.delete(facility.getImageFilename(), "facilities");
-            }
-            facility.setImageFilename(fileService.upload(request.getImageFile(), "facilities"));
+            facility.setImageFilename(fileManager.replace(request.getImageFile(), facility.getImageFilename(), FileManager.UploadType.FACILITY));
         }
     }
 
     public void deleteFacility(Long id) {
         log.info("시설 삭제: id={}", id);
+        facilityRepository.findById(id).ifPresent(f -> fileManager.delete(f.getImageFilename(), FileManager.UploadType.FACILITY));
         facilityRepository.deleteById(id);
     }
 }

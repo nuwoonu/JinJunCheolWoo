@@ -28,6 +28,7 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.notice.NotificationRepository;
@@ -53,6 +54,7 @@ public class ParentService {
     private final UserRepository userRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final ParentInfoRepository parentInfoRepository;
+    private final FamilyRelationRepository familyRelationRepository;
     private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRequestRepository roleRequestRepository;
@@ -65,7 +67,7 @@ public class ParentService {
                 .map(entity -> {
                     ParentDTO.Summary dto = new ParentDTO.Summary(entity);
                     if (entity.getUser() != null) {
-                        roleRequestRepository.findByUserAndRole(entity.getUser(), UserRole.PARENT).ifPresent(rr -> {
+                        roleRequestRepository.findAllByUserAndRole(entity.getUser(), UserRole.PARENT).stream().findFirst().ifPresent(rr -> {
                             dto.setRoleRequestId(rr.getId());
                             dto.setRoleRequestStatus(rr.getStatus().name());
                         });
@@ -175,7 +177,7 @@ public class ParentService {
                     .findActiveByReceiver(parent.getUser());
             response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
 
-            roleRequestRepository.findByUserAndRole(parent.getUser(), UserRole.PARENT).ifPresent(rr -> {
+            roleRequestRepository.findAllByUserAndRole(parent.getUser(), UserRole.PARENT).stream().findFirst().ifPresent(rr -> {
                 response.setRoleRequestId(rr.getId());
                 response.setRoleRequestStatus(rr.getStatus().name());
             });
@@ -271,7 +273,9 @@ public class ParentService {
             parentInfo.setUser(newUser);
 
             newUser.getInfos().add(parentInfo);
-            userRepository.save(newUser);
+            User savedUser = userRepository.save(newUser);
+            // [woo] 교사 간편 등록 시 즉시 ACTIVE — 승인 없이 바로 로그인 가능
+            roleRequestRepository.save(RoleRequest.createActive(savedUser, UserRole.PARENT, null, null));
         }
 
         // [woo] 자녀 관계 연결
@@ -284,6 +288,7 @@ public class ParentService {
             relation.setSchool(student.getSchool());
         }
         parentInfo.getChildrenRelations().add(relation);
+        familyRelationRepository.save(relation); // [woo] cascade 의존 대신 명시적 저장
 
         log.info("[woo] 학부모 간편 등록 완료 - parent: {}, student: {}, relation: {}",
                 request.getParentName(), student.getUser().getName(), relationship);

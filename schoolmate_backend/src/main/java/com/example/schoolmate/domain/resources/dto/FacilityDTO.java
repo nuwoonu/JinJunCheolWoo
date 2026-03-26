@@ -1,6 +1,6 @@
 package com.example.schoolmate.domain.resources.dto;
 
-import com.example.schoolmate.config.SchoolmateUrls;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.domain.resources.constant.FacilityStatus;
 import com.example.schoolmate.domain.resources.constant.FacilityType;
 import com.example.schoolmate.domain.resources.entity.SchoolFacility;
@@ -49,10 +49,9 @@ public class FacilityDTO {
         private String imageUrl;
 
         public static Response from(SchoolFacility entity) {
-            String fullUrl = null;
-            if (entity.getImageFilename() != null) {
-                fullUrl = SchoolmateUrls.UPLOAD_PATH_FACILITIES + entity.getImageFilename();
-            }
+            String fullUrl = entity.getImageFilename() != null
+                    ? FileManager.UploadType.FACILITY.toUrl(entity.getImageFilename())
+                    : null;
 
             FacilityStatus status = entity.getStatus() != null ? entity.getStatus() : FacilityStatus.AVAILABLE;
 

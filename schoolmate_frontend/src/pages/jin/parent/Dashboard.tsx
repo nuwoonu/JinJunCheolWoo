@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from '@/api/auth';
-import Header from '@/components/layout/Header';
-import { SidebarProvider } from '@/contexts/SidebarContext';
-import { useAuth } from '@/contexts/AuthContext';
+import api from "@/api/auth";
+import Header from "@/components/layout/Header";
+import { SidebarProvider } from "@/contexts/SidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
+import Footer from "@/components/layout/Footer";
 
 // [soojin] 학부모 대시보드 - 사이드바 없는 2컬럼 레이아웃
 
@@ -191,23 +192,6 @@ export default function ParentDashboard() {
                   <span style={{ fontWeight: 700, fontSize: "18px", color: "#222" }}>자녀 목록</span>
                   <span style={{ fontSize: "14px", color: "#888" }}>총 {children.length}명</span>
                 </div>
-                <Link
-                  to="/parent/children/add"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "8px 16px",
-                    backgroundColor: "#2bb5ab",
-                    color: "#fff",
-                    borderRadius: "8px",
-                    textDecoration: "none",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                  }}
-                >
-                  + 자녀 추가
-                </Link>
               </div>
               <hr style={{ margin: "0 0 24px", borderColor: "#6c757d" }} />
 
@@ -306,13 +290,7 @@ export default function ParentDashboard() {
             </div>
           </div>
         </div>
-        <footer className="d-footer">
-          <div className="row align-items-center justify-content-between">
-            <div className="col-auto">
-              <p className="mb-0">Copyright 2026 SchoolMate. All Rights Reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </SidebarProvider>
   );

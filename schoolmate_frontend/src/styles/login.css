@@ -2,34 +2,49 @@
 
 .login-container {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: #ffffff;
+  padding: 36px 48px 36px 48px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
 }
 
-.login-left {
-  width: 30%;
-  max-width: 30%;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 30px;
+/* 왼쪽 상단 로고 */
+.login-logo {
+  display: block;
+  flex-shrink: 0;
+  margin-bottom: 28px;
 }
 
-.login-left img {
-  max-width: 320px;
-  width: 100%;
+.login-logo img {
+  max-width: 160px;
   height: auto;
 }
 
+/* 두 컬럼 레이아웃 */
+.login-body {
+  display: flex;
+  flex: 1;
+  gap: 0;
+  min-height: 0;
+}
+
+/* 왼쪽 색상 박스 */
+.login-left {
+  flex: 0 0 44%;
+  background-color: #E6F7F5;
+  border-radius: 24px;
+  min-height: 500px;
+}
+
+/* 오른쪽 폼 영역 */
 .login-right {
-  width: 70%;
-  max-width: 70%;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px;
+  padding: 40px 60px;
 }
 
 .login-form-wrapper {
@@ -253,23 +268,31 @@
 
 /* 모바일 */
 @media (max-width: 991px) {
+  .login-container {
+    padding: 24px;
+  }
+
+  .login-logo {
+    display: none;
+  }
+
   .login-left {
     display: none;
   }
 
+  .login-body {
+    flex: 1;
+  }
+
   .login-right {
     width: 100%;
-    max-width: 100%;
-    padding: 24px;
+    flex: 1;
+    padding: 24px 0;
   }
 
   .login-form-wrapper {
     max-width: 400px;
     margin: 0 auto;
-  }
-
-  .login-title {
-    text-align: center;
   }
 
   .mobile-logo {

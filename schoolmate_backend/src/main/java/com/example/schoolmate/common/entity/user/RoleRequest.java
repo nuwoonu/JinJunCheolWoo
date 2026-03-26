@@ -20,8 +20,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "role_request",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_role_request_user_role",
-                columnNames = {"user_uid", "role"}
+                name = "uk_role_request_user_role_school",
+                columnNames = {"user_uid", "role", "school_id"}
         ))
 @Getter
 @NoArgsConstructor

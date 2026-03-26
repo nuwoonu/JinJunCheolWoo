@@ -172,17 +172,65 @@ export default function Assets() {
   // --- 유틸 함수 ---
   const statusInfo = (s: string) =>
     STATUS_OPTIONS.find((o) => o.value === s) ?? { label: s, value: s };
-  const statusBadge = (s: string) => {
-    if (s === "AVAILABLE")
-      return "bg-success-subtle text-success border border-success-subtle";
-    if (s === "IN_USE")
-      return "bg-primary-subtle text-primary border border-primary-subtle";
-    if (s === "BROKEN")
-      return "bg-warning-subtle text-warning border border-warning-subtle";
-    return "bg-secondary-subtle text-secondary border border-secondary-subtle";
+
+  const statusStyle = (s: string): React.CSSProperties => {
+    if (s === "AVAILABLE") return { background: "#ecfdf5", color: "#065f46", border: "1px solid #6ee7b7", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 };
+    if (s === "IN_USE") return { background: "#eff6ff", color: "#1e40af", border: "1px solid #93c5fd", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 };
+    if (s === "BROKEN") return { background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 };
+    return { background: "#f3f4f6", color: "#374151", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 };
   };
 
   const assetList = page?.content ?? [];
+
+  // Shared button styles
+  const btnPrimary: React.CSSProperties = {
+    padding: "9px 20px",
+    background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+    border: "none",
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#fff",
+    cursor: "pointer",
+  };
+  const btnSecondary: React.CSSProperties = {
+    padding: "8px 16px",
+    background: "#fff",
+    border: "1px solid #d1d5db",
+    borderRadius: 8,
+    fontSize: 14,
+    color: "#374151",
+    cursor: "pointer",
+  };
+  const btnPrimaryModal: React.CSSProperties = {
+    padding: "8px 16px",
+    background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+    border: "none",
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#fff",
+    cursor: "pointer",
+  };
+
+  // Table header/cell styles
+  const thStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    background: "#f9fafb",
+    borderBottom: "1px solid #e5e7eb",
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#6b7280",
+    textTransform: "uppercase",
+    whiteSpace: "nowrap",
+  };
+  const tdStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    borderBottom: "1px solid #f3f4f6",
+    fontSize: 14,
+    color: "#374151",
+    verticalAlign: "middle",
+  };
 
   return (
     <AdminLayout>
@@ -242,7 +290,7 @@ export default function Assets() {
             </div>
             <form onSubmit={handleAssetSubmit}>
               <div style={{ padding: "20px" }}>
-                <h6 className="fw-bold text-primary mb-3">모델 정보</h6>
+                <h6 style={{ fontWeight: 700, color: "#25A194", marginBottom: 12 }}>모델 정보</h6>
                 <div className="row g-3 mb-3">
                   <div className="col-md-12">
                     <label className="form-label fw-bold">
@@ -253,6 +301,7 @@ export default function Assets() {
                     </label>
                     <select
                       className="form-select"
+                      required
                       value={assetForm.modelId}
                       onChange={(e) => {
                         const mid = e.target.value;
@@ -260,16 +309,14 @@ export default function Assets() {
                         setAssetForm((f: any) => ({
                           ...f,
                           modelId: mid,
-                          name: m?.name ?? f.name,
-                          category: m?.category ?? f.category,
-                          manufacturer: m?.manufacturer ?? f.manufacturer,
-                          description: m?.description ?? f.description,
+                          name: m?.name ?? "",
+                          category: m?.category ?? "",
+                          manufacturer: m?.manufacturer ?? "",
+                          description: m?.description ?? "",
                         }));
                       }}
                     >
-                      <option value="">
-                        신규 모델 직접 입력 (권장하지 않음)
-                      </option>
+                      <option value="" disabled>모델을 선택하세요</option>
                       {models.map((m: any) => (
                         <option key={m.id} value={m.id}>
                           [{m.category}] {m.name} ({m.manufacturer})
@@ -277,37 +324,27 @@ export default function Assets() {
                       ))}
                     </select>
                   </div>
-                  {/* ... (기존 자산 폼 내용 동일) ... */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold">자산명(모델명)</label>
                     <input
-                      className="form-control"
-                      required
+                      className="form-control bg-light"
+                      readOnly
                       value={assetForm.name}
-                      onChange={(e) =>
-                        setAssetForm((f: any) => ({
-                          ...f,
-                          name: e.target.value,
-                        }))
-                      }
+                      placeholder="모델 선택 시 자동 입력"
                     />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold">분류</label>
                     <input
-                      className="form-control"
+                      className="form-control bg-light"
+                      readOnly
                       value={assetForm.category}
-                      onChange={(e) =>
-                        setAssetForm((f: any) => ({
-                          ...f,
-                          category: e.target.value,
-                        }))
-                      }
+                      placeholder="모델 선택 시 자동 입력"
                     />
                   </div>
                 </div>
                 <hr />
-                <h6 className="fw-bold text-primary mb-3">자산 상세 정보</h6>
+                <h6 style={{ fontWeight: 700, color: "#25A194", marginBottom: 12 }}>자산 상세 정보</h6>
                 <div className="row g-3">
                   <div className="col-md-6">
                     <label className="form-label fw-bold">관리 번호</label>
@@ -398,12 +435,12 @@ export default function Assets() {
               >
                 <button
                   type="button"
-                  className="btn btn-outline-secondary radius-8"
+                  style={btnSecondary}
                   onClick={() => setShowAssetModal(false)}
                 >
                   취소
                 </button>
-                <button type="submit" className="btn btn-primary-600 radius-8">
+                <button type="submit" style={btnPrimaryModal}>
                   {assetForm.id !== null ? "수정" : "등록"}
                 </button>
               </div>
@@ -564,12 +601,12 @@ export default function Assets() {
               >
                 <button
                   type="button"
-                  className="btn btn-outline-secondary radius-8"
+                  style={btnSecondary}
                   onClick={() => setShowModelModal(false)}
                 >
                   취소
                 </button>
-                <button type="submit" className="btn btn-primary-600 radius-8">
+                <button type="submit" style={btnPrimaryModal}>
                   {modelForm.id !== null ? "수정" : "등록"}
                 </button>
               </div>
@@ -579,23 +616,32 @@ export default function Assets() {
       )}
 
       {/* 헤더 및 등록 버튼 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 24,
+        }}
+      >
         <div>
-          <h6 className="fw-semibold mb-0">기자재 관리</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
+          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>기자재 관리</h5>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
             학교 기자재 및 자산을 관리합니다.
           </p>
         </div>
         {currentTab === "assets" ? (
           <button
-            className="btn btn-primary-600 radius-8"
+            style={btnPrimary}
             onClick={openAssetCreate}
           >
             <i className="bi bi-plus-lg me-1" /> 기자재 등록
           </button>
         ) : (
           <button
-            className="btn btn-primary-600 radius-8"
+            style={btnPrimary}
             onClick={openModelCreate}
           >
             <i className="bi bi-plus-lg me-1" /> 신규 모델 등록
@@ -604,7 +650,7 @@ export default function Assets() {
       </div>
 
       {/* 3. 탭 네비게이션 (새로 추가됨) */}
-      <div className="d-flex border-bottom border-neutral-200 mb-4">
+      <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb", marginBottom: 16 }}>
         {(
           [
             ["assets", "기자재 목록"],
@@ -635,29 +681,33 @@ export default function Assets() {
         <>
           {/* 재고 요약 카드 */}
           {summaries.length > 0 && (
-            <div className="row g-3 mb-4">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
               {summaries.map((s: any) => (
-                <div key={s.category} className="col-md-3">
-                  <div className="card border-0 border-start border-primary border-4 shadow-sm h-100">
-                    <div className="card-body py-2">
-                      <div className="text-muted small fw-bold text-uppercase">
-                        {s.category || "미분류"}
-                      </div>
-                      <div className="fw-bold fs-4 mb-1">{s.totalCount}개</div>
-                      <div
-                        className="d-flex justify-content-between text-muted"
-                        style={{ fontSize: "0.8rem" }}
-                      >
-                        <span className="text-success">
-                          사용 {s.availableCount}
-                        </span>
-                        <span className="text-primary">
-                          대여 {s.inUseCount}
-                        </span>
-                        <span className="text-danger">
-                          파손 {s.brokenCount}
-                        </span>
-                      </div>
+                <div key={s.category} style={{ flex: "1 1 200px", minWidth: 180 }}>
+                  <div
+                    style={{
+                      background: "#fff",
+                      borderRadius: 10,
+                      border: "1px solid #e5e7eb",
+                      borderLeft: "4px solid #25A194",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                      padding: "16px 20px",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: "#6b7280", fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>
+                      {s.category || "미분류"}
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 4 }}>{s.totalCount}개</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                      <span style={{ color: "#16a34a" }}>
+                        사용 {s.availableCount}
+                      </span>
+                      <span style={{ color: "#2563eb" }}>
+                        대여 {s.inUseCount}
+                      </span>
+                      <span style={{ color: "#dc2626" }}>
+                        파손 {s.brokenCount}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -666,87 +716,128 @@ export default function Assets() {
           )}
 
           {/* 자산 목록 테이블 */}
-          <div className="card">
-            <div className="card-header bg-base py-3">
-              <div className="row align-items-center">
-                <div className="col">
-                  <h5 className="mb-0 text-primary-light fw-bold">자산 목록</h5>
-                </div>
-                <div className="col-auto">
-                  <form
-                    className="input-group input-group-sm"
-                    onSubmit={search}
+          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+            <div
+              style={{
+                padding: "12px 16px",
+                borderBottom: "1px solid #e5e7eb",
+                background: "#f9fafb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 15 }}>자산 목록</h6>
+              <form
+                style={{ display: "flex", alignItems: "center", gap: 4 }}
+                onSubmit={search}
+              >
+                <input
+                  className="form-control"
+                  style={{ width: 250, height: 32, fontSize: 13 }}
+                  placeholder="기자재명 또는 관리번호 검색"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    height: 32,
+                    padding: "0 10px",
+                    background: "#fff",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    color: "#374151",
+                  }}
+                >
+                  <i className="bi bi-search" />
+                </button>
+                {keyword && (
+                  <button
+                    type="button"
+                    style={{
+                      height: 32,
+                      padding: "0 10px",
+                      background: "#fff",
+                      border: "1px solid #fca5a5",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      fontSize: 13,
+                      color: "#dc2626",
+                    }}
+                    onClick={() => {
+                      setKeyword("");
+                      load(0, "");
+                    }}
                   >
-                    <input
-                      className="form-control"
-                      style={{ width: 250 }}
-                      placeholder="기자재명 또는 관리번호 검색"
-                      value={keyword}
-                      onChange={(e) => setKeyword(e.target.value)}
-                    />
-                    <button className="btn btn-outline-secondary" type="submit">
-                      <i className="bi bi-search" />
-                    </button>
-                    {keyword && (
-                      <button
-                        className="btn btn-outline-danger"
-                        type="button"
-                        onClick={() => {
-                          setKeyword("");
-                          load(0, "");
-                        }}
-                      >
-                        <i className="bi bi-x" />
-                      </button>
-                    )}
-                  </form>
-                </div>
-              </div>
+                    <i className="bi bi-x" />
+                  </button>
+                )}
+              </form>
             </div>
-            <div className="card-body p-0">
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0 text-center">
-                  <thead className="table-heading-dark-mode">
+            <div style={{ overflow: "hidden" }}>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center" }}>
+                  <thead>
                     <tr>
-                      <th className="ps-4 text-start">관리 번호</th>
-                      <th>자산명</th>
-                      <th>분류</th>
-                      <th>시리얼 번호</th>
-                      <th>상태</th>
-                      <th>위치</th>
-                      <th>구매일</th>
-                      <th className="text-end pe-4">관리</th>
+                      <th style={{ ...thStyle, textAlign: "left", paddingLeft: 16 }}>관리 번호</th>
+                      <th style={thStyle}>자산명</th>
+                      <th style={thStyle}>분류</th>
+                      <th style={thStyle}>시리얼 번호</th>
+                      <th style={thStyle}>상태</th>
+                      <th style={thStyle}>위치</th>
+                      <th style={thStyle}>구매일</th>
+                      <th style={{ ...thStyle, textAlign: "right", paddingRight: 16 }}>관리</th>
                     </tr>
                   </thead>
                   <tbody>
                     {assetList.map((a: any) => (
-                      <tr key={a.id}>
-                        <td className="ps-4 text-start text-muted small">
+                      <tr key={a.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                        <td style={{ ...tdStyle, textAlign: "left", paddingLeft: 16, color: "#6b7280", fontSize: 13 }}>
                           {a.assetCode}
                         </td>
-                        <td className="fw-bold text-start">{a.name}</td>
-                        <td>{a.category}</td>
-                        <td className="text-muted small">
+                        <td style={{ ...tdStyle, fontWeight: 600, textAlign: "left" }}>{a.name}</td>
+                        <td style={tdStyle}>{a.category}</td>
+                        <td style={{ ...tdStyle, color: "#6b7280", fontSize: 13 }}>
                           {a.serialNumber || "-"}
                         </td>
-                        <td>
-                          <span className={`badge ${statusBadge(a.status)}`}>
+                        <td style={tdStyle}>
+                          <span style={statusStyle(a.status)}>
                             {statusInfo(a.status).label}
                           </span>
                         </td>
-                        <td>{a.location || "-"}</td>
-                        <td className="text-muted small">
+                        <td style={tdStyle}>{a.location || "-"}</td>
+                        <td style={{ ...tdStyle, color: "#6b7280", fontSize: 13 }}>
                           {a.purchaseDate || "-"}
                         </td>
-                        <td className="text-end pe-4">
+                        <td style={{ ...tdStyle, textAlign: "right", paddingRight: 16 }}>
                           <button
-                            className="btn btn-sm btn-outline-secondary me-1"
+                            style={{
+                              marginRight: 4,
+                              padding: "4px 10px",
+                              background: "#fff",
+                              border: "1px solid #d1d5db",
+                              borderRadius: 6,
+                              fontSize: 12,
+                              cursor: "pointer",
+                              color: "#374151",
+                            }}
                             onClick={() => openAssetEdit(a)}
                           >
                             수정
                           </button>
                           <button
-                            className="btn btn-sm btn-outline-danger"
+                            style={{
+                              padding: "4px 10px",
+                              background: "#fff",
+                              border: "1px solid #fca5a5",
+                              borderRadius: 6,
+                              fontSize: 12,
+                              cursor: "pointer",
+                              color: "#dc2626",
+                            }}
                             onClick={() => handleAssetDelete(a.id)}
                           >
                             삭제
@@ -756,7 +847,7 @@ export default function Assets() {
                     ))}
                     {assetList.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="text-center py-5 text-muted">
+                        <td colSpan={8} style={{ ...tdStyle, textAlign: "center", padding: "40px 12px", color: "#9ca3af" }}>
                           검색 결과가 없습니다.
                         </td>
                       </tr>
@@ -767,41 +858,64 @@ export default function Assets() {
             </div>
             {/* 페이지네이션 */}
             {page && page.totalPages > 1 && (
-              <div className="card-footer bg-base py-3">
-                <nav>
-                  <ul className="pagination pagination-sm justify-content-center mb-0">
-                    <li
-                      className={`page-item${currentPage === 0 ? " disabled" : ""}`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => load(currentPage - 1)}
-                      >
-                        &laquo;
-                      </button>
-                    </li>
-                    {Array.from({ length: page.totalPages }, (_, i) => (
-                      <li
-                        key={i}
-                        className={`page-item${i === currentPage ? " active" : ""}`}
-                      >
-                        <button className="page-link" onClick={() => load(i)}>
-                          {i + 1}
-                        </button>
-                      </li>
-                    ))}
-                    <li
-                      className={`page-item${currentPage >= page.totalPages - 1 ? " disabled" : ""}`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => load(currentPage + 1)}
-                      >
-                        &raquo;
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderTop: "1px solid #e5e7eb",
+                  background: "#f9fafb",
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 4,
+                }}
+              >
+                <button
+                  disabled={currentPage === 0}
+                  onClick={() => load(currentPage - 1)}
+                  style={{
+                    padding: "4px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    background: currentPage === 0 ? "#f3f4f6" : "#fff",
+                    color: currentPage === 0 ? "#9ca3af" : "#374151",
+                    cursor: currentPage === 0 ? "not-allowed" : "pointer",
+                    fontSize: 13,
+                  }}
+                >
+                  &laquo;
+                </button>
+                {Array.from({ length: page.totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => load(i)}
+                    style={{
+                      padding: "4px 10px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: 6,
+                      background: i === currentPage ? "#25A194" : "#fff",
+                      color: i === currentPage ? "#fff" : "#374151",
+                      cursor: "pointer",
+                      fontSize: 13,
+                      fontWeight: i === currentPage ? 600 : 400,
+                    }}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPage >= page.totalPages - 1}
+                  onClick={() => load(currentPage + 1)}
+                  style={{
+                    padding: "4px 10px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    background: currentPage >= page.totalPages - 1 ? "#f3f4f6" : "#fff",
+                    color: currentPage >= page.totalPages - 1 ? "#9ca3af" : "#374151",
+                    cursor: currentPage >= page.totalPages - 1 ? "not-allowed" : "pointer",
+                    fontSize: 13,
+                  }}
+                >
+                  &raquo;
+                </button>
               </div>
             )}
           </div>
@@ -810,62 +924,94 @@ export default function Assets() {
 
       {/* ==================== 모델 관리 탭 콘텐츠 (새로 추가됨) ==================== */}
       {currentTab === "models" && (
-        <div className="card">
-          <div className="card-body p-0">
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0 text-center">
-                <thead className="table-heading-dark-mode">
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+          <div style={{ overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center" }}>
+                <thead>
                   <tr>
-                    <th className="ps-4 text-start">모델명</th>
-                    <th>사진</th>
-                    <th>제조사</th>
-                    <th>분류</th>
-                    <th className="text-start">설명</th>
-                    <th className="text-end pe-4">관리</th>
+                    <th style={{ ...thStyle, textAlign: "left", paddingLeft: 16 }}>모델명</th>
+                    <th style={thStyle}>사진</th>
+                    <th style={thStyle}>제조사</th>
+                    <th style={thStyle}>분류</th>
+                    <th style={{ ...thStyle, textAlign: "left" }}>설명</th>
+                    <th style={{ ...thStyle, textAlign: "right", paddingRight: 16 }}>관리</th>
                   </tr>
                 </thead>
                 <tbody>
                   {models.map((m: any) => (
-                    <tr key={m.id}>
-                      <td className="ps-4 text-start fw-bold">{m.name}</td>
-                      <td>
+                    <tr key={m.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ ...tdStyle, textAlign: "left", paddingLeft: 16, fontWeight: 600 }}>{m.name}</td>
+                      <td style={tdStyle}>
                         {m.imageUrl ? (
                           <img
                             src={m.imageUrl}
                             alt={m.name}
-                            className="rounded"
                             style={{
                               width: "40px",
                               height: "40px",
                               objectFit: "cover",
+                              borderRadius: 6,
                             }}
                           />
                         ) : (
                           <div
-                            className="bg-neutral-100 rounded d-inline-flex align-items-center justify-content-center text-secondary mx-auto"
-                            style={{ width: "40px", height: "40px" }}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              background: "#f3f4f6",
+                              borderRadius: 6,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#9ca3af",
+                            }}
                           >
                             <i className="bi bi-image" />
                           </div>
                         )}
                       </td>
-                      <td>{m.manufacturer}</td>
-                      <td>{m.category}</td>
+                      <td style={tdStyle}>{m.manufacturer}</td>
+                      <td style={tdStyle}>{m.category}</td>
                       <td
-                        className="text-start text-truncate text-muted"
-                        style={{ maxWidth: "200px" }}
+                        style={{
+                          ...tdStyle,
+                          textAlign: "left",
+                          maxWidth: 200,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          color: "#6b7280",
+                        }}
                       >
                         {m.description || "-"}
                       </td>
-                      <td className="text-end pe-4">
+                      <td style={{ ...tdStyle, textAlign: "right", paddingRight: 16 }}>
                         <button
-                          className="btn btn-sm btn-outline-secondary me-1"
+                          style={{
+                            marginRight: 4,
+                            padding: "4px 10px",
+                            background: "#fff",
+                            border: "1px solid #d1d5db",
+                            borderRadius: 6,
+                            fontSize: 12,
+                            cursor: "pointer",
+                            color: "#374151",
+                          }}
                           onClick={() => openModelEdit(m)}
                         >
                           수정
                         </button>
                         <button
-                          className="btn btn-sm btn-outline-danger"
+                          style={{
+                            padding: "4px 10px",
+                            background: "#fff",
+                            border: "1px solid #fca5a5",
+                            borderRadius: 6,
+                            fontSize: 12,
+                            cursor: "pointer",
+                            color: "#dc2626",
+                          }}
                           onClick={() => handleModelDelete(m.id)}
                         >
                           삭제
@@ -875,7 +1021,7 @@ export default function Assets() {
                   ))}
                   {models.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="text-center py-5 text-muted">
+                      <td colSpan={6} style={{ ...tdStyle, textAlign: "center", padding: "40px 12px", color: "#9ca3af" }}>
                         등록된 모델이 없습니다.
                       </td>
                     </tr>

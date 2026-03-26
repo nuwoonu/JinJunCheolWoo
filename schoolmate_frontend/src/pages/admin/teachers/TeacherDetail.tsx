@@ -47,6 +47,7 @@ const POSITIONS = [
   "평교사",
   "기간제교사",
 ];
+// @ts-ignore [woo] 추후 사용 예정
 const SYSTEM_ROLES = [
   { value: "STAFF", label: "교직원" },
   { value: "ADMIN", label: "관리자" },
@@ -69,6 +70,27 @@ const ROLE_LABEL: Record<string, string> = {
   NUTRITIONIST: "영양사",
 };
 
+function getStatusBadgeStyle(statusName: string) {
+  const key = statusName?.toUpperCase() ?? '';
+  if (['TEACHING', 'EMPLOYED', 'ACTIVE'].includes(key))
+    return { background: 'rgba(22,163,74,0.1)', color: '#16a34a' };
+  if (['LEAVE', 'DISPATCHED'].includes(key))
+    return { background: 'rgba(234,179,8,0.1)', color: '#ca8a04' };
+  if (['RETIRED', 'SUSPENDED'].includes(key))
+    return { background: 'rgba(239,68,68,0.1)', color: '#dc2626' };
+  return { background: '#f3f4f6', color: '#6b7280' };
+}
+
+function getRoleRequestBadgeStyle(status: string) {
+  switch (status) {
+    case 'ACTIVE': return { background: 'rgba(22,163,74,0.1)', color: '#16a34a' };
+    case 'PENDING': return { background: 'rgba(14,165,233,0.1)', color: '#0284c7' };
+    case 'SUSPENDED': return { background: 'rgba(234,179,8,0.1)', color: '#ca8a04' };
+    case 'REJECTED': return { background: 'rgba(239,68,68,0.1)', color: '#dc2626' };
+    default: return { background: '#f3f4f6', color: '#6b7280' };
+  }
+}
+
 export default function TeacherDetail() {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
@@ -88,6 +110,12 @@ export default function TeacherDetail() {
   const [activeTab, setActiveTab] = useState("info");
   const [saving, setSaving] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+
+  // 수업 분반 관련 state
+  const [sections, setSections] = useState<any[]>([]);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [selectedClassroomIds, setSelectedClassroomIds] = useState<number[]>([]);
+  const [sectionSaving, setSectionSaving] = useState(false);
 
   // 위임 권한 관련 state
   const [grants, setGrants] = useState<any[]>([]);
@@ -111,6 +139,12 @@ export default function TeacherDetail() {
       });
     });
 
+  const loadSections = () =>
+    admin.get(`/teachers/${uid}/sections`).then(r => setSections(r.data ?? []));
+
+  const loadClassrooms = () =>
+    admin.get('/classes', { params: { size: 200 } }).then(r => setClassrooms(r.data?.content ?? []));
+
   const loadGrants = () =>
     admin.get("/grants", { params: { userId: uid } }).then((r) => setGrants(r.data ?? []));
 
@@ -123,6 +157,13 @@ export default function TeacherDetail() {
     load();
     if (isSuperAdmin) loadGrants();
   }, [uid]);
+
+  useEffect(() => {
+    if (activeTab === 'sections') {
+      loadSections();
+      loadClassrooms();
+    }
+  }, [activeTab]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,77 +216,54 @@ export default function TeacherDetail() {
   if (!teacher)
     return (
       <AdminLayout>
-        <div className="text-center py-5">
+        <div style={{ textAlign: 'center', padding: '48px 0' }}>
           <div className="spinner-border" />
         </div>
       </AdminLayout>
     );
 
   const roles: string[] = teacher.roles ?? [];
+  const statusCfg = TEACHER_STATUS[teacher.statusName] ?? STATUS_DEFAULT;
 
   return (
     <AdminLayout>
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
-        <button
-          type="button"
-          onClick={() => navigate(ADMIN_ROUTES.TEACHERS.LIST)}
-          style={{
-            background: "none",
-            border: "1px solid var(--border-color)",
-            borderRadius: 6,
-            padding: "4px 10px",
-            cursor: "pointer",
-            color: "var(--text-secondary-light)",
-          }}
-        >
-          <i className="bi bi-arrow-left" />
-        </button>
-        <h6 className="fw-semibold mb-0">교사 상세 정보</h6>
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => navigate(ADMIN_ROUTES.TEACHERS.LIST)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#6b7280', fontSize: 13 }}>← 뒤로</button>
+          <div>
+            <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>교사 상세 정보</h5>
+          </div>
+        </div>
       </div>
 
       <div className="row">
         {/* 좌측 프로필 카드 */}
         <div className="col-md-4">
-          <div className="card mb-4 text-center py-4">
-            <div className="card-body">
-              <div
-                className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
-                style={{ width: 100, height: 100, background: "var(--neutral-100)" }}
-              >
-                <span className="text-primary fw-bold" style={{ fontSize: 36 }}>
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden', marginBottom: 16 }}>
+            <div style={{ padding: 24, textAlign: 'center' }}>
+              <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'rgba(37,161,148,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <span style={{ fontSize: 36, fontWeight: 700, color: '#25A194' }}>
                   {teacher.name?.[0] ?? "?"}
                 </span>
               </div>
-              <h5 className="mb-1 fw-bold">{teacher.name}</h5>
-              <p className="text-muted small mb-3">{teacher.email}</p>
-              {(() => {
-                const cfg =
-                  TEACHER_STATUS[teacher.statusName] ?? STATUS_DEFAULT;
-                return (
-                  <button
-                    type="button"
-                    className={`btn ${cfg.btn} w-100 rounded-pill mb-3`}
-                    style={{ pointerEvents: "none" }}
-                  >
-                    {cfg.label}
-                  </button>
-                );
-              })()}
-              <hr />
-              <div className="text-start px-2">
-                <div className="mb-2">
-                  <small className="text-muted d-block">사번</small>
-                  <span className="fw-semibold">{teacher.code ?? "-"}</span>
+              <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>{teacher.name}</h5>
+              <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>{teacher.email}</p>
+              <span style={{ padding: '5px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, ...getStatusBadgeStyle(teacher.statusName) }}>
+                {statusCfg.label}
+              </span>
+              <hr style={{ margin: '20px 0', borderColor: '#f3f4f6' }} />
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>사번</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>{teacher.code ?? "-"}</div>
                 </div>
-                <div className="mb-2">
-                  <small className="text-muted d-block">부서 / 직책</small>
-                  <span className="fw-semibold">
-                    {teacher.department ?? "-"} / {teacher.position ?? "-"}
-                  </span>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>부서 / 직책</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>{teacher.department ?? "-"} / {teacher.position ?? "-"}</div>
                 </div>
                 <div>
-                  <small className="text-muted d-block">담당 과목</small>
-                  <span className="badge rounded-pill bg-neutral-100 text-neutral-600 border border-neutral-200">
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>담당 과목</div>
+                  <span style={{ padding: '3px 8px', background: '#f3f4f6', color: '#374151', borderRadius: 4, fontSize: 12, whiteSpace: 'nowrap' }}>
                     {teacher.subject ?? "-"}
                   </span>
                 </div>
@@ -256,10 +274,11 @@ export default function TeacherDetail() {
 
         {/* 우측 탭 카드 */}
         <div className="col-md-8">
-          <div className="card">
-            <div className="d-flex border-bottom border-neutral-200">
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb' }}>
               {[
                 ["info", "기본 정보"],
+                ["sections", "수업 분반"],
                 ["noti", "알림 이력"],
                 ["role", "권한 관리"],
               ].map(([key, label]) => (
@@ -271,7 +290,7 @@ export default function TeacherDetail() {
                     border: "none",
                     background: "none",
                     borderBottom: `2px solid ${activeTab === key ? "#25A194" : "transparent"}`,
-                    color: activeTab === key ? "#25A194" : "var(--text-secondary-light)",
+                    color: activeTab === key ? "#25A194" : "#6b7280",
                     fontWeight: activeTab === key ? 600 : 400,
                     fontSize: 14,
                     cursor: "pointer",
@@ -284,16 +303,14 @@ export default function TeacherDetail() {
 
             {activeTab === "info" && (
               <form onSubmit={handleSave}>
-                <div className="card-body p-4">
+                <div style={{ padding: 24 }}>
                   <div className="row g-3">
                     <div className="col-md-6">
                       <label className="form-label fw-bold">이름</label>
                       <input
                         className="form-control"
                         value={form.name}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, name: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-6">
@@ -301,9 +318,7 @@ export default function TeacherDetail() {
                       <input
                         className="form-control"
                         value={form.code}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, code: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-12">
@@ -312,9 +327,7 @@ export default function TeacherDetail() {
                         type="email"
                         className="form-control"
                         value={form.email}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, email: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-12">
@@ -322,17 +335,11 @@ export default function TeacherDetail() {
                       <select
                         className="form-select"
                         value={form.statusName}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, statusName: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, statusName: e.target.value }))}
                       >
-                        {Object.entries(TEACHER_STATUS).map(
-                          ([value, { label }]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ),
-                        )}
+                        {Object.entries(TEACHER_STATUS).map(([value, { label }]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
                       </select>
                     </div>
                     {/* cheol */}
@@ -341,15 +348,11 @@ export default function TeacherDetail() {
                       <select
                         className="form-select"
                         value={form.subject}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, subject: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
                       >
                         <option value="">-- 과목 선택 --</option>
                         {subjects.map((s) => (
-                          <option key={s.code} value={s.code}>
-                            {s.name}
-                          </option>
+                          <option key={s.code} value={s.code}>{s.name}</option>
                         ))}
                       </select>
                     </div>
@@ -358,15 +361,11 @@ export default function TeacherDetail() {
                       <select
                         className="form-select"
                         value={form.department}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, department: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
                       >
                         <option value="">선택</option>
                         {DEPARTMENTS.map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
+                          <option key={d} value={d}>{d}</option>
                         ))}
                       </select>
                     </div>
@@ -375,31 +374,24 @@ export default function TeacherDetail() {
                       <select
                         className="form-select"
                         value={form.position}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, position: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f) => ({ ...f, position: e.target.value }))}
                       >
                         <option value="">선택</option>
                         {POSITIONS.map((p) => (
-                          <option key={p} value={p}>
-                            {p}
-                          </option>
+                          <option key={p} value={p}>{p}</option>
                         ))}
                       </select>
                     </div>
                   </div>
                 </div>
-                <div className="px-24 py-16 border-top border-neutral-200 text-end">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '16px 24px', borderTop: '1px solid #e5e7eb' }}>
                   <button
                     type="submit"
-                    className="btn btn-primary-600 radius-8 px-5"
                     disabled={saving}
+                    style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: saving ? 0.7 : 1 }}
                   >
                     {saving ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" />
-                        저장 중...
-                      </>
+                      <><span className="spinner-border spinner-border-sm" style={{ marginRight: 6 }} />저장 중...</>
                     ) : (
                       "정보 수정 저장"
                     )}
@@ -408,34 +400,144 @@ export default function TeacherDetail() {
               </form>
             )}
 
+            {activeTab === "sections" && (
+              <div style={{ padding: 24 }}>
+                {/* 현재 분반 목록 */}
+                <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>현재 학기 수업 분반</p>
+                {sections.length === 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px dashed #d1d5db', minHeight: 60, background: '#f9fafb', marginBottom: 20 }}>
+                    <span style={{ fontSize: 13, color: '#9ca3af' }}>등록된 수업 분반이 없습니다.</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                    {sections.map((s: any) => (
+                      <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(37,161,148,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <i className="ri-book-2-line" style={{ color: '#25A194', fontSize: 15 }} />
+                          </span>
+                          <div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', display: 'block' }}>
+                              {s.grade}학년 {s.classNum}반 · {s.subjectName}
+                            </span>
+                            <span style={{ fontSize: 11, color: '#9ca3af' }}>{s.termName} · 학생 {s.studentCount}명</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!confirm(`${s.grade}학년 ${s.classNum}반 ${s.subjectName} 분반을 삭제합니까?`)) return;
+                            await admin.delete(`/teachers/${uid}/sections/${s.id}`);
+                            loadSections();
+                          }}
+                          style={{ padding: '3px 10px', background: 'rgba(239,68,68,0.1)', color: '#dc2626', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <hr style={{ borderColor: '#e5e7eb' }} />
+
+                {/* 분반 추가 */}
+                <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>분반 추가</p>
+                {teacher.subject ? (
+                  <>
+                    <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>
+                      담당 과목 <strong style={{ color: '#111827' }}>{teacher.subject}</strong> 으로 수업할 학급을 선택하세요.
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                      {classrooms.map((c: any) => {
+                        const alreadyAdded = sections.some((s: any) => s.classroomId === c.cid);
+                        const checked = selectedClassroomIds.includes(c.cid);
+                        return (
+                          <label
+                            key={c.cid}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              padding: '6px 12px', borderRadius: 8, border: `1px solid ${checked ? '#25A194' : '#e5e7eb'}`,
+                              background: alreadyAdded ? '#f3f4f6' : checked ? 'rgba(37,161,148,0.08)' : '#fff',
+                              cursor: alreadyAdded ? 'not-allowed' : 'pointer',
+                              fontSize: 13, color: alreadyAdded ? '#9ca3af' : '#374151',
+                              opacity: alreadyAdded ? 0.6 : 1,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              disabled={alreadyAdded}
+                              checked={checked}
+                              onChange={e => {
+                                if (e.target.checked) setSelectedClassroomIds(ids => [...ids, c.cid]);
+                                else setSelectedClassroomIds(ids => ids.filter(id => id !== c.cid));
+                              }}
+                            />
+                            {c.grade}학년 {c.classNum}반
+                            {alreadyAdded && <span style={{ fontSize: 11, color: '#9ca3af' }}>(등록됨)</span>}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={sectionSaving || selectedClassroomIds.length === 0}
+                      onClick={async () => {
+                        setSectionSaving(true);
+                        try {
+                          await admin.post(`/teachers/${uid}/sections`, { classroomIds: selectedClassroomIds });
+                          setSelectedClassroomIds([]);
+                          loadSections();
+                        } catch {
+                          alert('분반 등록에 실패했습니다.');
+                        } finally {
+                          setSectionSaving(false);
+                        }
+                      }}
+                      style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#fff', cursor: (sectionSaving || selectedClassroomIds.length === 0) ? 'not-allowed' : 'pointer', opacity: (sectionSaving || selectedClassroomIds.length === 0) ? 0.6 : 1 }}
+                    >
+                      {sectionSaving ? <><span className="spinner-border spinner-border-sm me-2" />등록 중...</> : `선택한 ${selectedClassroomIds.length}개 학급에 분반 등록`}
+                    </button>
+                  </>
+                ) : (
+                  <div style={{ padding: '16px', borderRadius: 8, background: '#fffbeb', border: '1px solid #fde68a' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: '#92400e' }}>
+                      <i className="bi bi-exclamation-triangle me-2" />
+                      담당 과목이 설정되지 않았습니다. 기본 정보 탭에서 담당 과목을 먼저 설정해주세요.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === "noti" && (
-              <div className="card-body text-center py-5 text-muted">
-                <i className="bi bi-bell display-4 d-block mb-3" />
+              <div style={{ padding: '48px 24px', textAlign: 'center', color: '#9ca3af' }}>
+                <i className="bi bi-bell" style={{ fontSize: 48, display: 'block', marginBottom: 12 }} />
                 <p>알림 이력 기능은 준비 중입니다.</p>
               </div>
             )}
 
             {activeTab === "role" && (
-              <div className="card-body p-4">
+              <div style={{ padding: 24 }}>
 
                 {/* ── 역할 신청 상태 ── */}
-                <div className="mb-1">
-                  <p className="text-muted small fw-semibold text-uppercase mb-2" style={{ letterSpacing: "0.05em" }}>역할 신청</p>
-                  <div className="d-flex align-items-center gap-3 px-3 py-3 rounded-3 border border-neutral-200" style={{ background: "var(--neutral-50, #f9fafb)" }}>
+                <div style={{ marginBottom: 4 }}>
+                  <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>역할 신청</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb', flexWrap: 'wrap' }}>
                     {teacher.roleRequestId ? (
                       <>
-                        <span className={`badge ${(ROLE_REQUEST_STATUS[teacher.roleRequestStatus] ?? STATUS_DEFAULT).badge}`} style={{ fontSize: 12 }}>
+                        <span style={{ padding: '3px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', ...getRoleRequestBadgeStyle(teacher.roleRequestStatus) }}>
                           {(ROLE_REQUEST_STATUS[teacher.roleRequestStatus] ?? { label: teacher.roleRequestStatus }).label}
                         </span>
-                        <div className="d-flex gap-2 align-items-center flex-wrap ms-auto">
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginLeft: 'auto' }}>
                           {teacher.roleRequestStatus === 'PENDING' && (
-                            <button className="btn btn-sm btn-success" style={{ fontSize: 12 }} onClick={approveRequest}>승인</button>
+                            <button style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: 'rgba(22,163,74,0.1)', color: '#16a34a' }} onClick={approveRequest}>승인</button>
                           )}
                           {teacher.roleRequestStatus === 'ACTIVE' && (
-                            <button className="btn btn-sm btn-warning" style={{ fontSize: 12 }} onClick={suspendRequest}>정지</button>
+                            <button style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: 'rgba(234,179,8,0.1)', color: '#ca8a04' }} onClick={suspendRequest}>정지</button>
                           )}
                           {teacher.roleRequestStatus === 'SUSPENDED' && (
-                            <button className="btn btn-sm btn-success" style={{ fontSize: 12 }} onClick={approveRequest}>재활성화</button>
+                            <button style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: 'rgba(22,163,74,0.1)', color: '#16a34a' }} onClick={approveRequest}>재활성화</button>
                           )}
                           {teacher.roleRequestStatus === 'PENDING' && (
                             <>
@@ -446,31 +548,30 @@ export default function TeacherDetail() {
                                 value={rejectReason}
                                 onChange={(e) => setRejectReason(e.target.value)}
                               />
-                              <button className="btn btn-sm btn-outline-danger" style={{ fontSize: 12 }} onClick={rejectRequest}>거절</button>
+                              <button style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: 'rgba(239,68,68,0.1)', color: '#dc2626' }} onClick={rejectRequest}>거절</button>
                             </>
                           )}
                         </div>
                       </>
                     ) : (
-                      <span className="text-muted small">역할 신청 내역이 없습니다.</span>
+                      <span style={{ fontSize: 13, color: '#9ca3af' }}>역할 신청 내역이 없습니다.</span>
                     )}
                   </div>
                 </div>
 
-                <div className="border-top border-neutral-200 my-4" />
+                <hr style={{ margin: '20px 0', borderColor: '#e5e7eb' }} />
 
                 {/* ── 시스템 역할 (읽기 전용) ── */}
-                <div className="mb-1">
-                  <p className="text-muted small fw-semibold text-uppercase mb-2" style={{ letterSpacing: "0.05em" }}>시스템 역할</p>
+                <div style={{ marginBottom: 4 }}>
+                  <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>시스템 역할</p>
                   {roles.length === 0 ? (
-                    <span className="text-muted small">부여된 역할 없음</span>
+                    <span style={{ fontSize: 13, color: '#9ca3af' }}>부여된 역할 없음</span>
                   ) : (
-                    <div className="d-flex flex-wrap gap-2">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {roles.map((r) => (
                         <span
                           key={r}
-                          className="badge rounded-pill px-3 py-2"
-                          style={{ background: "rgba(37,161,148,0.12)", color: "#25A194", fontWeight: 500, fontSize: 12 }}
+                          style={{ padding: '4px 12px', background: 'rgba(37,161,148,0.12)', color: '#25A194', borderRadius: 20, fontWeight: 500, fontSize: 12 }}
                         >
                           {ROLE_LABEL[r] ?? r}
                         </span>
@@ -482,11 +583,11 @@ export default function TeacherDetail() {
                 {/* ── 관리자 위임 권한 (SUPER_ADMIN 전용) ── */}
                 {isSuperAdmin && (
                   <>
-                    <div className="border-top border-neutral-200 my-4" />
-                    <div className="d-flex align-items-center justify-content-between mb-3">
-                      <p className="text-muted small fw-semibold text-uppercase mb-0" style={{ letterSpacing: "0.05em" }}>관리자 위임 권한</p>
+                    <hr style={{ margin: '20px 0', borderColor: '#e5e7eb' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>관리자 위임 권한</p>
                       {selectedSchool && (
-                        <span className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: 12 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6b7280', fontSize: 12 }}>
                           <i className="ri-building-line" />
                           {selectedSchool.name}
                         </span>
@@ -495,35 +596,29 @@ export default function TeacherDetail() {
 
                     {/* 기존 위임 권한 목록 */}
                     {grants.length === 0 ? (
-                      <div className="d-flex align-items-center justify-content-center rounded-3 border border-dashed border-neutral-300 mb-3"
-                        style={{ minHeight: 60, background: "var(--neutral-50, #f9fafb)" }}>
-                        <span className="text-muted small">부여된 위임 권한이 없습니다.</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px dashed #d1d5db', minHeight: 60, background: '#f9fafb', marginBottom: 12 }}>
+                        <span style={{ fontSize: 13, color: '#9ca3af' }}>부여된 위임 권한이 없습니다.</span>
                       </div>
                     ) : (
-                      <div className="d-flex flex-column gap-2 mb-3">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                         {grants.map((g: any) => (
                           <div
                             key={g.id}
-                            className="d-flex align-items-center justify-content-between px-3 py-2 rounded-3 border border-neutral-200"
-                            style={{ background: "var(--neutral-50, #f9fafb)" }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb' }}
                           >
-                            <div className="d-flex align-items-center gap-2">
-                              <span
-                                className="d-flex align-items-center justify-content-center rounded-circle"
-                                style={{ width: 30, height: 30, background: "rgba(37,161,148,0.12)", flexShrink: 0 }}
-                              >
-                                <i className="ri-shield-keyhole-line" style={{ color: "#25A194", fontSize: 14 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <span style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(37,161,148,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <i className="ri-shield-keyhole-line" style={{ color: '#25A194', fontSize: 14 }} />
                               </span>
                               <div>
-                                <span className="fw-semibold d-block" style={{ fontSize: 13, color: "#25A194" }}>{g.grantedRoleDescription}</span>
-                                <span className="text-muted" style={{ fontSize: 11 }}>{g.schoolName}</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#25A194', display: 'block' }}>{g.grantedRoleDescription}</span>
+                                <span style={{ fontSize: 11, color: '#9ca3af' }}>{g.schoolName}</span>
                               </div>
                             </div>
                             <button
                               type="button"
-                              className="btn btn-outline-danger"
-                              style={{ fontSize: 12, padding: "3px 10px" }}
                               onClick={() => removeGrant(g.id)}
+                              style={{ padding: '3px 10px', background: 'rgba(239,68,68,0.1)', color: '#dc2626', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                             >
                               회수
                             </button>
@@ -533,7 +628,7 @@ export default function TeacherDetail() {
                     )}
 
                     {/* 신규 위임 권한 부여 */}
-                    <div className="d-flex gap-2 align-items-center">
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <select
                         className="form-select form-select-sm"
                         style={{ maxWidth: 220 }}
@@ -547,15 +642,15 @@ export default function TeacherDetail() {
                       </select>
                       <button
                         type="button"
-                        className="btn btn-sm btn-primary-600"
                         onClick={addGrant}
                         disabled={!newGrantRole || !selectedSchool?.id}
+                        style={{ padding: '9px 14px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#fff', cursor: (!newGrantRole || !selectedSchool?.id) ? 'not-allowed' : 'pointer', opacity: (!newGrantRole || !selectedSchool?.id) ? 0.6 : 1 }}
                       >
                         부여
                       </button>
                     </div>
                     {!selectedSchool && (
-                      <p className="text-danger small mt-2 mb-0">관리자 페이지에서 학교를 먼저 선택해주세요.</p>
+                      <p style={{ color: '#dc2626', fontSize: 12, marginTop: 8, marginBottom: 0 }}>관리자 페이지에서 학교를 먼저 선택해주세요.</p>
                     )}
                   </>
                 )}

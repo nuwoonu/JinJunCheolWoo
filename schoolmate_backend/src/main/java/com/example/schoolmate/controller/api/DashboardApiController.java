@@ -8,12 +8,15 @@ import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.ProfileRepository;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.info.student.StudentAssignmentRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.service.BoardService;
-import com.example.schoolmate.common.service.SystemSettingService;
+import com.example.schoolmate.domain.term.service.AcademicTermService;
 import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.dto.ChildDTO;
@@ -40,7 +43,8 @@ public class DashboardApiController {
     private final BoardService boardService;
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
-    private final SystemSettingService systemSettingService;
+    private final StudentInfoRepository studentInfoRepository;
+    private final AcademicTermService academicTermService;
     private final StudentAssignmentRepository studentAssignmentRepository;
 
     @GetMapping("/student")
@@ -51,14 +55,19 @@ public class DashboardApiController {
         if (uid != null) {
             User user = userRepository.findById(uid).orElse(null);
             if (user != null) {
-                StudentInfo info = user.getInfo(StudentInfo.class);
+                // JWT 컨텍스트(infoId)로 정확한 인스턴스 조회, 없으면 primary → 첫 번째 순으로 fallback
+                Long infoId = SchoolContextHolder.getInfoId();
+                StudentInfo info = (infoId != null)
+                        ? studentInfoRepository.findById(infoId)
+                                .filter(s -> s.getUser().getUid().equals(uid))
+                                .orElseGet(() -> user.getPrimaryInfo(StudentInfo.class))
+                        : user.getPrimaryInfo(StudentInfo.class);
                 if (info != null) {
                     data.put("student", StudentResponseDTO.from(info));
                 }
                 profileRepository.findByUser(user).ifPresent(p -> {
                     if (p.getUuid() != null) {
-                        data.put("profileImageUrl",
-                                "/upload/" + p.getPath() + "/" + p.getUuid() + "_" + p.getImgName());
+                        data.put("profileImageUrl", FileManager.UploadType.PROFILE.toUrl(p.getUuid()));
                     }
                 });
             }
@@ -85,10 +94,11 @@ public class DashboardApiController {
         User teacher = userRepository.findById(uid).orElse(null);
         data.put("teacherName", teacher != null && teacher.getName() != null ? teacher.getName() : "선생님");
 
-        int currentYear = systemSettingService.getCurrentSchoolYear();
+        int currentYear = academicTermService.getCurrentSchoolYear();
         TeacherInfo teacherInfo = teacherInfoRepository.findByUserUid(uid).orElse(null);
         if (teacherInfo != null) {
             data.put("teacherInfoId", teacherInfo.getId());
+            // [woo] Subject 엔티티 직렬화 방지: name 문자열만 추출
             data.put("teacherSubject", teacherInfo.getSubject() != null ? teacherInfo.getSubject().getName() : "");
             data.put("teacherSubjectCode", teacherInfo.getSubject() != null ? teacherInfo.getSubject().getCode() : null);
             // [woo] 교사 소속 학교 이름
@@ -180,7 +190,7 @@ public class DashboardApiController {
         String imageUrl = null;
         Profile profile = profileRepository.findByUser(user).orElse(null);
         if (profile != null && profile.getUuid() != null) {
-            imageUrl = "/upload/" + profile.getPath() + "/" + profile.getUuid() + "_" + profile.getImgName();
+            imageUrl = FileManager.UploadType.PROFILE.toUrl(profile.getUuid());
         }
         StudentAssignment assignment = info.getCurrentAssignment();
 

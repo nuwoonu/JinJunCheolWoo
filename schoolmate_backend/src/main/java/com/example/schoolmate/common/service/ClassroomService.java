@@ -198,9 +198,16 @@ public class ClassroomService {
 
     public Long createClass(ClassDTO.CreateRequest request) {
         log.info("[AdminClassService] createClass 호출됨");
-        // 중복 확인
-        boolean exists = classroomRepository.existsByYearAndGradeAndClassNum(
-                request.getYear(), request.getGrade(), request.getClassNum());
+
+        // 학교 소속 설정 (X-School-Id 헤더 기반)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+
+        // 중복 확인 (같은 학교 내에서만 체크)
+        boolean exists = schoolId != null
+                ? classroomRepository.existsByYearAndGradeAndClassNumAndSchool_Id(
+                        request.getYear(), request.getGrade(), request.getClassNum(), schoolId)
+                : classroomRepository.existsByYearAndGradeAndClassNum(
+                        request.getYear(), request.getGrade(), request.getClassNum());
         if (exists) {
             throw new IllegalArgumentException("이미 존재하는 학급입니다.");
         }
@@ -210,8 +217,6 @@ public class ClassroomService {
         classroom.setGrade(request.getGrade());
         classroom.setClassNum(request.getClassNum());
 
-        // 학교 소속 설정 (X-School-Id 헤더 기반)
-        Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
         }
@@ -247,8 +252,12 @@ public class ClassroomService {
         // 1. 학년/반 변경 시 중복 체크
         if (request.getGrade() != null && request.getClassNum() != null) {
             if (classroom.getGrade() != request.getGrade() || classroom.getClassNum() != request.getClassNum()) {
-                boolean exists = classroomRepository.existsByYearAndGradeAndClassNum(
-                        classroom.getYear(), request.getGrade(), request.getClassNum());
+                Long schoolId = classroom.getSchool() != null ? classroom.getSchool().getId() : null;
+                boolean exists = schoolId != null
+                        ? classroomRepository.existsByYearAndGradeAndClassNumAndSchool_Id(
+                                classroom.getYear(), request.getGrade(), request.getClassNum(), schoolId)
+                        : classroomRepository.existsByYearAndGradeAndClassNum(
+                                classroom.getYear(), request.getGrade(), request.getClassNum());
                 if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 학급(학년/반)입니다.");
                 }
@@ -436,18 +445,27 @@ public class ClassroomService {
                     .withIgnoreLeadingWhiteSpace(true)
                     .build().parse();
 
+            Long schoolId = SchoolContextHolder.getSchoolId();
+
             for (ClassDTO.CsvImportRequest req : beans) {
-                // 1. 학급 조회 또는 생성
-                Classroom classroom = classroomRepository.findAll().stream()
-                        .filter(c -> c.getYear() == req.getYear() && c.getGrade() == req.getGrade()
-                                && c.getClassNum() == req.getClassNum())
-                        .findFirst().orElse(null);
+                // 1. 학급 조회 또는 생성 (학교 ID 기반으로 스쿨-스코프 조회)
+                Classroom classroom = (schoolId != null)
+                        ? classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(
+                                schoolId, req.getYear(), req.getGrade(), req.getClassNum()).orElse(null)
+                        : classroomRepository.findByYearAndGradeAndClassNum(
+                                req.getYear(), req.getGrade(), req.getClassNum()).orElse(null);
 
                 if (classroom == null) {
                     classroom = new Classroom();
                     classroom.setYear(req.getYear());
                     classroom.setGrade(req.getGrade());
                     classroom.setClassNum(req.getClassNum());
+
+                    // school context 설정 (createClass()와 동일하게)
+                    if (schoolId != null) {
+                        schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
+                    }
+
                     classroom = classroomRepository.save(classroom);
                     logChange(classroom.getCid(), "CREATE", "CSV 일괄 생성");
                 }
@@ -455,9 +473,12 @@ public class ClassroomService {
 
                 // 2. 담임 교사 배정
                 if (req.getTeacherCode() != null && !req.getTeacherCode().isBlank()) {
-                    User teacher = teacherInfoRepository.findTeacherByCode(req.getTeacherCode())
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 교사 사번: " + req.getTeacherCode()));
-                    classroom.setTeacher(teacher);
+                    User teacher = teacherInfoRepository.findTeacherByCode(req.getTeacherCode()).orElse(null);
+                    if (teacher != null) {
+                        classroom.setTeacher(teacher);
+                    } else {
+                        log.warn("CSV Import: 존재하지 않는 교사 사번 건너뜀 - {}", req.getTeacherCode());
+                    }
                 }
 
                 // 3. 학생 배정

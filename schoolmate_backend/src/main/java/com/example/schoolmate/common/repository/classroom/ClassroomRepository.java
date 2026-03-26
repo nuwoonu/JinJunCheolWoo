@@ -24,6 +24,8 @@ import com.example.schoolmate.common.entity.Classroom;
 public interface ClassroomRepository extends JpaRepository<Classroom, Long>, ClassroomRepositoryCustom {
     boolean existsByYearAndGradeAndClassNum(int year, int grade, int classNum);
 
+    boolean existsByYearAndGradeAndClassNumAndSchool_Id(int year, int grade, int classNum, Long schoolId);
+
     // [새 방식] homeroomTeacher(TeacherInfo)로 조회 - 나중에 마이그레이션하면 사용
     Optional<Classroom> findByHomeroomTeacherIdAndYear(Long teacherId, int year);
 
@@ -32,6 +34,9 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long>, Cla
 
     // 학년도, 학년, 반으로 학급 찾기
     Optional<Classroom> findByYearAndGradeAndClassNum(int year, int grade, int classNum);
+
+    // [woo 03/25] 학교별 학년도, 학년, 반으로 학급 찾기 (다중학교 대응)
+    Optional<Classroom> findBySchoolIdAndYearAndGradeAndClassNum(Long schoolId, int year, int grade, int classNum);
 
     // [새 방식] homeroomTeacher로 이력 조회
     List<Classroom> findByHomeroomTeacherId(Long teacherId);

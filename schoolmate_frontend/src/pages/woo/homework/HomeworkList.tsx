@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../../../api/auth'
 import { useAuth } from '../../../contexts/AuthContext'
@@ -221,8 +221,8 @@ export default function HomeworkList() {
                       const isGraded = hw.status === 'GRADED'
                       const isStudentRevealed = isStudent && revealedStudentScores.has(hw.id)
                       return (
-                        <>
-                          <tr key={hw.id}>
+                        <Fragment key={hw.id}>
+                          <tr>
                             <td>{hwTotalElements - hwPage * 10 - i}</td>
                             <td>
                               <Link
@@ -287,7 +287,7 @@ export default function HomeworkList() {
                               </td>
                             </tr>
                           )}
-                        </>
+                        </Fragment>
                       )
                     })
                   )}

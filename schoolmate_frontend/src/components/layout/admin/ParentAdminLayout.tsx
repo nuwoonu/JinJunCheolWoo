@@ -1,11 +1,14 @@
 import { type ReactNode } from "react";
 import AdminTopBar from "@/components/layout/admin/AdminTopBar";
 import { ADMIN_ROUTES } from "@/constants/routes";
+import Footer from "@/components/layout/Footer";
 
+// [woo] requireSchool prop 추가
 interface ParentAdminLayoutProps {
   children: ReactNode;
   msg?: string;
   error?: string;
+  requireSchool?: boolean;
 }
 
 const SCHOOL_QUICK_LINK = {
@@ -18,7 +21,9 @@ export default function ParentAdminLayout({
   children,
   msg,
   error,
+  requireSchool,
 }: ParentAdminLayoutProps) {
+  void requireSchool;
   return (
     <div style={{ minHeight: "100vh", background: "var(--body-bg, #f8fafc)" }}>
       <AdminTopBar position="sticky" quickLink={SCHOOL_QUICK_LINK} />
@@ -67,16 +72,7 @@ export default function ParentAdminLayout({
         {children}
       </main>
 
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          color: "var(--text-secondary-light)",
-          fontSize: 12,
-        }}
-      >
-        Copyright 2026 SchoolMate. All Rights Reserved.
-      </footer>
+      <Footer />
     </div>
   );
 }

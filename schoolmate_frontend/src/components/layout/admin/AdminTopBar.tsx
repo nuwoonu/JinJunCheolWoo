@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from '@/contexts/AuthContext';
 import { ADMIN_ROUTES } from '@/constants/routes';
 import NotificationDropdown from '@/components/fragments/NotificationDropdown';
+import ProfileDropdown from '@/components/profile/ProfileDropdown';
+
 
 function useTheme() {
   const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
@@ -48,7 +49,6 @@ export default function AdminTopBar({
 }: AdminTopBarProps) {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
 
   const navBtnCls =
     "d-flex align-items-center gap-1 text-decoration-none text-secondary-light px-10 py-6 radius-8";
@@ -159,14 +159,7 @@ export default function AdminTopBar({
               />
             </button>
             <NotificationDropdown />
-            <button
-              className="btn btn-sm btn-outline-danger"
-              onClick={signOut}
-              style={{ fontSize: 13 }}
-            >
-              <i className="bi bi-box-arrow-right me-1" />
-              로그아웃
-            </button>
+            <ProfileDropdown />
           </div>
         </div>
 

@@ -91,6 +91,13 @@ export default function ParentList() {
 
   useEffect(() => { fetchParents() }, [])
 
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    const open = showRegisterModal || !!selectedParent
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showRegisterModal, selectedParent])
+
   const handleSearch = () => fetchParents(0)
 
   // [woo] 간편등록 모달 열기
@@ -433,7 +440,7 @@ export default function ParentList() {
                   </div>
                 )}
               </div>
-              <div className="modal-footer border-top py-16 px-24">
+              <div className="modal-footer border-top py-16 px-24 gap-8">
                 {registerResult ? (
                   <button
                     type="button"

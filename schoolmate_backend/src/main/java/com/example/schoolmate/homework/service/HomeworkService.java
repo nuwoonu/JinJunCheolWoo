@@ -2,6 +2,7 @@ package com.example.schoolmate.homework.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -10,16 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.domain.term.entity.CourseSection;
 import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.common.service.FileService;
+import com.example.schoolmate.domain.term.repository.CourseSectionRepository;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.homework.dto.HomeworkDTO;
 import com.example.schoolmate.homework.entity.Homework;
@@ -45,40 +46,34 @@ public class HomeworkService {
 
     private final HomeworkRepository homeworkRepository;
     private final HomeworkSubmissionRepository submissionRepository;
-    private final ClassroomRepository classroomRepository;
+    private final CourseSectionRepository courseSectionRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
-    private final FileService fileService;
-
-    private static final String UPLOAD_SUB_DIR = "homework";
+    private final FileManager fileManager;
 
     // ========== [woo] 과제 출제 (교사) ==========
 
     @Transactional
     public HomeworkDTO.DetailResponse createHomework(HomeworkDTO.CreateRequest request,
             MultipartFile file, CustomUserDTO userDTO) {
-        // 교사 정보 조회
         TeacherInfo teacher = teacherInfoRepository.findByUserUid(userDTO.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("교사 정보를 찾을 수 없습니다."));
 
-        // 대상 학급 조회
-        Classroom classroom = classroomRepository.findById(request.getClassroomId())
-                .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
+        CourseSection courseSection = courseSectionRepository.findById(request.getCourseSectionId())
+                .orElseThrow(() -> new IllegalArgumentException("수업 분반 정보를 찾을 수 없습니다."));
 
-        // 파일 업로드 처리
-        String savedFilename = null;
-        String originalFilename = null;
-        if (file != null && !file.isEmpty()) {
-            savedFilename = fileService.upload(file, UPLOAD_SUB_DIR);
-            originalFilename = file.getOriginalFilename();
+        if (!courseSection.getTeacher().getId().equals(teacher.getId())) {
+            throw new SecurityException("본인이 담당하는 수업 분반에만 과제를 출제할 수 있습니다.");
         }
+
+        String savedFilename = fileManager.upload(file, FileManager.UploadType.HOMEWORK);
+        String originalFilename = (savedFilename != null) ? file.getOriginalFilename() : null;
 
         Homework homework = Homework.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .teacher(teacher)
-                .classroom(classroom)
+                .courseSection(courseSection)
                 .dueDate(request.getDueDate())
                 .maxScore(request.getMaxScore() != null ? request.getMaxScore() : 100)
                 .attachmentUrl(savedFilename)
@@ -86,12 +81,30 @@ public class HomeworkService {
                 .build();
 
         Homework saved = homeworkRepository.save(homework);
-        int totalStudents = studentInfoRepository.findByClassroomCid(classroom.getCid()).size();
+        int totalStudents = studentInfoRepository.findByClassroomCid(courseSection.getClassroom().getCid()).size();
 
-        log.info("[woo] 과제 출제: {} - {} (학급: {}, 교사: {})",
-                saved.getId(), saved.getTitle(), classroom.getClassName(), teacher.getUser().getName());
+        log.info("[woo] 과제 출제: {} - {} (분반: {}, 교사: {})",
+                saved.getId(), saved.getTitle(),
+                courseSection.getDisplayName(),
+                teacher.getUser().getName());
 
         return HomeworkDTO.DetailResponse.fromEntity(saved, totalStudents);
+    }
+
+    // ========== [woo] 교사 수업 분반 목록 (과제 출제용) ==========
+
+    public List<Map<String, Object>> getTeacherCourseSections(CustomUserDTO userDTO) {
+        TeacherInfo teacher = teacherInfoRepository.findByUserUid(userDTO.getUid())
+                .orElseThrow(() -> new IllegalArgumentException("교사 정보를 찾을 수 없습니다."));
+
+        return courseSectionRepository.findAllByTeacherWithDetails(teacher).stream()
+                .map(cs -> Map.<String, Object>of(
+                        "id", cs.getId(),
+                        "name", cs.getSubject().getName() + " - " + cs.getClassroom().getClassName(),
+                        "subjectName", cs.getSubject().getName(),
+                        "classroomName", cs.getClassroom().getClassName(),
+                        "classroomId", cs.getClassroom().getCid()))
+                .collect(Collectors.toList());
     }
 
     // ========== [woo] 과제 목록 조회 ==========
@@ -105,7 +118,7 @@ public class HomeworkService {
 
         return homeworkRepository.findByTeacherInfoId(teacher.getId(), pageable)
                 .map(hw -> {
-                    int total = studentInfoRepository.findByClassroomCid(hw.getClassroom().getCid()).size();
+                    int total = studentInfoRepository.findByClassroomCid(hw.getCourseSection().getClassroom().getCid()).size();
                     return HomeworkDTO.ListResponse.fromEntity(hw, total);
                 });
     }
@@ -124,10 +137,9 @@ public class HomeworkService {
         Long classroomId = student.getCurrentAssignment().getClassroom().getCid();
         int total = studentInfoRepository.findByClassroomCid(classroomId).size();
 
-        return homeworkRepository.findByClassroomCidAndIsDeletedFalseOrderByCreateDateDesc(classroomId, pageable)
+        return homeworkRepository.findByClassroomId(classroomId, pageable)
                 .map(hw -> {
                     HomeworkDTO.ListResponse resp = HomeworkDTO.ListResponse.fromEntity(hw, total);
-                    // [woo] 본인 제출 여부 + 채점 점수 표시
                     submissionRepository.findByHomeworkIdAndStudentId(hw.getId(), student.getId())
                             .ifPresentOrElse(sub -> {
                                 resp.setSubmitted(true);
@@ -143,11 +155,9 @@ public class HomeworkService {
      * [woo] 학부모용: 자녀의 과제 목록 + 제출 여부
      */
     public List<HomeworkDTO.ListResponse> getChildHomeworks(CustomUserDTO userDTO, Long childUserUid) {
-        // [woo] 프론트에서 Child.id = user.getUid() 로 전달 → UserUid로 StudentInfo 먼저 조회
         StudentInfo child = studentInfoRepository.findByUserUid(childUserUid)
                 .orElseThrow(() -> new IllegalArgumentException("학생 정보를 찾을 수 없습니다."));
 
-        // [woo] 학부모-자녀 관계 확인 (StudentInfo.id 기준)
         List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
         boolean isMyChild = relations.stream()
                 .anyMatch(r -> r.getStudentInfo().getId().equals(child.getId()));
@@ -175,11 +185,10 @@ public class HomeworkService {
 
     public HomeworkDTO.DetailResponse getHomework(Long homeworkId, CustomUserDTO userDTO) {
         Homework homework = findHomeworkOrThrow(homeworkId);
-        int total = studentInfoRepository.findByClassroomCid(homework.getClassroom().getCid()).size();
+        int total = studentInfoRepository.findByClassroomCid(homework.getCourseSection().getClassroom().getCid()).size();
 
         HomeworkDTO.DetailResponse response = HomeworkDTO.DetailResponse.fromEntity(homework, total);
 
-        // 교사: 전체 제출 목록 포함
         if (isTeacher(userDTO) || isAdmin(userDTO)) {
             List<HomeworkDTO.SubmissionResponse> subs = homework.getSubmissions().stream()
                     .map(HomeworkDTO.SubmissionResponse::fromEntity)
@@ -187,7 +196,6 @@ public class HomeworkService {
             response.setSubmissions(subs);
         }
 
-        // 학생: 본인 제출 정보만 포함
         if (isStudent(userDTO)) {
             StudentInfo student = studentInfoRepository.findByUserUid(userDTO.getUid()).orElse(null);
             if (student != null) {
@@ -214,16 +222,12 @@ public class HomeworkService {
             homework.setMaxScore(request.getMaxScore());
         }
 
-        // 새 파일 업로드 시 기존 파일 삭제
         if (file != null && !file.isEmpty()) {
-            if (homework.getAttachmentUrl() != null) {
-                fileService.delete(homework.getAttachmentUrl(), UPLOAD_SUB_DIR);
-            }
-            homework.setAttachmentUrl(fileService.upload(file, UPLOAD_SUB_DIR));
+            homework.setAttachmentUrl(fileManager.replace(file, homework.getAttachmentUrl(), FileManager.UploadType.HOMEWORK));
             homework.setAttachmentOriginalName(file.getOriginalFilename());
         }
 
-        int total = studentInfoRepository.findByClassroomCid(homework.getClassroom().getCid()).size();
+        int total = studentInfoRepository.findByClassroomCid(homework.getCourseSection().getClassroom().getCid()).size();
         log.info("[woo] 과제 수정: {} by {}", homeworkId, userDTO.getName());
         return HomeworkDTO.DetailResponse.fromEntity(homework, total);
     }
@@ -235,6 +239,7 @@ public class HomeworkService {
         Homework homework = findHomeworkOrThrow(homeworkId);
         validateTeacherOwner(homework, userDTO);
 
+        fileManager.delete(homework.getAttachmentUrl(), FileManager.UploadType.HOMEWORK);
         homework.delete();
         log.info("[woo] 과제 삭제: {} by {}", homeworkId, userDTO.getName());
     }
@@ -246,7 +251,6 @@ public class HomeworkService {
             MultipartFile file, CustomUserDTO userDTO) {
         Homework homework = findHomeworkOrThrow(homeworkId);
 
-        // 마감 체크
         if (homework.getStatus() == HomeworkStatus.CLOSED) {
             throw new IllegalArgumentException("마감된 과제입니다.");
         }
@@ -254,26 +258,19 @@ public class HomeworkService {
         StudentInfo student = studentInfoRepository.findByUserUid(userDTO.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("학생 정보를 찾을 수 없습니다."));
 
-        // 해당 학급 학생인지 확인
         if (student.getCurrentAssignment() == null
-                || !student.getCurrentAssignment().getClassroom().getCid().equals(homework.getClassroom().getCid())) {
+                || !student.getCurrentAssignment().getClassroom().getCid()
+                        .equals(homework.getCourseSection().getClassroom().getCid())) {
             throw new SecurityException("해당 학급의 학생만 제출할 수 있습니다.");
         }
 
-        // 중복 제출 확인
         if (submissionRepository.existsByHomeworkIdAndStudentId(homeworkId, student.getId())) {
             throw new IllegalArgumentException("이미 제출한 과제입니다.");
         }
 
-        // 파일 업로드
-        String savedFilename = null;
-        String originalFilename = null;
-        if (file != null && !file.isEmpty()) {
-            savedFilename = fileService.upload(file, UPLOAD_SUB_DIR);
-            originalFilename = file.getOriginalFilename();
-        }
+        String savedFilename = fileManager.upload(file, FileManager.UploadType.HOMEWORK);
+        String originalFilename = (savedFilename != null) ? file.getOriginalFilename() : null;
 
-        // 마감일 지났으면 LATE
         HomeworkSubmission.SubmissionStatus status = homework.isOverdue()
                 ? HomeworkSubmission.SubmissionStatus.LATE
                 : HomeworkSubmission.SubmissionStatus.SUBMITTED;
@@ -336,7 +333,7 @@ public class HomeworkService {
         TeacherInfo teacher = teacherInfoRepository.findByUserUid(userDTO.getUid())
                 .orElseThrow(() -> new SecurityException("교사 정보를 찾을 수 없습니다."));
 
-        if (!homework.getTeacher().getId().equals(teacher.getId())) {
+        if (!homework.getCourseSection().getTeacher().getId().equals(teacher.getId())) {
             throw new SecurityException("본인이 출제한 과제만 수정/삭제할 수 있습니다.");
         }
     }

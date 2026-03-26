@@ -6,12 +6,15 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.schoolmate.cheol.entity.Subject;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
-public interface SubjectRepository extends JpaRepository<Subject, String> {
-    Optional<Subject> findByCode(String code);
-
-    List<Subject> findByYear(Year year);
-
+public interface SubjectRepository extends JpaRepository<Subject, Long> {
+    boolean existsByCode(String code);
     boolean existsByName(String name);
+
+    boolean existsByCodeAndSchool_Id(String code, Long schoolId);
+    boolean existsByNameAndSchool_Id(String name, Long schoolId);
+
+    List<Subject> findAllBySchool_Id(Long schoolId);
+
+    Optional<Subject> findByCodeAndSchool_Id(String code, Long schoolId);
 }

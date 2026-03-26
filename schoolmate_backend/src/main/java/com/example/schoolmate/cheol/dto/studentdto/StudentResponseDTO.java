@@ -70,7 +70,8 @@ public class StudentResponseDTO {
     private Double Height;
     private Double Weight;
 
-    // [woo] 소속 학교 이름
+    // [woo] 소속 학교
+    private Long schoolId;
     private String schoolName;
 
     // User 정보 (연관된 경우)
@@ -184,9 +185,10 @@ public class StudentResponseDTO {
                     .toList();
             builder.awards(awardList);
         }
-        // [woo] 소속 학교 이름 매핑
+        // [woo] 소속 학교 매핑
         if (student.getSchool() != null) {
-            builder.schoolName(student.getSchool().getName());
+            builder.schoolId(student.getSchool().getId())
+                    .schoolName(student.getSchool().getName());
         }
 
         if (student.getUser() != null) {

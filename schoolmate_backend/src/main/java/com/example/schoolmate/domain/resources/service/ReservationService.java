@@ -9,6 +9,7 @@ import com.example.schoolmate.domain.resources.constant.ReservationStatus;
 import com.example.schoolmate.domain.resources.dto.ReservationDTO;
 import com.example.schoolmate.domain.resources.entity.Reservation;
 import com.example.schoolmate.domain.resources.repository.ReservationRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,10 +24,11 @@ public class ReservationService {
      */
     @Transactional(readOnly = true)
     public Page<ReservationDTO.Response> getReservationList(ReservationStatus status, Pageable pageable) {
+        Long schoolId = SchoolContextHolder.getSchoolId();
         if (status != null) {
-            return reservationRepository.findByStatus(status, pageable).map(ReservationDTO.Response::from);
+            return reservationRepository.findByStatusAndSchool_Id(status, schoolId, pageable).map(ReservationDTO.Response::from);
         }
-        return reservationRepository.findAll(pageable).map(ReservationDTO.Response::from);
+        return reservationRepository.findBySchool_Id(schoolId, pageable).map(ReservationDTO.Response::from);
     }
 
     /**

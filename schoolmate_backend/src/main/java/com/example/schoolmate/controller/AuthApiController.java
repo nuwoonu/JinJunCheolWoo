@@ -1,11 +1,21 @@
 package com.example.schoolmate.controller;
 
+import com.example.schoolmate.common.entity.info.SchoolMemberInfo;
+import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.config.jwt.AuthService;
 import com.example.schoolmate.common.util.LogHelper;
@@ -21,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +65,10 @@ public class AuthApiController {
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolRepository schoolRepository;
+    private final com.example.schoolmate.common.repository.ProfileRepository profileRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
 
     /**
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
@@ -153,18 +169,6 @@ public class AuthApiController {
         return ResponseEntity.ok(Map.of("message", "로그아웃되었습니다."));
     }
 
-    /**
-     * 회원가입용 학교 검색 (인증 불필요 - public)
-     */
-    @GetMapping("/schools")
-    public ResponseEntity<Page<SchoolDTO.Summary>> searchSchools(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String schoolKind,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(
-                schoolService.searchSchools(name, schoolKind, null, PageRequest.of(page, size)));
-    }
 
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
@@ -243,6 +247,18 @@ public class AuthApiController {
         // hasAdminAccess: grants가 하나라도 있으면 어드민 페이지 접근 가능
         boolean hasAdminAccess = !grants.isEmpty();
 
+        // provider (소셜 로그인 구분: null=이메일, "google", "kakao")
+        String provider = dbUser != null ? dbUser.getProvider() : null;
+
+        // 프로필 이미지 URL
+        String profileImageUrl = null;
+        if (dbUser != null) {
+            profileImageUrl = profileRepository.findByUser(dbUser)
+                    .filter(p -> p.getUuid() != null)
+                    .map(p -> FileManager.UploadType.PROFILE.toUrl(p.getUuid()))
+                    .orElse(null);
+        }
+
         Map<String, Object> response = new HashMap<>();
         response.put("authenticated", true);
         response.put("uid", uid);
@@ -253,6 +269,8 @@ public class AuthApiController {
         response.put("hasAdminAccess", hasAdminAccess);
         response.put("grants", grants);
         response.put("roleRequests", roleRequests);
+        response.put("provider", provider);
+        response.put("profileImageUrl", profileImageUrl);
 
         return ResponseEntity.ok(response);
     }
@@ -263,7 +281,6 @@ public class AuthApiController {
      * - 역할 설정 후 해당 역할의 새 JWT 발급
      */
     @PostMapping("/select-role")
-    @Transactional
     public ResponseEntity<?> selectRole(
             @AuthenticationPrincipal AuthUserDTO user,
             @RequestBody Map<String, String> body) {
@@ -290,21 +307,159 @@ public class AuthApiController {
                 schoolId = Long.parseLong(schoolIdStr);
             }
 
-            dbUser.addRole(userRole);
+            boolean isSuperAdmin = dbUser.getRoles().contains(UserRole.ADMIN);
+
+            // 슈퍼 어드민만 즉시 역할 활성화. 일반 사용자는 PENDING 신청만 생성.
+            if (isSuperAdmin) {
+                dbUser.addRole(userRole);
+            }
             userService.createSocialUserInfo(dbUser, userRole, schoolId);
 
-            log.info("역할 선택 완료 - email: {}, role: {}", email, userRole);
+            log.info("역할 선택 완료 - email: {}, role: {}, isSuperAdmin: {}", email, userRole, isSuperAdmin);
 
-            Map<String, String> tokens = authService.issueTokensForOAuth2(dbUser.getUid(), email, userRole.name());
-            return ResponseEntity.ok(Map.of(
-                    "accessToken", tokens.get("accessToken"),
-                    "refreshToken", tokens.get("refreshToken"),
-                    "role", userRole.name()));
+            if (isSuperAdmin) {
+                Map<String, String> tokens = authService.issueTokensForOAuth2(dbUser.getUid(), email, userRole.name());
+                return ResponseEntity.ok(Map.of(
+                        "accessToken", tokens.get("accessToken"),
+                        "refreshToken", tokens.get("refreshToken"),
+                        "role", userRole.name(),
+                        "status", "active"));
+            } else {
+                return ResponseEntity.ok(Map.of(
+                        "status", "pending",
+                        "message", "역할 신청이 완료되었습니다. 관리자의 승인 후 이용 가능합니다."));
+            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             log.error("역할 선택 처리 중 오류", e);
             return ResponseEntity.status(500).body(Map.of("message", "역할 선택 중 오류가 발생했습니다."));
         }
+    }
+
+    /**
+     * Hub — 현재 유저의 모든 역할 인스턴스 목록 반환.
+     * 프론트엔드 Hub 페이지에서 역할 카드를 표시할 때 사용합니다.
+     */
+    @GetMapping("/role-contexts")
+    public ResponseEntity<?> roleContexts(@AuthenticationPrincipal AuthUserDTO auth) {
+        if (auth == null) return ResponseEntity.status(401).build();
+        Long uid = auth.getCustomUserDTO().getUid();
+
+        List<Map<String, Object>> contexts = new ArrayList<>();
+
+        studentInfoRepository.findAllByUserUid(uid).forEach(s -> {
+            Long schoolId = s.getSchool() != null ? s.getSchool().getId() : null;
+            RoleRequestStatus rrStatus = resolveRoleRequestStatus(s.getUser(), UserRole.STUDENT, schoolId);
+            boolean isActive = s.getStatus().isCurrentStudent() && rrStatus == RoleRequestStatus.ACTIVE;
+            String statusDesc = rrStatusDesc(rrStatus, s.getStatus().getDescription());
+            contexts.add(buildContext(s, "STUDENT", s.getStatus().name(), statusDesc, isActive));
+        });
+
+        teacherInfoRepository.findAllByUserUid(uid).forEach(t -> {
+            Long schoolId = t.getSchool() != null ? t.getSchool().getId() : null;
+            RoleRequestStatus rrStatus = resolveRoleRequestStatus(t.getUser(), UserRole.TEACHER, schoolId);
+            boolean infoActive = t.getStatus() == TeacherStatus.EMPLOYED || t.getStatus() == TeacherStatus.LEAVE;
+            boolean isActive = infoActive && rrStatus == RoleRequestStatus.ACTIVE;
+            String statusDesc = rrStatusDesc(rrStatus, t.getStatus().getDescription());
+            contexts.add(buildContext(t, "TEACHER", t.getStatus().name(), statusDesc, isActive));
+        });
+
+        staffInfoRepository.findAllByUserUid(uid).forEach(st -> {
+            Long schoolId = st.getSchool() != null ? st.getSchool().getId() : null;
+            RoleRequestStatus rrStatus = resolveRoleRequestStatus(st.getUser(), UserRole.STAFF, schoolId);
+            boolean infoActive = st.getStatus() == StaffStatus.EMPLOYED || st.getStatus() == StaffStatus.LEAVE
+                    || st.getStatus() == StaffStatus.DISPATCHED;
+            boolean isActive = infoActive && rrStatus == RoleRequestStatus.ACTIVE;
+            String statusDesc = rrStatusDesc(rrStatus, st.getStatus().getDescription());
+            contexts.add(buildContext(st, "STAFF", st.getStatus().name(), statusDesc, isActive));
+        });
+
+        return ResponseEntity.ok(Map.of("contexts", contexts));
+    }
+
+    /**
+     * Hub — 다른 역할 인스턴스로 컨텍스트 전환. 새 JWT 쌍을 반환합니다.
+     * body: { infoId: 42, role: "STUDENT" }
+     */
+    @PostMapping("/switch-context")
+    public ResponseEntity<?> switchContext(@AuthenticationPrincipal AuthUserDTO auth,
+                                           @RequestBody Map<String, Object> body) {
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long infoId = body.get("infoId") instanceof Number n ? n.longValue() : null;
+        String role = (String) body.get("role");
+        if (infoId == null || role == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "infoId와 role이 필요합니다."));
+        }
+
+        try {
+            Long uid = auth.getCustomUserDTO().getUid();
+            String email = auth.getUsername();
+            Map<String, String> tokens = authService.switchContext(uid, email, infoId, role.toUpperCase());
+            return ResponseEntity.ok(tokens);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Hub — 특정 역할 인스턴스를 primary(메인)로 지정합니다.
+     * body: { infoId: 42, role: "STUDENT" }
+     */
+    @PatchMapping("/primary-role")
+    @Transactional
+    public ResponseEntity<?> setPrimaryRole(@AuthenticationPrincipal AuthUserDTO auth,
+                                            @RequestBody Map<String, Object> body) {
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long infoId = body.get("infoId") instanceof Number n ? n.longValue() : null;
+        String role = (String) body.get("role");
+        if (infoId == null || role == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "infoId와 role이 필요합니다."));
+        }
+
+        try {
+            authService.setPrimary(auth.getCustomUserDTO().getUid(), infoId, role.toUpperCase());
+            return ResponseEntity.ok(Map.of("message", "메인 역할이 변경되었습니다."));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    private Map<String, Object> buildContext(SchoolMemberInfo info, String roleType,
+                                              String statusCode, String statusDesc, boolean isActive) {
+        Map<String, Object> ctx = new HashMap<>();
+        ctx.put("infoId",     info.getId());
+        ctx.put("roleType",   roleType);
+        ctx.put("schoolId",   info.getSchool() != null ? info.getSchool().getId()   : null);
+        ctx.put("schoolName", info.getSchool() != null ? info.getSchool().getName() : null);
+        ctx.put("status",     statusCode);
+        ctx.put("statusDesc", statusDesc);
+        ctx.put("isPrimary",  info.isPrimary());
+        ctx.put("isActive",   isActive);
+        return ctx;
+    }
+
+    /** RoleRequest 상태 조회 — 없으면 ACTIVE로 간주 (어드민 직접 등록 등 구버전 데이터 호환) */
+    private RoleRequestStatus resolveRoleRequestStatus(User user, UserRole role, Long schoolId) {
+        Optional<RoleRequest> rr = schoolId != null
+                ? roleRequestRepository.findByUserAndRoleAndSchoolId(user, role, schoolId)
+                : roleRequestRepository.findByUserAndRoleAndSchoolIdIsNull(user, role);
+        return rr.map(RoleRequest::getStatus).orElse(RoleRequestStatus.ACTIVE);
+    }
+
+    /** RoleRequest 상태에 따른 사용자 표시 설명 */
+    private String rrStatusDesc(RoleRequestStatus status, String infoStatusDesc) {
+        return switch (status) {
+            case PENDING   -> "승인 대기 중";
+            case REJECTED  -> "역할 신청이 거절되었습니다";
+            case SUSPENDED -> "역할이 정지되었습니다";
+            default        -> infoStatusDesc;
+        };
     }
 }

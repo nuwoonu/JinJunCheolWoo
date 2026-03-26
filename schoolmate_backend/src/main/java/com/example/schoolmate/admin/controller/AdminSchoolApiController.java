@@ -34,17 +34,6 @@ public class AdminSchoolApiController {
     private final NeisService neisService;
     private final SchoolService schoolService;
 
-    // ── 학교 목록 검색 ─────────────────────────────────────
-
-    @GetMapping
-    public ResponseEntity<Page<SchoolDTO.Summary>> searchSchools(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String schoolKind,
-            @RequestParam(required = false) String officeOfEducation,
-            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
-        return ResponseEntity.ok(schoolService.searchSchools(name, schoolKind, officeOfEducation, pageable));
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<SchoolDTO.Detail> getSchool(@PathVariable Long id) {
         return ResponseEntity.ok(schoolService.getSchool(id));

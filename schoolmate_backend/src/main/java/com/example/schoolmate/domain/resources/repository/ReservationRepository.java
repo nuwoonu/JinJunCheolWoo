@@ -10,6 +10,7 @@ import com.example.schoolmate.domain.resources.entity.Reservation;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-    // 상태별 예약 조회 (대기, 승인, 반려 등)
-    Page<Reservation> findByStatus(ReservationStatus status, Pageable pageable);
+    // 상태별 예약 조회 (학교 스코프)
+    Page<Reservation> findByStatusAndSchool_Id(ReservationStatus status, Long schoolId, Pageable pageable);
+    Page<Reservation> findBySchool_Id(Long schoolId, Pageable pageable);
 }

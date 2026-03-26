@@ -12,15 +12,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
+import com.example.schoolmate.domain.term.entity.CourseSection;
+import com.example.schoolmate.domain.term.repository.CourseSectionRepository;
 import com.example.schoolmate.dto.CustomUserDTO;
 import com.example.schoolmate.quiz.dto.QuizDTO;
 import com.example.schoolmate.quiz.entity.QuestionType;
@@ -46,7 +46,7 @@ public class QuizService {
 
     private final QuizRepository quizRepository;
     private final QuizSubmissionRepository submissionRepository;
-    private final ClassroomRepository classroomRepository;
+    private final CourseSectionRepository courseSectionRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
@@ -58,15 +58,20 @@ public class QuizService {
         TeacherInfo teacher = teacherInfoRepository.findByUserUid(userDTO.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("교사 정보를 찾을 수 없습니다."));
 
-        Classroom classroom = classroomRepository.findById(request.getClassroomId())
-                .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
+        // [woo 03/25] 수업 분반으로 변경 (과목+학급)
+        CourseSection courseSection = courseSectionRepository.findById(request.getCourseSectionId())
+                .orElseThrow(() -> new IllegalArgumentException("수업 분반 정보를 찾을 수 없습니다."));
+
+        if (!courseSection.getTeacher().getId().equals(teacher.getId())) {
+            throw new SecurityException("본인이 담당하는 수업 분반에만 퀴즈를 출제할 수 있습니다.");
+        }
 
         Quiz quiz = Quiz.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .week(request.getWeek())
                 .teacher(teacher)
-                .classroom(classroom)
+                .classroom(courseSection.getClassroom())
                 .dueDate(request.getDueDate())
                 .maxAttempts(request.getMaxAttempts())
                 .showAnswer(request.getShowAnswer() != null ? request.getShowAnswer() : true)
@@ -102,7 +107,7 @@ public class QuizService {
         }
 
         Quiz saved = quizRepository.save(quiz);
-        log.info("[woo] 퀴즈 출제: {} - {} (학급: {})", saved.getId(), saved.getTitle(), classroom.getClassName());
+        log.info("[woo] 퀴즈 출제: {} - {} (분반: {})", saved.getId(), saved.getTitle(), courseSection.getDisplayName());
 
         QuizDTO.DetailResponse response = QuizDTO.DetailResponse.fromEntity(saved);
         response.setQuestions(saved.getQuestions().stream()
@@ -316,11 +321,11 @@ public class QuizService {
             quiz.setShowAnswer(request.getShowAnswer());
         }
 
-        // [woo] 학급 변경
-        if (request.getClassroomId() != null && !request.getClassroomId().equals(quiz.getClassroom().getCid())) {
-            Classroom classroom = classroomRepository.findById(request.getClassroomId())
-                    .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
-            quiz.setClassroom(classroom);
+        // [woo 03/25] 수업 분반 변경 시 학급도 변경
+        if (request.getCourseSectionId() != null) {
+            CourseSection courseSection = courseSectionRepository.findById(request.getCourseSectionId())
+                    .orElseThrow(() -> new IllegalArgumentException("수업 분반 정보를 찾을 수 없습니다."));
+            quiz.setClassroom(courseSection.getClassroom());
         }
 
         // [woo] 문제 수정 (in-place 업데이트 → 기존 응시 기록의 FK 유지)

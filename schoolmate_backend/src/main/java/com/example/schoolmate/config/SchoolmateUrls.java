@@ -17,6 +17,13 @@ public class SchoolmateUrls {
     // 감사 로그 (Audit)
     public static final String ADMIN_AUDIT = API_ADMIN + "/audit";
 
+    // 학교 검색 (Public)
+    public static final String SCHOOLS = API_ROOT + "/schools";
+
+    // 서비스 공지 (Public)
+    public static final String SERVICE_NOTICES = API_ROOT + "/service-notices";
+    public static final String ADMIN_SERVICE_NOTICES = API_ADMIN + "/service-notices";
+
     // 학교 관리 (School Management)
     public static final String ADMIN_SCHOOLS = API_ADMIN + "/schools";
 
@@ -38,6 +45,8 @@ public class SchoolmateUrls {
     public static class Api {
         // 나이스 학교 기본 정보 API
         public static final String NEIS_SCHOOL_INFO = "https://open.neis.go.kr/hub/schoolInfo";
+        // 나이스 급식 식단 정보 API
+        public static final String NEIS_MEAL_INFO = "https://open.neis.go.kr/hub/mealServiceDietInfo";
     }
 
     // 이미지 업로드 경로 (Web Access URL)

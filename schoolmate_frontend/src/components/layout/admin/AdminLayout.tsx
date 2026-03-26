@@ -1,39 +1,42 @@
 import { useEffect, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import AdminSidebar from '@/components/layout/admin/AdminSidebar'
 import AdminHeader from '@/components/layout/admin/AdminHeader'
 import { SidebarProvider, useSidebar } from '@/contexts/SidebarContext'
 import { useSchool } from '@/context/SchoolContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { ADMIN_ROUTES } from '@/constants/routes'
+import PageLoader from '@/components/PageLoader'
+import Footer from '@/components/layout/Footer'
 
 function Layout({ children, msg, error, requireSchool = true }: { children: ReactNode; msg?: string; error?: string; requireSchool?: boolean }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
   const { selectedSchool, setSelectedSchool } = useSchool()
-  const { user } = useAuth()
-  const navigate = useNavigate()
+  const { user, loading } = useAuth()
 
+  const isSuperAdmin = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN'
+  const firstGrant = !isSuperAdmin ? user?.grants?.find(g => g.schoolId) : undefined
+
+  // 그랜트 보유자 자동 학교 선택 (setState는 렌더 중 호출 불가라 useEffect 유지)
   useEffect(() => {
-    if (!requireSchool || selectedSchool) return
+    if (!requireSchool || selectedSchool || !firstGrant) return
+    setSelectedSchool({
+      id: firstGrant.schoolId!,
+      name: firstGrant.schoolName!,
+      schoolCode: firstGrant.schoolCode ?? '',
+      schoolKind: firstGrant.schoolKind ?? '',
+      officeOfEducation: firstGrant.officeOfEducation ?? '',
+    })
+  }, [requireSchool, selectedSchool, firstGrant, setSelectedSchool])
 
-    const isSuperAdmin = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN'
-    if (!isSuperAdmin) {
-      // 그랜트 보유자는 첫 번째 그랜트 학교를 자동 선택
-      const firstGrant = user?.grants?.find(g => g.schoolId)
-      if (firstGrant?.schoolId && firstGrant.schoolName) {
-        setSelectedSchool({
-          id: firstGrant.schoolId,
-          name: firstGrant.schoolName,
-          schoolCode: firstGrant.schoolCode ?? '',
-          schoolKind: firstGrant.schoolKind ?? '',
-          officeOfEducation: firstGrant.officeOfEducation ?? '',
-        })
-        return
-      }
-    }
+  // 인증 로딩 중 — 스피너로 대기
+  if (loading) return <PageLoader />
 
-    navigate(ADMIN_ROUTES.SCHOOL_SELECT, { replace: true })
-  }, [requireSchool, selectedSchool, user, setSelectedSchool, navigate])
+  // 학교 선택 필요한 경우 — 렌더 타임에 즉시 처리 (useEffect 지연 없음)
+  if (requireSchool && !selectedSchool) {
+    if (firstGrant) return <PageLoader /> // 자동 선택 useEffect 처리 중
+    return <Navigate to={ADMIN_ROUTES.SCHOOL_SELECT} replace />
+  }
 
   return (
     <>
@@ -72,13 +75,7 @@ function Layout({ children, msg, error, requireSchool = true }: { children: Reac
           )}
           {children}
         </div>
-        <footer className="d-footer">
-          <div className="row align-items-center justify-content-between">
-            <div className="col-auto">
-              <p className="mb-0">Copyright 2026 SchoolMate. All Rights Reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </main>
     </>
   )

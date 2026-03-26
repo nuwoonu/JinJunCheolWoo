@@ -5,6 +5,17 @@ import admin from '@/api/adminApi';
 import { ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
+const thStyle: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+
 export default function ParentDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -37,6 +48,12 @@ export default function ParentDetail() {
   useEffect(() => {
     load();
   }, [id]);
+
+  // [woo] 모달 열릴 때 배경 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = showModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showModal]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +93,7 @@ export default function ParentDetail() {
   const searchStudents = async () => {
     if (!searchQuery.trim()) return;
     const r = await admin.get("/students", {
-      params: { keyword: searchQuery, size: 10 },
+      params: { keyword: searchQuery, size: 10, ignoreSchoolFilter: true, excludeParentId: id },
     });
     setSearchResults(r.data?.content ?? []);
   };
@@ -174,28 +191,30 @@ export default function ParentDetail() {
                       onKeyDown={(e) => e.key === "Enter" && searchStudents()}
                     />
                     <button
-                      className="btn btn-primary-600 radius-8"
+                      style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                       onClick={searchStudents}
                     >
                       검색
                     </button>
                   </div>
                   {searchResults.length > 0 && (
-                    <div
-                      className="list-group"
-                      style={{ maxHeight: 250, overflowY: "auto" }}
-                    >
+                    <div style={{ maxHeight: 250, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8 }}>
                       {searchResults.map((s: any) => (
                         <div
                           key={s.uid}
-                          className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderBottom: "1px solid #f3f4f6" }}
                         >
-                          <span>
-                            <strong>{s.name}</strong>{" "}
-                            <small className="text-muted ms-2">{s.code}</small>
-                          </span>
+                          <div>
+                            <span style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>{s.name}</span>
+                            <span style={{ fontSize: 12, color: "#6b7280", marginLeft: 8 }}>{s.code}</span>
+                            {s.schoolName && (
+                              <span style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #93c5fd", borderRadius: 6, padding: "1px 7px", fontSize: 11, fontWeight: 500, marginLeft: 8 }}>
+                                {s.schoolName}
+                              </span>
+                            )}
+                          </div>
                           <button
-                            className="btn btn-sm btn-outline-secondary radius-8"
+                            style={{ padding: "4px 12px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: "#374151", cursor: "pointer" }}
                             onClick={() => selectStudent(s)}
                           >
                             선택
@@ -227,13 +246,13 @@ export default function ParentDetail() {
                   </div>
                   <div className="d-flex gap-2">
                     <button
-                      className="btn btn-outline-secondary radius-8 flex-fill"
+                      className="btn btn-outline-secondary flex-fill"
                       onClick={() => setPendingStudent(null)}
                     >
                       다시 검색
                     </button>
                     <button
-                      className="btn btn-primary-600 radius-8 flex-fill"
+                      style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", flex: 1 }}
                       onClick={addChild}
                     >
                       연결 추가
@@ -246,7 +265,7 @@ export default function ParentDetail() {
         </div>
       )}
 
-      <div className="breadcrumb d-flex align-items-center gap-3 mb-24">
+      <div className="breadcrumb d-flex align-items-center gap-3" style={{ marginBottom: 24 }}>
         <button
           type="button"
           onClick={() => navigate(ADMIN_ROUTES.PARENTS.LIST)}
@@ -299,7 +318,7 @@ export default function ParentDetail() {
                 </div>
                 <div>
                   <small className="text-muted d-block">자녀 수</small>
-                  <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200">
+                  <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 }}>
                     {children.length}명
                   </span>
                 </div>
@@ -311,7 +330,7 @@ export default function ParentDetail() {
         {/* 우측 탭 카드 */}
         <div className="col-md-8">
           <div className="card">
-            <div className="d-flex border-bottom border-neutral-200">
+            <div className="d-flex" style={{ borderBottom: "1px solid #e5e7eb" }}>
               {[
                 ["info", "기본 정보"],
                 ["children", "자녀 관리"],
@@ -374,10 +393,10 @@ export default function ParentDetail() {
                     </div>
                   </div>
                 </div>
-                <div className="px-24 py-16 border-top border-neutral-200 text-end">
+                <div style={{ padding: "16px 24px", borderTop: "1px solid #e5e7eb", textAlign: "right" }}>
                   <button
                     type="submit"
-                    className="btn btn-primary-600 radius-8 px-5"
+                    style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                     disabled={saving}
                   >
                     {saving ? (
@@ -395,15 +414,16 @@ export default function ParentDetail() {
 
             {activeTab === "children" && (
               <>
-                <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+                <div className="d-flex align-items-center justify-content-between" style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
                   <h6 className="fw-semibold mb-0">
                     자녀 목록{" "}
-                    <span className="badge bg-neutral-100 text-neutral-600 border border-neutral-200 ms-2">
+                    <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500, marginLeft: 8 }}>
                       {children.length}명
                     </span>
                   </h6>
                   <button
-                    className="btn btn-sm btn-primary-600 radius-8"
+                    className="btn btn-sm"
+                    style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                     onClick={() => setShowModal(true)}
                   >
                     <i className="bi bi-plus-lg" /> 자녀 추가
@@ -411,25 +431,37 @@ export default function ParentDetail() {
                 </div>
                 <div className="card-body p-0">
                   <table className="table table-hover align-middle mb-0">
-                    <thead className="table-heading-dark-mode">
+                    <thead>
                       <tr>
-                        <th className="ps-4">이름</th>
-                        <th>학번</th>
-                        <th>학년/반</th>
-                        <th className="text-end pe-4">관리</th>
+                        <th style={{ ...thStyle, paddingLeft: 24 }}>이름</th>
+                        <th style={thStyle}>학번</th>
+                        <th style={thStyle}>소속 학교</th>
+                        <th style={thStyle}>관계</th>
+                        <th style={{ ...thStyle, textAlign: "right", paddingRight: 24 }}>관리</th>
                       </tr>
                     </thead>
                     <tbody>
                       {children.map((c: any) => (
                         <tr key={c.uid}>
-                          <td className="ps-4 fw-bold">{c.name}</td>
-                          <td>{c.studentCode ?? c.code}</td>
-                          <td>
-                            {c.grade ? `${c.grade}학년 ${c.classNum}반` : "-"}
+                          <td style={{ padding: "12px 16px", paddingLeft: 24, fontWeight: 600 }}>{c.name}</td>
+                          <td style={{ padding: "12px 16px" }}>{c.code ?? "-"}</td>
+                          <td style={{ padding: "12px 16px" }}>
+                            {c.schoolName ? (
+                              <span style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #93c5fd", borderRadius: 6, padding: "2px 8px", fontSize: 12, fontWeight: 500 }}>
+                                {c.schoolName}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#9ca3af", fontSize: 12 }}>미배정</span>
+                            )}
                           </td>
-                          <td className="text-end pe-4">
+                          <td style={{ padding: "12px 16px" }}>
+                            <span style={{ background: "#f3f4f6", color: "#374151", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 8px", fontSize: 12 }}>
+                              {c.relationship ?? "-"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "12px 16px", textAlign: "right", paddingRight: 24 }}>
                             <button
-                              className="btn btn-sm btn-outline-danger"
+                              style={{ padding: "4px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 13, color: "#ef4444", cursor: "pointer" }}
                               onClick={() => removeChild(c.uid)}
                             >
                               연결 해제
@@ -440,8 +472,8 @@ export default function ParentDetail() {
                       {children.length === 0 && (
                         <tr>
                           <td
-                            colSpan={4}
-                            className="text-center py-5 text-muted"
+                            colSpan={5}
+                            style={{ textAlign: "center", padding: "40px 0", color: "#9ca3af", fontSize: 14 }}
                           >
                             연결된 자녀가 없습니다.
                           </td>

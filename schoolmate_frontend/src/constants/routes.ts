@@ -54,4 +54,12 @@ export const ADMIN_ROUTES = {
     ACCESS: `${ADMIN_BASE}/audit/access`,
     CHANGES: `${ADMIN_BASE}/audit/changes`,
   },
+  SERVICE_NOTICES: {
+    LIST: `${ADMIN_BASE}/service-notices`,
+    CREATE: `${ADMIN_BASE}/service-notices/create`,
+    DETAIL: (id: string | number) => `${ADMIN_BASE}/service-notices/${id}`,
+    DETAIL_PATTERN: `${ADMIN_BASE}/service-notices/:id`,
+    EDIT: (id: string | number) => `${ADMIN_BASE}/service-notices/${id}/edit`,
+    EDIT_PATTERN: `${ADMIN_BASE}/service-notices/:id/edit`,
+  },
 };

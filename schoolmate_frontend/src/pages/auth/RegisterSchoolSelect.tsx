@@ -1,25 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import api from '@/api/auth'
+import api, { getRoleContexts, type RoleContext } from '@/api/auth'
 import { auth } from '@/shared/auth'
+import { useSchoolSearch, type SchoolSummary } from '@/hooks/useSchoolSearch'
 
 // 이메일 가입: 학교 선택 후 /register로 이동 (state에 role+schoolId 전달)
 // SNS/Hub 가입: 학교 선택 후 POST /auth/select-role → /hub로 이동
-
-interface SchoolSummary {
-  id: number
-  name: string
-  schoolKind: string
-  officeOfEducation: string
-  address: string
-}
-
-interface PageResponse {
-  content: SchoolSummary[]
-  totalPages: number
-  totalElements: number
-  number: number
-}
 
 const SCHOOL_KINDS = ['', '초등학교', '중학교', '고등학교', '특수학교', '각종학교']
 
@@ -33,16 +19,28 @@ export default function RegisterSchoolSelect() {
   const { state } = useLocation()
   const { role, source } = (state ?? {}) as { role?: string; source?: string }
 
-  const [name, setName] = useState('')
-  const [schoolKind, setSchoolKind] = useState('')
-  const [schools, setSchools] = useState<SchoolSummary[]>([])
-  const [totalPages, setTotalPages] = useState(0)
-  const [totalElements, setTotalElements] = useState(0)
-  const [page, setPage] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [existingContexts, setExistingContexts] = useState<RoleContext[]>([])
+
+  useEffect(() => {
+    if (source === 'hub') {
+      getRoleContexts().then(setExistingContexts).catch(() => {})
+    }
+  }, [source])
+
+  const {
+    name, setName,
+    schoolKind, setSchoolKind,
+    schools,
+    totalPages,
+    totalElements,
+    page,
+    loading,
+    searched,
+    fetchSchools,
+    handleSearch,
+  } = useSchoolSearch((params) => api.get('/schools', { params }))
 
   // state 없이 직접 접근 시 select-info로 보냄
   if (!role || !source) {
@@ -50,44 +48,19 @@ export default function RegisterSchoolSelect() {
     return null
   }
 
-  const fetchSchools = (pageNum = 0) => {
-    setLoading(true)
-    api
-      .get('/auth/schools', {
-        params: {
-          name: name.trim() || undefined,
-          schoolKind: schoolKind || undefined,
-          page: pageNum,
-          size: 10,
-        },
-      })
-      .then((r) => {
-        const data: PageResponse = r.data
-        setSchools(data.content)
-        setTotalPages(data.totalPages)
-        setTotalElements(data.totalElements)
-        setPage(data.number)
-        setSearched(true)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    fetchSchools(0)
-  }
-
   const handleSelect = async (school: SchoolSummary) => {
     setSubmitting(true)
     setError('')
     try {
       if (source === 'sns' || source === 'hub') {
-        const res = await api.post<{ accessToken: string; refreshToken: string; role: string }>(
+        const res = await api.post<{ accessToken?: string; refreshToken?: string; role?: string; status: string }>(
           '/auth/select-role',
           { role, schoolId: String(school.id) }
         )
-        auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        // 슈퍼 어드민은 즉시 활성화 → 새 토큰 교체. 일반 사용자는 PENDING → 토큰 유지
+        if (res.data.status !== 'pending' && res.data.accessToken && res.data.refreshToken) {
+          auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        }
         navigate('/hub')
       } else {
         // 이메일 가입: 폼 단계로 이동
@@ -101,17 +74,17 @@ export default function RegisterSchoolSelect() {
   }
 
   return (
-    <div className="d-flex">
-      {/* 왼쪽 - 로고 */}
-      <div className="register-left d-none d-lg-flex">
+    <div className="register-container">
+      {/* 왼쪽 상단 로고 */}
+      <a href="/main" className="register-logo">
         <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
-      </div>
+      </a>
 
-      {/* 오른쪽 - 학교 선택 */}
-      <div className="register-right">
+      {/* 폼 중앙 배치 */}
+      <div className="register-body">
         <div className="register-form" style={{ maxWidth: 600 }}>
-          <div className="d-lg-none text-center mb-4">
-            <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" style={{ maxWidth: 200 }} />
+          <div className="mobile-logo">
+            <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
           </div>
 
           <div className="text-center mb-4">
@@ -178,7 +151,11 @@ export default function RegisterSchoolSelect() {
                 <div className="text-center text-muted py-4">검색 결과가 없습니다.</div>
               ) : (
                 <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
-                  {schools.map((school, idx) => (
+                  {schools.map((school, idx) => {
+                    const isDuplicate = source === 'hub' && existingContexts.some(
+                      (c) => c.roleType === role && c.schoolId === school.id
+                    )
+                    return (
                     <div
                       key={school.id}
                       style={{
@@ -187,17 +164,32 @@ export default function RegisterSchoolSelect() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        background: '#fff',
+                        background: isDuplicate ? '#fafafa' : '#fff',
                       }}
                     >
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: '#1a1a1a' }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: isDuplicate ? '#9ca3af' : '#1a1a1a' }}>
                           {school.name}
                         </div>
                         <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
                           {school.schoolKind} · {school.officeOfEducation}
                         </div>
                       </div>
+                      {isDuplicate ? (
+                        <span style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: '#9ca3af',
+                          background: '#f3f4f6',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: 8,
+                          padding: '5px 12px',
+                          whiteSpace: 'nowrap',
+                          marginLeft: 12,
+                        }}>
+                          이미 등록됨
+                        </span>
+                      ) : (
                       <button
                         onClick={() => handleSelect(school)}
                         disabled={submitting}
@@ -217,8 +209,10 @@ export default function RegisterSchoolSelect() {
                       >
                         선택
                       </button>
+                      )}
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 

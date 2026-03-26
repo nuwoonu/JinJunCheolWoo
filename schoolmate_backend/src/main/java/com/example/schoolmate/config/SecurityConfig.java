@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,7 +25,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -62,8 +62,10 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
-                                                                "/api/auth/schools",
-                                                                "/api/auth/schools/**",
+                                                                "/api/schools",
+                                                                "/api/schools/**",
+                                                                "/api/service-notices",
+                                                                "/api/service-notices/**",
                                                                 // [woo] /me는 컨트롤러가 직접 인증 여부 판단 (미인증 시
                                                                 // authenticated:false 반환)
                                                                 "/api/auth/me",
@@ -82,7 +84,8 @@ public class SecurityConfig {
                                                 // 정적 리소스
                                                 .requestMatchers(
                                                                 "/assets/**", "/images/**", "/img/**",
-                                                                "/js/**", "/css/**", "/uploads/**", "/error/**")
+                                                                "/js/**", "/css/**",
+                                                                "/upload/**", "/uploads/**", "/error/**")
                                                 .permitAll()
                                                 // [woo] NEIS 공개 API - 인증 불필요
                                                 .requestMatchers("/api/calendar/**", "/api/meals/**").permitAll()
@@ -96,11 +99,9 @@ public class SecurityConfig {
                                                                 "/api/admin/subjects/**",
                                                                 "/api/admin/audit/**")
                                                 .hasRole("ADMIN")
-                                                // 일반 어드민 영역: ADMIN role 또는 SchoolAdminGrant 보유자
-                                                // (개별 컨트롤러에서 @PreAuthorize로 기능별 세분화)
+                                                // 일반 어드민 영역: 인증된 사용자만 허용 (기능별 세분화는 각 컨트롤러 @PreAuthorize에서 처리)
                                                 .requestMatchers("/api/admin/**")
-                                                .access(new WebExpressionAuthorizationManager(
-                                                                "hasRole('ADMIN') or @grants.canAccessAdmin()"))
+                                                .authenticated()
                                                 // 교사 관리(추가/수정/삭제) - ADMIN만
                                                 .requestMatchers("/api/teacher/add", "/api/teacher/edit",
                                                                 "/api/teacher/delete")
@@ -137,6 +138,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/quiz/**")
                                                 .hasAnyRole("TEACHER", "STUDENT", "ADMIN")
                                                 // [woo] 출결 API - 역할별 접근
+                                                // [soojin] 학생도 자기 반 출석 현황 조회 가능 (GET /attendance/student?date= 한정)
+                                                .requestMatchers(HttpMethod.GET, "/api/attendance/student")
+                                                .hasAnyRole("TEACHER", "ADMIN", "STUDENT")
                                                 .requestMatchers("/api/attendance/student/**")
                                                 .hasAnyRole("TEACHER", "ADMIN")
                                                 // [woo] 교사 출근관리 - 관리자 전용
@@ -166,7 +170,9 @@ public class SecurityConfig {
                                                 .accessDeniedHandler(accessDeniedHandler())
                                                 // API 요청은 /login redirect 대신 401 JSON 반환 (CORS 우회 방지)
                                                 .authenticationEntryPoint((request, response, authException) -> {
-                                                        log.warn("[401] {} {} - {}", request.getMethod(), request.getRequestURI(), authException.getMessage());
+                                                        log.warn("[401] {} {} - {}", request.getMethod(),
+                                                                        request.getRequestURI(),
+                                                                        authException.getMessage());
                                                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                                                         response.setContentType("application/json;charset=UTF-8");
                                                         response.getWriter().write("{\"authenticated\":false}");

@@ -25,26 +25,33 @@ public class JwtUtil {
         this.refreshTokenExpiry = refreshTokenExpiry;
     }
 
-    public String generateAccessToken(Long uid, String email, String role, Long schoolId) {
+    /**
+     * @param infoId 현재 활성 역할 인스턴스 ID (StudentInfo.id / TeacherInfo.id 등)
+     */
+    public String generateAccessToken(Long uid, String email, String role, Long schoolId, Long infoId) {
         JwtBuilder builder = Jwts.builder()
                 .subject(email)
                 .claim("uid", uid)
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiry));
-        if (schoolId != null) {
-            builder.claim("schoolId", schoolId);
-        }
+        if (schoolId != null) builder.claim("schoolId", schoolId);
+        if (infoId  != null) builder.claim("infoId",   infoId);
         return builder.signWith(key).compact();
     }
 
-    public String generateRefreshToken(String email) {
-        return Jwts.builder()
+    /**
+     * Refresh Token에도 uid·role·infoId를 포함해 컨텍스트를 유지합니다.
+     */
+    public String generateRefreshToken(String email, Long uid, String role, Long infoId) {
+        JwtBuilder builder = Jwts.builder()
                 .subject(email)
+                .claim("uid",  uid)
+                .claim("role", role)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiry))
-                .signWith(key)
-                .compact();
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiry));
+        if (infoId != null) builder.claim("infoId", infoId);
+        return builder.signWith(key).compact();
     }
 
     public Claims parseToken(String token) {
@@ -78,6 +85,10 @@ public class JwtUtil {
 
     public Long getSchoolId(String token) {
         return parseToken(token).get("schoolId", Long.class);
+    }
+
+    public Long getInfoId(String token) {
+        return parseToken(token).get("infoId", Long.class);
     }
 
     public long getRefreshTokenExpiry() {

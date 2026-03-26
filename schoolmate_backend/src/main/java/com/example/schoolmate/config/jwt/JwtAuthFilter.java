@@ -62,15 +62,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String email = jwtUtil.getEmail(token);
 
-        // JWT에서 schoolId를 꺼내 SchoolContextHolder에 세팅 (일반 유저용)
+        // JWT에서 schoolId·infoId를 꺼내 SchoolContextHolder에 세팅 (일반 유저용)
         // 어드민 경로(/api/admin/**)는 SchoolInterceptor가 X-School-Id 헤더로 덮어씀
         Long schoolId = jwtUtil.getSchoolId(token);
+        Long infoId   = jwtUtil.getInfoId(token);
         if (schoolId != null) {
             SchoolContextHolder.setSchoolId(schoolId);
-            log.debug("[JWT] schoolId={} 세팅 (email={}, uri={})", schoolId, email, request.getRequestURI());
-        } else {
-            log.debug("[JWT] schoolId 없음 (email={}, uri={})", email, request.getRequestURI());
         }
+        if (infoId != null) {
+            SchoolContextHolder.setInfoId(infoId);
+        }
+        log.debug("[JWT] schoolId={}, infoId={} 세팅 (email={}, uri={})", schoolId, infoId, email, request.getRequestURI());
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {

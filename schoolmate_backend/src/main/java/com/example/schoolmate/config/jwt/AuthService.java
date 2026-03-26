@@ -3,9 +3,13 @@ package com.example.schoolmate.config.jwt;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.StaffInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.info.SchoolMemberInfo;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -28,15 +32,24 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
 
     public AuthService(JwtUtil jwtUtil,
                        RefreshTokenRepository refreshTokenRepository,
                        @Lazy AuthenticationManager authenticationManager,
-                       UserRepository userRepository) {
+                       UserRepository userRepository,
+                       StudentInfoRepository studentInfoRepository,
+                       TeacherInfoRepository teacherInfoRepository,
+                       StaffInfoRepository staffInfoRepository) {
         this.jwtUtil = jwtUtil;
         this.refreshTokenRepository = refreshTokenRepository;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.studentInfoRepository = studentInfoRepository;
+        this.teacherInfoRepository = teacherInfoRepository;
+        this.staffInfoRepository = staffInfoRepository;
     }
 
     /**
@@ -55,9 +68,10 @@ public class AuthService {
 
         User user = userRepository.findById(uid).orElse(null);
         Long schoolId = extractSchoolId(user, primaryRole);
+        Long infoId   = extractInfoId(user, primaryRole);
 
-        String accessToken = jwtUtil.generateAccessToken(uid, email, role, schoolId);
-        String refreshToken = jwtUtil.generateRefreshToken(email);
+        String accessToken  = jwtUtil.generateAccessToken(uid, email, role, schoolId, infoId);
+        String refreshToken = jwtUtil.generateRefreshToken(email, uid, role, infoId);
 
         saveRefreshToken(email, refreshToken);
 
@@ -96,16 +110,20 @@ public class AuthService {
             throw new IllegalArgumentException("만료되었거나 일치하지 않는 Refresh Token입니다.");
         }
 
-        String role = jwtUtil.getRole(refreshToken);
-        Long uid = jwtUtil.getUid(refreshToken);
+        // Refresh Token에서 컨텍스트 복원 (role·uid·infoId 포함)
+        String role   = jwtUtil.getRole(refreshToken);
+        Long uid      = jwtUtil.getUid(refreshToken);
+        Long infoId   = jwtUtil.getInfoId(refreshToken);
 
         User user = userRepository.findByEmail(email).orElse(null);
         UserRole userRole = role != null ? UserRole.valueOf(role) : null;
-        Long schoolId = extractSchoolId(user, userRole);
+        Long schoolId = (infoId != null)
+                ? extractSchoolIdByInfoId(user, userRole, infoId)
+                : extractSchoolId(user, userRole);
 
         // 새 AccessToken + RefreshToken 재발급 (Rotation)
-        String newAccessToken = jwtUtil.generateAccessToken(uid, email, role, schoolId);
-        String newRefreshToken = jwtUtil.generateRefreshToken(email);
+        String newAccessToken  = jwtUtil.generateAccessToken(uid, email, role, schoolId, infoId);
+        String newRefreshToken = jwtUtil.generateRefreshToken(email, uid, role, infoId);
         saveRefreshToken(email, newRefreshToken);
 
         return Map.of(
@@ -131,32 +149,113 @@ public class AuthService {
         User user = userRepository.findById(uid).orElse(null);
         UserRole userRole = role != null && !role.equals("GUEST") ? UserRole.valueOf(role) : null;
         Long schoolId = extractSchoolId(user, userRole);
-        String accessToken = jwtUtil.generateAccessToken(uid, email, role, schoolId);
-        String refreshToken = jwtUtil.generateRefreshToken(email);
+        Long infoId   = extractInfoId(user, userRole);
+        String accessToken  = jwtUtil.generateAccessToken(uid, email, role, schoolId, infoId);
+        String refreshToken = jwtUtil.generateRefreshToken(email, uid, role, infoId);
         saveRefreshToken(email, refreshToken);
         return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
     }
 
     /**
-     * 유저의 소속 학교 ID 추출 (TEACHER, STUDENT, STAFF만 학교 소속)
-     * ADMIN은 X-School-Id 헤더로 학교를 선택하므로 null 반환
-     * PARENT는 학교 소속 없으므로 null 반환
+     * 컨텍스트 전환 — Hub에서 다른 역할 인스턴스를 선택할 때 호출.
+     * 해당 infoId 가 요청자(uid) 소유인지 검증 후 새 토큰 발급.
+     *
+     * @param uid    현재 로그인 유저
+     * @param email  현재 로그인 유저 이메일
+     * @param infoId 전환할 역할 인스턴스 ID
+     * @param role   전환할 역할 타입 (예: "STUDENT")
      */
+    @Transactional
+    public Map<String, String> switchContext(Long uid, String email, Long infoId, String role) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        SchoolMemberInfo info = resolveInfo(user, role, infoId);
+        if (info == null || !info.getUser().getUid().equals(uid)) {
+            throw new SecurityException("해당 역할 인스턴스에 접근 권한이 없습니다.");
+        }
+
+        Long schoolId = info.getSchool() != null ? info.getSchool().getId() : null;
+        String accessToken  = jwtUtil.generateAccessToken(uid, email, role, schoolId, infoId);
+        String refreshToken = jwtUtil.generateRefreshToken(email, uid, role, infoId);
+        saveRefreshToken(email, refreshToken);
+        return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
+    }
+
+    /**
+     * 역할 인스턴스를 primary 로 지정.
+     * 같은 (user, role) 의 다른 인스턴스는 primary=false 로 변경.
+     */
+    @Transactional
+    public void setPrimary(Long uid, Long infoId, String role) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 같은 타입의 모든 인스턴스를 false로
+        switch (UserRole.valueOf(role)) {
+            case STUDENT -> studentInfoRepository.findAllByUserUid(uid)
+                    .forEach(s -> s.setPrimary(false));
+            case TEACHER -> teacherInfoRepository.findAllByUserUid(uid)
+                    .forEach(t -> t.setPrimary(false));
+            case STAFF -> staffInfoRepository.findAllByUserUid(uid)
+                    .forEach(st -> st.setPrimary(false));
+            default -> throw new IllegalArgumentException("지원하지 않는 역할 타입입니다.");
+        }
+
+        // 대상만 true
+        SchoolMemberInfo info = resolveInfo(user, role, infoId);
+        if (info == null || !info.getUser().getUid().equals(uid)) {
+            throw new SecurityException("해당 역할 인스턴스에 접근 권한이 없습니다.");
+        }
+        info.setPrimary(true);
+    }
+
+    // ── 내부 헬퍼 ──────────────────────────────────────────────────────────
+
+    /** primary info 의 학교 ID */
     private Long extractSchoolId(User user, UserRole role) {
         if (user == null || role == null) return null;
-        return switch (role) {
-            case TEACHER -> {
-                TeacherInfo info = user.getInfo(TeacherInfo.class);
-                yield (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
-            }
-            case STUDENT -> {
-                StudentInfo info = user.getInfo(StudentInfo.class);
-                yield (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
-            }
-            case STAFF -> {
-                StaffInfo info = user.getInfo(StaffInfo.class);
-                yield (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
-            }
+        SchoolMemberInfo info = switch (role) {
+            case TEACHER -> user.getPrimaryInfo(TeacherInfo.class);
+            case STUDENT -> user.getPrimaryInfo(StudentInfo.class);
+            case STAFF   -> user.getPrimaryInfo(StaffInfo.class);
+            default      -> null;
+        };
+        return (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
+    }
+
+    /** primary info 의 ID */
+    private Long extractInfoId(User user, UserRole role) {
+        if (user == null || role == null) return null;
+        SchoolMemberInfo info = switch (role) {
+            case TEACHER -> user.getPrimaryInfo(TeacherInfo.class);
+            case STUDENT -> user.getPrimaryInfo(StudentInfo.class);
+            case STAFF   -> user.getPrimaryInfo(StaffInfo.class);
+            default      -> null;
+        };
+        return info != null ? info.getId() : null;
+    }
+
+    /** Refresh 시 infoId 로 schoolId 재조회 (컨텍스트 유지) */
+    private Long extractSchoolIdByInfoId(User user, UserRole role, Long infoId) {
+        if (user == null || role == null || infoId == null) return extractSchoolId(user, role);
+        SchoolMemberInfo info = resolveInfo(user, role.name(), infoId);
+        return (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
+    }
+
+    /** role 타입과 infoId로 실제 엔티티 조회 */
+    private SchoolMemberInfo resolveInfo(User user, String role, Long infoId) {
+        if (role == null || infoId == null) return null;
+        return switch (UserRole.valueOf(role)) {
+            case STUDENT -> studentInfoRepository.findById(infoId)
+                    .filter(s -> s.getUser().getUid().equals(user.getUid()))
+                    .orElse(null);
+            case TEACHER -> teacherInfoRepository.findById(infoId)
+                    .filter(t -> t.getUser().getUid().equals(user.getUid()))
+                    .orElse(null);
+            case STAFF -> staffInfoRepository.findById(infoId)
+                    .filter(st -> st.getUser().getUid().equals(user.getUid()))
+                    .orElse(null);
             default -> null;
         };
     }

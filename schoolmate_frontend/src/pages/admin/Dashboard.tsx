@@ -86,11 +86,12 @@ function fmtDate(start: string, end: string) {
 }
 
 /** 엔드포인트별 상태 인원 수 병렬 조회 */
-async function fetchStatusCounts(endpoint: string, statuses: string[]): Promise<Record<string, number>> {
+async function fetchStatusCounts(endpoint: string, statuses: string[], schoolId?: string | number): Promise<Record<string, number>> {
+  const schoolParam = schoolId ? `&schoolId=${schoolId}` : "";
   const results = await Promise.allSettled(
     statuses.map((s) =>
       admin
-        .get(`/${endpoint}?status=${s}&size=1&page=0`)
+        .get(`/${endpoint}?status=${s}&size=1&page=0${schoolParam}`)
         .then((r) => [s, (r.data.totalElements as number | undefined) ?? 0] as const)
         .catch(() => [s, 0] as const),
     ),
@@ -120,22 +121,22 @@ function StatusBarCard({
 }) {
   const chartHeight = Math.max(data.length * 36 + 20, 100);
   return (
-    <div className="card h-100" style={{ borderTop: `3px solid ${accentColor}` }}>
-      <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", borderTop: `3px solid ${accentColor}`, height: "100%" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
         <div>
-          <h6 className="fw-semibold mb-1" style={{ fontSize: 14 }}>
+          <h6 style={{ fontWeight: 600, marginBottom: 4, fontSize: 14, color: "#111827" }}>
             {title}
           </h6>
-          <p className="text-secondary-light mb-0" style={{ fontSize: 12 }}>
-            총 <span className="fw-semibold text-primary-light">{total.toLocaleString()}</span>
+          <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+            총 <span style={{ fontWeight: 600, color: "#111827" }}>{total.toLocaleString()}</span>
             {unit}
           </p>
         </div>
-        <Link to={link} className="text-secondary-light text-decoration-none" style={{ fontSize: 12 }}>
+        <Link to={link} style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}>
           관리 →
         </Link>
       </div>
-      <div className="card-body px-16 py-12">
+      <div style={{ padding: "12px 16px" }}>
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart layout="vertical" data={data} margin={{ top: 0, right: 28, left: 0, bottom: 0 }} barSize={16}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--neutral-200)" />
@@ -196,9 +197,12 @@ export default function AdminDashboard() {
   const [roleRequestCounts, setRoleRequestCounts] = useState<Record<string, Record<string, number>>>({});
 
   useEffect(() => {
+    const schoolId = selectedSchool?.id;
+    const schoolParam = schoolId ? `?schoolId=${schoolId}` : "";
+
     // 기본 stats
     admin
-      .get("/dashboard/stats")
+      .get(`/dashboard/stats${schoolParam}`)
       .then((r) => setStats(r.data))
       .catch(() => {});
     // 시스템 설정
@@ -208,29 +212,31 @@ export default function AdminDashboard() {
       .catch(() => {});
 
     // 각 구성원 상태별 인원 병렬 조회
-    fetchStatusCounts("students", ["ENROLLED", "LEAVE_OF_ABSENCE", "GRADUATED", "DROPOUT", "TRANSFERRED", "EXPELLED"]).then(setStudentCounts);
-    fetchStatusCounts("teachers", ["EMPLOYED", "LEAVE", "RETIRED"]).then(setTeacherCounts);
-    fetchStatusCounts("staffs", ["EMPLOYED", "LEAVE", "DISPATCHED", "RETIRED"]).then(setStaffCounts);
+    fetchStatusCounts("students", ["ENROLLED", "LEAVE_OF_ABSENCE", "GRADUATED", "DROPOUT", "TRANSFERRED", "EXPELLED"], schoolId).then(setStudentCounts);
+    fetchStatusCounts("teachers", ["EMPLOYED", "LEAVE", "RETIRED"], schoolId).then(setTeacherCounts);
+    fetchStatusCounts("staffs", ["EMPLOYED", "LEAVE", "DISPATCHED", "RETIRED"], schoolId).then(setStaffCounts);
 
     // 역할별 RoleRequest 승인 상태 인원 조회 (학생/교사만; 학부모는 ParentList에서 별도 표시)
+    const rrSchoolParam = schoolId ? `&schoolId=${schoolId}` : "";
     Promise.all([
-      admin.get("/role-requests/counts?role=STUDENT").then((r) => r.data as Record<string, number>).catch(() => ({})),
-      admin.get("/role-requests/counts?role=TEACHER").then((r) => r.data as Record<string, number>).catch(() => ({})),
+      admin.get(`/role-requests/counts?role=STUDENT${rrSchoolParam}`).then((r) => r.data as Record<string, number>).catch(() => ({})),
+      admin.get(`/role-requests/counts?role=TEACHER${rrSchoolParam}`).then((r) => r.data as Record<string, number>).catch(() => ({})),
     ]).then(([s, t]) => {
       setRoleRequestCounts({ STUDENT: s, TEACHER: t });
     }).catch(() => {});
 
     // 학사 일정 (오늘 ~ 60일 후)
     const end = new Date(Date.now() + 60 * 86400000).toISOString().split("T")[0];
+    const scheduleSchoolParam = schoolId ? `&schoolId=${schoolId}` : "";
     admin
-      .get(`/schedule?start=${today}&end=${end}`)
+      .get(`/schedule?start=${today}&end=${end}${scheduleSchoolParam}`)
       .then((r) => {
         const data: ScheduleEvent[] = Array.isArray(r.data) ? r.data : [];
         setSchedules(data.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()).slice(0, 8));
       })
       .catch(() => setSchedules([]))
       .finally(() => setScheduleLoading(false));
-  }, [today]);
+  }, [today, selectedSchool]);
 
   // 설정 로드 후 학급 데이터 조회
   useEffect(() => {
@@ -292,14 +298,14 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       {/* 헤더 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h6 className="fw-semibold mb-0">관리자 대시보드</h6>
-          <p className="text-neutral-600 mt-4 mb-0">
+          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>관리자 대시보드</h5>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
             {selectedSchool ? (
               <>
-                <span className="fw-semibold">{selectedSchool.name}</span>
-                <span className="text-muted ms-1 small">
+                <span style={{ fontWeight: 600 }}>{selectedSchool.name}</span>
+                <span style={{ color: "#9ca3af", marginLeft: 4, fontSize: 13 }}>
                   ({selectedSchool.schoolKind} · {selectedSchool.officeOfEducation})
                 </span>
               </>
@@ -308,14 +314,14 @@ export default function AdminDashboard() {
             )}
           </p>
         </div>
-        <span className="text-muted" style={{ fontSize: 13 }}>
+        <span style={{ color: "#9ca3af", fontSize: 13 }}>
           {today}
         </span>
       </div>
 
       {/* ── 구성원 현황 차트 3개 ── */}
-      <div className="row g-24 mb-24">
-        <div className="col-xl-4 col-md-6">
+      <div style={{ display: "flex", gap: 20, marginBottom: 24, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 280px", minWidth: 260 }}>
           <StatusBarCard
             title="학생 현황"
             total={stats.totalStudents}
@@ -324,7 +330,7 @@ export default function AdminDashboard() {
             accentColor="#25A194"
           />
         </div>
-        <div className="col-xl-4 col-md-6">
+        <div style={{ flex: "1 1 280px", minWidth: 260 }}>
           <StatusBarCard
             title="교사 현황"
             total={stats.totalTeachers}
@@ -333,7 +339,7 @@ export default function AdminDashboard() {
             accentColor="#1d4ed8"
           />
         </div>
-        <div className="col-xl-4 col-md-6">
+        <div style={{ flex: "1 1 280px", minWidth: 260 }}>
           <StatusBarCard
             title="교직원 현황"
             total={stats.totalStaffs}
@@ -345,11 +351,11 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── 구분선 ── */}
-      <div className="border-top border-neutral-200 mb-24" />
+      <div style={{ borderTop: "1px solid #e5e7eb", marginBottom: 24 }} />
 
       {/* ── 계정 승인 현황 (학생/교사) ── */}
-      <div className="row g-24 mb-24">
-        <div className="col-xl-6 col-md-6">
+      <div style={{ display: "flex", gap: 20, marginBottom: 24, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 400px", minWidth: 320 }}>
           <StatusBarCard
             title="학생 계정 승인 현황"
             total={rrg("STUDENT", "ACTIVE") + rrg("STUDENT", "PENDING") + rrg("STUDENT", "SUSPENDED") + rrg("STUDENT", "REJECTED")}
@@ -358,7 +364,7 @@ export default function AdminDashboard() {
             accentColor="#25A194"
           />
         </div>
-        <div className="col-xl-6 col-md-6">
+        <div style={{ flex: "1 1 400px", minWidth: 320 }}>
           <StatusBarCard
             title="교사 계정 승인 현황"
             total={rrg("TEACHER", "ACTIVE") + rrg("TEACHER", "PENDING") + rrg("TEACHER", "SUSPENDED") + rrg("TEACHER", "REJECTED")}
@@ -370,57 +376,56 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── 구분선 ── */}
-      <div className="border-top border-neutral-200 mb-24" />
+      <div style={{ borderTop: "1px solid #e5e7eb", marginBottom: 24 }} />
 
       {/* ── 학급 현황 + 학사 일정 ── */}
-      <div className="row g-24">
+      <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
         {/* 학급 현황 */}
-        <div className="col-lg-6 mb-24">
-          <div className="card h-100" style={{ borderTop: "3px solid #d97706" }}>
-            <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+        <div style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", borderTop: "3px solid #d97706", height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
               <div>
-                <h6 className="fw-semibold mb-1" style={{ fontSize: 14 }}>
+                <h6 style={{ fontWeight: 600, marginBottom: 4, fontSize: 14, color: "#111827" }}>
                   학급 현황
                 </h6>
-                <p className="text-secondary-light mb-0" style={{ fontSize: 12 }}>
+                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
                   {settings ? `${settings.currentSchoolYear}년 ${settings.currentSemester}학기 편성 학급` : "로딩 중…"}
                 </p>
               </div>
               <Link
                 to={ADMIN_ROUTES.CLASSES.LIST}
-                className="text-secondary-light text-decoration-none"
-                style={{ fontSize: 12 }}
+                style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
               >
                 관리 →
               </Link>
             </div>
-            <div className="card-body px-20 py-20">
+            <div style={{ padding: 20 }}>
               {gradeKeys.length === 0 ? (
-                <div className="d-flex align-items-center justify-content-center h-100 py-24 text-neutral-400">
-                  <div className="text-center">
-                    <i className="ri-building-2-line d-block mb-8" style={{ fontSize: 28 }} />
-                    <p className="mb-0" style={{ fontSize: 13 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 0", color: "#9ca3af" }}>
+                  <div style={{ textAlign: "center" }}>
+                    <i className="ri-building-2-line" style={{ fontSize: 28, display: "block", marginBottom: 8 }} />
+                    <p style={{ margin: 0, fontSize: 13 }}>
                       {settings ? "편성된 학급이 없습니다." : "로딩 중…"}
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="row g-16">
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   {gradeKeys.map((grade) => {
                     const { count, students } = classesByGrade[grade];
                     return (
-                      <div key={grade} className="col-4">
-                        <div className="text-center py-16 px-8 radius-8" style={{ background: "var(--neutral-50)" }}>
-                          <p className="fw-semibold text-primary-light mb-6" style={{ fontSize: 13 }}>
+                      <div key={grade} style={{ flex: "1 1 80px" }}>
+                        <div style={{ textAlign: "center", padding: "16px 8px", borderRadius: 8, background: "#f9fafb" }}>
+                          <p style={{ fontWeight: 600, color: "#111827", marginBottom: 6, fontSize: 13 }}>
                             {grade}학년
                           </p>
-                          <p className="fw-bold text-primary-light mb-4" style={{ fontSize: 22, lineHeight: 1.2 }}>
+                          <p style={{ fontWeight: 700, color: "#111827", marginBottom: 4, fontSize: 22, lineHeight: 1.2 }}>
                             {count}
-                            <span className="fw-normal ms-1" style={{ fontSize: 13 }}>
+                            <span style={{ fontWeight: 400, marginLeft: 4, fontSize: 13 }}>
                               반
                             </span>
                           </p>
-                          <p className="text-secondary-light mb-0" style={{ fontSize: 11 }}>
+                          <p style={{ color: "#6b7280", margin: 0, fontSize: 11 }}>
                             재학생 {students.toLocaleString()}명
                           </p>
                         </div>
@@ -434,42 +439,38 @@ export default function AdminDashboard() {
         </div>
 
         {/* 다가오는 학사 일정 */}
-        <div className="col-lg-6 mb-24">
-          <div
-            className="card h-100"
-            style={{ borderTop: "3px solid #0ea5e9", display: "flex", flexDirection: "column" }}
-          >
-            <div className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200">
+        <div style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", borderTop: "3px solid #0ea5e9", height: "100%", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
               <div>
-                <h6 className="fw-semibold mb-1" style={{ fontSize: 14 }}>
+                <h6 style={{ fontWeight: 600, marginBottom: 4, fontSize: 14, color: "#111827" }}>
                   다가오는 학사 일정
                 </h6>
-                <p className="text-secondary-light mb-0" style={{ fontSize: 12 }}>
+                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
                   오늘 이후 60일 이내
                 </p>
               </div>
               <Link
                 to={ADMIN_ROUTES.MASTER.SCHEDULE}
-                className="text-secondary-light text-decoration-none"
-                style={{ fontSize: 12 }}
+                style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
               >
                 전체 보기 →
               </Link>
             </div>
-            <div className="card-body p-0" style={{ flex: 1, overflowY: "auto" }}>
+            <div style={{ flex: 1, overflowY: "auto" }}>
               {scheduleLoading ? (
-                <div className="d-flex align-items-center justify-content-center h-100 py-40">
-                  <div className="spinner-border spinner-border-sm text-neutral-400" />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 0" }}>
+                  <div className="spinner-border spinner-border-sm" style={{ color: "#9ca3af" }} />
                 </div>
               ) : schedules.length === 0 ? (
-                <div className="d-flex flex-column align-items-center justify-content-center h-100 py-40 text-neutral-400">
-                  <i className="ri-calendar-line mb-8" style={{ fontSize: 28 }} />
-                  <p className="mb-0" style={{ fontSize: 13 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 0", color: "#9ca3af" }}>
+                  <i className="ri-calendar-line" style={{ fontSize: 28, marginBottom: 8 }} />
+                  <p style={{ margin: 0, fontSize: 13 }}>
                     예정된 일정이 없습니다.
                   </p>
                 </div>
               ) : (
-                <ul className="list-unstyled mb-0">
+                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                   {schedules.map((ev, idx) => {
                     const cfg = EVENT_CFG[ev.eventType] ?? EVENT_CFG.ACADEMIC;
                     const dday = getDday(ev.start);
@@ -477,46 +478,25 @@ export default function AdminDashboard() {
                     return (
                       <li
                         key={ev.id}
-                        className={`px-20 py-11 d-flex align-items-start gap-12${!isLast ? " border-bottom border-neutral-200" : ""}`}
+                        style={{ padding: "11px 20px", display: "flex", alignItems: "flex-start", gap: 12, borderBottom: isLast ? "none" : "1px solid #e5e7eb" }}
                       >
                         <div
-                          className="flex-shrink-0"
-                          style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: "50%",
-                            background: cfg.color,
-                            marginTop: 5,
-                          }}
+                          style={{ flexShrink: 0, width: 8, height: 8, borderRadius: "50%", background: cfg.color, marginTop: 5 }}
                         />
-                        <div className="flex-grow-1 min-w-0">
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <p
-                            className="fw-semibold text-primary-light mb-1"
-                            style={{
-                              fontSize: 13,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
+                            style={{ fontWeight: 600, color: "#111827", marginBottom: 4, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                           >
                             {ev.title}
                           </p>
-                          <p className="text-secondary-light mb-0" style={{ fontSize: 11 }}>
+                          <p style={{ color: "#6b7280", margin: 0, fontSize: 11 }}>
                             {fmtDate(ev.start, ev.end)}
-                            {ev.targetGrade && <span className="ms-1 text-neutral-400">· {ev.targetGrade}학년</span>}
+                            {ev.targetGrade && <span style={{ marginLeft: 4, color: "#9ca3af" }}>· {ev.targetGrade}학년</span>}
                           </p>
                         </div>
-                        <div className="d-flex flex-column align-items-end gap-4 flex-shrink-0">
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
                           <span
-                            className="badge"
-                            style={{
-                              background: cfg.bg,
-                              color: cfg.color,
-                              fontSize: 9,
-                              fontWeight: 600,
-                              padding: "2px 6px",
-                              borderRadius: 5,
-                            }}
+                            style={{ background: cfg.bg, color: cfg.color, fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 5 }}
                           >
                             {cfg.label}
                           </span>

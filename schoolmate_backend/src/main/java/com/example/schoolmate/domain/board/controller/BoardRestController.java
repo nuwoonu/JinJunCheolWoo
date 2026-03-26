@@ -2,6 +2,7 @@ package com.example.schoolmate.domain.board.controller;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.schoolmate.domain.board.dto.BoardDTO;
+import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.service.BoardService;
 import com.example.schoolmate.dto.AuthUserDTO;
 
@@ -118,17 +120,19 @@ public class BoardRestController {
 
     /**
      * [woo] 학부모 공지(가정통신문) 목록 - 역할별 필터링
-     * 교사: 전체 조회 / 학부모: 자녀 학급 기준 필터링
-     * GET /api/board/parent-notice?page=0&size=10
+     * 교사: 전체 조회 / 학부모: 선택된 자녀 학급 기준 필터링
+     * GET /api/board/parent-notice?page=0&size=10&studentUserUid=123
      */
     @GetMapping("/parent-notice")
     public ResponseEntity<Map<String, Object>> getParentNotices(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long studentUserUid,
             @AuthenticationPrincipal AuthUserDTO authUser) {
 
         Page<BoardDTO.Response> result = boardService.getParentNoticesFiltered(
                 authUser != null ? authUser.getCustomUserDTO() : null,
+                studentUserUid,
                 PageRequest.of(page, size));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
@@ -213,6 +217,55 @@ public class BoardRestController {
             log.error("게시물 삭제 실패: {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // ========== [woo] 읽음 처리 API ==========
+
+    /**
+     * [woo] 게시물 읽음 처리 — POST /api/board/{id}/read
+     * 웹·앱 공통 호출, 중복 저장 방지
+     */
+    @PostMapping("/{id}/read")
+    public ResponseEntity<?> markAsRead(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        boardService.markAsRead(id, authUser.getCustomUserDTO().getUid());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * [woo] 읽은 게시물 ID 목록 — GET /api/board/read-ids?type=PARENT_NOTICE
+     * 프론트에서 목록 렌더 시 읽음 표시 일괄 처리용
+     */
+    @GetMapping("/read-ids")
+    public ResponseEntity<Set<Long>> getReadIds(
+            @RequestParam String type,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        BoardType boardType = BoardType.valueOf(type);
+        Set<Long> ids = boardService.getReadBoardIds(authUser.getCustomUserDTO().getUid(), boardType);
+        return ResponseEntity.ok(ids);
+    }
+
+    /**
+     * [woo] 학부모 읽음/안읽음 현황 — GET /api/board/{id}/read-status
+     * 교사가 누가 읽었는지 확인하는 API
+     */
+    @GetMapping("/{id}/read-status")
+    public ResponseEntity<?> getParentReadStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        return ResponseEntity.ok(boardService.getParentReadStatus(id, authUser.getCustomUserDTO().getUid()));
+    }
+
+    /**
+     * [woo] 안읽은 가정통신문 수 — GET /api/board/unread-count
+     * 앱 푸시 뱃지, 사이드바 알림 뱃지용
+     */
+    @GetMapping("/unread-count")
+    public ResponseEntity<Map<String, Long>> getUnreadCount(
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        long count = boardService.countUnreadParentNotice(authUser.getCustomUserDTO().getUid());
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     /**

@@ -24,11 +24,6 @@ interface ClassInfo {
   students: Student[]
 }
 
-interface NoClassResponse {
-  hasClassroom: false
-  message: string
-}
-
 export default function TeacherMyClass() {
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
