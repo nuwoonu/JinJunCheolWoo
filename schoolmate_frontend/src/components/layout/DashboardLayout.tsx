@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
-import Footer from '@/components/layout/Footer'
 import { SidebarProvider, useSidebar } from '@/contexts/SidebarContext'
 
 // [woo] SidebarContext를 읽어 body/overlay에 클래스 적용하는 내부 레이아웃
@@ -24,7 +23,6 @@ function Layout({ children }: { children: ReactNode }) {
         <div className="dashboard-main-body">
           {children}
         </div>
-        <Footer />
       </main>
     </>
   )

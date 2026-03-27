@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import api, { getRoleContexts, type RoleContext } from '@/api/auth'
 import { auth } from '@/shared/auth'
 import { useSchoolSearch, type SchoolSummary } from '@/hooks/useSchoolSearch'
+import MainFooter from '@/components/layout/MainFooter'
 
 // 이메일 가입: 학교 선택 후 /register로 이동 (state에 role+schoolId 전달)
 // SNS/Hub 가입: 학교 선택 후 POST /auth/select-role → /hub로 이동
@@ -74,6 +75,7 @@ export default function RegisterSchoolSelect() {
   }
 
   return (
+    <>
     <div className="register-container">
       {/* 왼쪽 상단 로고 */}
       <a href="/main" className="register-logo">
@@ -270,5 +272,7 @@ export default function RegisterSchoolSelect() {
         </div>
       </div>
     </div>
+    <MainFooter />
+    </>
   )
 }

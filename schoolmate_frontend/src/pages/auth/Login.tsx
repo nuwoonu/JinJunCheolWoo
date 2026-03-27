@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "@/api/auth";
 import { useAuth } from "@/contexts/AuthContext";
+import MainFooter from "@/components/layout/MainFooter";
 import "../../styles/login.css";
 
 export default function Login() {
@@ -172,6 +173,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <MainFooter />
     </>
   );
 }

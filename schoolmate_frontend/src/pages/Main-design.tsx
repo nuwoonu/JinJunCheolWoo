@@ -286,7 +286,7 @@ export default function Main() {
 
         /* ── HERO ── */
         .hero-wrap {
-          background: var(--teal);
+          background: #25a194; /* [soojin] Main.tsx 히어로 바탕색(#25a194)으로 변경 */
           min-height: 100vh;
           display: flex;
           align-items: flex-start;
@@ -887,13 +887,13 @@ export default function Main() {
         .btn-cta-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.5); color: var(--white); }
 
         /* ── FOOTER ── */
-        .main-footer { background: #1a2a4a; color: rgba(255,255,255,0.55); padding: 36px 0 24px; }
+        .main-footer { background: #fafafa; color: rgba(0,0,0,0.55); padding: 36px 0 24px; }
         .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
-        .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
-        .footer-links a:hover { color: var(--white); }
-        .footer-divider { width: 1px; background: rgba(255,255,255,0.2); }
+        .footer-links a { color: rgba(0,0,0,0.6); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: #000; }
+        .footer-divider { width: 1px; background: rgba(0,0,0,0.15); }
         .footer-info { text-align: center; font-size: 0.8rem; line-height: 1.9; margin-bottom: 20px; }
-        .footer-copy { font-size: 0.75rem; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; color: rgba(255,255,255,0.35); }
+        .footer-copy { font-size: 0.75rem; text-align: center; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 16px; color: rgba(0,0,0,0.35); }
 
         /* ── 반응형 ── */
         @media (max-width: 1024px) {
@@ -958,7 +958,7 @@ export default function Main() {
         </nav>
 
         {/* ════ 섹션 1: HERO ════ */}
-        <section id="hero" className="hero-wrap" style={{ background: "#1A9EA0" }}>
+        <section id="hero" className="hero-wrap" style={{ background: "#25a194" }}> {/* [soojin] Main.tsx 히어로 바탕색(#25a194)으로 변경 */}
           <div className="hero-inner">
             <div className="hero-text" style={{ color: "#ffffff" }}>
               <h1 className="hero-title outfit" style={{ color: "#ffffff" }}>School Mate</h1>

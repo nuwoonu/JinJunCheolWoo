@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,7 @@ public class TeacherDTO {
         private Set<UserRole> roles;
         private Long roleRequestId;
         private String roleRequestStatus;
+        private LocalDateTime roleRequestCreateDate; // [soojin] 대시보드 대기 목록 최신순 정렬용
 
         public DetailResponse(User user) {
             this.uid = user.getUid();
@@ -82,6 +84,10 @@ public class TeacherDTO {
 
         public void setRoleRequestStatus(String roleRequestStatus) {
             this.roleRequestStatus = roleRequestStatus;
+        }
+
+        public void setRoleRequestCreateDate(LocalDateTime roleRequestCreateDate) { // [soojin] 대시보드 대기 목록 최신순 정렬용
+            this.roleRequestCreateDate = roleRequestCreateDate;
         }
     }
 
@@ -137,6 +143,7 @@ public class TeacherDTO {
         private String type; // 검색 필드 (name, dept 등)
         private String keyword; // 검색어
         private String status; // 기본값: 전체 (null이면 필터 없음) [woo]
+        private String roleRequestStatus; // [soojin] 대시보드 대기 목록 필터링용 (null이면 필터 없음)
     }
 
     /**

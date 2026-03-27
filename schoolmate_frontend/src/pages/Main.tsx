@@ -195,13 +195,13 @@ export default function Main() {
         .notice-meta { font-size: 0.78rem; color: #9ca3af; white-space: nowrap; }
 
         /* ── footer ── */
-        .main-footer { background: #1a2a4a; color: rgba(255,255,255,0.55); padding: 36px 0 24px; }
+        .main-footer { background: #fafafa; color: rgba(0,0,0,0.55); padding: 36px 0 24px; }
         .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
-        .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
-        .footer-links a:hover { color: #fff; }
-.footer-divider { width: 1px; background: rgba(255,255,255,0.2); }
+        .footer-links a { color: rgba(0,0,0,0.6); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: #000; }
+        .footer-divider { width: 1px; background: rgba(0,0,0,0.15); }
         .footer-info { text-align: center; font-size: 0.8rem; line-height: 1.9; margin-bottom: 20px; }
-        .footer-copy { font-size: 0.75rem; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; color: rgba(255,255,255,0.35); }
+        .footer-copy { font-size: 0.75rem; text-align: center; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 16px; color: rgba(0,0,0,0.35); }
 
         @media (max-width: 992px) { .hero-title { font-size: 2.2rem; } .section-title { font-size: 1.7rem; } }
       `}</style>

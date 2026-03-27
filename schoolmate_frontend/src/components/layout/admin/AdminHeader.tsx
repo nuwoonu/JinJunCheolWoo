@@ -45,7 +45,7 @@ export default function AdminHeader() {
 
   return (
     <AdminTopBar
-      position="fixed"
+      position="sticky"
       navLinks={navLinks}
       quickLink={quickLink}
     />

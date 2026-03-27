@@ -4,7 +4,6 @@ import api from "@/api/auth";
 import Header from "@/components/layout/Header";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
-import Footer from "@/components/layout/Footer";
 
 // [soojin] 학부모 대시보드 - 사이드바 없는 2컬럼 레이아웃
 
@@ -290,7 +289,6 @@ export default function ParentDashboard() {
             </div>
           </div>
         </div>
-        <Footer />
       </div>
     </SidebarProvider>
   );
