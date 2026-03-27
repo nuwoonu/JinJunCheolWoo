@@ -207,6 +207,7 @@ public class DashboardApiController {
             attendanceNum = idx >= 0 ? idx + 1 : null;
         }
 
+        Long schoolId   = info.getSchool() != null ? info.getSchool().getId() : null;
         String schoolName = info.getSchool() != null ? info.getSchool().getName() : null;
 
         return ChildDTO.builder()
@@ -216,6 +217,8 @@ public class DashboardApiController {
                 .grade(assignment != null ? assignment.getGrade() : null)
                 .classNum(assignment != null ? assignment.getClassNum() : null)
                 .attendanceNum(attendanceNum)
+                // [soojin] 자녀 학교 ID — 학부모 대시보드 급식 조회에 사용
+                .schoolId(schoolId)
                 .schoolName(schoolName)
                 .profileImageUrl(imageUrl)
                 .build();

@@ -3,9 +3,13 @@ package com.example.schoolmate.soojin.service;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -43,12 +47,15 @@ public class NeisMealService {
         this.restTemplate = new RestTemplate(factory);
     }
 
+    // [soojin] DDISH_NM에서 알레르기 번호를 추출하는 패턴 (예: "1.5.9." → [1, 5, 9])
+    private static final Pattern ALLERGY_PATTERN = Pattern.compile("[0-9]+(\\.[0-9]+)*\\.");
+
     /**
      * 특정 학교의 당일 급식 정보 조회
      *
      * @param officeCode NEIS 교육청 코드 (ATPT_OFCDC_SC_CODE, 예: T10)
      * @param schoolCode NEIS 학교 표준코드 (SD_SCHUL_CODE, 예: 9290083)
-     * @return { menu, calories, mealType } 또는 null (급식 정보 없음)
+     * @return { menu, calories, mealType, menuItems } 또는 null (급식 정보 없음)
      */
     public Map<String, Object> fetchTodayMeal(String officeCode, String schoolCode) {
         String today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE); // YYYYMMDD
@@ -105,16 +112,19 @@ public class NeisMealService {
 
         String menu = parseMenu(ddishNm);
         String calories = parseCalories(calInfo);
+        // [soojin] 알레르기 정보 포함 메뉴 아이템 목록 추가
+        List<Map<String, Object>> menuItems = parseMenuItems(ddishNm);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("menu", menu);
         result.put("calories", calories);
         result.put("mealType", mealType);
+        result.put("menuItems", menuItems);
         return result;
     }
 
     /**
-     * DDISH_NM 파싱
+     * DDISH_NM 파싱 (요리명만 추출 — 기존 menu 필드용)
      * - {@code <br/>} 기준으로 분리
      * - 알레르기 번호 제거: {@code 5.6.13.} 패턴
      * - 원산지/조리법 괄호 제거: {@code (영)}, {@code (친환경/영)} 등
@@ -126,6 +136,36 @@ public class NeisMealService {
                            .trim())
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * [soojin] DDISH_NM 파싱 — 요리명 + 알레르기 번호 목록을 함께 반환
+     * 예: "김치찌개1.5.9.<br/>쌀밥<br/>돼지불고기5.10."
+     *   → [{name:"김치찌개", allergies:[1,5,9]}, {name:"쌀밥", allergies:[]}, ...]
+     */
+    private List<Map<String, Object>> parseMenuItems(String ddishNm) {
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (String raw : ddishNm.split("<br/>")) {
+            // 알레르기 번호 추출 (예: "1.5.9." → [1, 5, 9])
+            List<Integer> allergies = new ArrayList<>();
+            Matcher m = ALLERGY_PATTERN.matcher(raw);
+            while (m.find()) {
+                for (String num : m.group().split("\\.")) {
+                    if (!num.isEmpty()) {
+                        try { allergies.add(Integer.parseInt(num)); } catch (NumberFormatException ignored) {}
+                    }
+                }
+            }
+            String name = raw.replaceAll("[0-9]+(\\.[0-9]+)*\\.", "")
+                             .replaceAll("\\([^)]*\\)", "")
+                             .trim();
+            if (name.isEmpty()) continue;
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("name", name);
+            item.put("allergies", allergies);
+            items.add(item);
+        }
+        return items;
     }
 
     /**
