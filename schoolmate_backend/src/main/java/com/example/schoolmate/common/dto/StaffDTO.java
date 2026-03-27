@@ -55,6 +55,7 @@ public class StaffDTO {
         private String extensionNumber;
         private String employmentType;
         private LocalDate contractEndDate;
+        private String grantedRole; // 등록 시 즉시 부여할 권한 (선택)
 
         public CreateRequest(CsvImportRequest csv) {
             this.name = csv.getName();

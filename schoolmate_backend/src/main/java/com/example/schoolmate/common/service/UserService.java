@@ -15,6 +15,8 @@ import com.example.schoolmate.common.entity.user.SchoolAdminGrant;
 import com.example.schoolmate.common.entity.user.constant.GrantedRole;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
@@ -23,9 +25,9 @@ import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.common.util.NotificationHelper;
 import com.example.schoolmate.dto.CustomUserDTO;
-import com.example.schoolmate.dto.PasswordDTO;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -52,6 +54,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final ParentInfoRepository parentInfoRepository;
+    private final StudentInfoRepository studentInfoRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final PasswordEncoder passwordEncoder;
@@ -59,234 +63,175 @@ public class UserService {
     private final SchoolRepository schoolRepository;
 
     /**
-     * 회원가입 - 새 엔티티 구조 (User + Info)
+     * 이메일 회원가입
+     * User 생성 후 processRoleSetup()으로 역할 셋업을 위임
      */
     public Long join(CustomUserDTO dto) {
         log.info("회원가입 시도: {}, 역할: {}", dto.getEmail(), dto.getRole());
 
-        // 이메일 중복 체크
         if (existsByEmail(dto.getEmail())) {
             throw new IllegalStateException("이미 사용중인 이메일입니다: " + dto.getEmail());
         }
 
-        // 1. User 생성
         User user = User.builder()
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .name(dto.getName())
                 .build();
-
-        // 2. 역할 추가
         user.addRole(dto.getRole());
 
-        // 3. 역할별 Info 생성
-        switch (dto.getRole()) {
-            case STUDENT -> createStudentInfo(user, dto);
-            case TEACHER -> createTeacherInfo(user, dto);
-            case PARENT -> createParentInfo(user, dto);
-            case ADMIN -> {
-            } // Admin은 Info 없이 역할만
-            default -> throw new IllegalArgumentException("지원하지 않는 역할입니다: " + dto.getRole());
-        }
+        processRoleSetup(user, dto.getRole(), dto.getSchoolId(), dto);
 
-        User savedUser = userRepository.save(user);
-        log.info("회원가입 완료: {}, ID: {}", savedUser.getEmail(), savedUser.getUid());
-
-        // 역할별 RoleRequest 생성 (PENDING 승인 대기)
-        if (dto.getRole() != UserRole.ADMIN) {
-            roleRequestRepository.save(new RoleRequest(savedUser, dto.getRole(), dto.getSchoolId()));
-        }
-
-        // 교사/학부모 가입 시 관리자에게 승인 요청 알림 발송
-        if (dto.getRole() == UserRole.TEACHER) {
-            notifyAdminsOfNewTeacher(savedUser);
-        } else if (dto.getRole() == UserRole.PARENT) {
-            notifyAdminsOfNewParent(savedUser);
-        }
-
-        return savedUser.getUid();
-    }
-
-    // [변경 전] dto에서 학번(studentIdentityNum 또는 studentNumber)을 가져옴
-    // 회원가입 폼에서 학번을 입력하지 않으면 null이 되어 DB 저장 시 에러 발생
-    // "Column 'code' cannot be null" 에러
-
-    private void createStudentInfo(User user, CustomUserDTO dto) {
-        StudentInfo studentInfo = new StudentInfo();
-        studentInfo.setUser(user);
-        studentInfo.setStatus(StudentStatus.ENROLLED);
-        studentInfo.setPrimary(true); // 신규 가입 = 최초 인스턴스 → 항상 primary
-        studentInfo.setPhone(dto.getPhoneNumber());
-        if (dto.getSchoolId() != null) {
-            schoolRepository.findById(dto.getSchoolId()).ifPresent(studentInfo::setSchool);
-        }
-
-        // studentInfo.setCode(dto.getStudentIdentityNum() != null
-        // ? dto.getStudentIdentityNum()
-        // : dto.getStudentNumber());
-
-        // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
-        // 학번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
-        String code = dto.getStudentIdentityNum();
-        if (code == null || code.isEmpty()) {
-            code = java.util.UUID.randomUUID().toString();
-        }
-        studentInfo.setCode(code);
-        // ================================================================
-
-        // 초기 학급 배정
-        if (dto.getGrade() != null && dto.getClassNum() != null) {
-            int currentYear = LocalDate.now().getYear();
-            // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
-            Long schoolId = SchoolContextHolder.getSchoolId();
-            Classroom classroom = classroomRepository
-                    .findBySchoolIdAndYearAndGradeAndClassNum(schoolId, currentYear, dto.getGrade(), dto.getClassNum()).orElse(null);
-            if (classroom != null) {
-                StudentAssignment assignment = StudentAssignment.builder()
-                        .studentInfo(studentInfo)
-                        .schoolYear(currentYear)
-                        .classroom(classroom)
-                        .attendanceNum(dto.getStudentNum())
-                        .build();
-                studentInfo.getAssignments().add(assignment);
-                studentInfo.setCurrentAssignment(assignment);
-            }
-        }
-
-        user.getInfos().add(studentInfo);
-    }
-
-    private void createTeacherInfo(User user, CustomUserDTO dto) {
-        TeacherInfo teacherInfo = new TeacherInfo();
-        teacherInfo.setUser(user);
-        teacherInfo.setStatus(TeacherStatus.EMPLOYED);
-        teacherInfo.setPrimary(true); // 신규 가입 = 최초 인스턴스 → 항상 primary
-        teacherInfo.setPhone(dto.getPhoneNumber());
-        if (dto.getSchoolId() != null) {
-            schoolRepository.findById(dto.getSchoolId()).ifPresent(teacherInfo::setSchool);
-        }
-
-        // ========== [변경] code를 UUID로 생성 (2025-01-29 woo) ==========
-        // 사번이 있으면 사용, 없으면 UUID로 임시값 생성 (관리자가 나중에 수정)
-        String code = dto.getEmployeeNumber();
-        if (code == null || code.isEmpty()) {
-            code = java.util.UUID.randomUUID().toString();
-        }
-        teacherInfo.setCode(code);
-        // ================================================================
-
-        // 나머지는 null 허용 (관리자가 나중에 설정)
-        teacherInfo.setSubject(dto.getSubject());
-        teacherInfo.setDepartment(dto.getDepartment());
-        teacherInfo.setPosition(dto.getPosition());
-
-        user.getInfos().add(teacherInfo);
-    }
-
-    private void createParentInfo(User user, CustomUserDTO dto) {
-        ParentInfo parentInfo = new ParentInfo();
-        parentInfo.setUser(user);
-        parentInfo.setParentName(dto.getName());
-        parentInfo.setPhone(dto.getPhoneNumber());
-
-        // ========== [변경] 중복 code 체크 추가 (2025-01-29 woo) ==========
-        // 동일한 이메일 아이디로 가입 시 중복 에러 방지
-        String code = "TEMP_" + user.getEmail().split("@")[0];
-        if (parentInfoRepository.existsByCode(code)) {
-            throw new IllegalStateException("이미 사용 중인 아이디입니다. 다른 이메일로 가입해주세요.");
-        }
-        parentInfo.setCode(code);
-        // ================================================================
-
-        user.getInfos().add(parentInfo);
+        log.info("회원가입 완료: {}, ID: {}", user.getEmail(), user.getUid());
+        return user.getUid();
     }
 
     /**
-     * 소셜 로그인 역할 선택 후 Info 엔티티 생성 (승인대기 상태로)
-     * - LoginController.postSelectRole()에서 호출
+     * SNS 역할 선택 후 역할 셋업
+     * AuthApiController.selectRole()에서 호출
      */
     public void createSocialUserInfo(User user, UserRole role, Long schoolId) {
+        processRoleSetup(user, role, schoolId, null);
+    }
+
+    /**
+     * 역할 셋업 공통 처리: Info 생성 → 저장 → RoleRequest → 알림
+     *
+     * @param dto 이메일 가입 시에만 존재 (전화번호, 학번 등 추가 정보). SNS 가입은 null.
+     */
+    private void processRoleSetup(User user, UserRole role, Long schoolId, CustomUserDTO dto) {
+        // 1. 역할별 Info 엔티티 생성 (ADMIN은 Info 없음)
         switch (role) {
-            case STUDENT -> {
-                boolean isFirst = user.getInfos().stream().noneMatch(i -> i instanceof StudentInfo);
-                StudentInfo studentInfo = new StudentInfo();
-                studentInfo.setUser(user);
-                studentInfo.setStatus(StudentStatus.ENROLLED);
-                studentInfo.setCode(java.util.UUID.randomUUID().toString());
-                studentInfo.setPrimary(isFirst);
-                if (schoolId != null) {
-                    schoolRepository.findById(schoolId).ifPresent(studentInfo::setSchool);
-                }
-                user.getInfos().add(studentInfo);
-            }
-            case TEACHER -> {
-                boolean isFirst = user.getInfos().stream().noneMatch(i -> i instanceof TeacherInfo);
-                TeacherInfo teacherInfo = new TeacherInfo();
-                teacherInfo.setUser(user);
-                teacherInfo.setStatus(TeacherStatus.EMPLOYED);
-                teacherInfo.setCode(java.util.UUID.randomUUID().toString());
-                teacherInfo.setPrimary(isFirst);
-                if (schoolId != null) {
-                    schoolRepository.findById(schoolId).ifPresent(teacherInfo::setSchool);
-                }
-                user.getInfos().add(teacherInfo);
-            }
-            case PARENT -> {
-                ParentInfo parentInfo = new ParentInfo();
-                parentInfo.setUser(user);
-                parentInfo.setParentName(user.getName());
-                String code = "TEMP_" + user.getEmail().split("@")[0];
-                if (parentInfoRepository.existsByCode(code)) {
-                    code = "TEMP_" + java.util.UUID.randomUUID().toString().substring(0, 8);
-                }
-                parentInfo.setCode(code);
-                user.getInfos().add(parentInfo);
-            }
-            default -> {
-            } // ADMIN은 Info 없이 역할만
+            case STUDENT -> buildStudentInfo(user, schoolId, dto);
+            case TEACHER -> buildTeacherInfo(user, schoolId, dto);
+            case PARENT  -> buildParentInfo(user, schoolId, dto);
+            case ADMIN   -> { /* Info 없음 */ }
+            default -> throw new IllegalArgumentException("지원하지 않는 역할입니다: " + role);
         }
+
+        // 2. 저장 (cascade로 Info도 함께 저장)
         userRepository.save(user);
 
-        // RoleRequest 생성 — 같은 (user, role, schoolId) 조합이 이미 있으면 skip
-        if (role != UserRole.ADMIN) {
-            boolean alreadyExists = schoolId != null
-                    ? roleRequestRepository.existsByUserAndRoleAndSchoolId(user, role, schoolId)
-                    : roleRequestRepository.existsByUserAndRoleAndSchoolIdIsNull(user, role);
-            if (alreadyExists) {
-                return; // 중복 신청 무시
-            }
-            boolean isAdmin = user.getRoles().contains(UserRole.ADMIN);
-            RoleRequest roleRequest = isAdmin
-                    ? RoleRequest.createActive(user, role, schoolId, null)
-                    : new RoleRequest(user, role, schoolId);
-            roleRequestRepository.save(roleRequest);
+        // 3. RoleRequest 생성 (ADMIN 제외, 중복 신청 무시)
+        if (role == UserRole.ADMIN) return;
 
-            // ADMIN 자동 승인된 경우 관리자 알림 불필요 (본인이 스스로 승인한 것이므로)
-            if (!isAdmin) {
-                if (role == UserRole.TEACHER) {
-                    notifyAdminsOfNewTeacher(user);
-                } else if (role == UserRole.PARENT) {
-                    notifyAdminsOfNewParent(user);
-                }
+        boolean alreadyExists = schoolId != null
+                ? roleRequestRepository.existsByUserAndRoleAndSchoolId(user, role, schoolId)
+                : roleRequestRepository.existsByUserAndRoleAndSchoolIdIsNull(user, role);
+        if (alreadyExists) return;
+
+        boolean isSuperAdmin = user.getRoles().contains(UserRole.ADMIN);
+        roleRequestRepository.save(isSuperAdmin
+                ? RoleRequest.createActive(user, role, schoolId, null)
+                : new RoleRequest(user, role, schoolId));
+
+        // 4. 알림 (SUPER_ADMIN 자동승인 시 생략)
+        if (!isSuperAdmin) {
+            switch (role) {
+                case STUDENT -> notifyAdminsOfNewStudent(user);
+                case TEACHER -> notifyAdminsOfNewTeacher(user);
+                case PARENT  -> notifyAdminsOfNewParent(user);
+                default -> { }
             }
         }
     }
 
-    /**
-     * 비밀번호 변경
-     */
-    public void changePassword(PasswordDTO dto) throws IllegalStateException {
-        log.info("비밀번호 변경 시도: {}", dto.getEmail());
+    // ── Info 빌더 ────────────────────────────────────────────────────────────
 
-        User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("회원정보를 찾을 수 없습니다."));
-
-        if (passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
-            user.changePassword(passwordEncoder.encode(dto.getNewPassword()));
-            log.info("비밀번호 변경 완료: {}", dto.getEmail());
-        } else {
-            throw new IllegalStateException("현재 비밀번호가 일치하지 않습니다.");
+    private void buildStudentInfo(User user, Long schoolId, CustomUserDTO dto) {
+        boolean isFirst = user.getInfos().stream().noneMatch(i -> i instanceof StudentInfo);
+        StudentInfo info = new StudentInfo();
+        info.setUser(user);
+        info.setStatus(StudentStatus.ENROLLED);
+        info.setPrimary(isFirst);
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
+
+        // 학번: dto에서 가져오거나 연도+순번으로 자동 생성 (예: 20250001)
+        String code = (dto != null) ? dto.getStudentIdentityNum() : null;
+        info.setCode((code != null && !code.isEmpty()) ? code : generateStudentCode(schoolId));
+
+        if (dto != null) {
+            info.setPhone(dto.getPhoneNumber());
+            // 학급 배정 (이메일 가입 시 학년·반 정보가 있을 때만)
+            if (dto.getGrade() != null && dto.getClassNum() != null) {
+                int currentYear = LocalDate.now().getYear();
+                Long ctxSchoolId = SchoolContextHolder.getSchoolId();
+                classroomRepository
+                        .findBySchoolIdAndYearAndGradeAndClassNum(ctxSchoolId, currentYear, dto.getGrade(), dto.getClassNum())
+                        .ifPresent(classroom -> {
+                            StudentAssignment assignment = StudentAssignment.builder()
+                                    .studentInfo(info)
+                                    .schoolYear(currentYear)
+                                    .classroom(classroom)
+                                    .attendanceNum(dto.getStudentNum())
+                                    .build();
+                            info.getAssignments().add(assignment);
+                            info.setCurrentAssignment(assignment);
+                        });
+            }
+        }
+
+        user.getInfos().add(info);
+    }
+
+    private void buildTeacherInfo(User user, Long schoolId, CustomUserDTO dto) {
+        boolean isFirst = user.getInfos().stream().noneMatch(i -> i instanceof TeacherInfo);
+        TeacherInfo info = new TeacherInfo();
+        info.setUser(user);
+        info.setStatus(TeacherStatus.EMPLOYED);
+        info.setPrimary(isFirst);
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(info::setSchool);
+        }
+
+        // 사번: dto에서 가져오거나 연도+순번으로 자동 생성 (예: T20250001)
+        String code = (dto != null) ? dto.getEmployeeNumber() : null;
+        info.setCode((code != null && !code.isEmpty()) ? code : generateTeacherCode(schoolId));
+
+        if (dto != null) {
+            info.setPhone(dto.getPhoneNumber());
+            info.setSubject(dto.getSubject());
+            info.setDepartment(dto.getDepartment());
+            info.setPosition(dto.getPosition());
+        }
+
+        user.getInfos().add(info);
+    }
+
+    private void buildParentInfo(User user, Long schoolId, CustomUserDTO dto) {
+        ParentInfo info = new ParentInfo();
+        info.setUser(user);
+        info.setParentName(user.getName());
+
+        if (dto != null) {
+            info.setPhone(dto.getPhoneNumber());
+        }
+
+        // 학부모 코드: TEMP_{이메일 아이디}, 중복 시 TEMP_{UUID 앞 8자리}
+        String code = "TEMP_" + user.getEmail().split("@")[0];
+        if (parentInfoRepository.existsByCode(code)) {
+            if (dto != null) {
+                // 이메일 가입: 동일 이메일 아이디 중복은 가입 불가
+                throw new IllegalStateException("이미 사용 중인 아이디입니다. 다른 이메일로 가입해주세요.");
+            }
+            code = "TEMP_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+        }
+        info.setCode(code);
+
+        user.getInfos().add(info);
+    }
+
+    /**
+     * 비밀번호 변경 (이메일 인증 완료 후 호출)
+     */
+    public void changePassword(Long userId, String newPassword) {
+        log.info("비밀번호 변경 시도: userId={}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("회원정보를 찾을 수 없습니다."));
+        user.changePassword(passwordEncoder.encode(newPassword));
+        log.info("비밀번호 변경 완료: userId={}", userId);
     }
 
     /**
@@ -340,6 +285,79 @@ public class UserService {
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * 학번 자동 생성: YYYY + 4자리 순번 (예: 20250001)
+     * 학교 내 동일 연도 기준 마지막 학번에서 +1
+     */
+    private String generateStudentCode(Long schoolId) {
+        String prefix = String.valueOf(LocalDate.now().getYear());
+        if (schoolId != null) {
+            List<StudentInfo> latest = studentInfoRepository
+                    .findBySchoolIdAndCodeStartingWithOrderByCodeDesc(schoolId, prefix, PageRequest.of(0, 1));
+            if (!latest.isEmpty()) {
+                try {
+                    int seq = Integer.parseInt(latest.get(0).getCode().substring(4)) + 1;
+                    return prefix + String.format("%04d", seq);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return prefix + "0001";
+    }
+
+    /**
+     * 사번 자동 생성: T + YYYY + 4자리 순번 (예: T20250001)
+     * 학교 내 동일 연도 기준 마지막 사번에서 +1
+     */
+    private String generateTeacherCode(Long schoolId) {
+        String prefix = "T" + LocalDate.now().getYear();
+        if (schoolId != null) {
+            List<TeacherInfo> latest = teacherInfoRepository
+                    .findBySchoolIdAndCodeStartingWithOrderByCodeDesc(schoolId, prefix, PageRequest.of(0, 1));
+            if (!latest.isEmpty()) {
+                try {
+                    int seq = Integer.parseInt(latest.get(0).getCode().substring(5)) + 1;
+                    return prefix + String.format("%04d", seq);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return prefix + "0001";
+    }
+
+    /**
+     * 학생 신규 가입 시 알림 발송 대상:
+     * 1. SUPER_ADMIN (UserRole.ADMIN 전체)
+     * 2. 해당 학교의 STUDENT_MANAGER 또는 SCHOOL_ADMIN 권한 보유자
+     */
+    private void notifyAdminsOfNewStudent(User student) {
+        StudentInfo info = student.getInfo(StudentInfo.class);
+        Long schoolId = (info != null && info.getSchool() != null) ? info.getSchool().getId() : null;
+        String actionUrl = "/admin/students" + (schoolId != null ? "?schoolId=" + schoolId : "");
+
+        Map<Long, User> recipients = new LinkedHashMap<>();
+        userRepository.findAllByRole(UserRole.ADMIN)
+                .forEach(u -> recipients.put(u.getUid(), u));
+
+        if (schoolId != null) {
+            schoolAdminGrantRepository
+                    .findBySchool_IdAndGrantedRoleIn(schoolId,
+                            List.of(GrantedRole.SCHOOL_ADMIN, GrantedRole.STUDENT_MANAGER))
+                    .stream()
+                    .map(SchoolAdminGrant::getUser)
+                    .forEach(u -> recipients.putIfAbsent(u.getUid(), u));
+        }
+
+        for (User recipient : recipients.values()) {
+            NotificationHelper.send(
+                    student, recipient,
+                    "신규 학생 가입 승인 요청",
+                    student.getName() + " 학생이 회원가입을 완료했습니다. 승인 처리를 해주세요.",
+                    actionUrl
+            );
+        }
     }
 
     /**

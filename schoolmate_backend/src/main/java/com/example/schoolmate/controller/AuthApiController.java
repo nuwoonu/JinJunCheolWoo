@@ -61,6 +61,7 @@ public class AuthApiController {
     private final AuthService authService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final com.example.schoolmate.common.service.PasswordVerificationService passwordVerificationService;
     private final SchoolService schoolService;
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final RoleRequestRepository roleRequestRepository;
@@ -309,31 +310,83 @@ public class AuthApiController {
 
             boolean isSuperAdmin = dbUser.getRoles().contains(UserRole.ADMIN);
 
-            // 슈퍼 어드민만 즉시 역할 활성화. 일반 사용자는 PENDING 신청만 생성.
-            if (isSuperAdmin) {
-                dbUser.addRole(userRole);
-            }
+            // 역할을 user.roles에 추가 (PENDING 포함) — 다음 SNS 로그인 시 GUEST로 돌아가지 않도록
+            dbUser.addRole(userRole);
             userService.createSocialUserInfo(dbUser, userRole, schoolId);
 
-            log.info("역할 선택 완료 - email: {}, role: {}, isSuperAdmin: {}", email, userRole, isSuperAdmin);
-
-            if (isSuperAdmin) {
-                Map<String, String> tokens = authService.issueTokensForOAuth2(dbUser.getUid(), email, userRole.name());
-                return ResponseEntity.ok(Map.of(
-                        "accessToken", tokens.get("accessToken"),
-                        "refreshToken", tokens.get("refreshToken"),
-                        "role", userRole.name(),
-                        "status", "active"));
-            } else {
-                return ResponseEntity.ok(Map.of(
-                        "status", "pending",
-                        "message", "역할 신청이 완료되었습니다. 관리자의 승인 후 이용 가능합니다."));
-            }
+            // 항상 JWT 발급 — 프론트엔드의 Hub가 roleRequests 상태로 pending/active 판단
+            String status = isSuperAdmin ? "active" : "pending";
+            Map<String, String> tokens = authService.issueTokensForOAuth2(dbUser.getUid(), email, userRole.name());
+            log.info("역할 선택 완료 - email: {}, role: {}, status: {}", email, userRole, status);
+            return ResponseEntity.ok(Map.of(
+                    "accessToken", tokens.get("accessToken"),
+                    "refreshToken", tokens.get("refreshToken"),
+                    "role", userRole.name(),
+                    "status", status));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             log.error("역할 선택 처리 중 오류", e);
             return ResponseEntity.status(500).body(Map.of("message", "역할 선택 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 비밀번호 찾기 — 인증 코드 발송 (비인증 접근)
+     * 이메일로 사용자를 조회하여 코드 발송. 소셜 계정은 거부.
+     */
+    @PostMapping("/password/send-code")
+    public ResponseEntity<?> sendPasswordResetCode(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "이메일을 입력해주세요."));
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "가입되지 않은 이메일입니다."));
+        }
+
+        User user = userOpt.get();
+        if (user.getProvider() != null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "소셜 로그인 계정은 비밀번호 찾기를 이용할 수 없습니다."));
+        }
+
+        try {
+            passwordVerificationService.sendCode(user);
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    /**
+     * 비밀번호 찾기 — 코드 검증 후 비밀번호 재설정 (비인증 접근)
+     */
+    @PostMapping("/password/reset")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String code = body.get("verificationCode");
+        String newPassword = body.get("newPassword");
+
+        if (email == null || code == null || newPassword == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "필수 항목이 누락되었습니다."));
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "가입되지 않은 이메일입니다."));
+        }
+
+        User user = userOpt.get();
+        try {
+            passwordVerificationService.verifyAndDelete(user.getUid(), code);
+            userService.changePassword(user.getUid(), newPassword);
+            return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 

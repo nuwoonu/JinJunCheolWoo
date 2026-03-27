@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { ADMIN_ROUTES } from '@/constants/routes';
-import NotificationDropdown from '@/components/fragments/NotificationDropdown';
-import ProfileDropdown from '@/components/profile/ProfileDropdown';
-import { useSidebar } from '@/contexts/SidebarContext';
-
+import { ADMIN_ROUTES } from "@/constants/routes";
+import NotificationDropdown from "@/components/fragments/NotificationDropdown";
+import ProfileDropdown from "@/components/profile/ProfileDropdown";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 function useTheme() {
   const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
@@ -19,8 +18,7 @@ function useTheme() {
   return { isDark, toggle: () => setIsDark((p) => !p) };
 }
 
-const smoothTransition =
-  "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease";
+const smoothTransition = "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease";
 
 interface NavLinkItem {
   to: string;
@@ -39,6 +37,8 @@ interface AdminTopBarProps {
   navLinks?: ReadonlyArray<NavLinkItem>;
   /** 섹션 간 빠른 이동 버튼 (예: 학부모 관리 → 학교 관리) */
   quickLink?: NavLinkItem;
+  /** 로고 클릭 시 이동할 경로 (기본값: /hub) */
+  logoTo?: string;
 }
 
 export default function AdminTopBar({
@@ -47,6 +47,7 @@ export default function AdminTopBar({
   sectionBadge,
   navLinks,
   quickLink,
+  logoTo = "/hub",
 }: AdminTopBarProps) {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -68,8 +69,7 @@ export default function AdminTopBar({
     return () => window.removeEventListener("resize", update);
   }, [isCollapsed]);
 
-  const navBtnCls =
-    "d-flex align-items-center gap-1 text-decoration-none text-secondary-light px-10 py-6 radius-8";
+  const navBtnCls = "d-flex align-items-center gap-1 text-decoration-none text-secondary-light px-10 py-6 radius-8";
 
   return (
     <div
@@ -83,7 +83,6 @@ export default function AdminTopBar({
       }}
     >
       <div className="row align-items-center justify-content-between">
-
         {/* ── 좌측: 빈 공간 (row justify-content-between 앵커용) ── */}
         <div className="col-auto" />
 
@@ -114,12 +113,10 @@ export default function AdminTopBar({
                   transition: "color 0.15s",
                 })}
                 onMouseEnter={(e) => {
-                  if (e.currentTarget.getAttribute("aria-current") !== "page")
-                    e.currentTarget.style.color = "#25A194";
+                  if (e.currentTarget.getAttribute("aria-current") !== "page") e.currentTarget.style.color = "#25A194";
                 }}
                 onMouseLeave={(e) => {
-                  if (e.currentTarget.getAttribute("aria-current") !== "page")
-                    e.currentTarget.style.color = "";
+                  if (e.currentTarget.getAttribute("aria-current") !== "page") e.currentTarget.style.color = "";
                 }}
               >
                 <i className={item.icon} style={{ fontSize: 14 }} />
@@ -151,7 +148,13 @@ export default function AdminTopBar({
                 type="button"
                 onClick={() => navigate(quickLink.to)}
                 className={navBtnCls}
-                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, transition: "color 0.15s" }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  transition: "color 0.15s",
+                }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#25A194")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "")}
               >
@@ -164,7 +167,13 @@ export default function AdminTopBar({
                 type="button"
                 onClick={() => navigate(ADMIN_ROUTES.MAIN)}
                 className={navBtnCls}
-                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, transition: "color 0.15s" }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  transition: "color 0.15s",
+                }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#25A194")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "")}
               >
@@ -190,7 +199,6 @@ export default function AdminTopBar({
             <ProfileDropdown />
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -35,6 +35,7 @@ public class AdminTeacherApiController {
     private final TeacherService teacherService;
     private final CourseSectionService courseSectionService;
 
+    @PreAuthorize("@grants.canAccessAdmin()")
     @GetMapping
     public ResponseEntity<Page<TeacherDTO.DetailResponse>> list(
             TeacherDTO.TeacherSearchCondition condition,
@@ -48,13 +49,13 @@ public class AdminTeacherApiController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody TeacherDTO.CreateRequest request) {
+    public ResponseEntity<?> create(@RequestBody TeacherDTO.CreateRequest request) {
         try {
             teacherService.createTeacher(request);
             return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             log.error("교사 등록 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
@@ -77,13 +78,14 @@ public class AdminTeacherApiController {
     }
 
     @PostMapping("/import-csv")
-    public ResponseEntity<String> importCsv(@RequestParam MultipartFile file) {
+    public ResponseEntity<List<String>> importCsv(@RequestParam MultipartFile file) {
         try {
-            teacherService.importTeachersFromCsv(file);
-            return ResponseEntity.ok("등록되었습니다.");
+            List<String> errors = teacherService.importTeachersFromCsv(file);
+            return ResponseEntity.ok(errors);
         } catch (Exception e) {
             log.error("교사 CSV 가져오기 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of("CSV 처리 중 오류가 발생했습니다: " + e.getMessage()));
         }
     }
 

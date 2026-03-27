@@ -32,12 +32,13 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping(SchoolmateUrls.ADMIN_SETTINGS)
 @RequiredArgsConstructor
-@PreAuthorize("@grants.isSuperAdmin()")
+@PreAuthorize("@grants.isSchoolAdmin()")
 public class AdminSettingApiController {
 
     private final AcademicTermService academicTermService;
 
-    /** 현재 활성 학기 조회 */
+    /** 현재 활성 학기 조회 (대시보드용으로 모든 어드민 grant 허용) */
+    @PreAuthorize("@grants.canAccessAdmin()")
     @GetMapping
     public ResponseEntity<Map<String, Object>> get() {
         return ResponseEntity.ok(toDto(academicTermService.getCurrentTerm()));

@@ -3,6 +3,7 @@ package com.example.schoolmate.common.service;
 import java.io.Reader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -118,6 +119,19 @@ public class StaffService {
         // 관리자 직접 등록 시 즉시 ACTIVE RoleRequest 생성 (Hub 카드 학교명 표시 및 hasAdminAccess 연동)
         roleRequestRepository.save(RoleRequest.createActive(user, UserRole.STAFF, schoolId, null));
 
+        // 권한 즉시 부여 (선택)
+        if (request.getGrantedRole() != null && !request.getGrantedRole().isBlank() && schoolId != null) {
+            try {
+                GrantedRole role = GrantedRole.valueOf(request.getGrantedRole().trim());
+                School school = schoolRepository.findById(schoolId).orElse(null);
+                if (school != null) {
+                    schoolAdminGrantRepository.save(new SchoolAdminGrant(user, school, role, null));
+                }
+            } catch (IllegalArgumentException e) {
+                log.warn("알 수 없는 권한 코드, 권한 부여 건너뜀: {}", request.getGrantedRole());
+            }
+        }
+
         return user;
     }
 
@@ -147,7 +161,12 @@ public class StaffService {
         }
     }
 
-    public void importStaffsFromCsv(MultipartFile file) throws Exception {
+    public List<String> importStaffsFromCsv(MultipartFile file) throws Exception {
+        List<String> errors = new ArrayList<>();
+        List<StaffDTO.CsvImportRequest> validRows = new ArrayList<>();
+        Set<String> seenEmails = new HashSet<>();
+        Set<String> seenCodes = new HashSet<>();
+
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             List<StaffDTO.CsvImportRequest> beans = new CsvToBeanBuilder<StaffDTO.CsvImportRequest>(reader)
                     .withType(StaffDTO.CsvImportRequest.class)
@@ -155,36 +174,36 @@ public class StaffService {
                     .build()
                     .parse();
 
-            for (StaffDTO.CsvImportRequest csvReq : beans) {
-                // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
-                if (csvReq.getEmail() != null && userRepository.existsByEmail(csvReq.getEmail())) {
-                    throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
-                }
-                // 사번 중복은 학교 범위 내에서만 체크 - 중복 행은 건너뜀
-                if (csvReq.getCode() != null && codeExistsForStaff(csvReq.getCode())) {
-                    log.warn("이미 존재하는 사번 건너뜀: {}", csvReq.getCode());
+            // 1단계: 검증 (읽기 전용 — DB 세션 오염 없음)
+            for (int i = 0; i < beans.size(); i++) {
+                StaffDTO.CsvImportRequest csvReq = beans.get(i);
+                String rowLabel = (i + 2) + "행" + (csvReq.getName() != null ? " (" + csvReq.getName() + ")" : "");
+
+                if (csvReq.getEmail() == null || csvReq.getEmail().isBlank()) {
+                    errors.add(rowLabel + ": 이메일이 비어있습니다.");
                     continue;
                 }
-                StaffDTO.CreateRequest createReq = new StaffDTO.CreateRequest(csvReq);
-                User created = createStaff(createReq);
-
-                // CSV에 권한이 지정된 경우 SchoolAdminGrant 생성
-                if (csvReq.getGrantedRole() != null && !csvReq.getGrantedRole().isBlank()) {
-                    try {
-                        GrantedRole grantedRole = GrantedRole.valueOf(csvReq.getGrantedRole().trim());
-                        Long schoolId = SchoolContextHolder.getSchoolId();
-                        if (schoolId != null) {
-                            School school = schoolRepository.findById(schoolId).orElse(null);
-                            if (school != null) {
-                                schoolAdminGrantRepository.save(new SchoolAdminGrant(created, school, grantedRole, null));
-                            }
-                        }
-                    } catch (IllegalArgumentException e) {
-                        log.warn("알 수 없는 권한 코드, 권한 부여 건너뜀: {}", csvReq.getGrantedRole());
-                    }
+                if (userRepository.existsByEmail(csvReq.getEmail()) || seenEmails.contains(csvReq.getEmail())) {
+                    errors.add(rowLabel + ": 이미 존재하는 이메일입니다.");
+                    continue;
                 }
+                if (csvReq.getCode() != null && (codeExistsForStaff(csvReq.getCode()) || seenCodes.contains(csvReq.getCode()))) {
+                    errors.add(rowLabel + ": 이미 존재하는 사번입니다.");
+                    continue;
+                }
+                seenEmails.add(csvReq.getEmail());
+                if (csvReq.getCode() != null) seenCodes.add(csvReq.getCode());
+                validRows.add(csvReq);
+            }
+
+            // 2단계: 등록 (쓰기 전용 — 검증 통과된 행만)
+            for (StaffDTO.CsvImportRequest csvReq : validRows) {
+                StaffDTO.CreateRequest req = new StaffDTO.CreateRequest(csvReq);
+                req.setGrantedRole(csvReq.getGrantedRole());
+                createStaff(req);
             }
         }
+        return errors;
     }
 
     public void bulkUpdateStaffStatus(List<Long> uids, String statusName) {

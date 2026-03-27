@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Rectangle } from "recharts";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import admin from "@/api/adminApi";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import { useSchool } from "@/context/SchoolContext";
+import { useAuth } from "@/contexts/AuthContext";
+import type { GrantInfo } from "@/api/auth";
 
 // [joon] 관리자 대시보드
 
@@ -15,8 +17,8 @@ interface DashboardStats {
 }
 
 interface SystemSettings {
-  currentSchoolYear: number;
-  currentSemester: number;
+  schoolYear: number;
+  semester: number;
 }
 
 interface ClassItem {
@@ -111,6 +113,7 @@ function StatusBarCard({
   link,
   data,
   accentColor,
+  showLink = true,
 }: {
   title: string;
   total: number;
@@ -118,6 +121,7 @@ function StatusBarCard({
   link: string;
   data: { name: string; value: number; fill: string }[];
   accentColor: string;
+  showLink?: boolean;
 }) {
   const chartHeight = Math.max(data.length * 36 + 20, 100);
   return (
@@ -132,9 +136,11 @@ function StatusBarCard({
             {unit}
           </p>
         </div>
-        <Link to={link} style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}>
-          관리 →
-        </Link>
+        {showLink && (
+          <Link to={link} style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}>
+            관리 →
+          </Link>
+        )}
       </div>
       <div style={{ padding: "12px 16px" }}>
         <ResponsiveContainer width="100%" height={chartHeight}>
@@ -180,7 +186,30 @@ function StatusBarCard({
 
 export default function AdminDashboard() {
   const { selectedSchool } = useSchool();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
+
+  const userGrants: GrantInfo[] = user?.grants ?? [];
+  const isAdminRole = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN';
+  const isSuperAdmin = isAdminRole || userGrants.some(g => g.grantedRole === 'SUPER_ADMIN');
+  const isSchoolAdmin = isSuperAdmin || userGrants.some(g => g.grantedRole === 'SCHOOL_ADMIN');
+  const hasGrant = (...roles: string[]) => isSchoolAdmin || userGrants.some(g => roles.includes(g.grantedRole));
+
+  // 관리 버튼 표시용 권한 플래그
+  const canManageStudents = hasGrant('STUDENT_MANAGER');
+  const canManageTeachers = hasGrant('TEACHER_MANAGER');
+  const canManageStaffs   = hasGrant('STAFF_MANAGER');
+  const canManageClasses  = hasGrant('CLASS_MANAGER');
+  const canManageSchedule = hasGrant('SCHEDULE_MANAGER');
+
+  // PARENT_MANAGER 권한만 있는 경우 학부모 관리 페이지로 바로 이동
+  useEffect(() => {
+    if (!user) return;
+    if (!isAdminRole && userGrants.length > 0 && userGrants.every(g => g.grantedRole === 'PARENT_MANAGER')) {
+      navigate(ADMIN_ROUTES.PARENTS.LIST, { replace: true });
+    }
+  }, [user, navigate, isAdminRole, userGrants]);
 
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
@@ -188,6 +217,7 @@ export default function AdminDashboard() {
     totalStaffs: 0,
   });
   const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const [settingsAttempted, setSettingsAttempted] = useState(false);
   const [studentCounts, setStudentCounts] = useState<Record<string, number>>({});
   const [teacherCounts, setTeacherCounts] = useState<Record<string, number>>({});
   const [staffCounts, setStaffCounts] = useState<Record<string, number>>({});
@@ -205,18 +235,19 @@ export default function AdminDashboard() {
       .get(`/dashboard/stats${schoolParam}`)
       .then((r) => setStats(r.data))
       .catch(() => {});
-    // 시스템 설정
+
+    // 시스템 설정 (SCHOOL_ADMIN 이상만 조회 가능, 실패 시 현재 연도로 폴백)
     admin
       .get("/settings")
-      .then((r) => setSettings(r.data))
-      .catch(() => {});
+      .then((r) => { setSettings(r.data); setSettingsAttempted(true); })
+      .catch(() => setSettingsAttempted(true));
 
     // 각 구성원 상태별 인원 병렬 조회
-    fetchStatusCounts("students", ["ENROLLED", "LEAVE_OF_ABSENCE", "GRADUATED", "DROPOUT", "TRANSFERRED", "EXPELLED"], schoolId).then(setStudentCounts);
-    fetchStatusCounts("teachers", ["EMPLOYED", "LEAVE", "RETIRED"], schoolId).then(setTeacherCounts);
-    fetchStatusCounts("staffs", ["EMPLOYED", "LEAVE", "DISPATCHED", "RETIRED"], schoolId).then(setStaffCounts);
+    fetchStatusCounts("students", ["ENROLLED", "LEAVE_OF_ABSENCE", "GRADUATED", "DROPOUT", "TRANSFERRED", "EXPELLED"], schoolId).then(setStudentCounts).catch(() => {});
+    fetchStatusCounts("teachers", ["EMPLOYED", "LEAVE", "RETIRED"], schoolId).then(setTeacherCounts).catch(() => {});
+    fetchStatusCounts("staffs", ["EMPLOYED", "LEAVE", "DISPATCHED", "RETIRED"], schoolId).then(setStaffCounts).catch(() => {});
 
-    // 역할별 RoleRequest 승인 상태 인원 조회 (학생/교사만; 학부모는 ParentList에서 별도 표시)
+    // 역할별 RoleRequest 승인 상태 인원 조회 (학생/교사)
     const rrSchoolParam = schoolId ? `&schoolId=${schoolId}` : "";
     Promise.all([
       admin.get(`/role-requests/counts?role=STUDENT${rrSchoolParam}`).then((r) => r.data as Record<string, number>).catch(() => ({})),
@@ -236,13 +267,16 @@ export default function AdminDashboard() {
       })
       .catch(() => setSchedules([]))
       .finally(() => setScheduleLoading(false));
-  }, [today, selectedSchool]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [today, selectedSchool, user]);
 
   // 설정 로드 후 학급 데이터 조회
   useEffect(() => {
-    if (!settings) return;
+    if (!settingsAttempted) return;
+    // settings가 없으면 현재 연도로 폴백
+    const effectiveYear = settings?.schoolYear ?? new Date().getFullYear();
     admin
-      .get(`/classes?size=200&year=${settings.currentSchoolYear}`)
+      .get(`/classes?size=200&year=${effectiveYear}`)
       .then((r) => {
         const list: ClassItem[] = r.data.content ?? [];
         const map: Record<number, { count: number; students: number }> = {};
@@ -256,7 +290,8 @@ export default function AdminDashboard() {
         setClassesByGrade(map);
       })
       .catch(() => {});
-  }, [settings]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings, settingsAttempted]);
 
   const g = (counts: Record<string, number>, key: string) => counts[key] ?? 0;
 
@@ -328,6 +363,7 @@ export default function AdminDashboard() {
             link={ADMIN_ROUTES.STUDENTS.LIST}
             data={studentChartData}
             accentColor="#25A194"
+            showLink={canManageStudents}
           />
         </div>
         <div style={{ flex: "1 1 280px", minWidth: 260 }}>
@@ -337,6 +373,7 @@ export default function AdminDashboard() {
             link={ADMIN_ROUTES.TEACHERS.LIST}
             data={teacherChartData}
             accentColor="#1d4ed8"
+            showLink={canManageTeachers}
           />
         </div>
         <div style={{ flex: "1 1 280px", minWidth: 260 }}>
@@ -346,6 +383,7 @@ export default function AdminDashboard() {
             link={ADMIN_ROUTES.STAFFS.LIST}
             data={staffChartData}
             accentColor="#6366f1"
+            showLink={canManageStaffs}
           />
         </div>
       </div>
@@ -362,6 +400,7 @@ export default function AdminDashboard() {
             link={ADMIN_ROUTES.STUDENTS.LIST}
             data={makeRRChartData("STUDENT")}
             accentColor="#25A194"
+            showLink={canManageStudents}
           />
         </div>
         <div style={{ flex: "1 1 400px", minWidth: 320 }}>
@@ -371,6 +410,7 @@ export default function AdminDashboard() {
             link={ADMIN_ROUTES.TEACHERS.LIST}
             data={makeRRChartData("TEACHER")}
             accentColor="#1d4ed8"
+            showLink={canManageTeachers}
           />
         </div>
       </div>
@@ -389,15 +429,19 @@ export default function AdminDashboard() {
                   학급 현황
                 </h6>
                 <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
-                  {settings ? `${settings.currentSchoolYear}년 ${settings.currentSemester}학기 편성 학급` : "로딩 중…"}
+                  {settings
+                    ? `${settings.schoolYear}년 ${settings.semester}학기 편성 학급`
+                    : settingsAttempted ? "편성 학급" : "로딩 중…"}
                 </p>
               </div>
-              <Link
-                to={ADMIN_ROUTES.CLASSES.LIST}
-                style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
-              >
-                관리 →
-              </Link>
+              {canManageClasses && (
+                <Link
+                  to={ADMIN_ROUTES.CLASSES.LIST}
+                  style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
+                >
+                  관리 →
+                </Link>
+              )}
             </div>
             <div style={{ padding: 20 }}>
               {gradeKeys.length === 0 ? (
@@ -405,7 +449,7 @@ export default function AdminDashboard() {
                   <div style={{ textAlign: "center" }}>
                     <i className="ri-building-2-line" style={{ fontSize: 28, display: "block", marginBottom: 8 }} />
                     <p style={{ margin: 0, fontSize: 13 }}>
-                      {settings ? "편성된 학급이 없습니다." : "로딩 중…"}
+                      {settingsAttempted ? "편성된 학급이 없습니다." : "로딩 중…"}
                     </p>
                   </div>
                 </div>
@@ -450,12 +494,14 @@ export default function AdminDashboard() {
                   오늘 이후 60일 이내
                 </p>
               </div>
-              <Link
-                to={ADMIN_ROUTES.MASTER.SCHEDULE}
-                style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
-              >
-                전체 보기 →
-              </Link>
+              {canManageSchedule && (
+                <Link
+                  to={ADMIN_ROUTES.MASTER.SCHEDULE}
+                  style={{ fontSize: 12, color: "#6b7280", textDecoration: "none" }}
+                >
+                  전체 보기 →
+                </Link>
+              )}
             </div>
             <div style={{ flex: 1, overflowY: "auto" }}>
               {scheduleLoading ? (

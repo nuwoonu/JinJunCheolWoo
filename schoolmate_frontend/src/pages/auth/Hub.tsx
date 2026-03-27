@@ -73,16 +73,87 @@ export default function Hub() {
   const theme = useTheme();
 
   const [contexts, setContexts] = useState<RoleContext[]>([]);
+  const [contextsLoading, setContextsLoading] = useState(true);
+  const [redirectChecked, setRedirectChecked] = useState(false);
   const [switchingId, setSwitchingId] = useState<number | null>(null);
 
   useEffect(() => {
     refetch();
     getRoleContexts()
-      .then(setContexts)
-      .catch(() => setContexts([]));
+      .then((data) => {
+        setContexts(data);
+        setContextsLoading(false);
+      })
+      .catch(() => {
+        setContexts([]);
+        setContextsLoading(false);
+      });
   }, []);
 
-  if (loading) return <PageLoader />;
+  // 단일 활성 역할이면 허브를 거치지 않고 바로 이동
+  // redirectChecked가 true가 될 때까지 PageLoader를 유지하므로 렌더링 플리커 없음
+  useEffect(() => {
+    if (loading || contextsLoading) return;
+    if (!user?.authenticated) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    const grants: GrantInfo[] = user.grants ?? [];
+    const isSuperAdmin = grants.some((g) => g.grantedRole === "SUPER_ADMIN");
+    const roleRequests: RoleRequestInfo[] = user.roleRequests ?? [];
+    const parentRequest = roleRequests.find((r) => r.role === "PARENT");
+
+    const hasNonActiveRole =
+      contexts.some((c) => !c.isActive) ||
+      (parentRequest != null && parentRequest.status !== "ACTIVE");
+
+    if (hasNonActiveRole) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    const activeContexts = contexts.filter((c) => c.isActive);
+    const hasActiveParent = parentRequest?.status === "ACTIVE";
+    const totalActive = activeContexts.length + (hasActiveParent ? 1 : 0);
+
+    // SUPER_ADMIN 단독(다른 활성 역할 없음) → admin으로 바로 이동
+    if (isSuperAdmin && totalActive === 0) {
+      navigate(ADMIN_ROUTES.MAIN, { replace: true });
+      return;
+    }
+
+    // 2개 이상이거나 SUPER_ADMIN이 다른 역할과 공존하면 허브 유지
+    if (totalActive !== 1) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    if (hasActiveParent) {
+      const cfg = ROLE_CONFIG.find((r) => r.role === "PARENT")!;
+      navigate(cfg.path, { replace: true });
+      return;
+    }
+
+    const ctx = activeContexts[0];
+    const cfg = ROLE_CONFIG.find((r) => r.role === ctx.roleType);
+    if (!cfg) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    switchContext(ctx.infoId, ctx.roleType)
+      .then((tokens) => {
+        auth.setTokens(tokens.accessToken, tokens.refreshToken);
+        navigate(cfg.path, { replace: true });
+      })
+      .catch(() => {
+        setRedirectChecked(true);
+      });
+  }, [loading, contextsLoading, user, contexts]);
+
+  // redirectChecked가 true가 될 때까지 PageLoader 표시 (리다이렉트 시 Hub UI가 그려지지 않음)
+  if (loading || contextsLoading || !redirectChecked) return <PageLoader />;
   if (!user?.authenticated) return <Navigate to="/login" replace />;
 
   const grants: GrantInfo[] = user.grants ?? [];

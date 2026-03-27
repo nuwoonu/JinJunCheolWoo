@@ -56,22 +56,27 @@ public class DormitoryService {
 
         for (String building : buildings) {
             for (int floor : floors) {
-                // 101호 - 2인실
-                dormitories.add(createDormitoryBed(building, floor, "101", "A", RoomType.DOUBLE));
-                dormitories.add(createDormitoryBed(building, floor, "101", "B", RoomType.DOUBLE));
+                String r01 = String.format("%d01", floor); // 101, 201, 301 ...
+                String r02 = String.format("%d02", floor);
+                String r03 = String.format("%d03", floor);
+                String r04 = String.format("%d04", floor);
 
-                // 102호 - 4인실
-                dormitories.add(createDormitoryBed(building, floor, "102", "1", RoomType.QUADRUPLE));
-                dormitories.add(createDormitoryBed(building, floor, "102", "2", RoomType.QUADRUPLE));
-                dormitories.add(createDormitoryBed(building, floor, "102", "3", RoomType.QUADRUPLE));
-                dormitories.add(createDormitoryBed(building, floor, "102", "4", RoomType.QUADRUPLE));
+                // x01호 - 2인실
+                dormitories.add(createDormitoryBed(building, floor, r01, "A", RoomType.DOUBLE));
+                dormitories.add(createDormitoryBed(building, floor, r01, "B", RoomType.DOUBLE));
 
-                // 103호 - 1인실
-                dormitories.add(createDormitoryBed(building, floor, "103", "1", RoomType.SINGLE));
+                // x02호 - 4인실
+                dormitories.add(createDormitoryBed(building, floor, r02, "1", RoomType.QUADRUPLE));
+                dormitories.add(createDormitoryBed(building, floor, r02, "2", RoomType.QUADRUPLE));
+                dormitories.add(createDormitoryBed(building, floor, r02, "3", RoomType.QUADRUPLE));
+                dormitories.add(createDormitoryBed(building, floor, r02, "4", RoomType.QUADRUPLE));
 
-                // 104호 - 2인실
-                dormitories.add(createDormitoryBed(building, floor, "104", "A", RoomType.DOUBLE));
-                dormitories.add(createDormitoryBed(building, floor, "104", "B", RoomType.DOUBLE));
+                // x03호 - 1인실
+                dormitories.add(createDormitoryBed(building, floor, r03, "1", RoomType.SINGLE));
+
+                // x04호 - 2인실
+                dormitories.add(createDormitoryBed(building, floor, r04, "A", RoomType.DOUBLE));
+                dormitories.add(createDormitoryBed(building, floor, r04, "B", RoomType.DOUBLE));
             }
         }
 
