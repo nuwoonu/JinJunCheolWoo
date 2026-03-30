@@ -1,5 +1,6 @@
 package com.example.schoolmate.common.dto;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class StudentDTO {
         private String type;
         private String keyword;
         private String status; // 기본값: 전체 (null이면 필터 없음) [woo]
+        private String roleRequestStatus; // [soojin] 대시보드 대기 목록 필터링용 (null이면 필터 없음)
         private boolean ignoreSchoolFilter; // true이면 학교 필터 미적용 (타 학교 학생 검색 허용)
         private Long excludeParentId; // 지정된 학부모와 이미 연결된 학생 제외
     }
@@ -133,6 +135,7 @@ public class StudentDTO {
         private String statusName;
         private Long roleRequestId;
         private String roleRequestStatus;
+        private LocalDateTime roleRequestCreateDate; // [soojin] 대시보드 대기 목록 최신순 정렬용
         private String schoolName;
 
         public SummaryResponse(User user) {
@@ -159,6 +162,10 @@ public class StudentDTO {
 
         public void setRoleRequestStatus(String roleRequestStatus) {
             this.roleRequestStatus = roleRequestStatus;
+        }
+
+        public void setRoleRequestCreateDate(LocalDateTime roleRequestCreateDate) { // [soojin] 대시보드 대기 목록 최신순 정렬용
+            this.roleRequestCreateDate = roleRequestCreateDate;
         }
     }
 

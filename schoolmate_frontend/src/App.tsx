@@ -16,6 +16,7 @@ import SelectRole from "@/pages/auth/SelectRole";
 import SelectInfo from "@/pages/auth/SelectInfo";
 import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
+import MainDesign from "@/pages/Main-design";
 // [cheol] 학생 관련
 import StudentList from "@/pages/cheol/student/StudentList";
 import StudentMyInfo from "@/pages/cheol/student/MyInfo";
@@ -80,7 +81,8 @@ import StudentDashboard from "@/pages/jin/student/StudentDashboard";
 import { ADMIN_GRANTS } from "@/constants/adminPermissions";
 import JoonAdminMain from "@/pages/admin/AdminMain";
 import JoonSchoolSelect from "@/pages/admin/school/SchoolSelect";
-import JoonDashboard from "@/pages/admin/Dashboard";
+// import JoonDashboard from "@/pages/admin/Dashboard";
+import JoonDashboard from "@/pages/jin/admin/Dashboard";
 import JoonStudentList from "@/pages/admin/students/StudentList";
 import JoonStudentCreate from "@/pages/admin/students/StudentCreate";
 import JoonStudentDetail from "@/pages/admin/students/StudentDetail";
@@ -115,9 +117,7 @@ function SchoolSelectGuard() {
   const { user, loading } = useAuth();
 
   const isSuperAdmin = user?.roles?.includes("ADMIN") || user?.role === "ADMIN";
-  const firstGrant = !isSuperAdmin
-    ? user?.grants?.find((g) => g.schoolId)
-    : undefined;
+  const firstGrant = !isSuperAdmin ? user?.grants?.find((g) => g.schoolId) : undefined;
   const shouldAutoSelect = !!firstGrant && !selectedSchool;
 
   useEffect(() => {
@@ -142,6 +142,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/hub" replace />} />
       <Route path="/main" element={<Main />} />
+      <Route path="/main-design" element={<MainDesign />} />
       <Route path="/login" element={<Login />} />
       <Route path="/hub" element={<Hub />} />
       {/* [woo] OAuth2 소셜 로그인 콜백 - 토큰 저장 후 역할별 대시보드로 이동 */}
@@ -150,10 +151,7 @@ function App() {
       {/* 회원가입 - 역할 선택 (이메일/SNS 공통) */}
       <Route path="/select-info" element={<SelectInfo />} />
       {/* 회원가입 - 학교 선택 (교사/학생) */}
-      <Route
-        path="/register/school-select"
-        element={<RegisterSchoolSelect />}
-      />
+      <Route path="/register/school-select" element={<RegisterSchoolSelect />} />
       {/* [woo] OAuth2 GUEST 유저 역할 선택 페이지 (하위 호환 유지) */}
       <Route path="/select-role" element={<SelectRole />} />
 
@@ -195,10 +193,7 @@ function App() {
       >
         <Route index element={<DormitoryBuildingList />} />
         <Route path="building/:buildingId" element={<DormitoryFloorList />} />
-        <Route
-          path="building/:buildingId/room/:roomNumber"
-          element={<DormitoryRoomView />}
-        />
+        <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
 
       {/* [cheol] 교사 성적 채점 - 학급 선택 */}
@@ -371,9 +366,7 @@ function App() {
       <Route
         path="/board/grade/:grade"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <GradeBoard />
           </PrivateRoute>
         }
@@ -381,9 +374,7 @@ function App() {
       <Route
         path="/board/grade/:grade/:id"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <GradeBoardDetail />
           </PrivateRoute>
         }
@@ -393,9 +384,7 @@ function App() {
       <Route
         path="/board/school-notice"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolNotice />
           </PrivateRoute>
         }
@@ -403,9 +392,7 @@ function App() {
       <Route
         path="/board/school-notice/:id"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolNoticeDetail />
           </PrivateRoute>
         }
@@ -551,10 +538,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.MAIN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.DASHBOARD}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.DASHBOARD}>
             <JoonAdminMain />
           </PrivateRoute>
         }
@@ -562,10 +546,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.SCHOOL_SELECT}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.DASHBOARD}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.DASHBOARD}>
             <SchoolSelectGuard />
           </PrivateRoute>
         }
@@ -573,10 +554,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.DASHBOARD}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.DASHBOARD}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.DASHBOARD}>
             <JoonDashboard />
           </PrivateRoute>
         }
@@ -586,10 +564,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.STUDENTS.LIST}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.STUDENTS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STUDENTS}>
             <JoonStudentList />
           </PrivateRoute>
         }
@@ -597,10 +572,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.STUDENTS.CREATE}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.STUDENTS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STUDENTS}>
             <JoonStudentCreate />
           </PrivateRoute>
         }
@@ -608,10 +580,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.STUDENTS.DETAIL_PATTERN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.STUDENTS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STUDENTS}>
             <JoonStudentDetail />
           </PrivateRoute>
         }
@@ -621,10 +590,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.TEACHERS.LIST}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.TEACHERS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.TEACHERS}>
             <JoonTeacherList />
           </PrivateRoute>
         }
@@ -632,10 +598,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.TEACHERS.CREATE}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.TEACHERS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.TEACHERS}>
             <JoonTeacherCreate />
           </PrivateRoute>
         }
@@ -643,10 +606,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.TEACHERS.DETAIL_PATTERN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.TEACHERS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.TEACHERS}>
             <JoonTeacherDetail />
           </PrivateRoute>
         }
@@ -656,10 +616,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.PARENTS.LIST}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.PARENTS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.PARENTS}>
             <JoonParentList />
           </PrivateRoute>
         }
@@ -667,10 +624,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.PARENTS.CREATE}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.PARENTS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.PARENTS}>
             <JoonParentCreate />
           </PrivateRoute>
         }
@@ -678,10 +632,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.PARENTS.DETAIL_PATTERN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.PARENTS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.PARENTS}>
             <JoonParentDetail />
           </PrivateRoute>
         }
@@ -691,10 +642,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.STAFFS.LIST}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.STAFFS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STAFFS}>
             <JoonStaffList />
           </PrivateRoute>
         }
@@ -702,10 +650,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.STAFFS.CREATE}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.STAFFS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STAFFS}>
             <JoonStaffCreate />
           </PrivateRoute>
         }
@@ -713,10 +658,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.STAFFS.DETAIL_PATTERN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.STAFFS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STAFFS}>
             <JoonStaffDetail />
           </PrivateRoute>
         }
@@ -726,10 +668,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.CLASSES.LIST}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.CLASSES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.CLASSES}>
             <JoonClassList />
           </PrivateRoute>
         }
@@ -737,10 +676,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.CLASSES.CREATE}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.CLASSES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.CLASSES}>
             <JoonClassCreate />
           </PrivateRoute>
         }
@@ -748,10 +684,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.CLASSES.DETAIL_PATTERN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.CLASSES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.CLASSES}>
             <JoonClassDetail />
           </PrivateRoute>
         }
@@ -761,10 +694,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.NOTICES.LIST}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.NOTICES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.NOTICES}>
             <JoonNoticeList />
           </PrivateRoute>
         }
@@ -772,10 +702,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.NOTICES.CREATE}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.NOTICES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.NOTICES}>
             <JoonNoticeForm />
           </PrivateRoute>
         }
@@ -783,10 +710,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.NOTICES.DETAIL_PATTERN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.NOTICES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.NOTICES}>
             <JoonNoticeDetail />
           </PrivateRoute>
         }
@@ -794,10 +718,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.NOTICES.EDIT_PATTERN}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.NOTICES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.NOTICES}>
             <JoonNoticeForm />
           </PrivateRoute>
         }
@@ -807,10 +728,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.FACILITIES}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.FACILITIES}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.FACILITIES}>
             <JoonRooms />
           </PrivateRoute>
         }
@@ -818,10 +736,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.ASSETS}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.ASSETS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.ASSETS}>
             <JoonAssets />
           </PrivateRoute>
         }
@@ -830,30 +745,21 @@ function App() {
       <Route
         path={ADMIN_ROUTES.DORMITORY}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN", "TEACHER", "STAFF"]}
-            requiredGrants={ADMIN_GRANTS.DORMITORY}
-          >
+          <PrivateRoute allowedRoles={["ADMIN", "TEACHER", "STAFF"]} requiredGrants={ADMIN_GRANTS.DORMITORY}>
             <DormitoryAdminRoot />
           </PrivateRoute>
         }
       >
         <Route index element={<DormitoryBuildingList />} />
         <Route path="building/:buildingId" element={<DormitoryFloorList />} />
-        <Route
-          path="building/:buildingId/room/:roomNumber"
-          element={<DormitoryRoomView />}
-        />
+        <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
 
       {/* [joon] 기준 정보 관리 (SUPER_ADMIN 전용) */}
       <Route
         path={ADMIN_ROUTES.MASTER.SCHEDULE}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.SCHEDULE}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.SCHEDULE}>
             <JoonSchedule />
           </PrivateRoute>
         }
@@ -861,10 +767,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.MASTER.SUBJECTS}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.SUBJECTS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.SUBJECTS}>
             <JoonSubjects />
           </PrivateRoute>
         }
@@ -872,10 +775,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.MASTER.SETTINGS}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.SETTINGS}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.SETTINGS}>
             <JoonSettings />
           </PrivateRoute>
         }
@@ -885,10 +785,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.AUDIT.ACCESS}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.AUDIT}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.AUDIT}>
             <JoonAccessLogs />
           </PrivateRoute>
         }
@@ -896,10 +793,7 @@ function App() {
       <Route
         path={ADMIN_ROUTES.AUDIT.CHANGES}
         element={
-          <PrivateRoute
-            allowedRoles={["ADMIN"]}
-            requiredGrants={ADMIN_GRANTS.AUDIT}
-          >
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.AUDIT}>
             <JoonChangeLogs />
           </PrivateRoute>
         }
@@ -943,9 +837,7 @@ function App() {
       <Route
         path="/school/schedule"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolSchedule />
           </PrivateRoute>
         }
@@ -953,9 +845,7 @@ function App() {
       <Route
         path="/school/gallery"
         element={
-          <PrivateRoute
-            allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}
-          >
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolGallery />
           </PrivateRoute>
         }

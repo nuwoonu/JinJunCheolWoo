@@ -38,6 +38,7 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.SchoolAdminGrant;
 import com.example.schoolmate.common.entity.user.constant.GrantedRole;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
@@ -92,9 +93,14 @@ public class TeacherService {
         Page<User> userPage = teacherInfoRepository.search(cond, pageable);
         return userPage.map(user -> {
             TeacherDTO.DetailResponse dto = new TeacherDTO.DetailResponse(user);
-            roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst().ifPresent(rr -> {
+            // [soojin] status 필터 시 해당 상태의 roleRequest를 직접 조회하여 createDate 정확히 세팅
+            Optional<RoleRequest> targetRr = (cond.getRoleRequestStatus() != null && !cond.getRoleRequestStatus().isEmpty())
+                    ? roleRequestRepository.findByUserAndRoleAndStatus(user, UserRole.TEACHER, RoleRequestStatus.valueOf(cond.getRoleRequestStatus()))
+                    : roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst();
+            targetRr.ifPresent(rr -> {
                 dto.setRoleRequestId(rr.getId());
                 dto.setRoleRequestStatus(rr.getStatus().name());
+                dto.setRoleRequestCreateDate(rr.getCreateDate()); // [soojin] 대시보드 대기 목록 최신순 정렬용
             });
             return dto;
         });

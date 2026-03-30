@@ -22,11 +22,6 @@ import TodayMealWidget from "../../../components/student/TodayMealWidget";
 import SubmissionStatusWidget from "../../../components/student/SubmissionStatusWidget";
 import ClassAlbumWidget from "../../../components/student/ClassAlbumWidget";
 
-interface TimetableItem {
-  period: number;
-  subject: string;
-}
-
 interface StudentInfo {
   userName?: string;
   year?: number;
@@ -44,33 +39,11 @@ interface DashboardData {
 export default function StudentDashboard() {
   const [data, setData] = useState<DashboardData>({});
   const [loading, setLoading] = useState(true);
-  const [timetable, setTimetable] = useState<TimetableItem[]>([]);
-  const [timetableLoading, setTimetableLoading] = useState(true);
-
   useEffect(() => {
-    // 기존 Dashboard.tsx와 동일한 패턴: 학생 데이터 로드 후 곧바로 시간표 fetch
     api
       .get("/dashboard/student")
-      .then((res) => {
-        setData(res.data);
-        const s = res.data?.student;
-        if (s?.year && s?.classNum) {
-          fetch(
-            `/api/calendar/timetable?grade=${s.year}&classNum=${s.classNum}`,
-          )
-            .then((r) => (r.ok ? r.json() : []))
-            .then((d) => {
-              setTimetable(d);
-              setTimetableLoading(false);
-            })
-            .catch(() => setTimetableLoading(false));
-        } else {
-          setTimetableLoading(false);
-        }
-      })
-      .catch(() => {
-        setTimetableLoading(false);
-      })
+      .then((res) => { setData(res.data) })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -147,10 +120,7 @@ export default function StudentDashboard() {
           <SubmissionStatusWidget />
         </div>
         <div className="col-xl-4 d-flex flex-column">
-          <TodayTimetableWidget
-            timetable={timetable}
-            loading={timetableLoading}
-          />
+          <TodayTimetableWidget grade={year} classNum={classNum} schoolId={schoolId} />
         </div>
       </div>
 

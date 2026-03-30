@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ADMIN_ROUTES } from '@/constants/routes';
 import type { GrantInfo } from '@/api/auth';
 
+
 function useSubmenu() {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const toggle = (key: string) => setOpen((prev) => ({ [key]: !prev[key] }));
@@ -23,7 +24,7 @@ function hasGrant(grants: GrantInfo[], ...roles: string[]) {
 
 export default function AdminSidebar() {
   const { open, toggle } = useSubmenu();
-  const { isOpen, isCollapsed, closeSidebar } = useSidebar();
+  const { isOpen, isCollapsed, closeSidebar, toggleCollapse } = useSidebar();
   const { selectedSchool, clearSelectedSchool } = useSchool();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ export default function AdminSidebar() {
   return (
     <aside
       className={`sidebar${isOpen ? " sidebar-open" : ""}${isCollapsed ? " active" : ""}`}
-      style={{ display: "flex", flexDirection: "column", insetBlockStart: "4.5rem", height: "calc(100vh - 4.5rem)" }}
+      style={{ display: "flex", flexDirection: "column" }}
     >
       <button
         type="button"
@@ -66,6 +67,34 @@ export default function AdminSidebar() {
       >
         <iconify-icon icon="radix-icons:cross-2" />
       </button>
+
+      <div>
+        <div
+          className="sidebar-logo d-flex align-items-center justify-content-between"
+          style={{ paddingInlineStart: "1.5rem", paddingInlineEnd: "1.5rem" }}
+        >
+          {!isCollapsed && (
+            <a href="/main">
+              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="160" height="37" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="160" height="37" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="logo-icon" />
+            </a>
+          )}
+          <button
+            type="button"
+            className="text-xxl d-xl-flex d-none line-height-1 sidebar-toggle text-neutral-500"
+            aria-label="Collapse Sidebar"
+            onClick={toggleCollapse}
+            style={
+              isCollapsed
+                ? { left: "50%", right: "auto", top: "2.25rem", transform: "translateX(-50%) translateY(-50%)" }
+                : {}
+            }
+          >
+            <i className={isCollapsed ? "ri-contract-right-line" : "ri-contract-left-line"} />
+          </button>
+        </div>
+      </div>
 
       <div className="sidebar-menu-area" style={{ flex: 1, overflowY: "auto" }}>
         <ul className="sidebar-menu" id="sidebar-menu">
@@ -229,49 +258,59 @@ export default function AdminSidebar() {
       </div>
 
       {/* 현재 학교 표시 + 학교 변경 버튼 (SUPER_ADMIN 전용) */}
-      <div className="border-top border-neutral-200 px-16 py-12">
-        {selectedSchool && (
+      <div
+        className="border-top border-neutral-200 py-12"
+        style={{ paddingInline: isCollapsed ? "0" : "16px", textAlign: isCollapsed ? "center" : "left" }}
+      >
+        {isCollapsed ? (
+          /* 접힌 상태: 아이콘만 */
           <div
-            className="text-secondary-light mb-6"
-            style={{
-              fontSize: 11,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-            title={selectedSchool.name}
+            className="text-secondary-light d-flex justify-content-center"
+            title={selectedSchool?.name}
+            style={{ fontSize: 18 }}
           >
-            <i className="ri-building-line me-1" />
-            {selectedSchool.name}
+            <i className="ri-building-line" />
           </div>
-        )}
-        {isSuperAdmin && (
-          <button
-            type="button"
-            onClick={handleChangeSchool}
-            className="w-100 bg-neutral-100 border border-neutral-200 text-secondary-light radius-8 d-flex align-items-center gap-2 px-12 py-8"
-            style={{
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) =>
-              e.currentTarget.classList.replace(
-                "bg-neutral-100",
-                "bg-neutral-200",
-              )
-            }
-            onMouseLeave={(e) =>
-              e.currentTarget.classList.replace(
-                "bg-neutral-200",
-                "bg-neutral-100",
-              )
-            }
-          >
-            <i className="ri-building-4-line" />
-            <span>다른 학교 선택</span>
-          </button>
+        ) : (
+          <>
+            {selectedSchool && (
+              <div
+                className="text-secondary-light mb-6"
+                style={{
+                  fontSize: 11,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                title={selectedSchool.name}
+              >
+                <i className="ri-building-line me-1" />
+                {selectedSchool.name}
+              </div>
+            )}
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={handleChangeSchool}
+                className="w-100 bg-neutral-100 border border-neutral-200 text-secondary-light radius-8 d-flex align-items-center gap-2 px-12 py-8"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) =>
+                  e.currentTarget.classList.replace("bg-neutral-100", "bg-neutral-200")
+                }
+                onMouseLeave={(e) =>
+                  e.currentTarget.classList.replace("bg-neutral-200", "bg-neutral-100")
+                }
+              >
+                <i className="ri-building-4-line" />
+                <span>다른 학교 선택</span>
+              </button>
+            )}
+          </>
         )}
       </div>
     </aside>

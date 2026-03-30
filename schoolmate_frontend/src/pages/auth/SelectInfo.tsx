@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api, { getMe } from '@/api/auth'
 import { auth } from '@/shared/auth'
+import MainFooter from '@/components/layout/MainFooter'
 
 // 이메일 가입: /select-info?source=email → 역할 선택 → 학교 선택 or 폼 입력
 // SNS 가입:   /select-info?source=sns  → 역할 선택 → 학교 선택 or 가입 완료
@@ -94,6 +95,7 @@ export default function SelectInfo() {
   }
 
   return (
+    <>
     <div className="register-container">
       {/* 왼쪽 상단 로고 */}
       <a href="/main" className="register-logo">
@@ -198,5 +200,7 @@ export default function SelectInfo() {
         </div>
       </div>
     </div>
+    <MainFooter />
+    </>
   )
 }

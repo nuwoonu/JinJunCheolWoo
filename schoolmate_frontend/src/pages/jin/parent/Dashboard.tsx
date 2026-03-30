@@ -4,7 +4,6 @@ import api from "@/api/auth";
 import Header from "@/components/layout/Header";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
-import Footer from "@/components/layout/Footer";
 
 // [soojin] 학부모 대시보드 - 사이드바 없는 2컬럼 레이아웃
 
@@ -57,7 +56,7 @@ export default function ParentDashboard() {
   return (
     <SidebarProvider>
       <div style={{ minHeight: "100vh", backgroundColor: "#f4f6f8", display: "flex", flexDirection: "column" }}>
-        <Header />
+        <Header showLogo />
         <div style={{ padding: "40px 20px", flex: 1 }}>
           {/* 2컬럼 레이아웃 */}
           <div style={{ display: "flex", gap: "24px", width: "1270px", margin: "0 auto", alignItems: "stretch" }}>
@@ -290,7 +289,6 @@ export default function ParentDashboard() {
             </div>
           </div>
         </div>
-        <Footer />
       </div>
     </SidebarProvider>
   );

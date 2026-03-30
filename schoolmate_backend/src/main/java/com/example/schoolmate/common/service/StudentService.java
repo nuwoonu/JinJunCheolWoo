@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
@@ -75,9 +77,14 @@ public class StudentService {
         return studentInfoRepository.search(cond, pageable)
                 .map(user -> {
                     StudentDTO.SummaryResponse dto = new StudentDTO.SummaryResponse(user);
-                    roleRequestRepository.findAllByUserAndRole(user, UserRole.STUDENT).stream().findFirst().ifPresent(rr -> {
+                    // [soojin] status 필터 시 해당 상태의 roleRequest를 직접 조회하여 createDate 정확히 세팅
+                    Optional<RoleRequest> targetRr = (cond.getRoleRequestStatus() != null && !cond.getRoleRequestStatus().isEmpty())
+                            ? roleRequestRepository.findByUserAndRoleAndStatus(user, UserRole.STUDENT, RoleRequestStatus.valueOf(cond.getRoleRequestStatus()))
+                            : roleRequestRepository.findAllByUserAndRole(user, UserRole.STUDENT).stream().findFirst();
+                    targetRr.ifPresent(rr -> {
                         dto.setRoleRequestId(rr.getId());
                         dto.setRoleRequestStatus(rr.getStatus().name());
+                        dto.setRoleRequestCreateDate(rr.getCreateDate()); // [soojin] 대시보드 대기 목록 최신순 정렬용
                     });
                     return dto;
                 });

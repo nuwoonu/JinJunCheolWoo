@@ -6,10 +6,17 @@
  * - 서버 DB 저장 없음, 브라우저 localStorage 사용 없음
  */
 
+// [soojin] 알레르기 번호 포함 메뉴 아이템
+export interface MenuItemWithAllergy {
+  name: string        // 요리명 (알레르기 번호 제거됨)
+  allergies: number[] // 알레르기 번호 목록 (예: [1, 5, 9])
+}
+
 export interface MealInfo {
-  menu: string      // 메뉴 (줄바꿈 구분)
+  menu: string      // 메뉴 (줄바꿈 구분, 기존 호환)
   calories: string  // 칼로리 (예: "645")
   mealType: string  // 급식 구분 (예: "중식")
+  menuItems?: MenuItemWithAllergy[]  // 알레르기 정보 포함 메뉴 목록
 }
 
 // 캐시 저장소: { "2025-03-23": MealInfo | null }
@@ -39,7 +46,11 @@ export async function getTodayMeal(schoolId?: number | null): Promise<MealInfo |
   }
 
   try {
-    const res = await fetch('/api/neis/meal/today')
+    // [soojin] schoolId가 있으면 query param으로 전달 (학부모 대시보드: JWT에 schoolId 없음)
+    const url = schoolId != null
+      ? `/api/neis/meal/today?schoolId=${schoolId}`
+      : '/api/neis/meal/today'
+    const res = await fetch(url)
     // 200 OK일 때만 JSON 파싱 (204 No Content는 body가 없으므로 json() 호출 불가)
     cache[key] = res.status === 200 ? await res.json() : null
   } catch {

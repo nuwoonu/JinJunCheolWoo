@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import { auth } from '@/shared/auth'
+import MainFooter from '@/components/layout/MainFooter'
 import '../../styles/register.css'
 
 const roleLabels: Record<string, string> = {
@@ -94,6 +95,7 @@ export default function Register() {
   if (authLoading) return null
 
   return (
+    <>
     <div className="register-container">
       {/* 왼쪽 상단 로고 */}
       <a href="/main" className="register-logo">
@@ -204,5 +206,7 @@ export default function Register() {
         </div>
       </div>
     </div>
+    <MainFooter />
+    </>
   )
 }

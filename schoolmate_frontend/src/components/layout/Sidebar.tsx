@@ -123,8 +123,8 @@ export default function Sidebar() {
         >
           {!isCollapsed && (
             <a href="/main">
-              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
-              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="173" height="40" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="160" height="37" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="160" height="37" />
               <img src="/images/schoolmateLogo.png" alt="홈" className="logo-icon" />
             </a>
           )}
