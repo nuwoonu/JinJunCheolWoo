@@ -205,10 +205,10 @@ export default function DashboardScheduleWidget() {
 
   return (
     <>
-      {/* 카드 */}
-      <div style={css.card}>
+      {/* [woo 03-27] 카드 — className="card"로 다크 테마 자동 대응 */}
+      <div className="card" style={css.card}>
         {/* 헤더 */}
-        <div style={css.cardHeader}>
+        <div className="border-bottom" style={css.cardHeader}>
           <div style={css.cardTitle}>
             <span style={{ marginRight: 6 }}></span>
             {label}
@@ -294,9 +294,9 @@ function ScheduleCard({
       <div style={{ ...css.scheduleBar, borderLeftColor: color }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <span style={{ ...css.periodBadge, background: color + "22", color }}>{s.period}교시</span>
-          <span style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>{s.subjectName}</span>
+          <span className="fw-semibold" style={{ fontSize: 14 }}>{s.subjectName}</span>
         </div>
-        <div style={{ fontSize: 12, color: "#6b7280" }}>
+        <div className="text-secondary-light" style={{ fontSize: 12 }}>
           {fmtTime(s.startTime)} - {fmtTime(s.endTime)}
           {s.className && <span style={{ marginLeft: 8 }}>| {s.className}</span>}
           {s.location && <span style={{ marginLeft: 6 }}>| {s.location}</span>}
@@ -334,9 +334,9 @@ function ScheduleModal({
 }) {
   return (
     <div style={css.overlay} onClick={onClose}>
-      <div style={css.modal} onClick={(e) => e.stopPropagation()}>
+      <div className="card" style={css.modal} onClick={(e) => e.stopPropagation()}>
         {/* 모달 헤더 */}
-        <div style={css.modalHeader}>
+        <div className="border-bottom" style={css.modalHeader}>
           <h6 style={{ margin: 0, fontWeight: 600 }}>{isEdit ? "일정 수정" : "일정 추가"}</h6>
           <button onClick={onClose} style={css.closeBtn}>
             ✕
@@ -348,9 +348,9 @@ function ScheduleModal({
           {/* 요일 + 교시 */}
           <div style={css.row2}>
             <div style={css.formGroup}>
-              <label style={css.label}>요일</label>
+              <label className="form-label" style={css.label}>요일</label>
               <select
-                style={css.select}
+                className="form-select"
                 value={form.dayOfWeek}
                 onChange={(e) => onChangeField("dayOfWeek", e.target.value as DayKey)}
               >
@@ -362,12 +362,12 @@ function ScheduleModal({
               </select>
             </div>
             <div style={css.formGroup}>
-              <label style={css.label}>교시</label>
+              <label className="form-label" style={css.label}>교시</label>
               <input
                 type="number"
                 min={1}
                 max={8}
-                style={css.input}
+                className="form-control"
                 value={form.period}
                 onChange={(e) => onChangeField("period", Number(e.target.value))}
               />
@@ -377,19 +377,19 @@ function ScheduleModal({
           {/* 시작/종료 시간 */}
           <div style={css.row2}>
             <div style={css.formGroup}>
-              <label style={css.label}>시작 시간</label>
+              <label className="form-label" style={css.label}>시작 시간</label>
               <input
                 type="time"
-                style={css.input}
+                className="form-control"
                 value={form.startTime}
                 onChange={(e) => onChangeField("startTime", e.target.value)}
               />
             </div>
             <div style={css.formGroup}>
-              <label style={css.label}>종료 시간</label>
+              <label className="form-label" style={css.label}>종료 시간</label>
               <input
                 type="time"
-                style={css.input}
+                className="form-control"
                 value={form.endTime}
                 onChange={(e) => onChangeField("endTime", e.target.value)}
               />
@@ -398,13 +398,13 @@ function ScheduleModal({
 
           {/* 과목명 */}
           <div style={css.formGroup}>
-            <label style={css.label}>
+            <label className="form-label" style={css.label}>
               과목명 <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
               type="text"
               placeholder="예: 수학"
-              style={css.input}
+              className="form-control"
               value={form.subjectName}
               onChange={(e) => onChangeField("subjectName", e.target.value)}
             />
@@ -413,21 +413,21 @@ function ScheduleModal({
           {/* 학급 + 장소 */}
           <div style={css.row2}>
             <div style={css.formGroup}>
-              <label style={css.label}>학급</label>
+              <label className="form-label" style={css.label}>학급</label>
               <input
                 type="text"
                 placeholder="예: 1학년 2반"
-                style={css.input}
+                className="form-control"
                 value={form.className}
                 onChange={(e) => onChangeField("className", e.target.value)}
               />
             </div>
             <div style={css.formGroup}>
-              <label style={css.label}>장소</label>
+              <label className="form-label" style={css.label}>장소</label>
               <input
                 type="text"
                 placeholder="예: 3-2 교실"
-                style={css.input}
+                className="form-control"
                 value={form.location}
                 onChange={(e) => onChangeField("location", e.target.value)}
               />
@@ -436,9 +436,9 @@ function ScheduleModal({
 
           {/* 반복 유형 */}
           <div style={css.formGroup}>
-            <label style={css.label}>반복</label>
+            <label className="form-label" style={css.label}>반복</label>
             <select
-              style={css.select}
+              className="form-select"
               value={form.repeatType}
               onChange={(e) => onChangeField("repeatType", e.target.value as FormData["repeatType"])}
             >
@@ -451,10 +451,10 @@ function ScheduleModal({
           {/* 특정 날짜 (ONCE 선택 시만 표시) */}
           {form.repeatType === "ONCE" && (
             <div style={css.formGroup}>
-              <label style={css.label}>날짜</label>
+              <label className="form-label" style={css.label}>날짜</label>
               <input
                 type="date"
-                style={css.input}
+                className="form-control"
                 value={form.specificDate}
                 onChange={(e) => onChangeField("specificDate", e.target.value)}
               />
@@ -463,11 +463,12 @@ function ScheduleModal({
 
           {/* 메모 */}
           <div style={css.formGroup}>
-            <label style={css.label}>메모</label>
+            <label className="form-label" style={css.label}>메모</label>
             <textarea
               rows={2}
               placeholder="간단한 메모 (선택)"
-              style={{ ...css.input, resize: "vertical" }}
+              className="form-control"
+              style={{ resize: "vertical" }}
               value={form.memo}
               onChange={(e) => onChangeField("memo", e.target.value)}
             />
@@ -475,8 +476,8 @@ function ScheduleModal({
         </div>
 
         {/* 모달 푸터 */}
-        <div style={css.modalFooter}>
-          <button onClick={onClose} style={css.cancelBtn} disabled={submitting}>
+        <div className="border-top" style={css.modalFooter}>
+          <button onClick={onClose} className="btn btn-outline-neutral-300 radius-6" style={{ padding: "8px 20px", fontSize: 14 }} disabled={submitting}>
             취소
           </button>
           <button onClick={onSubmit} style={css.saveBtn} disabled={submitting}>
@@ -492,9 +493,7 @@ function ScheduleModal({
 
 const css: Record<string, React.CSSProperties> = {
   card: {
-    background: "white",
     borderRadius: 12,
-    border: "1px solid #e5e7eb",
     height: 480,
     display: "flex",
     flexDirection: "column",
@@ -504,7 +503,6 @@ const css: Record<string, React.CSSProperties> = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "16px 20px",
-    borderBottom: "1px solid #e5e7eb",
     flexWrap: "wrap",
     gap: 8,
   },
@@ -512,7 +510,6 @@ const css: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: 16,
     fontWeight: 600,
-    color: "#111827",
     display: "flex",
     alignItems: "center",
   },
@@ -621,7 +618,6 @@ const css: Record<string, React.CSSProperties> = {
     zIndex: 9999,
   },
   modal: {
-    background: "white",
     borderRadius: 12,
     width: "100%",
     maxWidth: 500,
@@ -635,7 +631,6 @@ const css: Record<string, React.CSSProperties> = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "16px 20px",
-    borderBottom: "1px solid #e5e7eb",
   },
   modalBody: {
     padding: "20px",
@@ -648,7 +643,6 @@ const css: Record<string, React.CSSProperties> = {
     justifyContent: "flex-end",
     gap: 8,
     padding: "14px 20px",
-    borderTop: "1px solid #e5e7eb",
   },
   closeBtn: {
     background: "none",
@@ -671,32 +665,24 @@ const css: Record<string, React.CSSProperties> = {
   label: {
     fontSize: 13,
     fontWeight: 500,
-    color: "#374151",
   },
   input: {
-    border: "1px solid #d1d5db",
     borderRadius: 6,
     padding: "8px 10px",
     fontSize: 14,
-    color: "#111827",
     outline: "none",
     width: "100%",
     boxSizing: "border-box",
   } as React.CSSProperties,
   select: {
-    border: "1px solid #d1d5db",
     borderRadius: 6,
     padding: "8px 10px",
     fontSize: 14,
-    color: "#111827",
     outline: "none",
     width: "100%",
     boxSizing: "border-box",
-    background: "white",
   } as React.CSSProperties,
   cancelBtn: {
-    background: "#f3f4f6",
-    color: "#374151",
     border: "none",
     borderRadius: 6,
     padding: "8px 20px",

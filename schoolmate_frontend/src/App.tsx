@@ -23,8 +23,7 @@ import StudentMyInfo from "@/pages/cheol/student/MyInfo";
 import StudentGrades from "@/pages/cheol/student/Grades";
 import StudentExamSchedule from "@/pages/cheol/student/ExamSchedule";
 import StudentExamResult from "@/pages/cheol/student/ExamResult";
-import GradeBoard from "@/pages/cheol/board/GradeBoard";
-import GradeBoardDetail from "@/pages/cheol/board/GradeBoardDetail";
+// [woo 03-27] 학년 게시판 제거 — 학급 게시판(ClassBoard)으로 대체
 // [cheol] 기숙사
 import DormitoryRoot from "@/pages/cheol/dormitory/app/components/Root";
 import DormitoryAdminRoot from "@/pages/cheol/dormitory/app/components/AdminRoot";
@@ -47,6 +46,13 @@ import SchoolNotice from "@/pages/woo/board/SchoolNotice";
 import SchoolNoticeDetail from "@/pages/woo/board/SchoolNoticeDetail";
 import ParentNotice from "@/pages/woo/board/ParentNotice";
 import ParentNoticeDetail from "@/pages/woo/board/ParentNoticeDetail";
+import ClassDiary from "@/pages/woo/board/ClassDiary";
+import ClassDiaryWrite from "@/pages/woo/board/ClassDiaryWrite";
+import ClassDiaryDetail from "@/pages/woo/board/ClassDiaryDetail";
+// [woo 03-27] 학급 게시판
+import ClassBoard from "@/pages/woo/board/ClassBoard";
+import ClassBoardWrite from "@/pages/woo/board/ClassBoardWrite";
+import ClassBoardDetail from "@/pages/woo/board/ClassBoardDetail";
 import ParentBoard from "@/pages/woo/board/ParentBoard";
 import ParentBoardDetail from "@/pages/woo/board/ParentBoardDetail";
 import TeacherBoard from "@/pages/woo/board/TeacherBoard";
@@ -74,6 +80,8 @@ import ConsultationReservation from "@/pages/jin/consultation/ConsultationReserv
 // [jin] 학교 일정/갤러리
 import SchoolSchedule from "@/pages/jin/school/SchoolSchedule";
 import SchoolGallery from "@/pages/jin/school/SchoolGallery";
+// [woo] 학급 앨범
+import ClassAlbum from "@/pages/woo/album/ClassAlbum";
 // [jin] 선생님, 학생 학급 대시보드
 import TeacherMyClassDashboard from "@/pages/jin/teacher/MyClassDashboard";
 import StudentDashboard from "@/pages/jin/student/StudentDashboard";
@@ -362,23 +370,7 @@ function App() {
         }
       />
 
-      {/* [cheol] 학년 게시판 - PARENT 포함 (학부모 학급 공지 접근) */}
-      <Route
-        path="/board/grade/:grade"
-        element={
-          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
-            <GradeBoard />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/board/grade/:grade/:id"
-        element={
-          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
-            <GradeBoardDetail />
-          </PrivateRoute>
-        }
-      />
+      {/* [woo 03-27] 학년 게시판 제거 — 학급 게시판(ClassBoard)으로 대체 */}
 
       {/* [woo] 게시판 */}
       <Route
@@ -411,6 +403,56 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["PARENT", "TEACHER", "ADMIN"]}>
             <ParentNoticeDetail />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 우리반 알림장 */}
+      <Route
+        path="/board/class-diary"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "PARENT", "ADMIN"]}>
+            <ClassDiary />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/board/class-diary/write"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <ClassDiaryWrite />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/board/class-diary/:id"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "PARENT", "ADMIN"]}>
+            <ClassDiaryDetail />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo 03-27] 학급 게시판 */}
+      <Route
+        path="/board/class-board"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <ClassBoard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/board/class-board/write"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <ClassBoardWrite />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/board/class-board/:id"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <ClassBoardDetail />
           </PrivateRoute>
         }
       />
@@ -847,6 +889,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolGallery />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 학급 앨범 */}
+      <Route
+        path="/class/album"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
+            <ClassAlbum />
           </PrivateRoute>
         }
       />

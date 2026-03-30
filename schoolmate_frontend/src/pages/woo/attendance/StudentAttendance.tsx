@@ -150,9 +150,46 @@ export default function StudentAttendance() {
 
   // [woo] 요일 표시
   const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
-  const dayOfWeek = DAY_NAMES[new Date(date).getDay()];
+  const selectedDate = new Date(date);
+  const dayOfWeek = DAY_NAMES[selectedDate.getDay()];
   const isToday = date === today;
   const isWeekend = dayOfWeek === "토" || dayOfWeek === "일";
+
+  // [woo] 대한민국 공휴일 — 양력 고정 + 음력 기반(연도별 갱신 필요)
+  const FIXED_HOLIDAYS: Record<string, string> = {
+    "01-01": "새해 첫날",
+    "03-01": "삼일절",
+    "05-05": "어린이날",
+    "06-06": "현충일",
+    "08-15": "광복절",
+    "10-03": "개천절",
+    "10-09": "한글날",
+    "12-25": "성탄절",
+  };
+  const LUNAR_HOLIDAYS: Record<number, Record<string, string>> = {
+    2025: {
+      "01-28": "설날 연휴", "01-29": "설날", "01-30": "설날 연휴",
+      "05-05": "부처님 오신 날", "05-06": "대체공휴일 (어린이날)",
+      "10-05": "추석 연휴", "10-06": "추석", "10-07": "추석 연휴", "10-08": "대체공휴일 (추석)",
+    },
+    2026: {
+      "02-16": "설날 연휴", "02-17": "설날", "02-18": "설날 연휴",
+      "03-02": "대체공휴일 (삼일절)",
+      "05-24": "부처님 오신 날", "05-25": "대체공휴일 (부처님 오신 날)",
+      "09-24": "추석 연휴", "09-25": "추석", "09-26": "추석 연휴",
+    },
+    2027: {
+      "02-05": "설날 연휴", "02-06": "설날", "02-07": "설날 연휴", "02-08": "대체공휴일 (설날)",
+      "05-13": "부처님 오신 날",
+      "10-14": "추석 연휴", "10-15": "추석", "10-16": "추석 연휴",
+    },
+  };
+  const selMmdd = date.slice(5); // "MM-DD"
+  const selYear = selectedDate.getFullYear();
+  const allHolidays = { ...FIXED_HOLIDAYS, ...(LUNAR_HOLIDAYS[selYear] ?? {}) };
+  const holidayName = allHolidays[selMmdd] ?? null;
+  const isHoliday = isWeekend || !!holidayName;
+  const holidayLabel = holidayName ? holidayName : dayOfWeek === "토" ? "토요일" : "일요일";
 
   // [woo] 개별 학생 출결 상태 변경 - 사유 필요 시 모달 오픈
   const handleStatusChange = (studentInfoId: number, status: string, studentName: string) => {
@@ -366,7 +403,7 @@ export default function StudentAttendance() {
               type="button"
               className="btn btn-success-600 d-flex align-items-center gap-8 px-20 py-10"
               onClick={handleAllPresent}
-              disabled={loading || records.length === 0 || isWeekend}
+              disabled={loading || records.length === 0 || isHoliday}
             >
               <i className="ri-checkbox-multiple-line text-lg" />
               전원출석
@@ -375,14 +412,14 @@ export default function StudentAttendance() {
         </div>
       </div>
 
-      {/* [woo] 주말 안내 배너 */}
-      {isWeekend && (
+      {/* [woo] 휴일 안내 배너 (주말 + 공휴일) */}
+      {isHoliday && (
         <div className="card border-0 mb-24 p-20" style={{ borderRadius: 12, background: "linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%)" }}>
           <div className="d-flex align-items-center gap-12">
             <i className="ri-calendar-close-line text-primary-600 text-2xl" />
             <div>
-              <p className="fw-semibold mb-2 text-primary-600">주말입니다</p>
-              <p className="text-sm text-secondary-light mb-0">주말에는 출결 처리가 필요하지 않습니다. 평일을 선택해주세요.</p>
+              <p className="fw-semibold mb-2 text-primary-600">오늘은 {holidayLabel}, 휴일입니다</p>
+              <p className="text-sm text-secondary-light mb-0">휴일에는 출결 처리가 필요하지 않습니다. 이전 날짜 조회는 가능합니다.</p>
             </div>
           </div>
         </div>
@@ -450,7 +487,7 @@ export default function StudentAttendance() {
                           style={{ maxWidth: 100 }}
                           value={r.status}
                           onChange={(e) => handleStatusChange(r.studentInfoId, e.target.value, r.studentName)}
-                          disabled={isWeekend}
+                          disabled={isHoliday}
                         >
                           {STATUS_OPTIONS.map((o) => (
                             <option key={o.value} value={o.value}>

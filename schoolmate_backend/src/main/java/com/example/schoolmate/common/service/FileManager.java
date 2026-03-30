@@ -40,7 +40,11 @@ public class FileManager {
         /** 기자재 모델 이미지 */
         ASSET("assets"),
         /** 시설 이미지 */
-        FACILITY("facilities");
+        FACILITY("facilities"),
+        /** [woo] 게시판 첨부파일 (가정통신문 등) */
+        BOARD("board"),
+        /** [woo] 학급 앨범 사진 */
+        ALBUM("album");
 
         final String dir;
 

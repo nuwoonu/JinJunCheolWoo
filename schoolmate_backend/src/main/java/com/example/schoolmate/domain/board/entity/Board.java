@@ -47,7 +47,8 @@ public class Board extends SchoolBaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, length = 5000)
+    // [woo] WYSIWYG 에디터 HTML + base64 이미지 저장을 위해 LONGTEXT
+    @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -82,6 +83,11 @@ public class Board extends SchoolBaseEntity {
 
     // 첨부파일 URL (CLASS_NOTICE, PARENT_NOTICE 전용)
     private String attachmentUrl;
+
+    // [woo] 회신(동의) 필요 여부 — 가정통신문 전용
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean requiresConsent = false;
 
     // 삭제 여부 (soft delete)
     @Builder.Default

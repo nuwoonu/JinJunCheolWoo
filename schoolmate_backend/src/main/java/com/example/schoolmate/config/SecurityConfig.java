@@ -46,6 +46,9 @@ public class SecurityConfig {
                 http
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                                 .csrf(csrf -> csrf.disable())
+                                // [woo] iframe 허용 (첨부파일 PDF 미리보기용)
+                                .headers(headers -> headers
+                                        .frameOptions(frame -> frame.sameOrigin()))
                                 // [woo] 기본 formLogin 비활성화 → DefaultLoginPageGeneratingFilter 제거
                                 // oauth2Login 설정 시 자동 등록되어 커스텀 /login 페이지를 가로채는 문제 방지
                                 .formLogin(AbstractHttpConfigurer::disable)
@@ -90,8 +93,9 @@ public class SecurityConfig {
                                                                 "/upload/**", "/uploads/**", "/error/**")
                                                 .permitAll()
                                                 // [woo] NEIS 공개 API - 인증 불필요
-                                                .requestMatchers("/api/calendar/**", "/api/meals/**").permitAll()
-                                                // SUPER_ADMIN 전용: 학교 관리·권한 위임·감사 로그
+                                                .requestMatchers("/api/calendar/**", "/api/meals/**",
+                                                                "/api/board/file/**").permitAll()
+                                                // SUPER_ADMIN 전용: 학교 관리·권한 위임·시스템 설정·감사 로그
                                                 // URL 레벨에서는 내장 hasRole 사용 (SpEL bean 참조 없이 안전하게 처리)
                                                 // 컨트롤러 레벨에서 @PreAuthorize("@grants.isSuperAdmin()")로 이중 방어
                                                 .requestMatchers(
@@ -153,6 +157,16 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
                                                 .requestMatchers("/api/attendance/parent/**")
                                                 .hasAnyRole("PARENT", "ADMIN")
+                                                // [woo] 학급 앨범 — 업로드는 교사/관리자, 조회는 모든 인증 사용자
+                                                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/class/photos")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/class/photos/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                // [woo] 학급 앨범 캡션 수정
+                                                .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/class/photos/**")
+                                                .hasAnyRole("TEACHER", "ADMIN")
+                                                .requestMatchers("/api/class/photos/**")
+                                                .authenticated()
                                                 // 나머지 모든 요청은 인증 필요
                                                 .anyRequest().authenticated())
                                 // [woo] OAuth2 소셜 로그인 (성공 시 JWT 발급)
