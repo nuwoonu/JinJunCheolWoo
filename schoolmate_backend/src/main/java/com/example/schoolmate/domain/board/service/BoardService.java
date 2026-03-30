@@ -655,8 +655,9 @@ public class BoardService {
             return;
         }
 
-        // [woo 03-27] 학급 게시판 — 교사는 모든 글 수정/삭제 가능
-        if (board.getBoardType() == BoardType.CLASS_BOARD && isTeacher(userDTO)) {
+        // [woo] 학급 게시판·학부모 게시판 — 교사는 모든 글 수정/삭제 가능
+        if ((board.getBoardType() == BoardType.CLASS_BOARD || board.getBoardType() == BoardType.PARENT_BOARD)
+                && isTeacher(userDTO)) {
             return;
         }
 
