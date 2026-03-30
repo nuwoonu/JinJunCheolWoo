@@ -12,6 +12,7 @@ import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
 import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -67,6 +68,7 @@ public class AuthApiController {
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolRepository schoolRepository;
     private final com.example.schoolmate.common.repository.ProfileRepository profileRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StaffInfoRepository staffInfoRepository;
@@ -248,8 +250,13 @@ public class AuthApiController {
         // hasAdminAccess: grants가 하나라도 있으면 어드민 페이지 접근 가능
         boolean hasAdminAccess = !grants.isEmpty();
 
-        // provider (소셜 로그인 구분: null=이메일, "google", "kakao")
-        String provider = dbUser != null ? dbUser.getProvider() : null;
+        // 연동된 소셜 계정 목록 및 비밀번호 설정 여부
+        List<String> providers = dbUser != null
+                ? socialAccountRepository.findByUser(dbUser).stream()
+                        .map(sa -> sa.getProvider())
+                        .collect(Collectors.toList())
+                : List.of();
+        boolean hasPassword = dbUser != null && dbUser.hasPassword();
 
         // 프로필 이미지 URL
         String profileImageUrl = null;
@@ -270,7 +277,8 @@ public class AuthApiController {
         response.put("hasAdminAccess", hasAdminAccess);
         response.put("grants", grants);
         response.put("roleRequests", roleRequests);
-        response.put("provider", provider);
+        response.put("providers", providers);
+        response.put("hasPassword", hasPassword);
         response.put("profileImageUrl", profileImageUrl);
 
         return ResponseEntity.ok(response);
@@ -348,9 +356,9 @@ public class AuthApiController {
         }
 
         User user = userOpt.get();
-        if (user.getProvider() != null) {
+        if (!user.hasPassword()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("message", "소셜 로그인 계정은 비밀번호 찾기를 이용할 수 없습니다."));
+                    .body(Map.of("message", "비밀번호가 설정되지 않은 계정입니다. 비밀번호 찾기를 이용할 수 없습니다."));
         }
 
         try {

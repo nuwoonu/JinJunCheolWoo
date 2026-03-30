@@ -19,8 +19,11 @@ import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.service.PasswordVerificationService;
 import com.example.schoolmate.common.service.UserService;
+import com.example.schoolmate.config.jwt.AuthService;
 import com.example.schoolmate.dto.AuthUserDTO;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,8 @@ import lombok.RequiredArgsConstructor;
  * - POST /api/user/profile/image        : 프로필 이미지 변경
  * - POST /api/user/password/send-code   : 비밀번호 변경용 이메일 인증 코드 발송
  * - POST /api/user/password             : 비밀번호 변경 (인증 코드 검증 후 변경)
+ * - POST /api/user/withdraw/send-code   : 회원 탈퇴용 이메일 인증 코드 발송
+ * - POST /api/user/withdraw             : 회원 탈퇴 (인증 코드 검증 후 소프트 딜리트 + 로그아웃)
  */
 @RestController
 @RequestMapping("/api/user")
@@ -41,6 +46,7 @@ public class UserProfileController {
     private final FileManager fileManager;
     private final UserService userService;
     private final PasswordVerificationService passwordVerificationService;
+    private final AuthService authService;
 
     /**
      * 프로필 이미지 업로드
@@ -92,9 +98,9 @@ public class UserProfileController {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        if (user.getProvider() != null) {
+        if (!user.hasPassword()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("message", "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다."));
+                    .body(Map.of("message", "비밀번호가 설정되지 않은 계정입니다. 비밀번호를 변경할 수 없습니다."));
         }
 
         try {
@@ -120,9 +126,9 @@ public class UserProfileController {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        if (user.getProvider() != null) {
+        if (!user.hasPassword()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("message", "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다."));
+                    .body(Map.of("message", "비밀번호가 설정되지 않은 계정입니다. 비밀번호를 변경할 수 없습니다."));
         }
 
         try {
@@ -134,10 +140,71 @@ public class UserProfileController {
         }
     }
 
+    /**
+     * 회원 탈퇴용 이메일 인증 코드 발송
+     */
+    @PostMapping("/withdraw/send-code")
+    public ResponseEntity<Map<String, Object>> sendWithdrawalCode(
+            @AuthenticationPrincipal AuthUserDTO auth) {
+
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long uid = auth.getCustomUserDTO().getUid();
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        try {
+            passwordVerificationService.sendWithdrawalCode(user);
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    /**
+     * 회원 탈퇴 (인증 코드 검증 후 소프트 딜리트 + 로그아웃)
+     */
+    @PostMapping("/withdraw")
+    public ResponseEntity<Map<String, Object>> withdraw(
+            @AuthenticationPrincipal AuthUserDTO auth,
+            @RequestBody WithdrawRequest req,
+            HttpServletResponse response) {
+
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long uid = auth.getCustomUserDTO().getUid();
+        String email = auth.getCustomUserDTO().getEmail();
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        try {
+            passwordVerificationService.verifyAndDelete(uid, req.getVerificationCode());
+            user.withdraw();
+            userRepository.save(user);
+            authService.logout(email);
+
+            Cookie cookie = new Cookie("accessToken", "");
+            cookie.setMaxAge(0);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 완료되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @Getter
     @NoArgsConstructor
     static class PasswordChangeRequest {
         private String verificationCode;
         private String newPassword;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    static class WithdrawRequest {
+        private String verificationCode;
     }
 }

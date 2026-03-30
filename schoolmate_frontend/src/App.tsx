@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import PrivateRoute from "@/components/PrivateRoute";
 import PageLoader from "@/components/PageLoader";
 import { ADMIN_ROUTES } from "@/constants/routes";
-import { useSchool } from "@/context/SchoolContext";
+import { useSchool } from "@/contexts/SchoolContext";
 import { useAuth } from "@/contexts/AuthContext";
 // 공통
 import NotFound from "@/pages/error/NotFound";

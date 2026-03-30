@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSchool } from '@/context/SchoolContext';
+import { useSchool } from '@/contexts/SchoolContext';
 import {
   STAFF_STATUS,
   EMPLOYMENT_TYPE,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from '@/contexts/SidebarContext';
-import { useSchool } from '@/context/SchoolContext';
+import { useSchool } from '@/contexts/SchoolContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { ADMIN_ROUTES } from '@/constants/routes';
 import type { GrantInfo } from '@/api/auth';

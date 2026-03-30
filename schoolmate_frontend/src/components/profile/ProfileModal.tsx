@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import api from '@/api/auth'
 
+type WdStep = 'request' | 'pending'
+
 // 어디서든 openProfileModal()로 열 수 있는 프로필 모달
 // 사용: const { openProfileModal } = useProfileModal()
 
@@ -43,14 +45,14 @@ interface Props {
 }
 
 export default function ProfileModal({ isOpen, onClose }: Props) {
-  const { user, refetch } = useAuth()
+  const { user, refetch, signOut } = useAuth()
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [imgSrc, setImgSrc] = useState<string | null>(null)
   const [imgLoading, setImgLoading] = useState(false)
 
-  // 비밀번호 변경 뷰 전환
-  const [view, setView] = useState<'profile' | 'password'>('profile')
+  // 뷰 전환 (profile / password / withdraw)
+  const [view, setView] = useState<'profile' | 'password' | 'withdraw'>('profile')
 
   // 비밀번호 변경 3단계 흐름
   const [pwStep, setPwStep] = useState<PwStep>('request')
@@ -59,13 +61,19 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
   const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [pwLoading, setPwLoading] = useState(false)
 
+  // 회원 탈퇴 흐름
+  const [wdStep, setWdStep] = useState<WdStep>('request')
+  const [wdCode, setWdCode] = useState('')
+  const [wdMsg, setWdMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [wdLoading, setWdLoading] = useState(false)
+
   // 카운트다운 (초 단위)
   const [countdown, setCountdown] = useState(0)
   const [timerKey, setTimerKey] = useState(0) // 재발송 시 타이머 재시작용
 
   // 카운트다운 타이머 — timerKey가 바뀔 때마다 재시작
   useEffect(() => {
-    if (pwStep !== 'pending') return
+    if (pwStep !== 'pending' && wdStep !== 'pending') return
     const SECONDS = 5 * 60
     setCountdown(SECONDS)
     const id = setInterval(() => {
@@ -92,12 +100,21 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
     setCountdown(0)
   }
 
+  const resetWdFlow = () => {
+    setWdStep('request')
+    setWdCode('')
+    setWdMsg(null)
+    setWdLoading(false)
+    setCountdown(0)
+  }
+
   // 모달 열릴 때 최신 이미지 동기화 및 상태 초기화
   useEffect(() => {
     if (isOpen) {
       setImgSrc(user?.profileImageUrl ?? null)
       setView('profile')
       resetPwFlow()
+      resetWdFlow()
     }
   }, [isOpen, user?.profileImageUrl]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -121,7 +138,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null
 
-  const isSocial = user?.provider != null
+  const isSocial = !(user?.hasPassword ?? true) // 비밀번호 없으면 순수 소셜 계정
 
   // ── 이미지 업로드 ──────────────────────────────────────────────────────────
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,6 +213,47 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
     }
   }
 
+  // ── 회원 탈퇴 인증 코드 발송 ───────────────────────────────────────────────
+  const handleSendWdCode = async () => {
+    setWdLoading(true)
+    setWdMsg(null)
+    try {
+      await api.post('/user/withdraw/send-code')
+      setWdStep('pending')
+      setWdCode('')
+      setTimerKey(k => k + 1)
+    } catch (err: any) {
+      setWdMsg({ text: err?.response?.data?.message ?? '코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.', ok: false })
+    } finally {
+      setWdLoading(false)
+    }
+  }
+
+  // ── 회원 탈퇴 최종 확인 ────────────────────────────────────────────────────
+  const handleWithdraw = async (e: { preventDefault(): void }) => {
+    e.preventDefault()
+    if (!wdCode.trim()) {
+      setWdMsg({ text: '인증 코드를 입력해주세요.', ok: false })
+      return
+    }
+    if (countdown === 0) {
+      setWdMsg({ text: '인증 코드가 만료되었습니다. 코드를 다시 발송해주세요.', ok: false })
+      return
+    }
+    setWdLoading(true)
+    setWdMsg(null)
+    try {
+      await api.post('/user/withdraw', { verificationCode: wdCode })
+      signOut()
+    } catch (err: any) {
+      const msg: string = err?.response?.data?.message ?? '회원 탈퇴에 실패했습니다.'
+      setWdMsg({ text: msg, ok: false })
+      if (msg.includes('코드')) setWdStep('request')
+    } finally {
+      setWdLoading(false)
+    }
+  }
+
   // ── 공통 스타일 ────────────────────────────────────────────────────────────
   const rowStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -236,16 +294,19 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
           padding: '16px 20px', borderBottom: '1px solid #e5e7eb', flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {view === 'password' && (
+            {(view === 'password' || view === 'withdraw') && (
               <button
-                onClick={() => { setView('profile'); resetPwFlow() }}
+                onClick={() => {
+                  if (view === 'password') { setView('profile'); resetPwFlow() }
+                  else { setView('profile'); resetWdFlow() }
+                }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: '2px 4px', marginRight: 2 }}
               >
                 <i className="ri-arrow-left-line" style={{ fontSize: 18 }} />
               </button>
             )}
             <h6 style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>
-              {view === 'profile' ? '내 프로필' : '비밀번호 변경'}
+              {view === 'profile' ? '내 프로필' : view === 'password' ? '비밀번호 변경' : '회원 탈퇴'}
             </h6>
           </div>
           <button
@@ -346,7 +407,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                       </div>
                       <div style={{ display: 'flex', gap: 5 }}>
                         {PROVIDERS.map(p => {
-                          const on = p.key === 'email' ? !isSocial : user?.provider === p.key
+                          const on = p.key === 'email' ? (user?.hasPassword ?? false) : (user?.providers?.includes(p.key) ?? false)
                           return (
                             <span key={p.key} style={{
                               display: 'inline-flex', alignItems: 'center', gap: 3,
@@ -389,7 +450,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                     )}
 
                     {/* 비밀번호 변경 */}
-                    <div style={{ ...rowStyle, borderBottom: 'none', paddingBottom: 0 }}>
+                    <div style={rowStyle}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={iconWrap}><i className="ri-lock-2-line" style={{ fontSize: 15, color: '#6b7280' }} /></div>
                         <span style={labelStyle}>비밀번호</span>
@@ -406,6 +467,24 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                         }}
                       >
                         변경
+                      </button>
+                    </div>
+
+                    {/* 회원 탈퇴 */}
+                    <div style={{ ...rowStyle, borderBottom: 'none', paddingBottom: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={iconWrap}><i className="ri-user-unfollow-line" style={{ fontSize: 15, color: '#6b7280' }} /></div>
+                        <span style={labelStyle}>회원 탈퇴</span>
+                      </div>
+                      <button
+                        onClick={() => setView('withdraw')}
+                        style={{
+                          padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                          border: '1px solid #fca5a5', cursor: 'pointer',
+                          background: '#fff', color: '#ef4444',
+                        }}
+                      >
+                        탈퇴
                       </button>
                     </div>
                   </div>
@@ -576,6 +655,134 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                     )
                   )}
                 </>
+              )}
+            </div>
+          )}
+
+          {view === 'withdraw' && (
+            <div style={{ padding: '24px 20px' }}>
+              {/* 경고 배너 */}
+              <div style={{
+                background: '#fef2f2', border: '1px solid #fecaca',
+                borderRadius: 10, padding: '14px 16px',
+                display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 24,
+              }}>
+                <i className="ri-error-warning-line" style={{ fontSize: 18, color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: '#b91c1c' }}>탈퇴 시 모든 정보가 비활성화됩니다</p>
+                  <p style={{ margin: 0, fontSize: 12, color: '#991b1b' }}>탈퇴 후에는 로그인이 불가하며 계정 복구가 어렵습니다.</p>
+                </div>
+              </div>
+
+              {/* 단계 인디케이터 */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 28 }}>
+                {(['request', 'pending'] as WdStep[]).map((step, i) => {
+                  const current = wdStep === 'request' ? 0 : 1
+                  const isDone = i < current
+                  const isActive = i === current
+                  return (
+                    <div key={step} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%', fontSize: 11, fontWeight: 700,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: isDone ? '#ef4444' : isActive ? '#ef4444' : '#e5e7eb',
+                        color: isDone || isActive ? '#fff' : '#9ca3af',
+                      }}>
+                        {isDone ? <i className="ri-check-line" style={{ fontSize: 12 }} /> : i + 1}
+                      </div>
+                      {i < 1 && (
+                        <div style={{ width: 32, height: 2, background: isDone ? '#ef4444' : '#e5e7eb', borderRadius: 2 }} />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* 1단계: 코드 발송 */}
+              {wdStep === 'request' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <div style={{
+                    background: '#f9fafb', border: '1px solid #e5e7eb',
+                    borderRadius: 10, padding: '14px 16px',
+                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                  }}>
+                    <i className="ri-shield-keyhole-line" style={{ fontSize: 18, color: '#6b7280', flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: '#374151' }}>이메일 인증 후 탈퇴가 진행됩니다</p>
+                      <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>
+                        <strong>{user?.email}</strong>으로 6자리 인증 코드를 발송합니다.
+                      </p>
+                    </div>
+                  </div>
+                  {wdMsg && (
+                    <p style={{ margin: 0, fontSize: 13, color: '#ef4444' }}>{wdMsg.text}</p>
+                  )}
+                  <button
+                    onClick={handleSendWdCode}
+                    disabled={wdLoading}
+                    style={{
+                      width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
+                      background: wdLoading ? '#fca5a5' : 'linear-gradient(135deg, #ef4444, #b91c1c)',
+                      color: '#fff', fontWeight: 700, fontSize: 14, cursor: wdLoading ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {wdLoading ? '발송 중...' : '인증 코드 발송'}
+                  </button>
+                </div>
+              )}
+
+              {/* 2단계: 코드 입력 + 탈퇴 확인 */}
+              {wdStep === 'pending' && (
+                <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <label style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>인증 코드</label>
+                      <span style={{
+                        fontSize: 12, fontWeight: 700,
+                        color: countdown > 0 ? (countdown <= 60 ? '#ef4444' : '#25A194') : '#9ca3af',
+                      }}>
+                        {countdown > 0 ? formatCountdown(countdown) : '만료됨'}
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="6자리 코드 입력"
+                      maxLength={6}
+                      value={wdCode}
+                      onChange={e => setWdCode(e.target.value.replace(/\D/g, ''))}
+                      style={{ letterSpacing: 6, textAlign: 'center', fontSize: 18, fontWeight: 700 }}
+                      autoFocus
+                    />
+                  </div>
+                  {wdMsg && (
+                    <p style={{ margin: 0, fontSize: 13, color: '#ef4444' }}>{wdMsg.text}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={wdCode.length !== 6 || countdown === 0 || wdLoading}
+                    style={{
+                      width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
+                      background: 'linear-gradient(135deg, #ef4444, #b91c1c)',
+                      color: '#fff', fontWeight: 700, fontSize: 14,
+                      opacity: wdCode.length !== 6 || countdown === 0 || wdLoading ? 0.5 : 1,
+                      cursor: wdCode.length !== 6 || countdown === 0 || wdLoading ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {wdLoading ? '처리 중...' : '회원 탈퇴 확인'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendWdCode}
+                    disabled={wdLoading}
+                    style={{
+                      background: 'none', border: 'none', cursor: wdLoading ? 'not-allowed' : 'pointer',
+                      fontSize: 13, color: '#6b7280', textDecoration: 'underline', padding: 0,
+                    }}
+                  >
+                    {wdLoading ? '발송 중...' : '코드 재발송'}
+                  </button>
+                </form>
               )}
             </div>
           )}
