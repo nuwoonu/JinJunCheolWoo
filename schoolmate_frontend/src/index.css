@@ -1,1 +1,282 @@
 /* [woo] Vite 기본 CSS 제거 - 글로벌 스타일은 public/css/style.css에서 관리 */
+
+/* [woo 03-27] ReactQuill 에디터 내부 서식 보정 — style.css 전역 리셋(span inline-block 등) 간섭 해제 */
+.ql-editor em {
+  font-style: italic !important;
+}
+.ql-editor u {
+  text-decoration: underline !important;
+}
+.ql-editor s {
+  text-decoration: line-through !important;
+}
+.ql-editor span {
+  display: inline !important;
+}
+
+/* [woo 03-27] ReactQuill 한글 IME placeholder 지연 해결 — 포커스 시 즉시 숨김 */
+.ql-editor:focus.ql-blank::before {
+  content: '' !important;
+}
+
+/* [woo 03-27] ReactQuill 글자 크기 드롭다운 — px 숫자로 표시 */
+.ql-snow .ql-picker.ql-size .ql-picker-label::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item::before {
+  content: '16px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10px"]::before {
+  content: '10px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before {
+  content: '12px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before {
+  content: '14px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before {
+  content: '16px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before {
+  content: '18px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="20px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before {
+  content: '20px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before {
+  content: '24px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="28px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="28px"]::before {
+  content: '28px' !important;
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="32px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="32px"]::before {
+  content: '32px' !important;
+}
+/* [woo 03-27] 드롭다운 항목 미리보기 — 실제 크기로 표시 */
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10px"]::before { font-size: 10px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before { font-size: 12px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before { font-size: 14px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before { font-size: 16px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before { font-size: 18px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before { font-size: 20px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before { font-size: 24px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="28px"]::before { font-size: 28px !important; }
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="32px"]::before { font-size: 32px !important; }
+
+/* [woo 03-27] ReactQuill 글꼴 드롭다운 — 한글 이름 + 미리보기 */
+.ql-snow .ql-picker.ql-font .ql-picker-label::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item::before {
+  content: '기본' !important;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Noto Sans KR"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Noto Sans KR"]::before {
+  content: '노토 산스' !important;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Noto Serif KR"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Noto Serif KR"]::before {
+  content: '노토 세리프' !important;
+  font-family: 'Noto Serif KR', serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Nanum Gothic"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Nanum Gothic"]::before {
+  content: '나눔고딕' !important;
+  font-family: 'Nanum Gothic', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Nanum Myeongjo"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Nanum Myeongjo"]::before {
+  content: '나눔명조' !important;
+  font-family: 'Nanum Myeongjo', serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Gothic A1"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Gothic A1"]::before {
+  content: '고딕 A1' !important;
+  font-family: 'Gothic A1', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Arial"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Arial"]::before {
+  content: 'Arial' !important;
+  font-family: 'Arial', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Georgia"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Georgia"]::before {
+  content: 'Georgia' !important;
+  font-family: 'Georgia', serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Malgun Gothic"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Malgun Gothic"]::before {
+  content: '맑은 고딕' !important;
+  font-family: 'Malgun Gothic', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Batang"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Batang"]::before {
+  content: '바탕체' !important;
+  font-family: 'Batang', serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Dotum"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Dotum"]::before {
+  content: '돋움체' !important;
+  font-family: 'Dotum', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Gulim"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Gulim"]::before {
+  content: '굴림체' !important;
+  font-family: 'Gulim', sans-serif;
+}
+/* [woo 03-27] 글꼴 드롭다운 너비 */
+.ql-snow .ql-picker.ql-font {
+  width: 120px;
+}
+
+/* [woo 03-27] 게시판 테이블 — 다크 테마 대응 공통 클래스 */
+.board-table {
+  border-top: 2px solid #333;
+  border-bottom: 1px solid #dee2e6;
+}
+.board-table thead tr {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+.board-table th {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  padding: 12px 8px;
+}
+.board-table tbody tr {
+  border-bottom: 1px solid #eee;
+}
+.board-table .td-num {
+  font-size: 14px;
+  padding: 13px 8px;
+  vertical-align: middle;
+  color: #6b7280;
+}
+.board-table .td-title {
+  padding: 13px 8px;
+  vertical-align: middle;
+}
+.board-table .td-title-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+}
+.board-table .td-writer {
+  font-size: 14px;
+  color: #374151;
+  padding: 13px 8px;
+  vertical-align: middle;
+}
+.board-table .td-date,
+.board-table .td-views {
+  font-size: 14px;
+  color: #6b7280;
+  padding: 13px 8px;
+  vertical-align: middle;
+}
+
+[data-theme="dark"] .board-table {
+  border-top-color: #94a3b8;
+  border-bottom-color: #334155;
+}
+[data-theme="dark"] .board-table thead tr {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+[data-theme="dark"] .board-table th {
+  color: #e2e8f0;
+}
+[data-theme="dark"] .board-table tbody tr {
+  border-bottom-color: #334155;
+}
+[data-theme="dark"] .board-table .td-num {
+  color: #94a3b8;
+}
+[data-theme="dark"] .board-table .td-title-text {
+  color: #f1f5f9;
+}
+[data-theme="dark"] .board-table .td-writer {
+  color: #cbd5e1;
+}
+[data-theme="dark"] .board-table .td-date,
+[data-theme="dark"] .board-table .td-views {
+  color: #94a3b8;
+}
+
+/* [woo 03-27] ReactQuill 다크 테마 대응 */
+[data-theme="dark"] .ql-toolbar.ql-snow {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .ql-container.ql-snow {
+  border-color: #334155;
+}
+[data-theme="dark"] .ql-editor {
+  color: #e2e8f0;
+  background: #0f172a;
+}
+[data-theme="dark"] .ql-editor.ql-blank::before {
+  color: #64748b;
+}
+/* 툴바 버튼 아이콘 (SVG stroke) */
+[data-theme="dark"] .ql-snow .ql-stroke {
+  stroke: #cbd5e1 !important;
+}
+[data-theme="dark"] .ql-snow .ql-fill,
+[data-theme="dark"] .ql-snow .ql-stroke.ql-fill {
+  fill: #cbd5e1 !important;
+}
+[data-theme="dark"] .ql-snow button:hover .ql-stroke,
+[data-theme="dark"] .ql-snow button.ql-active .ql-stroke {
+  stroke: #38bdf8 !important;
+}
+[data-theme="dark"] .ql-snow button:hover .ql-fill,
+[data-theme="dark"] .ql-snow button.ql-active .ql-fill {
+  fill: #38bdf8 !important;
+}
+/* 드롭다운 텍스트 (글꼴, 크기, 정렬 등) */
+[data-theme="dark"] .ql-snow .ql-picker-label {
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-label::before {
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-label .ql-stroke {
+  stroke: #cbd5e1 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-label:hover::before,
+[data-theme="dark"] .ql-snow .ql-picker-label.ql-active::before {
+  color: #38bdf8 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-label:hover .ql-stroke,
+[data-theme="dark"] .ql-snow .ql-picker-label.ql-active .ql-stroke {
+  stroke: #38bdf8 !important;
+}
+/* 드롭다운 목록 패널 */
+[data-theme="dark"] .ql-snow .ql-picker-options {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-item {
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-item::before {
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-item:hover,
+[data-theme="dark"] .ql-snow .ql-picker-item.ql-selected {
+  color: #38bdf8 !important;
+}
+[data-theme="dark"] .ql-snow .ql-picker-item:hover::before,
+[data-theme="dark"] .ql-snow .ql-picker-item.ql-selected::before {
+  color: #38bdf8 !important;
+}
+/* 툴팁(title) 색상은 브라우저 네이티브 — 별도 처리 불필요 */

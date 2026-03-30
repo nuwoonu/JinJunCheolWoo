@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import ClassAttendanceWidget from "@/components/teacher/ClassAttendanceWidget";
+
 import WeeklyCalendarWidget from "@/components/student/WeeklyCalendarWidget";
 import ClassNoticeWidget from "@/components/student/ClassNoticeWidget";
 import TodayTimetableWidget from "@/components/student/TodayTimetableWidget";
@@ -98,12 +98,9 @@ export default function TeacherMyClassDashboard() {
         </div>
       </div>
 
-      {/* 1행: 우리 반 출결 상태 (col-4) | 이번 주 일정 캘린더 (col-8) */}
+      {/* 1행: 이번 주 일정 캘린더 */}
       <div className="row gy-4 mb-24">
-        <div className="col-xl-4 d-flex flex-column">
-          <ClassAttendanceWidget grade={grade} classNum={classNum} />
-        </div>
-        <div className="col-xl-8 d-flex flex-column">
+        <div className="col-xl-12 d-flex flex-column">
           <WeeklyCalendarWidget />
         </div>
       </div>
@@ -111,7 +108,8 @@ export default function TeacherMyClassDashboard() {
       {/* 2행: 우리 반 알림장 (col-8) | 우리 반 시간표 (col-4) */}
       <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
         <div className="col-xl-8 d-flex flex-column">
-          <ClassNotebookWidget classroomId={classroomId} />
+          {/* [woo 03-27] 우리반 알림장 위젯 — 더보기 제거, 작성 모달 활성화 */}
+          <ClassNotebookWidget classroomId={classroomId} canWrite={true} />
         </div>
         <div className="col-xl-4 d-flex flex-column">
           <TodayTimetableWidget timetable={timetable} loading={timetableLoading} title="우리 반 시간표" />
@@ -121,7 +119,8 @@ export default function TeacherMyClassDashboard() {
       {/* 3행: 가정통신문 (col-8) | 이달의 학급 목표 (col-4) */}
       <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
         <div className="col-xl-8 d-flex flex-column">
-          <ClassNoticeWidget classroomId={classroomId} title="가정통신문" />
+          {/* [woo] 가정통신문 → API: /board/parent-notice, 더보기: /board/parent-notice */}
+          <ClassNoticeWidget classroomId={classroomId} title="가정통신문" apiEndpoint="/board/parent-notice" moreHref="/board/parent-notice" detailPrefix="/board/parent-notice" />
         </div>
         <div className="col-xl-4 d-flex flex-column">
           <ClassGoalEditor classroomId={classroomId} />
@@ -131,10 +130,12 @@ export default function TeacherMyClassDashboard() {
       {/* 4행: 학급 게시판 (col-6) | 학급 앨범 (col-6) */}
       <div className="row gy-4">
         <div className="col-xl-6 d-flex flex-column">
-          <ClassBoardWidget classroomId={classroomId} />
+          {/* [woo 03-27] 학급 게시판 → API: /board/class-board (역할별 자동 학급) */}
+          <ClassBoardWidget classroomId={classroomId} apiEndpoint="/board/class-board" moreHref="/board/class-board" detailPrefix="/board/class-board" />
         </div>
         <div className="col-xl-6 d-flex flex-column">
-          <ClassAlbumWidget classroomId={classroomId} />
+          {/* [woo] 학급 앨범 → /school/gallery 라우트 연결 */}
+          <ClassAlbumWidget classroomId={classroomId} moreHref="/class/album" />
         </div>
       </div>
     </DashboardLayout>

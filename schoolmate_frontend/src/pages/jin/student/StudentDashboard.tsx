@@ -54,6 +54,10 @@ export default function StudentDashboard() {
       .then((res) => {
         setData(res.data);
         const s = res.data?.student;
+        // [woo] 학급 앨범 등에서 사용할 classroomId를 sessionStorage에 저장
+        if (s?.classroomId) {
+          sessionStorage.setItem("myClassroomId", String(s.classroomId));
+        }
         if (s?.year && s?.classNum) {
           fetch(
             `/api/calendar/timetable?grade=${s.year}&classNum=${s.classNum}`,
@@ -75,8 +79,6 @@ export default function StudentDashboard() {
   }, []);
 
   const { student } = data;
-  const year = student?.year ?? 0;
-  const classNum = student?.classNum ?? 0;
   const classroomId = student?.classroomId ?? null;
   const schoolId = student?.schoolId ?? null;
 
@@ -159,8 +161,7 @@ export default function StudentDashboard() {
         <div className="col-xl-8 d-flex flex-column">
           <ClassNotebookWidget
             classroomId={classroomId}
-            readonly
-            moreHref="/board/notebook"
+            moreHref="/board/class-diary"
           />
         </div>
         <div className="col-xl-4 d-flex flex-column">
@@ -171,10 +172,12 @@ export default function StudentDashboard() {
       {/* 4행: 학급 게시판 (col-6) | 학급 앨범 (col-6) */}
       <div className="row gy-4">
         <div className="col-xl-6">
-          <ClassBoardWidget classroomId={classroomId} />
+          {/* [woo 03-27] 학급 게시판 → API: /board/class-board (역할별 자동 학급) */}
+          <ClassBoardWidget classroomId={classroomId} apiEndpoint="/board/class-board" moreHref="/board/class-board" detailPrefix="/board/class-board" />
         </div>
         <div className="col-xl-6">
-          <ClassAlbumWidget classroomId={classroomId} />
+          {/* [woo] 학급 앨범 → /school/gallery 라우트 연결 */}
+          <ClassAlbumWidget classroomId={classroomId} moreHref="/class/album" />
         </div>
       </div>
     </DashboardLayout>
