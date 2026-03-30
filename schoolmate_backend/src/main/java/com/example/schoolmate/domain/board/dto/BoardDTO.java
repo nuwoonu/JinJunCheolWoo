@@ -47,6 +47,13 @@ public class BoardDTO {
         private boolean isImportant = false;
 
         private String attachmentUrl;
+
+        // [woo] 가정통신문 회신 필요 여부
+        @Builder.Default
+        private boolean requiresConsent = false;
+
+        // [woo] 학부모 게시판 작성 시 선택된 자녀 uid (school + classroom 자동 연결용)
+        private Long studentUserUid;
     }
 
     /** 게시물 응답 (목록/상세 공용) */
@@ -75,6 +82,14 @@ public class BoardDTO {
         private LocalDateTime updateDate;
         // [woo] 읽음 수 — 교사가 확인용 (PARENT_NOTICE)
         private long readCount;
+        // [woo] 가정통신문 템플릿용 학교명
+        private String schoolName;
+        // [woo] 가정통신문 회신 필요 여부
+        private boolean requiresConsent;
+        // [woo] 회신 통계 (동의수, 비동의수, 전체수)
+        private long consentAgreeCount;
+        private long consentDisagreeCount;
+        private long consentTotalCount;
 
         /** 상세 조회용 (content 포함) */
         public static Response fromEntity(Board board) {
@@ -96,6 +111,10 @@ public class BoardDTO {
                     .attachmentUrl(board.getAttachmentUrl())
                     .createDate(board.getCreateDate())
                     .updateDate(board.getUpdateDate())
+                    // [woo] 가정통신문 템플릿용 학교명
+                    .schoolName(board.getSchool() != null ? board.getSchool().getName() : null)
+                    // [woo] 회신 필요 여부
+                    .requiresConsent(board.isRequiresConsent())
                     .build();
         }
 
@@ -118,6 +137,8 @@ public class BoardDTO {
                     .attachmentUrl(board.getAttachmentUrl())
                     .createDate(board.getCreateDate())
                     .updateDate(board.getUpdateDate())
+                    // [woo] 회신 필요 여부
+                    .requiresConsent(board.isRequiresConsent())
                     .build();
         }
 
@@ -130,6 +151,7 @@ public class BoardDTO {
                 case TEACHER_BOARD -> "교직원 게시판";
                 case PARENT_NOTICE -> "가정통신문";
                 case PARENT_BOARD -> "학부모 게시판";
+                case CLASS_DIARY -> "우리반 알림장"; // [woo]
             };
         }
     }

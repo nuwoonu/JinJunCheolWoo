@@ -22,6 +22,9 @@ public class ChildDTO {
     // 프로필 이미지 정보
     private String profileImageUrl; // 이미지 URL (uuid + path 조합)
 
+    // [woo] 학부모 게시판 classroom 필터용
+    private Long classroomId;
+
     // 이미지 URL 생성 메서드
     public String getProfileImageUrl() {
         if (profileImageUrl == null || profileImageUrl.isEmpty()) {

@@ -14,8 +14,10 @@ import java.util.Set;
 
 import com.example.schoolmate.domain.board.dto.BoardDTO;
 import com.example.schoolmate.domain.board.entity.Board;
+import com.example.schoolmate.domain.board.entity.BoardConsent;
 import com.example.schoolmate.domain.board.entity.BoardRead;
 import com.example.schoolmate.domain.board.entity.BoardType;
+import com.example.schoolmate.domain.board.repository.BoardConsentRepository;
 import com.example.schoolmate.domain.board.repository.BoardReadRepository;
 import com.example.schoolmate.domain.board.repository.BoardRepository;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
@@ -47,6 +49,7 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final BoardReadRepository boardReadRepository;
+    private final BoardConsentRepository boardConsentRepository;
     private final UserRepository userRepository;
     private final ClassroomRepository classroomRepository;
     private final StudentInfoRepository studentInfoRepository;
@@ -54,6 +57,11 @@ public class BoardService {
     private final StaffInfoRepository staffInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final SchoolRepository schoolRepository;
+
+    // [woo 03-27] 담임 학급 보유 여부 확인
+    public boolean hasHomeroom(Long uid, int year) {
+        return classroomRepository.findByTeacherUidAndYear(uid, year).isPresent();
+    }
 
     // ========== 게시물 조회 ==========
 
@@ -73,13 +81,7 @@ public class BoardService {
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
-    /**
-     * 학년 게시판 목록
-     */
-    public Page<BoardDTO.Response> getGradeBoard(int grade, Pageable pageable) {
-        return boardRepository.findByTypeAndGrade(BoardType.GRADE_BOARD, grade, pageable)
-                .map(BoardDTO.Response::fromEntityForList);
-    }
+    // [woo 03-27] 학년 게시판 메서드 제거 — 학급 게시판(getClassBoard/getClassBoardAuto)으로 대체
 
     /**
      * 학급 게시판 목록
@@ -87,6 +89,91 @@ public class BoardService {
     public Page<BoardDTO.Response> getClassBoard(Long classroomId, Pageable pageable) {
         return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
+    }
+
+    // [woo] ========== 우리반 알림장 ==========
+
+    /**
+     * [woo] 우리반 알림장 목록 — 학급 기준 조회 (학생/교사용)
+     */
+    public Page<BoardDTO.Response> getClassDiary(Long classroomId, Pageable pageable) {
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_DIARY, classroomId, pageable)
+                .map(BoardDTO.Response::fromEntityForList);
+    }
+
+    /**
+     * [woo] 우리반 알림장 — 역할별 자동 학급 조회 (학생/학부모/교사 공용)
+     * 학생: 본인 학급 / 학부모: 자녀 학급 / 교사: 담임 학급
+     */
+    public Page<BoardDTO.Response> getClassDiaryAuto(CustomUserDTO userDTO, Long studentUserUid, Pageable pageable) {
+        // [woo] 학생 → 본인 학급
+        if (isStudent(userDTO)) {
+            return studentInfoRepository.findByUserUid(userDTO.getUid())
+                    .filter(s -> s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null)
+                    .map(s -> getClassDiary(s.getCurrentAssignment().getClassroom().getCid(), pageable))
+                    .orElse(Page.empty(pageable));
+        }
+
+        // [woo] 교사 → 담임 학급
+        if (isTeacher(userDTO)) {
+            int currentYear = java.time.LocalDate.now().getYear();
+            return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+                    .map(c -> getClassDiary(c.getCid(), pageable))
+                    .orElse(Page.empty(pageable));
+        }
+
+        // [woo] 학부모 → 선택된 자녀 또는 첫 번째 자녀 학급
+        if (isParent(userDTO)) {
+            StudentInfo targetStudent = null;
+
+            if (studentUserUid != null) {
+                targetStudent = studentInfoRepository.findByUserUid(studentUserUid).orElse(null);
+            }
+
+            if (targetStudent == null) {
+                List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
+                for (FamilyRelation rel : relations) {
+                    StudentInfo s = rel.getStudentInfo();
+                    if (s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null) {
+                        targetStudent = s;
+                        break;
+                    }
+                }
+            }
+
+            if (targetStudent != null && targetStudent.getCurrentAssignment() != null
+                    && targetStudent.getCurrentAssignment().getClassroom() != null) {
+                return getClassDiary(targetStudent.getCurrentAssignment().getClassroom().getCid(), pageable);
+            }
+        }
+
+        return Page.empty(pageable);
+    }
+
+    // [woo 03-27] ========== 학급 게시판 ==========
+
+    /**
+     * [woo 03-27] 학급 게시판 — 역할별 자동 학급 조회 (교사/학생 전용)
+     * 학생: 본인 학급 / 교사: 담임 학급
+     */
+    public Page<BoardDTO.Response> getClassBoardAuto(CustomUserDTO userDTO, Pageable pageable) {
+        // [woo 03-27] 학생 → 본인 학급
+        if (isStudent(userDTO)) {
+            return studentInfoRepository.findByUserUid(userDTO.getUid())
+                    .filter(s -> s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null)
+                    .map(s -> getClassBoard(s.getCurrentAssignment().getClassroom().getCid(), pageable))
+                    .orElse(Page.empty(pageable));
+        }
+
+        // [woo 03-27] 교사 → 담임 학급
+        if (isTeacher(userDTO)) {
+            int currentYear = java.time.LocalDate.now().getYear();
+            return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+                    .map(c -> getClassBoard(c.getCid(), pageable))
+                    .orElse(Page.empty(pageable));
+        }
+
+        return Page.empty(pageable);
     }
 
     /**
@@ -182,8 +269,48 @@ public class BoardService {
 
     /**
      * 학부모 게시판 목록 (전체)
+     * [woo] 학부모 역할인 경우 자녀의 학교 ID 기반 schoolFilter 적용
      */
-    public Page<BoardDTO.Response> getParentBoard(Pageable pageable) {
+    public Page<BoardDTO.Response> getParentBoard(Pageable pageable, CustomUserDTO userDTO, Long studentUserUid) {
+        // [woo] 학부모 → 선택된 자녀 기준 학급 필터링
+        if (userDTO != null && isParent(userDTO) && studentUserUid != null) {
+            java.util.Optional<StudentInfo> studentOpt = studentInfoRepository.findByUserUid(studentUserUid);
+            if (studentOpt.isPresent()) {
+                StudentInfo student = studentOpt.get();
+                if (student.getSchool() != null) {
+                    SchoolContextHolder.setSchoolId(student.getSchool().getId());
+                }
+                StudentAssignment assignment = student.getCurrentAssignment();
+                if (assignment != null && assignment.getClassroom() != null) {
+                    return boardRepository.findParentByClassroom(
+                            BoardType.PARENT_BOARD,
+                            assignment.getClassroom().getCid(),
+                            assignment.getGrade(),
+                            pageable)
+                            .map(BoardDTO.Response::fromEntityForList);
+                }
+            }
+        }
+        // [woo] 자녀 미선택 fallback: 첫 번째 자녀 학급 기준
+        if (userDTO != null && isParent(userDTO) && SchoolContextHolder.getSchoolId() == null) {
+            List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
+            for (FamilyRelation rel : relations) {
+                StudentInfo s = rel.getStudentInfo();
+                if (s != null && s.getSchool() != null) {
+                    SchoolContextHolder.setSchoolId(s.getSchool().getId());
+                    StudentAssignment asgn = s.getCurrentAssignment();
+                    if (asgn != null && asgn.getClassroom() != null) {
+                        return boardRepository.findParentByClassroom(
+                                BoardType.PARENT_BOARD,
+                                asgn.getClassroom().getCid(),
+                                asgn.getGrade(),
+                                pageable)
+                                .map(BoardDTO.Response::fromEntityForList);
+                    }
+                    break;
+                }
+            }
+        }
         return boardRepository.findByType(BoardType.PARENT_BOARD, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
@@ -278,15 +405,38 @@ public class BoardService {
                     .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
         }
 
-        // [woo] 가정통신문 작성 시 교사의 담임 학급 자동 연결
-        // teacher(User) 필드 기준 조회 — AdminService 담임 배정 방식과 통일
-        if (request.getBoardType() == BoardType.PARENT_NOTICE && targetClassroom == null && isTeacher(userDTO)) {
+        // [woo 03-27] 가정통신문/알림장 작성 시 교사의 담임 학급 자동 연결
+        if ((request.getBoardType() == BoardType.PARENT_NOTICE || request.getBoardType() == BoardType.CLASS_DIARY)
+                && targetClassroom == null && isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
             classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
                     .ifPresent(classroom -> {
                         request.setTargetClassroomId(classroom.getCid());
                         request.setTargetGrade(classroom.getGrade());
                     });
+            if (request.getTargetClassroomId() != null) {
+                targetClassroom = classroomRepository.findById(request.getTargetClassroomId())
+                        .orElse(null);
+            }
+        }
+
+        // [woo 03-27] 학급게시판 작성 시 교사→담임학급, 학생→본인학급 자동 연결
+        if (request.getBoardType() == BoardType.CLASS_BOARD && targetClassroom == null) {
+            if (isTeacher(userDTO)) {
+                int currentYear = java.time.LocalDate.now().getYear();
+                classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+                        .ifPresent(classroom -> {
+                            request.setTargetClassroomId(classroom.getCid());
+                            request.setTargetGrade(classroom.getGrade());
+                        });
+            } else if (isStudent(userDTO)) {
+                studentInfoRepository.findByUserUid(userDTO.getUid())
+                        .filter(s -> s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null)
+                        .ifPresent(s -> {
+                            request.setTargetClassroomId(s.getCurrentAssignment().getClassroom().getCid());
+                            request.setTargetGrade(s.getCurrentAssignment().getClassroom().getGrade());
+                        });
+            }
             if (request.getTargetClassroomId() != null) {
                 targetClassroom = classroomRepository.findById(request.getTargetClassroomId())
                         .orElse(null);
@@ -303,11 +453,51 @@ public class BoardService {
                 .isPinned(request.isPinned())
                 .isImportant(request.isImportant())
                 .attachmentUrl(request.getAttachmentUrl())
+                // [woo] 가정통신문 회신 필요 여부
+                .requiresConsent(request.isRequiresConsent())
                 .build();
 
         Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(board::setSchool);
+        }
+
+        // [woo] 학부모 게시판 작성 시 선택된 자녀 기준으로 school + classroom 설정
+        if (board.getBoardType() == BoardType.PARENT_BOARD && isParent(userDTO)) {
+            Long studentUid = request.getStudentUserUid();
+            StudentInfo targetStudent = null;
+            if (studentUid != null) {
+                targetStudent = studentInfoRepository.findByUserUid(studentUid).orElse(null);
+            }
+            // studentUserUid 없으면 첫 번째 자녀 fallback
+            if (targetStudent == null) {
+                List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
+                for (FamilyRelation rel : relations) {
+                    if (rel.getStudentInfo() != null) {
+                        targetStudent = rel.getStudentInfo();
+                        break;
+                    }
+                }
+            }
+            if (targetStudent != null) {
+                if (targetStudent.getSchool() != null) {
+                    board.setSchool(targetStudent.getSchool());
+                }
+                if (board.getTargetClassroom() == null && targetStudent.getCurrentAssignment() != null
+                        && targetStudent.getCurrentAssignment().getClassroom() != null) {
+                    board.setTargetClassroom(targetStudent.getCurrentAssignment().getClassroom());
+                    board.setTargetGrade(targetStudent.getCurrentAssignment().getGrade());
+                }
+            }
+        } else if (board.getSchool() == null && isParent(userDTO)) {
+            // [woo] 다른 게시판 타입의 학부모 fallback
+            List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(userDTO.getUid());
+            for (FamilyRelation rel : relations) {
+                if (rel.getStudentInfo() != null && rel.getStudentInfo().getSchool() != null) {
+                    board.setSchool(rel.getStudentInfo().getSchool());
+                    break;
+                }
+            }
         }
 
         Board saved = boardRepository.save(board);
@@ -339,8 +529,8 @@ public class BoardService {
         board.changeImportant(request.isImportant());
         board.setAttachmentUrl(request.getAttachmentUrl());
 
-        // ADMIN만 상단 고정 변경 가능
-        if (isAdmin(userDTO)) {
+        // [woo] ADMIN 또는 TEACHER도 상단 고정 변경 가능
+        if (isAdmin(userDTO) || isTeacher(userDTO)) {
             if (request.isPinned() != board.isPinned()) {
                 board.togglePinned();
             }
@@ -417,13 +607,9 @@ public class BoardService {
                 break;
 
             case CLASS_BOARD:
-                // 해당 반 학생만 작성 가능
-                if (!isStudent(userDTO)) {
-                    throw new SecurityException("학급 게시판은 학생만 작성할 수 있습니다.");
-                }
-                // 본인 반인지 확인
-                if (!isStudentInClassroom(userDTO.getUid(), targetClassroomId)) {
-                    throw new SecurityException("본인 학급의 게시판에만 작성할 수 있습니다.");
+                // [woo 03-27] 학급 게시판 — 교사 또는 학생만 작성 가능
+                if (!isTeacher(userDTO) && !isStudent(userDTO)) {
+                    throw new SecurityException("학급 게시판은 교사 또는 학생만 작성할 수 있습니다.");
                 }
                 break;
 
@@ -442,9 +628,16 @@ public class BoardService {
                 break;
 
             case PARENT_BOARD:
-                // 학부모만 작성 가능
-                if (!isParent(userDTO)) {
-                    throw new SecurityException("학부모 게시판은 학부모만 작성할 수 있습니다.");
+                // [woo] 학부모, 교사, 관리자 작성 가능
+                if (!isParent(userDTO) && !isTeacher(userDTO)) {
+                    throw new SecurityException("학부모 게시판은 학부모 또는 교사만 작성할 수 있습니다.");
+                }
+                break;
+
+            case CLASS_DIARY:
+                // [woo] 우리반 알림장 — 담임 교사만 작성 가능
+                if (!isTeacher(userDTO)) {
+                    throw new SecurityException("알림장은 담임 교사만 작성할 수 있습니다.");
                 }
                 break;
 
@@ -459,6 +652,11 @@ public class BoardService {
     private void validateModifyPermission(Board board, CustomUserDTO userDTO) {
         // ADMIN은 모든 게시물 수정/삭제 가능
         if (isAdmin(userDTO)) {
+            return;
+        }
+
+        // [woo 03-27] 학급 게시판 — 교사는 모든 글 수정/삭제 가능
+        if (board.getBoardType() == BoardType.CLASS_BOARD && isTeacher(userDTO)) {
             return;
         }
 
@@ -493,8 +691,17 @@ public class BoardService {
                 return false;
 
             case CLASS_NOTICE:
-            case CLASS_BOARD:
                 // 해당 반 학생/담임만 열람
+                if (isTeacher(userDTO)) {
+                    return isHomeroomTeacher(userDTO.getUid(), targetClassroomId);
+                }
+                if (isStudent(userDTO)) {
+                    return isStudentInClassroom(userDTO.getUid(), targetClassroomId);
+                }
+                return false;
+
+            case CLASS_BOARD:
+                // [woo 03-27] 학급 게시판 — 교사 + 해당 반 학생만 열람
                 if (isTeacher(userDTO)) {
                     return isHomeroomTeacher(userDTO.getUid(), targetClassroomId);
                 }
@@ -511,6 +718,13 @@ public class BoardService {
             case PARENT_BOARD:
                 // 학부모만 열람 (추후 자녀 학년/반 체크 추가 가능)
                 return isParent(userDTO) || isTeacher(userDTO);
+
+            case CLASS_DIARY:
+                // [woo] 우리반 알림장 — 해당 반 학생 + 학부모 + 교사 열람
+                if (isTeacher(userDTO)) return true;
+                if (isStudent(userDTO)) return isStudentInClassroom(userDTO.getUid(), targetClassroomId);
+                if (isParent(userDTO)) return true; // 학부모는 쿼리 레벨에서 자녀 학급 기준 필터링
+                return false;
 
             default:
                 return false;
@@ -592,26 +806,27 @@ public class BoardService {
 
         Set<Long> readUids = boardReadRepository.findReadUserUidsByBoardId(boardId);
 
-        // [woo] 대상 학급 결정: 게시물에 지정된 학급 → 교사 담임 학급 → 학교 전체 순서
+        // [woo] 대상 학급 결정: 게시물에 지정된 학급 → 교사 담임 학급 순서
         Long classroomCid = null;
         if (board.getTargetClassroom() != null) {
             classroomCid = board.getTargetClassroom().getCid();
         } else if (teacherUid != null) {
-            // [woo] targetClassroom이 null이면 교사의 담임 학급으로 fallback
             int currentYear = java.time.LocalDate.now().getYear();
             classroomCid = classroomRepository.findByTeacherUidAndYear(teacherUid, currentYear)
                     .map(Classroom::getCid).orElse(null);
         }
+        log.info("[woo] 읽음현황 - boardId={}, classroomCid={}", boardId, classroomCid);
 
+        // [woo] 학급 → 학부모 관계를 한 번에 조회 (findByStudentClassroom 사용)
         List<FamilyRelation> relations;
         if (classroomCid != null) {
-            List<StudentInfo> students = studentInfoRepository.findByClassroomCid(classroomCid);
-            Set<Long> studentIds = students.stream().map(StudentInfo::getId).collect(Collectors.toSet());
-            relations = studentIds.isEmpty() ? List.of() : familyRelationRepository.findByStudentInfoIdIn(studentIds);
+            relations = familyRelationRepository.findByStudentClassroom(classroomCid);
         } else {
+            // [woo] 학급을 못 찾으면 학교 전체 학부모
             Long schoolId = SchoolContextHolder.getSchoolId();
             relations = (schoolId != null) ? familyRelationRepository.findBySchoolId(schoolId) : List.of();
         }
+        log.info("[woo] 읽음현황 - 학부모관계수={}", relations.size());
 
         return relations.stream()
                 .map(rel -> {
@@ -632,6 +847,128 @@ public class BoardService {
      */
     public long countUnreadParentNotice(Long userId) {
         return boardReadRepository.countUnreadByUserAndType(userId, BoardType.PARENT_NOTICE);
+    }
+
+    // ========== [woo] 회신(동의) 처리 ==========
+
+    /**
+     * [woo] 가정통신문 회신(동의/비동의) 제출
+     * 이미 회신한 경우 덮어쓰기
+     */
+    @Transactional
+    public Map<String, Object> submitConsent(Long boardId, Long userId, boolean agreed, String memo) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+        if (!board.isRequiresConsent()) {
+            throw new IllegalStateException("회신이 필요하지 않은 게시물입니다.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        BoardConsent consent = boardConsentRepository.findByBoardIdAndUserUid(boardId, userId)
+                .orElse(null);
+
+        if (consent != null) {
+            consent.setAgreed(agreed);
+            consent.setMemo(memo);
+            consent.setConsentAt(java.time.LocalDateTime.now());
+        } else {
+            consent = BoardConsent.builder()
+                    .board(board)
+                    .user(user)
+                    .agreed(agreed)
+                    .memo(memo)
+                    .build();
+            boardConsentRepository.save(consent);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("agreed", agreed);
+        result.put("consentAt", consent.getConsentAt());
+        return result;
+    }
+
+    /**
+     * [woo] 본인의 회신 상태 조회
+     */
+    public Map<String, Object> getMyConsent(Long boardId, Long userId) {
+        Map<String, Object> result = new HashMap<>();
+        boardConsentRepository.findByBoardIdAndUserUid(boardId, userId)
+                .ifPresentOrElse(consent -> {
+                    result.put("submitted", true);
+                    result.put("agreed", consent.isAgreed());
+                    result.put("memo", consent.getMemo());
+                    result.put("consentAt", consent.getConsentAt());
+                }, () -> {
+                    result.put("submitted", false);
+                });
+        return result;
+    }
+
+    /**
+     * [woo] 교사용 회신 현황 조회 (누가 동의/비동의/미회신인지)
+     */
+    public Map<String, Object> getConsentStatus(Long boardId, Long teacherUid) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+
+        List<BoardConsent> consents = boardConsentRepository.findByBoardId(boardId);
+        Map<Long, BoardConsent> consentMap = consents.stream()
+                .collect(Collectors.toMap(c -> c.getUser().getUid(), c -> c));
+
+        // 대상 학급 학부모 목록
+        Long classroomCid = null;
+        if (board.getTargetClassroom() != null) {
+            classroomCid = board.getTargetClassroom().getCid();
+        } else if (teacherUid != null) {
+            int currentYear = java.time.LocalDate.now().getYear();
+            classroomCid = classroomRepository.findByTeacherUidAndYear(teacherUid, currentYear)
+                    .map(Classroom::getCid).orElse(null);
+        }
+
+        List<FamilyRelation> relations;
+        if (classroomCid != null) {
+            List<StudentInfo> students = studentInfoRepository.findByClassroomCid(classroomCid);
+            Set<Long> studentIds = students.stream().map(StudentInfo::getId).collect(Collectors.toSet());
+            relations = studentIds.isEmpty() ? List.of() : familyRelationRepository.findByStudentInfoIdIn(studentIds);
+        } else {
+            Long schoolId = SchoolContextHolder.getSchoolId();
+            relations = (schoolId != null) ? familyRelationRepository.findBySchoolId(schoolId) : List.of();
+        }
+
+        List<Map<String, Object>> list = relations.stream()
+                .map(rel -> {
+                    User parent = rel.getParentInfo().getUser();
+                    BoardConsent consent = consentMap.get(parent.getUid());
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("uid", parent.getUid());
+                    item.put("name", parent.getName());
+                    item.put("studentName", rel.getStudentInfo().getUser().getName());
+                    if (consent != null) {
+                        item.put("status", consent.isAgreed() ? "agreed" : "disagreed");
+                        item.put("memo", consent.getMemo());
+                        item.put("consentAt", consent.getConsentAt());
+                    } else {
+                        item.put("status", "pending");
+                    }
+                    return item;
+                })
+                .sorted((a, b) -> {
+                    // 동의 > 비동의 > 미회신 순
+                    int oa = "agreed".equals(a.get("status")) ? 0 : "disagreed".equals(a.get("status")) ? 1 : 2;
+                    int ob = "agreed".equals(b.get("status")) ? 0 : "disagreed".equals(b.get("status")) ? 1 : 2;
+                    return Integer.compare(oa, ob);
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("agreeCount", consents.stream().filter(BoardConsent::isAgreed).count());
+        result.put("disagreeCount", consents.stream().filter(c -> !c.isAgreed()).count());
+        result.put("pendingCount", relations.size() - consents.size());
+        result.put("totalCount", relations.size());
+        return result;
     }
 
     private void notifySchoolMembers(User writer, Long schoolId, String noticeTitle) {

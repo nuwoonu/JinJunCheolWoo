@@ -218,6 +218,8 @@ public class DashboardApiController {
                 .attendanceNum(attendanceNum)
                 .schoolName(schoolName)
                 .profileImageUrl(imageUrl)
+                // [woo] 학부모 게시판 classroom 필터용
+                .classroomId(assignment != null && assignment.getClassroom() != null ? assignment.getClassroom().getCid() : null)
                 .build();
     }
 }
