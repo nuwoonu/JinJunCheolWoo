@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import api from "@/api/auth";
 import type { Schedule, DayKey } from '@/shared/types';
 
 // ── 타입 ─────────────────────────────────────────────────────────────────────
@@ -84,10 +85,8 @@ export default function DashboardScheduleWidget() {
   const fetchToday = useCallback(async () => {
     try {
       setLoading(true);
-      // [woo] credentials: 'include' → 쿠키의 accessToken을 JwtAuthFilter가 읽음
-      const res = await fetch("/api/teacher/schedule/today", { credentials: "include" });
-      if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
-      const data: TodayResponse = await res.json();
+      // [woo] api 클라이언트 사용 → JWT Authorization 헤더 자동 포함
+      const { data } = await api.get<TodayResponse>("/teacher/schedule/today");
       setLabel(data.label);
       setSchedules(data.schedules);
       setError(null);
@@ -166,17 +165,11 @@ export default function DashboardScheduleWidget() {
         specificDate: form.specificDate || null,
         memo: form.memo || null,
       };
-      const url = editTarget ? `/api/teacher/schedule/${editTarget.id}` : "/api/teacher/schedule";
-      const method = editTarget ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "저장에 실패했습니다.");
+      const url = editTarget ? `/teacher/schedule/${editTarget.id}` : "/teacher/schedule";
+      if (editTarget) {
+        await api.put(url, payload);
+      } else {
+        await api.post(url, payload);
       }
       closeModal();
       await fetchToday();
@@ -190,11 +183,7 @@ export default function DashboardScheduleWidget() {
   const handleDelete = async (id: number) => {
     if (!confirm("이 일정을 삭제하시겠습니까?")) return;
     try {
-      const res = await fetch(`/api/teacher/schedule/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("삭제 실패");
+      await api.delete(`/teacher/schedule/${id}`);
       setSchedules((prev) => prev.filter((s) => s.id !== id));
     } catch (e) {
       alert(e instanceof Error ? e.message : "삭제 중 오류가 발생했습니다.");

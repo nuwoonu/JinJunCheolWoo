@@ -326,11 +326,12 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 출결 현황
                   </Link>
                 </li>
-                <li>
+                {/* [woo] /parent/grades 페이지 미구현 — 구현 후 주석 해제 */}
+                {/* <li>
                   <Link to="/parent/grades">
                     <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
                   </Link>
-                </li>
+                </li> */}
                 {/* [woo] 학부모 자녀 과제 조회 */}
                 <li>
                   <Link to="/parent/homework">
