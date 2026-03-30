@@ -118,7 +118,6 @@ public class TeacherDTO {
         private String name;
         private String email;
         private String password;
-        private String code;
         private String subject;
         private String department;
         private String position;
@@ -128,7 +127,6 @@ public class TeacherDTO {
             this.name = csv.getName();
             this.email = csv.getEmail();
             this.password = csv.getPassword();
-            this.code = csv.getCode();
             this.subject = csv.getSubject();
             this.department = csv.getDepartment();
             this.position = csv.getPosition();
@@ -161,9 +159,6 @@ public class TeacherDTO {
 
         @CsvBindByName(column = "비밀번호")
         private String password;
-
-        @CsvBindByName(column = "사번")
-        private String code;
 
         @CsvBindByName(column = "부서")
         private String department;

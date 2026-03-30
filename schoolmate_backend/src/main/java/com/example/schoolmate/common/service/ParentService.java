@@ -58,6 +58,7 @@ public class ParentService {
     private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRequestRepository roleRequestRepository;
+    private final CodeSequenceService codeSequenceService;
 
     /**
      * 학부모 목록 조회 (검색 포함)
@@ -84,9 +85,6 @@ public class ParentService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
-        if (request.getCode() != null && parentInfoRepository.existsByCode(request.getCode())) {
-            throw new IllegalArgumentException("이미 존재하는 학부모 코드입니다: " + request.getCode());
-        }
 
         User user = User.builder()
                 .name(request.getName())
@@ -96,7 +94,7 @@ public class ParentService {
                 .build();
 
         ParentInfo info = new ParentInfo();
-        info.setCode(request.getCode());
+        info.setCode(codeSequenceService.issue(null, "P"));
         info.setParentName(request.getName());
         info.setPhone(request.getPhone());
         info.setUser(user);
@@ -145,11 +143,6 @@ public class ParentService {
                 // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
                 if (csvReq.getEmail() != null && userRepository.existsByEmail(csvReq.getEmail())) {
                     throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
-                }
-                // 학부모 코드 중복은 건너뜀
-                if (csvReq.getCode() != null && parentInfoRepository.existsByCode(csvReq.getCode())) {
-                    log.warn("이미 존재하는 학부모 코드 건너뜀: {}", csvReq.getCode());
-                    continue;
                 }
                 ParentDTO.CreateRequest req = new ParentDTO.CreateRequest(csvReq);
                 // 자녀 연동 정보는 CSV에서 받지 않으므로 빈 리스트로 초기화
@@ -269,7 +262,7 @@ public class ParentService {
             parentInfo = new ParentInfo();
             parentInfo.setParentName(request.getParentName());
             parentInfo.setPhone(phone);
-            parentInfo.setCode("P_" + phone); // [woo] 학부모 코드: P_ + 전화번호
+            parentInfo.setCode(codeSequenceService.issue(null, "P"));
             parentInfo.setUser(newUser);
 
             newUser.getInfos().add(parentInfo);

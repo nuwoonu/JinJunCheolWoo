@@ -48,7 +48,6 @@ public class StaffDTO {
         private String name;
         private String email;
         private String password;
-        private String code;
         private String department;
         private String jobTitle;
         private String workLocation;
@@ -61,7 +60,6 @@ public class StaffDTO {
             this.name = csv.getName();
             this.email = csv.getEmail();
             this.password = csv.getPassword();
-            this.code = csv.getCode();
             this.department = csv.getDepartment();
             this.jobTitle = csv.getJobTitle();
             this.workLocation = csv.getWorkLocation();
@@ -156,8 +154,6 @@ public class StaffDTO {
         private String email;
         @CsvBindByName(column = "비밀번호")
         private String password;
-        @CsvBindByName(column = "사번")
-        private String code;
         @CsvBindByName(column = "부서")
         private String department;
         @CsvBindByName(column = "직함")

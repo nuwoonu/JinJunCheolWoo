@@ -81,6 +81,7 @@ public class TeacherService {
     private final SchoolRepository schoolRepository;
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
+    private final CodeSequenceService codeSequenceService;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========
@@ -136,9 +137,6 @@ public class TeacherService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
-        if (request.getCode() != null && codeExistsForTeacher(request.getCode())) {
-            throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
-        }
 
         User user = User.builder()
                 .name(request.getName())
@@ -147,8 +145,9 @@ public class TeacherService {
                 .roles(new HashSet<>(Set.of(UserRole.TEACHER)))
                 .build();
 
+        Long schoolId = SchoolContextHolder.getSchoolId();
         TeacherInfo info = new TeacherInfo();
-        info.setCode(request.getCode());
+        info.setCode(codeSequenceService.issue(schoolId, "T"));
         info.setPrimary(true);
         // cheol
         if (request.getSubject() != null && !request.getSubject().isBlank()) {
@@ -162,7 +161,6 @@ public class TeacherService {
         info.setUser(user);
 
         // 학교 소속 설정 (X-School-Id 헤더 기반)
-        Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
@@ -228,7 +226,6 @@ public class TeacherService {
         List<String> errors = new ArrayList<>();
         List<TeacherDTO.CsvImportRequest> validRows = new ArrayList<>();
         Set<String> seenEmails = new HashSet<>();
-        Set<String> seenCodes = new HashSet<>();
 
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             log.info("CSV 파일 읽기 시작: {}", file.getOriginalFilename());
@@ -252,17 +249,12 @@ public class TeacherService {
                     errors.add(rowLabel + ": 이미 존재하는 이메일입니다.");
                     continue;
                 }
-                if (csvReq.getCode() != null && (codeExistsForTeacher(csvReq.getCode()) || seenCodes.contains(csvReq.getCode()))) {
-                    errors.add(rowLabel + ": 이미 존재하는 사번입니다.");
-                    continue;
-                }
                 if (csvReq.getSubject() != null && !csvReq.getSubject().isBlank()
                         && findSubjectByCode(csvReq.getSubject()).isEmpty()) {
                     log.warn("존재하지 않는 과목 코드, 담당과목 null로 등록: {}", csvReq.getSubject());
                     csvReq.setSubject(null);
                 }
                 seenEmails.add(csvReq.getEmail());
-                if (csvReq.getCode() != null) seenCodes.add(csvReq.getCode());
                 validRows.add(csvReq);
             }
 
