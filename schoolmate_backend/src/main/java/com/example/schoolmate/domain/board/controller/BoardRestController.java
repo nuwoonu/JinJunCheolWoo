@@ -253,11 +253,43 @@ public class BoardRestController {
                 return ResponseEntity.status(403).body("담임 학급이 있는 교사만 파일을 업로드할 수 있습니다.");
             }
 
-            // [woo] 원본 파일 그대로 저장 (프론트에서 렌더링)
+            // [woo] 원본 파일 저장
             String filename = fileManager.upload(file, FileManager.UploadType.BOARD);
             if (filename == null) {
                 return ResponseEntity.badRequest().body("파일이 비어있습니다.");
             }
+
+            // 리눅스 배포하고 사용할 것입니다. 가정통신문 한글파일 바로 띄우려고 생성해둔것.
+            // [woo] HWP → PDF 변환 (LibreOffice 설치 필요 — Linux 배포 시 활성화)
+            // 활성화 방법: sudo apt install libreoffice 후 아래 주석 해제
+            /*
+            String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
+            if (originalName.endsWith(".hwp") || originalName.endsWith(".hwpx")) {
+                String boardDir = System.getProperty("user.dir") + "/uploads/board/";
+                String hwpPath = boardDir + filename;
+                try {
+                    ProcessBuilder pb = new ProcessBuilder(
+                        "libreoffice", "--headless", "--convert-to", "pdf",
+                        "--outdir", boardDir, hwpPath
+                    );
+                    pb.redirectErrorStream(true);
+                    Process proc = pb.start();
+                    boolean done = proc.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+                    if (done && proc.exitValue() == 0) {
+                        String pdfFilename = filename.replaceAll("\\.(hwp|hwpx)$", ".pdf");
+                        java.io.File pdfFile = new java.io.File(boardDir + pdfFilename);
+                        if (pdfFile.exists()) {
+                            new java.io.File(hwpPath).delete();
+                            String url = "/api/board/file/" + pdfFilename;
+                            return ResponseEntity.ok(Map.of("url", url, "filename", pdfFilename));
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("[woo] HWP 변환 실패 (LibreOffice 없음 또는 오류): {}", e.getMessage());
+                }
+            }
+            */
+
             // [woo] /api/board/file/ 경로로 반환 — iframe에서 Vite 프록시 경유 가능
             String url = "/api/board/file/" + filename;
             return ResponseEntity.ok(Map.of("url", url, "filename", filename));

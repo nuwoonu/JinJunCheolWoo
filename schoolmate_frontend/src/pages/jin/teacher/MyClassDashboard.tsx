@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
+import ClassAttendanceWidget from "@/components/teacher/ClassAttendanceWidget";
 import WeeklyCalendarWidget from "@/components/student/WeeklyCalendarWidget";
 import ClassNoticeWidget from "@/components/student/ClassNoticeWidget";
 import TodayTimetableWidget from "@/components/student/TodayTimetableWidget";
@@ -98,9 +99,12 @@ export default function TeacherMyClassDashboard() {
         </div>
       </div>
 
-      {/* 1행: 이번 주 일정 캘린더 */}
+      {/* 1행: 우리 반 출결 상태 (col-4) | 이번 주 일정 캘린더 (col-8) */}
       <div className="row gy-4 mb-24">
-        <div className="col-xl-12 d-flex flex-column">
+        <div className="col-xl-4 d-flex flex-column">
+          <ClassAttendanceWidget grade={grade} classNum={classNum} />
+        </div>
+        <div className="col-xl-8 d-flex flex-column">
           <WeeklyCalendarWidget />
         </div>
       </div>

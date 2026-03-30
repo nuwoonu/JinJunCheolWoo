@@ -14,6 +14,28 @@
   display: inline !important;
 }
 
+/* [woo] 게시판 본문 렌더링 — 테이블/이미지 오버플로우 방지 */
+.board-content-view {
+  overflow-x: auto !important;
+  max-width: 100% !important;
+}
+.board-content-view table,
+.board-content-view table[style] {
+  max-width: 100% !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+  word-break: break-word !important;
+}
+.board-content-view td,
+.board-content-view th {
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+.board-content-view img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
 /* [woo 03-27] ReactQuill 한글 IME placeholder 지연 해결 — 포커스 시 즉시 숨김 */
 .ql-editor:focus.ql-blank::before {
   content: '' !important;
