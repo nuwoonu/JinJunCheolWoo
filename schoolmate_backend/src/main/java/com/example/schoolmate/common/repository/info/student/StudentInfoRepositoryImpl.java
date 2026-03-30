@@ -248,7 +248,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
         QClassroom classroom = QClassroom.classroom;
 
-        return query.selectFrom(user)
+        // [woo] distinct 추가 — collection join 중복 방지
+        return query.selectFrom(user).distinct()
                 .join(info).on(info.user.eq(user))
                 .join(info.assignments, assign)
                 .join(assign.classroom, classroom)
@@ -280,19 +281,21 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         return candidates.stream().limit(limit).toList();
     }
 
+    // [woo] countDistinct + schoolFilter 적용 — 교사 등 비학생 중복 카운트 방지
     @Override
     public long countByClassroom(int year, int grade, int classNum) {
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
         QClassroom classroom = QClassroom.classroom;
 
-        Long count = query.select(info.count())
+        Long count = query.select(info.countDistinct())
                 .from(info)
                 .join(info.assignments, assign)
                 .join(assign.classroom, classroom)
                 .where(classroom.year.eq(year)
                         .and(classroom.grade.eq(grade))
-                        .and(classroom.classNum.eq(classNum)))
+                        .and(classroom.classNum.eq(classNum)),
+                        schoolFilter(info))
                 .fetchOne();
         return count != null ? count : 0L;
     }

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ReactQuill, QUILL_MODULES_TEXT, QUILL_FORMATS_TEXT, isQuillEmpty } from '@/shared/quillConfig'
+import 'react-quill-new/dist/quill.snow.css'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -54,7 +56,7 @@ export default function SchoolNoticeDetail() {
   }, [showEditModal])
 
   const handleEdit = async () => {
-    if (!editForm.title.trim() || !editForm.content.trim()) {
+    if (!editForm.title.trim() || isQuillEmpty(editForm.content)) {
       alert('제목과 내용을 입력해주세요.')
       return
     }
@@ -169,13 +171,22 @@ export default function SchoolNoticeDetail() {
           </div>
         </div>
         <div className="card-body p-24">
-          <div style={{ minHeight: 300, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-            {board.content}
-          </div>
+          {/* [woo] HTML(에디터 작성) 또는 일반 텍스트 렌더링 */}
+          {board.content.includes("<") ? (
+            <div
+              className="ql-editor"
+              style={{ minHeight: 300, lineHeight: 1.8, padding: 0 }}
+              dangerouslySetInnerHTML={{ __html: board.content }}
+            />
+          ) : (
+            <div style={{ minHeight: 300, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
+              {board.content}
+            </div>
+          )}
         </div>
         <div className="card-footer py-16 px-24 border-top">
           <Link to="/board/school-notice" className="btn btn-secondary-600 radius-8">
-            <iconify-icon icon="mdi:arrow-left" className="me-4" />
+            <i className="ri-list-unordered me-4" />
             목록으로
           </Link>
         </div>
@@ -200,14 +211,20 @@ export default function SchoolNoticeDetail() {
                     onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
                   />
                 </div>
+                {/* [woo] WYSIWYG 에디터 적용 */}
                 <div>
                   <label className="form-label fw-semibold text-sm">내용</label>
-                  <textarea
-                    className="form-control"
-                    rows={12}
-                    value={editForm.content}
-                    onChange={e => setEditForm(f => ({ ...f, content: e.target.value }))}
-                  />
+                  <div style={{ minHeight: 320 }}>
+                    <ReactQuill
+                      theme="snow"
+                      value={editForm.content}
+                      onChange={(val: string) => setEditForm(f => ({ ...f, content: val }))}
+                      modules={QUILL_MODULES_TEXT}
+                      formats={QUILL_FORMATS_TEXT}
+                      placeholder="내용을 입력하세요"
+                      style={{ height: 280 }}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="modal-footer border-top py-16 px-24 gap-8">
