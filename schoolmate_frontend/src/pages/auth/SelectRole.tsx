@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import api from '@/api/auth'
 import { auth } from '@/shared/auth'
 import MainFooter from '@/components/layout/MainFooter'
@@ -52,7 +52,8 @@ export default function SelectRole() {
 
   return (
     <>
-    <div className="register-container">
+    <div style={{ height: '100dvh', overflow: 'hidden', background: '#ffffff' }}>
+    <div className="register-container" style={{ height: '100%' }}>
       {/* 왼쪽 상단 로고 */}
       <a href="/main" className="register-logo">
         <img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" />
@@ -60,59 +61,62 @@ export default function SelectRole() {
 
       {/* 폼 중앙 배치 */}
       <div className="register-body">
-        <div className="register-form">
+        <div className="register-form" style={{ maxWidth: 700 }}>
           <div className="mobile-logo">
             <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
           </div>
 
           <div className="text-center mb-4">
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: '#333', marginBottom: 8 }}>
+            <h2 className="register-title">
               환영합니다! 👋
-            </h1>
+            </h2>
             <p style={{ color: '#666', fontSize: 14, margin: 0 }}>사용자 유형을 선택해주세요.</p>
           </div>
 
           {error && <div className="alert alert-danger">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            {roles.map((role) => (
-              <div
-                key={role.value}
-                onClick={() => setSelected(role.value)}
-                style={{
-                  border: `2px solid ${selected === role.value ? 'var(--primary-500, #25A194)' : '#e0e0e0'}`,
-                  borderRadius: 16,
-                  padding: 24,
-                  marginBottom: 16,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: selected === role.value
-                    ? 'linear-gradient(135deg, rgba(37,161,148,0.05), rgba(37,161,148,0.1))'
-                    : '#fff',
-                  boxShadow: selected === role.value ? '0 4px 12px rgba(37,161,148,0.15)' : 'none',
-                }}
-              >
-                <div style={{ fontSize: 32, marginBottom: 12, color: 'var(--primary-500, #25A194)' }}>
-                  <i className={role.icon}></i>
+            {/* [soojin] 역할 카드 가로 배열 */}
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              {roles.map((role) => (
+                <div
+                  key={role.value}
+                  onClick={() => setSelected(role.value)}
+                  style={{
+                    flex: '1 1 220px',
+                    border: `2px solid ${selected === role.value ? 'var(--primary-500, #25A194)' : 'var(--neutral-200)'}`,
+                    borderRadius: 16,
+                    padding: 24,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    background: selected === role.value
+                      ? 'linear-gradient(135deg, rgba(37,161,148,0.07), rgba(37,161,148,0.13))'
+                      : 'var(--white)',
+                    boxShadow: selected === role.value
+                      ? '0 4px 12px rgba(37,161,148,0.18)'
+                      : '0 1px 4px rgba(0,0,0,0.07)',
+                  }}
+                >
+                  <div style={{ fontSize: 32, marginBottom: 12, color: 'var(--primary-500, #25A194)' }}>
+                    <i className={role.icon}></i>
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: '#333' }}>
+                    {role.label}
+                  </div>
+                  <div style={{ fontSize: 14, color: '#666' }}>{role.desc}</div>
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: '#333' }}>
-                  {role.label}
-                </div>
-                <div style={{ fontSize: 14, color: '#666' }}>{role.desc}</div>
-              </div>
-            ))}
+              ))}
+            </div>
 
             <button
               type="submit"
               disabled={!selected || loading}
               style={{
                 width: '100%',
-                padding: 14,
+                padding: '16px 24px',
                 border: 'none',
-                borderRadius: 20,
-                background: (!selected || loading)
-                  ? '#ccc'
-                  : 'linear-gradient(135deg, var(--primary-500, #25A194), var(--primary-700, #1a7a6e))',
+                borderRadius: 12,
+                background: (!selected || loading) ? '#ccc' : '#25A194',
                 color: '#fff',
                 fontSize: 16,
                 fontWeight: 600,
@@ -126,6 +130,7 @@ export default function SelectRole() {
           </form>
         </div>
       </div>
+    </div>
     </div>
     <MainFooter />
     </>

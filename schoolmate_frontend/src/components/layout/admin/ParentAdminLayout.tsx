@@ -27,10 +27,12 @@ export default function ParentAdminLayout({ children, msg, error, requireSchool 
   const hasNonParentGrant = isSuperAdmin || grants.some((g) => g.grantedRole !== "PARENT_MANAGER");
   return (
     <div style={{ minHeight: "100vh", background: "var(--body-bg, #f8fafc)" }}>
+      {/* [soojin] 사이드바 없는 페이지이므로 좌측 상단 로고 표시 */}
       <AdminTopBar
         position="sticky"
         quickLink={hasNonParentGrant ? SCHOOL_QUICK_LINK : undefined}
         logoTo={ADMIN_ROUTES.PARENTS.LIST}
+        showLogo
       />
 
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>

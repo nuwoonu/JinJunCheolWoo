@@ -49,7 +49,7 @@ public class CalendarRestController {
                     && school.getSchoolCode() != null) {
                 return ResponseEntity.ok(
                         neisCalendarService.getTodayTimetable(grade, classNum,
-                                school.getOfficeCode(), school.getSchoolCode()));
+                                school.getOfficeCode(), school.getSchoolCode(), school.getSchoolKind()));
             }
         }
         List<TimetableItemDTO> timetable = neisCalendarService.getTodayTimetable(grade, classNum);
