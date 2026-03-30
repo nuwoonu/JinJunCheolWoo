@@ -23,5 +23,8 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
         Optional<StudentInfo> findByUserUidAndPrimaryTrue(Long uid);
 
 
+        // 학교 범위 내 학번 중복 체크
+        boolean existsByCodeAndSchoolId(String code, Long schoolId);
+
         // [joon] @Query가 필요한 메서드는 모두 StudentInfoRepositoryCustom(QueryDSL)으로 이동됨
 }

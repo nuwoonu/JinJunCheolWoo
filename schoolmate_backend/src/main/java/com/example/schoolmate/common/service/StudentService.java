@@ -228,7 +228,11 @@ public class StudentService {
         StudentInfo info = user.getInfo(StudentInfo.class);
         if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-                if (studentInfoRepository.existsByCode(request.getCode())) {
+                Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
+                boolean exists = (targetSchoolId != null)
+                        ? studentInfoRepository.existsByCodeAndSchoolId(request.getCode(), targetSchoolId)
+                        : studentInfoRepository.existsByCode(request.getCode());
+                if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 학번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());

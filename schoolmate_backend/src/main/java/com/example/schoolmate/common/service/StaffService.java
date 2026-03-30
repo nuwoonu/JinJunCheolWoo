@@ -143,7 +143,11 @@ public class StaffService {
         StaffInfo info = user.getInfo(StaffInfo.class);
         if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-                if (codeExistsForStaff(request.getCode())) {
+                Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
+                boolean exists = (targetSchoolId != null)
+                        ? staffInfoRepository.existsByCodeAndSchoolId(request.getCode(), targetSchoolId)
+                        : staffInfoRepository.existsByCode(request.getCode());
+                if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());
@@ -207,14 +211,6 @@ public class StaffService {
             if (info != null)
                 info.setStatus(status);
         }
-    }
-
-    /** 학교 범위 내 교직원 사번 중복 여부 확인 (schoolId가 없으면 전역 체크) */
-    private boolean codeExistsForStaff(String code) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        return (schoolId != null)
-                ? staffInfoRepository.existsByCodeAndSchoolId(code, schoolId)
-                : staffInfoRepository.existsByCode(code);
     }
 
     public void addRole(Long uid, String roleName) {

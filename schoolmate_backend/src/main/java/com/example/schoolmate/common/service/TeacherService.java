@@ -197,7 +197,11 @@ public class TeacherService {
         TeacherInfo info = user.getInfo(TeacherInfo.class);
         if (info != null && request.getStatusName() != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-                if (codeExistsForTeacher(request.getCode())) {
+                Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
+                boolean exists = (targetSchoolId != null)
+                        ? teacherInfoRepository.existsByCodeAndSchoolId(request.getCode(), targetSchoolId)
+                        : teacherInfoRepository.existsByCode(request.getCode());
+                if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());
@@ -797,14 +801,6 @@ public class TeacherService {
         return (schoolId != null)
                 ? subjectRepository.findByCodeAndSchool_Id(code, schoolId)
                 : subjectRepository.findAll().stream().filter(s -> s.getCode().equals(code)).findFirst();
-    }
-
-    /** 학교 범위 내 교사 사번 중복 여부 확인 (schoolId가 없으면 전역 체크) */
-    private boolean codeExistsForTeacher(String code) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        return (schoolId != null)
-                ? teacherInfoRepository.existsByCodeAndSchoolId(code, schoolId)
-                : teacherInfoRepository.existsByCode(code);
     }
 
     private GradeDTO entityToDto(Grade grade) {
