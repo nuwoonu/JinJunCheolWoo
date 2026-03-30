@@ -10,6 +10,7 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.service.FileManager;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
 import com.example.schoolmate.common.repository.info.student.StudentAssignmentRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 public class DashboardApiController {
 
     private final UserRepository userRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
     private final ProfileRepository profileRepository;
     private final BoardService boardService;
     private final TeacherService teacherService;
@@ -178,8 +180,8 @@ public class DashboardApiController {
                     : (String) attrs.get("sub");
             String provider = attrs.containsKey("kakao_account") ? "kakao" : "google";
             if (providerId != null) {
-                return userRepository.findByProviderAndProviderId(provider, providerId)
-                        .map(User::getUid).orElse(null);
+                return socialAccountRepository.findByProviderAndProviderId(provider, providerId)
+                        .map(sa -> sa.getUser().getUid()).orElse(null);
             }
         }
         return null;

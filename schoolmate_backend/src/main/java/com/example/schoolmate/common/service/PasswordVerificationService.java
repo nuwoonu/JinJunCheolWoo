@@ -52,6 +52,18 @@ public class PasswordVerificationService {
     }
 
     /**
+     * 이메일 로그인 연동용 인증 코드 생성 후 DB 저장(upsert) + 이메일 발송
+     */
+    @Transactional
+    public void sendLinkEmailCode(User user) {
+        String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+        EmailVerificationCode verification = EmailVerificationCode.issue(user.getUid(), code, expiryMinutes);
+        codeRepository.save(verification);
+        emailService.sendLinkEmailVerificationCode(user.getEmail(), code);
+        log.info("이메일 로그인 연동 인증 코드 저장 완료: userId={}", user.getUid());
+    }
+
+    /**
      * 코드 검증 후 삭제
      * 검증 실패 시 예외를 던지고 레코드는 유지 (재시도 허용)
      * 만료 시에는 레코드를 삭제하고 예외를 던짐

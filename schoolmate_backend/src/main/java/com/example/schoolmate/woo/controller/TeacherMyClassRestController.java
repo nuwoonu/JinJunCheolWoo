@@ -22,10 +22,9 @@ import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
-import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
@@ -47,7 +46,7 @@ public class TeacherMyClassRestController {
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StudentInfoRepository studentInfoRepository;
-    private final UserRepository userRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
 
     /**
      * 담당 학급 및 학생 목록 조회 (React /teacher/myclass, /teacher/myclass/students)
@@ -263,8 +262,8 @@ public class TeacherMyClassRestController {
                     : attrs.containsKey("sub") ? (String) attrs.get("sub") : null;
 
             if (provider != null && providerId != null) {
-                return userRepository.findByProviderAndProviderId(provider, providerId)
-                        .map(User::getUid)
+                return socialAccountRepository.findByProviderAndProviderId(provider, providerId)
+                        .map(sa -> sa.getUser().getUid())
                         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
             }
         }

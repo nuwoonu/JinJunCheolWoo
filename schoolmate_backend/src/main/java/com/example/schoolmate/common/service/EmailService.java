@@ -47,4 +47,19 @@ public class EmailService {
         mailSender.send(message);
         log.info("회원 탈퇴 인증 코드 발송 완료: {}", to);
     }
+
+    public void sendLinkEmailVerificationCode(String to, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(to);
+        message.setSubject("[Schoolmate] 이메일 로그인 연동 인증 코드");
+        message.setText(
+                "이메일 로그인 연동을 위한 인증 코드입니다.\n\n" +
+                "인증 코드: " + code + "\n\n" +
+                "5분 이내에 입력해주세요.\n" +
+                "본인이 요청하지 않은 경우 이 메일을 무시하세요."
+        );
+        mailSender.send(message);
+        log.info("이메일 로그인 연동 인증 코드 발송 완료: {}", to);
+    }
 }

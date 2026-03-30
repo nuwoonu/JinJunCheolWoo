@@ -9,8 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
 import com.example.schoolmate.consultation.dto.ReservationDTO;
 import com.example.schoolmate.consultation.service.ConsultationReservationService;
 import com.example.schoolmate.dto.AuthUserDTO;
@@ -24,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class ConsultationReservationController {
 
     private final ConsultationReservationService reservationService;
-    private final UserRepository userRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
 
     // 날짜 범위로 예약 조회 (캘린더 뷰) - 교사: 담당 반만, 학부모: 자녀 반만
     @GetMapping
@@ -123,8 +122,8 @@ public class ConsultationReservationController {
                     : (provider.equals("google") ? String.valueOf(attrs.get("sub"))
                             : String.valueOf(attrs.get("id")));
             if (provider != null && pid != null)
-                return userRepository.findByProviderAndProviderId(provider, pid)
-                        .map(User::getUid).orElse(null);
+                return socialAccountRepository.findByProviderAndProviderId(provider, pid)
+                        .map(sa -> sa.getUser().getUid()).orElse(null);
         }
         return null;
     }

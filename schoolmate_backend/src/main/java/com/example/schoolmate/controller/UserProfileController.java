@@ -195,6 +195,61 @@ public class UserProfileController {
         }
     }
 
+    /**
+     * 이메일 로그인 연동 - 인증 코드 발송 (소셜 전용 계정 → 비밀번호 최초 설정)
+     */
+    @PostMapping("/link/email/send-code")
+    public ResponseEntity<Map<String, Object>> sendLinkEmailCode(
+            @AuthenticationPrincipal AuthUserDTO auth) {
+
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long uid = auth.getCustomUserDTO().getUid();
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.hasPassword()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "이미 이메일 로그인이 설정되어 있습니다."));
+        }
+
+        try {
+            passwordVerificationService.sendLinkEmailCode(user);
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    /**
+     * 이메일 로그인 연동 - 코드 검증 후 비밀번호 최초 설정
+     */
+    @PostMapping("/link/email")
+    public ResponseEntity<Map<String, Object>> linkEmail(
+            @AuthenticationPrincipal AuthUserDTO auth,
+            @RequestBody LinkEmailRequest req) {
+
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long uid = auth.getCustomUserDTO().getUid();
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.hasPassword()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "이미 이메일 로그인이 설정되어 있습니다."));
+        }
+
+        try {
+            passwordVerificationService.verifyAndDelete(uid, req.getVerificationCode());
+            userService.changePassword(uid, req.getPassword());
+            return ResponseEntity.ok(Map.of("message", "이메일 로그인이 설정되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @Getter
     @NoArgsConstructor
     static class PasswordChangeRequest {
@@ -206,5 +261,12 @@ public class UserProfileController {
     @NoArgsConstructor
     static class WithdrawRequest {
         private String verificationCode;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    static class LinkEmailRequest {
+        private String verificationCode;
+        private String password;
     }
 }
