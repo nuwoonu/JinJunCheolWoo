@@ -24,7 +24,7 @@ function useTheme() {
   return { isDark, toggle: () => setIsDark(prev => !prev) }
 }
 
-export default function Header() {
+export default function Header({ showLogo }: { showLogo?: boolean } = {}) {
   const { openSidebar } = useSidebar()
   const theme = useTheme()
 
@@ -37,6 +37,11 @@ export default function Header() {
             <button type="button" className="sidebar-mobile-toggle" aria-label="Sidebar Mobile Toggler Button" onClick={openSidebar}>
               <iconify-icon icon="heroicons:bars-3-solid" className="icon" />
             </button>
+            {showLogo && (
+              <a href="/main" style={{ lineHeight: 0 }}>
+                <img src="/images/schoolmateLogo.png" alt="SchoolMate" width="160" height="37" />
+              </a>
+            )}
           </div>
         </div>
         <div className="col-auto">

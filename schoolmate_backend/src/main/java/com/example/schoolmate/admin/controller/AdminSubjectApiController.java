@@ -39,21 +39,21 @@ public class AdminSubjectApiController {
     }
 
     @PostMapping
-    @PreAuthorize("@grants.isSuperAdmin()")
+    @PreAuthorize("@grants.isSchoolAdmin()")
     public ResponseEntity<Void> create(@RequestBody SubjectDTO.Request request) {
         subjectService.createSubject(request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping
-    @PreAuthorize("@grants.isSuperAdmin()")
+    @PreAuthorize("@grants.isSchoolAdmin()")
     public ResponseEntity<Void> update(@RequestBody SubjectDTO.Request request) {
         subjectService.updateSubject(request);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("@grants.isSuperAdmin()")
+    @PreAuthorize("@grants.isSchoolAdmin()")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         subjectService.deleteSubject(id);
         return ResponseEntity.ok().build();
@@ -69,7 +69,7 @@ public class AdminSubjectApiController {
      * @return 처리 결과 메시지 목록
      */
     @PostMapping("/import-csv")
-    @PreAuthorize("@grants.isSuperAdmin()")
+    @PreAuthorize("@grants.isSchoolAdmin()")
     public ResponseEntity<List<String>> importCsv(@RequestParam MultipartFile file) {
         try {
             List<String> results = subjectService.importFromCsv(file);

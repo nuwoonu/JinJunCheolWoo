@@ -133,6 +133,11 @@ public class NeisCalendarService {
 
     // [woo] NEIS 고등학교 시간표 조회 - 오늘 날짜 기준 특정 학년/반
     public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum) {
+        return getTodayTimetable(grade, classNum, atptCode, schulCode);
+    }
+
+    // [soojin] schoolId로 동적 학교 코드 지원 (학부모 다자녀 다학교 케이스)
+    public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum, String atptCode, String schulCode) {
         String today = LocalDate.now().format(NEIS_DATE_FMT);
 
         String url = NEIS_TIMETABLE_URL

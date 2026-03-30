@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import api from '@/api/auth'
 import { auth } from '@/shared/auth'
+import MainFooter from '@/components/layout/MainFooter'
 
 // [woo] OAuth2 소셜 로그인 후 역할 선택 페이지 (GUEST 유저 전용)
 export default function SelectRole() {
@@ -50,6 +51,7 @@ export default function SelectRole() {
   }
 
   return (
+    <>
     <div className="register-container">
       {/* 왼쪽 상단 로고 */}
       <a href="/main" className="register-logo">
@@ -125,5 +127,7 @@ export default function SelectRole() {
         </div>
       </div>
     </div>
+    <MainFooter />
+    </>
   )
 }

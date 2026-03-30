@@ -73,16 +73,87 @@ export default function Hub() {
   const theme = useTheme();
 
   const [contexts, setContexts] = useState<RoleContext[]>([]);
+  const [contextsLoading, setContextsLoading] = useState(true);
+  const [redirectChecked, setRedirectChecked] = useState(false);
   const [switchingId, setSwitchingId] = useState<number | null>(null);
 
   useEffect(() => {
     refetch();
     getRoleContexts()
-      .then(setContexts)
-      .catch(() => setContexts([]));
+      .then((data) => {
+        setContexts(data);
+        setContextsLoading(false);
+      })
+      .catch(() => {
+        setContexts([]);
+        setContextsLoading(false);
+      });
   }, []);
 
-  if (loading) return <PageLoader />;
+  // 단일 활성 역할이면 허브를 거치지 않고 바로 이동
+  // redirectChecked가 true가 될 때까지 PageLoader를 유지하므로 렌더링 플리커 없음
+  useEffect(() => {
+    if (loading || contextsLoading) return;
+    if (!user?.authenticated) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    const grants: GrantInfo[] = user.grants ?? [];
+    const isSuperAdmin = grants.some((g) => g.grantedRole === "SUPER_ADMIN");
+    const roleRequests: RoleRequestInfo[] = user.roleRequests ?? [];
+    const parentRequest = roleRequests.find((r) => r.role === "PARENT");
+
+    const hasNonActiveRole =
+      contexts.some((c) => !c.isActive) ||
+      (parentRequest != null && parentRequest.status !== "ACTIVE");
+
+    if (hasNonActiveRole) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    const activeContexts = contexts.filter((c) => c.isActive);
+    const hasActiveParent = parentRequest?.status === "ACTIVE";
+    const totalActive = activeContexts.length + (hasActiveParent ? 1 : 0);
+
+    // SUPER_ADMIN 단독(다른 활성 역할 없음) → admin으로 바로 이동
+    if (isSuperAdmin && totalActive === 0) {
+      navigate(ADMIN_ROUTES.MAIN, { replace: true });
+      return;
+    }
+
+    // 2개 이상이거나 SUPER_ADMIN이 다른 역할과 공존하면 허브 유지
+    if (totalActive !== 1) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    if (hasActiveParent) {
+      const cfg = ROLE_CONFIG.find((r) => r.role === "PARENT")!;
+      navigate(cfg.path, { replace: true });
+      return;
+    }
+
+    const ctx = activeContexts[0];
+    const cfg = ROLE_CONFIG.find((r) => r.role === ctx.roleType);
+    if (!cfg) {
+      setRedirectChecked(true);
+      return;
+    }
+
+    switchContext(ctx.infoId, ctx.roleType)
+      .then((tokens) => {
+        auth.setTokens(tokens.accessToken, tokens.refreshToken);
+        navigate(cfg.path, { replace: true });
+      })
+      .catch(() => {
+        setRedirectChecked(true);
+      });
+  }, [loading, contextsLoading, user, contexts]);
+
+  // redirectChecked가 true가 될 때까지 PageLoader 표시 (리다이렉트 시 Hub UI가 그려지지 않음)
+  if (loading || contextsLoading || !redirectChecked) return <PageLoader />;
   if (!user?.authenticated) return <Navigate to="/login" replace />;
 
   const grants: GrantInfo[] = user.grants ?? [];
@@ -171,10 +242,31 @@ export default function Hub() {
           </div>
         </div>
 
-        {/* 안내 문구 */}
-        <div style={s.welcomeBox}>
-          <h4 style={s.welcomeTitle}>이동할 페이지를 선택하세요</h4>
-          <p style={s.welcomeDesc}>보유한 역할에 맞는 페이지로 이동합니다.</p>
+        {/* 안내 문구 + 역할 추가 버튼 */}
+        <div style={{ ...s.welcomeBox, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h4 style={s.welcomeTitle}>이동할 페이지를 선택하세요</h4>
+            <p style={s.welcomeDesc}>보유한 역할에 맞는 페이지로 이동합니다.</p>
+          </div>
+          <button
+            style={s.addRoleBtn}
+            onClick={() => navigate("/select-info?source=hub")}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(37,161,148,0.18)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(37,161,148,0.7)";
+              (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = theme.isDark
+                ? "rgba(37,161,148,0.12)"
+                : "rgba(37,161,148,0.08)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(37,161,148,0.4)";
+              (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+            }}
+          >
+            <i className="ri-add-circle-line" style={{ fontSize: 16 }} />
+            역할 추가
+          </button>
         </div>
 
         {/* ── 메인 카드 그리드 ── */}
@@ -480,15 +572,6 @@ export default function Hub() {
           </div>
         )}
 
-        {/* ── 역할 추가 버튼 ── */}
-        <div style={s.addRoleRow}>
-          <button
-            style={s.addRoleBtn}
-            onClick={() => navigate("/select-info?source=hub")}
-          >
-            <i className="ri-add-line" /> 역할 추가
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -661,6 +744,9 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       display: "flex",
       flexDirection: "column" as const,
       gap: 6,
+      maxHeight: 224,
+      overflowY: "auto" as const,
+      paddingRight: 2,
     },
     secondaryRow: {
       display: "flex",
@@ -704,23 +790,19 @@ function getStyles(isDark: boolean): Record<string, React.CSSProperties> {
       whiteSpace: "nowrap" as const,
     },
     // 역할 추가
-    addRoleRow: {
-      display: "flex",
-      justifyContent: "center",
-      paddingBottom: 8,
-    },
     addRoleBtn: {
       display: "inline-flex",
       alignItems: "center",
-      gap: 6,
-      padding: "7px 18px",
-      fontSize: 13,
-      fontWeight: 500,
-      color: textSecondary,
-      background: "transparent",
-      border: `1px solid ${border}`,
-      borderRadius: 20,
+      gap: 8,
+      padding: "10px 24px",
+      fontSize: 14,
+      fontWeight: 600,
+      color: "#25A194",
+      background: isDark ? "rgba(37,161,148,0.12)" : "rgba(37,161,148,0.08)",
+      border: "1.5px solid rgba(37,161,148,0.4)",
+      borderRadius: 24,
       cursor: "pointer",
+      transition: "background 0.15s, border-color 0.15s, transform 0.1s",
     },
   };
 }

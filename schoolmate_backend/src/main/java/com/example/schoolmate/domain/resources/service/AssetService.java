@@ -103,8 +103,14 @@ public class AssetService {
     // --- 자산(SchoolAsset) 관리 ---
     public void createAsset(AssetDTO.Request request) {
         log.info("기자재 등록: assetCode={}, modelId={}", request.getAssetCode(), request.getModelId());
-        // 관리 번호 중복 체크
-        if (assetRepository.existsByAssetCode(request.getAssetCode())) {
+
+        Long schoolId = SchoolContextHolder.getSchoolId();
+
+        // 관리 번호 중복 체크 (학교 스코프)
+        boolean codeExists = (schoolId != null)
+                ? assetRepository.existsByAssetCodeAndSchool_Id(request.getAssetCode(), schoolId)
+                : assetRepository.existsByAssetCode(request.getAssetCode());
+        if (codeExists) {
             throw new IllegalArgumentException("이미 존재하는 관리 번호입니다.");
         }
 
@@ -131,7 +137,7 @@ public class AssetService {
         asset.setLocationDesc(request.getLocation());
         asset.setDescription(model.getDescription()); // BaseResource.description = 모델 설명 (기본값)
 
-        Long schoolId = SchoolContextHolder.getSchoolId();
+        // schoolId는 위에서 이미 조회함
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(asset::setSchool);
         }

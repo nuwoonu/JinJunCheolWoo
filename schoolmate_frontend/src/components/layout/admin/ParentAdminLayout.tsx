@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import AdminTopBar from "@/components/layout/admin/AdminTopBar";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import Footer from "@/components/layout/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 // [woo] requireSchool prop 추가
 interface ParentAdminLayoutProps {
@@ -17,16 +18,20 @@ const SCHOOL_QUICK_LINK = {
   label: "학교 관리",
 };
 
-export default function ParentAdminLayout({
-  children,
-  msg,
-  error,
-  requireSchool,
-}: ParentAdminLayoutProps) {
+export default function ParentAdminLayout({ children, msg, error, requireSchool }: ParentAdminLayoutProps) {
   void requireSchool;
+  const { user } = useAuth();
+  const grants = user?.grants ?? [];
+  const isSuperAdmin = user?.roles?.includes("ADMIN") || user?.role === "ADMIN";
+  // 학교 관리 버튼: PARENT_MANAGER 외 다른 학교 관리 권한이 있을 때만 표시
+  const hasNonParentGrant = isSuperAdmin || grants.some((g) => g.grantedRole !== "PARENT_MANAGER");
   return (
     <div style={{ minHeight: "100vh", background: "var(--body-bg, #f8fafc)" }}>
-      <AdminTopBar position="sticky" quickLink={SCHOOL_QUICK_LINK} />
+      <AdminTopBar
+        position="sticky"
+        quickLink={hasNonParentGrant ? SCHOOL_QUICK_LINK : undefined}
+        logoTo={ADMIN_ROUTES.PARENTS.LIST}
+      />
 
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         {msg && (
@@ -43,9 +48,7 @@ export default function ParentAdminLayout({
             <button
               type="button"
               className="btn-close"
-              onClick={(e) =>
-                (e.currentTarget.closest(".alert") as HTMLElement)?.remove()
-              }
+              onClick={(e) => (e.currentTarget.closest(".alert") as HTMLElement)?.remove()}
             />
           </div>
         )}
@@ -63,16 +66,12 @@ export default function ParentAdminLayout({
             <button
               type="button"
               className="btn-close"
-              onClick={(e) =>
-                (e.currentTarget.closest(".alert") as HTMLElement)?.remove()
-              }
+              onClick={(e) => (e.currentTarget.closest(".alert") as HTMLElement)?.remove()}
             />
           </div>
         )}
         {children}
       </main>
-
-      <Footer />
     </div>
   );
 }

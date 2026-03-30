@@ -19,7 +19,8 @@ const SidebarContext = createContext<SidebarContextType>({
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  // [soojin] 페이지 이동 후에도 접힘 상태 유지되도록 localStorage에서 초기값 로드
+  const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem('sidebarCollapsed') === 'true')
 
   return (
     <SidebarContext.Provider value={{
@@ -27,7 +28,11 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       isCollapsed,
       openSidebar: () => setIsOpen(true),
       closeSidebar: () => setIsOpen(false),
-      toggleCollapse: () => setIsCollapsed(prev => !prev),
+      toggleCollapse: () => setIsCollapsed(prev => {
+        const next = !prev
+        localStorage.setItem('sidebarCollapsed', String(next))
+        return next
+      }),
     }}>
       {children}
     </SidebarContext.Provider>

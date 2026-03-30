@@ -67,7 +67,7 @@ public class ParentService {
                 .map(entity -> {
                     ParentDTO.Summary dto = new ParentDTO.Summary(entity);
                     if (entity.getUser() != null) {
-                        roleRequestRepository.findByUserAndRole(entity.getUser(), UserRole.PARENT).ifPresent(rr -> {
+                        roleRequestRepository.findAllByUserAndRole(entity.getUser(), UserRole.PARENT).stream().findFirst().ifPresent(rr -> {
                             dto.setRoleRequestId(rr.getId());
                             dto.setRoleRequestStatus(rr.getStatus().name());
                         });
@@ -177,7 +177,7 @@ public class ParentService {
                     .findActiveByReceiver(parent.getUser());
             response.setNotifications(notifications.stream().map(NotificationDTO.NotificationHistory::new).toList());
 
-            roleRequestRepository.findByUserAndRole(parent.getUser(), UserRole.PARENT).ifPresent(rr -> {
+            roleRequestRepository.findAllByUserAndRole(parent.getUser(), UserRole.PARENT).stream().findFirst().ifPresent(rr -> {
                 response.setRoleRequestId(rr.getId());
                 response.setRoleRequestStatus(rr.getStatus().name());
             });

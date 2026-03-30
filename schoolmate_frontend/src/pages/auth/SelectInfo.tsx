@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api, { getMe } from '@/api/auth'
 import { auth } from '@/shared/auth'
+import MainFooter from '@/components/layout/MainFooter'
 
 // 이메일 가입: /select-info?source=email → 역할 선택 → 학교 선택 or 폼 입력
 // SNS 가입:   /select-info?source=sns  → 역할 선택 → 학교 선택 or 가입 완료
@@ -72,11 +73,14 @@ export default function SelectInfo() {
       // SNS 가입 / Hub 역할 추가
       if (selected === 'PARENT') {
         // 학부모: 학교 선택 없이 바로 역할 확정
-        const res = await api.post<{ accessToken: string; refreshToken: string; role: string }>(
+        const res = await api.post<{ accessToken?: string; refreshToken?: string; role?: string; status: string }>(
           '/auth/select-role',
           { role: selected }
         )
-        auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        // 슈퍼 어드민은 즉시 활성화 → 새 토큰 교체. 일반 사용자는 PENDING → 토큰 유지
+        if (res.data.status !== 'pending' && res.data.accessToken && res.data.refreshToken) {
+          auth.setTokens(res.data.accessToken, res.data.refreshToken)
+        }
         navigate('/hub')
       } else {
         // 교사/학생: 학교 선택 단계로 이동
@@ -91,6 +95,7 @@ export default function SelectInfo() {
   }
 
   return (
+    <>
     <div className="register-container">
       {/* 왼쪽 상단 로고 */}
       <a href="/main" className="register-logo">
@@ -195,5 +200,7 @@ export default function SelectInfo() {
         </div>
       </div>
     </div>
+    <MainFooter />
+    </>
   )
 }

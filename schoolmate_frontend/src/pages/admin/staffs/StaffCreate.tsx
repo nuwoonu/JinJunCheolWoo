@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
+import GrantRoleSelect from '@/components/GrantRoleSelect';
 const DEPARTMENTS = [
   "행정실",
   "시설관리실",
@@ -14,6 +15,7 @@ const DEPARTMENTS = [
 
 export default function StaffCreate() {
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -24,14 +26,21 @@ export default function StaffCreate() {
     extensionNumber: "",
     employmentType: "PERMANENT",
     contractEndDate: "",
+    grantedRole: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     const payload: any = { ...form };
     if (form.employmentType !== "FIXED_TERM") delete payload.contractEndDate;
-    await admin.post("/staffs", payload);
-    navigate(ADMIN_ROUTES.STAFFS.LIST);
+    try {
+      await admin.post("/staffs", payload);
+      navigate(ADMIN_ROUTES.STAFFS.LIST);
+    } catch (err: any) {
+      const msg = err?.response?.data || "교직원 등록에 실패했습니다.";
+      setSubmitError(msg);
+    }
   };
 
   return (
@@ -48,6 +57,11 @@ export default function StaffCreate() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+          {submitError && (
+            <div style={{ margin: '16px 24px 0', padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 14 }}>
+              {submitError}
+            </div>
+          )}
           <div style={{ padding: 24 }}>
             <h6 style={{ fontWeight: 700, color: '#25A194', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               기본 정보
@@ -158,6 +172,16 @@ export default function StaffCreate() {
                   />
                 </div>
               )}
+            </div>
+
+            <h6 style={{ fontWeight: 700, color: '#25A194', marginBottom: 16, marginTop: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+              권한 설정 (선택)
+            </h6>
+            <div className="row g-3">
+              <GrantRoleSelect
+                value={form.grantedRole}
+                onChange={(v) => setForm((f) => ({ ...f, grantedRole: v }))}
+              />
             </div>
           </div>
 

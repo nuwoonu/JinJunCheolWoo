@@ -120,7 +120,7 @@ export default function Main() {
         .section-desc { font-size: 0.95rem; color: #6b7280; line-height: 1.8; }
 
         /* ── 섹션 1: 히어로 ── */
-        .hero-wrap { background: ${P}; padding: 80px 0 0; overflow: hidden; }
+        .hero-wrap { background: ${P}; padding: 0; overflow: hidden; min-height: calc(100vh - ${NAV_H}px); display: flex; align-items: center; }
         .hero-title { color: #fff; font-size: 3rem; font-weight: 800; margin-bottom: 1.2rem; line-height: 1.25; }
         .hero-desc { color: rgba(255,255,255,0.85); font-size: 1rem; line-height: 1.9; margin-bottom: 2rem; }
         .hero-btn-primary {
@@ -194,12 +194,14 @@ export default function Main() {
         .notice-title { flex: 1; font-size: 0.92rem; font-weight: 500; color: #1a2e2c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .notice-meta { font-size: 0.78rem; color: #9ca3af; white-space: nowrap; }
 
-        /* ── 푸터 ── */
-        .main-footer { background: #1a2e2c; color: rgba(255,255,255,0.55); padding: 36px 0 24px; }
-        .main-footer h6 { color: #fff; font-weight: 700; margin-bottom: 12px; font-size: 0.9rem; }
-        .main-footer a { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 0.85rem; display: block; margin-bottom: 6px; transition: color 0.2s; cursor: pointer; }
-        .main-footer a:hover { color: ${P}; }
-        .footer-copy { font-size: 0.8rem; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 18px; margin-top: 20px; }
+        /* ── footer ── */
+        .main-footer { background: #fafafa; color: rgba(0,0,0,0.55); padding: 36px 0 24px; }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
+        .footer-links a { color: rgba(0,0,0,0.6); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: #000; }
+        .footer-divider { width: 1px; background: rgba(0,0,0,0.15); }
+        .footer-info { text-align: center; font-size: 0.8rem; line-height: 1.9; margin-bottom: 20px; }
+        .footer-copy { font-size: 0.75rem; text-align: center; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 16px; color: rgba(0,0,0,0.35); }
 
         @media (max-width: 992px) { .hero-title { font-size: 2.2rem; } .section-title { font-size: 1.7rem; } }
       `}</style>
@@ -240,8 +242,8 @@ export default function Main() {
         {/* ════ 섹션 1: 히어로 (teal) ════ */}
         <section id="hero" className="hero-wrap">
           <div className="container">
-            <div className="row align-items-end">
-              <div className="col-lg-6 pb-5">
+            <div className="row align-items-center">
+              <div className="col-lg-6 py-5">
                 <p
                   style={{
                     color: "rgba(255,255,255,0.8)",
@@ -253,8 +255,17 @@ export default function Main() {
                   스마트한 학급 관리의 시작
                 </p>
                 <h1 className="hero-title">School Mate</h1>
-                <div style={{ marginBottom: '1.4rem', color: '#1a2e2c', fontWeight: 700, fontSize: '1.15rem', lineHeight: 1.8 }}>
-                  학생, 교사, 학부모를 위한<br />
+                <div
+                  style={{
+                    marginBottom: "1.4rem",
+                    color: "#1a2e2c",
+                    fontWeight: 700,
+                    fontSize: "1.15rem",
+                    lineHeight: 1.8,
+                  }}
+                >
+                  학생, 교사, 학부모를 위한
+                  <br />
                   통합 학급 관리 플랫폼
                 </div>
                 <p className="hero-desc">
@@ -266,25 +277,19 @@ export default function Main() {
                   무료로 시작하기 →
                 </a>
               </div>
-              <div className="col-lg-6 d-none d-lg-flex justify-content-center">
-                <div className="hero-avatars">
-                  <div className="avatar-pill pill-1">
-                    <span className="avatar-label">교사</span>
-                  </div>
-                  <div className="avatar-pill pill-2">
-                    <span className="avatar-label">학생</span>
-                  </div>
-                  <div className="avatar-pill pill-3">
-                    <span className="avatar-label">학부모</span>
-                  </div>
-                </div>
+              <div className="col-lg-6 d-none d-lg-flex justify-content-center align-items-center">
+                <img
+                  src="/images/hero-illustration.svg"
+                  alt="hero illustration"
+                  style={{ width: "100%", maxWidth: 520 }}
+                />
               </div>
             </div>
           </div>
         </section>
 
         {/* ════ 섹션 2: 기능 소개 (white) ════ */}
-        <section id="features" style={{ background: "#fff", padding: "80px 0" }}>
+        <section id="features" style={{ background: "#fff", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
           <div className="container">
             <div className="row align-items-center g-5">
               <div className="col-lg-4">
@@ -356,7 +361,7 @@ export default function Main() {
         </section>
 
         {/* ════ 섹션 3: 역할별 서비스 (light teal) ════ */}
-        <section style={{ background: "#f0faf9", padding: "80px 0" }}>
+        <section style={{ background: "#f0faf9", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
           <div className="container">
             <div className="text-center mb-5">
               <span className="section-tag">역할별 서비스</span>
@@ -436,7 +441,7 @@ export default function Main() {
         </section>
 
         {/* ════ 섹션 4: 학교 찾기 (white) ════ */}
-        <section id="school" style={{ background: "#fff", padding: "80px 0" }}>
+        <section id="school" style={{ background: "#fff", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
           <div className="container">
             <div className="text-center mb-4">
               <span className="section-tag">학교 찾기</span>
@@ -632,7 +637,7 @@ export default function Main() {
         </section>
 
         {/* ════ 섹션 5: 공지사항 (light gray) ════ */}
-        <section id="notice" style={{ background: "#f8fafc", padding: "80px 0" }}>
+        <section id="notice" style={{ background: "#f8fafc", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
           <div className="container">
             <div className="text-center mb-4">
               <span className="section-tag">공지사항</span>
@@ -700,35 +705,28 @@ export default function Main() {
           </div>
         </section>
 
-        {/* ════ 푸터 (dark) ════ */}
+        {/* ════ footer (dark) ════ */}
         <footer className="main-footer">
           <div className="container">
-            <div className="row g-4">
-              <div className="col-md-5">
-                <img
-                  src="/images/schoolmateLogo.png"
-                  alt="SchoolMate"
-                  height="32"
-                  style={{ filter: "brightness(0) invert(1)", opacity: 0.85, marginBottom: 12 }}
-                />
-                <p style={{ fontSize: "0.85rem", lineHeight: 1.8, margin: 0 }}>
-                  교사, 학생, 학부모를 하나의 플랫폼으로
-                  <br />
-                  연결하는 통합 학사 관리 시스템
-                </p>
-              </div>
-              <div className="col-md-3">
-                <h6>서비스</h6>
-                <a onClick={scrollTo("features")}>서비스 소개</a>
-                <a onClick={scrollTo("school")}>학교 찾기</a>
-                <a onClick={scrollTo("notice")}>공지사항</a>
-              </div>
-              <div className="col-md-2">
-                <h6>계정</h6>
-                <a href="/login">로그인</a>
-                <a href="/register">회원가입</a>
-              </div>
+            {/* 약관 링크 */}
+            <div className="footer-links">
+              <a href="/privacy">개인정보처리방침</a>
+              <div className="footer-divider" />
+              <a href="/terms">이용약관</a>
+              <div className="footer-divider" />
+              <a href="/contact">문의하기</a>
             </div>
+
+            {/* 운영사 정보 */}
+            <div className="footer-info">
+              <span>(주)스쿨메이트 &nbsp;|&nbsp; 대표: 진준철우</span>
+              <br />
+              <span>주소: 서울특별시 종로구 종로12길 15 코아빌딩 2층</span>
+              <br />
+              <span>이메일: contact@schoolmate.kr &nbsp;|&nbsp; 전화: 0507-1430-7001</span>
+            </div>
+
+            {/* 저작권 */}
             <div className="footer-copy">Copyright 2026 SchoolMate. All Rights Reserved.</div>
           </div>
         </footer>

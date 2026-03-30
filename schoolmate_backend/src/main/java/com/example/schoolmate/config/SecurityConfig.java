@@ -65,6 +65,8 @@ public class SecurityConfig {
                                                                 "/api/auth/refresh",
                                                                 "/api/auth/logout",
                                                                 "/api/auth/select-role",
+                                                                "/api/auth/password/send-code",
+                                                                "/api/auth/password/reset",
                                                                 "/api/schools",
                                                                 "/api/schools/**",
                                                                 "/api/service-notices",
@@ -99,10 +101,13 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 "/api/admin/schools/**",
                                                                 "/api/admin/grants/**",
-                                                                "/api/admin/settings/**",
-                                                                "/api/admin/subjects/**",
                                                                 "/api/admin/audit/**")
                                                 .hasRole("ADMIN")
+                                                // 과목·학기 관리: SCHOOL_ADMIN 이상 허용 (컨트롤러 @PreAuthorize에서 세분화)
+                                                .requestMatchers(
+                                                                "/api/admin/settings/**",
+                                                                "/api/admin/subjects/**")
+                                                .authenticated()
                                                 // 일반 어드민 영역: 인증된 사용자만 허용 (기능별 세분화는 각 컨트롤러 @PreAuthorize에서 처리)
                                                 .requestMatchers("/api/admin/**")
                                                 .authenticated()

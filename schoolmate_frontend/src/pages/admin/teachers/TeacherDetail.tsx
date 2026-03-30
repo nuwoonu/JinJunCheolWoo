@@ -26,6 +26,7 @@ const GRANTED_ROLES = [
   { value: "SCHEDULE_MANAGER", label: "일정 관리" },
   { value: "FACILITY_MANAGER", label: "시설 관리" },
   { value: "ASSET_MANAGER", label: "기자재 관리" },
+  { value: "DORMITORY_MANAGER", label: "기숙사 관리" },
   { value: "LIBRARIAN", label: "도서 관리" },
   { value: "NURSE", label: "보건 관리" },
   { value: "NUTRITIONIST", label: "급식 관리" },

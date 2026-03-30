@@ -34,6 +34,7 @@ public class AdminScheduleApiController {
 
     private final ScheduleService adminScheduleService;
 
+    @PreAuthorize("@grants.canAccessAdmin()")
     @GetMapping
     public ResponseEntity<List<SchoolCalendarDTO.Response>> getEvents(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,

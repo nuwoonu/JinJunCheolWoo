@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.example.schoolmate.domain.board.entity.Board;
 import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.entity.QBoard;
@@ -150,10 +150,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     }
 
     private BooleanExpression schoolFilter(QBoard board) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null)
-            return null;
-        return board.school.id.eq(schoolId);
+        return SchoolQueryFilter.schoolIdEq(board.school.id);
     }
 
     private BooleanExpression keywordFilter(QBoard board, String keyword) {

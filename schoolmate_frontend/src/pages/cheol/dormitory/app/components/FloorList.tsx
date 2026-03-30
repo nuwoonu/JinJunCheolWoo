@@ -1,10 +1,12 @@
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { ArrowLeft, DoorOpen, Search } from "lucide-react";
 import { useState } from "react";
 import { useFloorRooms } from "../hooks/useDormitoryData"; // cheol
 
 export default function FloorList() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const baseRoute = location.pathname.startsWith("/admin") ? "/admin/dormitory" : "/student/dormitory";
   const { buildingId } = useParams<{ buildingId: string }>();
   const buildingName = decodeURIComponent(buildingId ?? "");
 
@@ -59,7 +61,7 @@ export default function FloorList() {
         {/* 헤더 */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
           <button
-            onClick={() => navigate("/student/dormitory")}
+            onClick={() => navigate(baseRoute)}
             style={{ padding: "8px", borderRadius: "8px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#e2e8f0")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -157,7 +159,7 @@ export default function FloorList() {
                         <button
                           key={room.roomNumber}
                           onClick={() =>
-                            navigate(`/student/dormitory/building/${buildingId}/room/${room.roomNumber}`)
+                            navigate(`${baseRoute}/building/${buildingId}/room/${room.roomNumber}`)
                           }
                           onMouseEnter={(e) => {
                             e.currentTarget.style.boxShadow = `0 6px 18px ${building.color}44`;

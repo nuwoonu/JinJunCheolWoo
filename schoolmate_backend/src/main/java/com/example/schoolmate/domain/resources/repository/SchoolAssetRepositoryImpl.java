@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.example.schoolmate.domain.resources.entity.QSchoolAsset;
 import com.example.schoolmate.domain.resources.entity.SchoolAsset;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -47,9 +47,7 @@ public class SchoolAssetRepositoryImpl implements SchoolAssetRepositoryCustom {
     }
 
     private BooleanExpression schoolFilter(QSchoolAsset asset) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        if (schoolId == null) return null;
-        return asset.school.id.eq(schoolId);
+        return SchoolQueryFilter.schoolIdEq(asset.school.id);
     }
 
     private BooleanExpression keywordFilter(QSchoolAsset asset, String keyword) {
