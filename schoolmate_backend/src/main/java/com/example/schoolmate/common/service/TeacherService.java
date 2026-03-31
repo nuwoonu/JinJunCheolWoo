@@ -195,7 +195,7 @@ public class TeacherService {
         user.setName(request.getName());
 
         TeacherInfo info = user.getInfo(TeacherInfo.class);
-        if (info != null && request.getStatusName() != null) {
+        if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
                 Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
                 boolean exists = (targetSchoolId != null)
@@ -206,19 +206,21 @@ public class TeacherService {
                 }
                 info.setCode(request.getCode());
             }
-            TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
-            // cheol
-            Subject subject = null;
-            if (request.getSubject() != null && !request.getSubject().isBlank()) {
-                subject = findSubjectByCode(request.getSubject())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
-            }
-            info.update(subject, request.getDepartment(), request.getPosition(), newStatus);
+            if (request.getStatusName() != null) {
+                TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
+                // cheol
+                Subject subject = null;
+                if (request.getSubject() != null && !request.getSubject().isBlank()) {
+                    subject = findSubjectByCode(request.getSubject())
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
+                }
+                info.update(subject, request.getDepartment(), request.getPosition(), newStatus);
 
-            NotificationHelper.send(
-                    user,
-                    "교사 상태 변경 알림",
-                    "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다.");
+                NotificationHelper.send(
+                        user,
+                        "교사 상태 변경 알림",
+                        "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다.");
+            }
         }
     }
 

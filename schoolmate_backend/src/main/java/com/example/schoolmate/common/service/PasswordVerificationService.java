@@ -20,6 +20,7 @@ public class PasswordVerificationService {
 
     private final EmailVerificationCodeRepository codeRepository;
     private final EmailService emailService;
+    private final EmailRateLimitService emailRateLimitService;
 
     @Value("${app.verification.code-expiry-minutes:5}")
     private int expiryMinutes;
@@ -32,6 +33,7 @@ public class PasswordVerificationService {
      */
     @Transactional
     public void sendCode(User user) {
+        emailRateLimitService.checkAndRecord(user.getEmail());
         String code = String.format("%06d", RANDOM.nextInt(1_000_000));
         EmailVerificationCode verification = EmailVerificationCode.issue(user.getUid(), code, expiryMinutes);
         codeRepository.save(verification);
@@ -44,6 +46,7 @@ public class PasswordVerificationService {
      */
     @Transactional
     public void sendWithdrawalCode(User user) {
+        emailRateLimitService.checkAndRecord(user.getEmail());
         String code = String.format("%06d", RANDOM.nextInt(1_000_000));
         EmailVerificationCode verification = EmailVerificationCode.issue(user.getUid(), code, expiryMinutes);
         codeRepository.save(verification);
@@ -56,6 +59,7 @@ public class PasswordVerificationService {
      */
     @Transactional
     public void sendLinkEmailCode(User user) {
+        emailRateLimitService.checkAndRecord(user.getEmail());
         String code = String.format("%06d", RANDOM.nextInt(1_000_000));
         EmailVerificationCode verification = EmailVerificationCode.issue(user.getUid(), code, expiryMinutes);
         codeRepository.save(verification);

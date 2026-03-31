@@ -197,14 +197,6 @@ public class ParentService {
         ParentInfo info = parentInfoRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학부모 정보입니다."));
 
-        // 코드 변경 시 중복 체크
-        if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-            if (parentInfoRepository.existsByCode(request.getCode())) {
-                throw new IllegalArgumentException("이미 존재하는 학부모 코드입니다: " + request.getCode());
-            }
-            info.setCode(request.getCode());
-        }
-
         info.setParentName(request.getName());
         info.setPhone(request.getPhone());
 

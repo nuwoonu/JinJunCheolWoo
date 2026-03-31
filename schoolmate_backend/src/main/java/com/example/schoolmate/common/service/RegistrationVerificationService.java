@@ -21,6 +21,7 @@ public class RegistrationVerificationService {
     private final RegistrationEmailCodeRepository codeRepository;
     private final EmailService emailService;
     private final UserRepository userRepository;
+    private final EmailRateLimitService emailRateLimitService;
 
     @Value("${app.verification.code-expiry-minutes:5}")
     private int expiryMinutes;
@@ -35,6 +36,7 @@ public class RegistrationVerificationService {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
+        emailRateLimitService.checkAndRecord(email);
         String code = String.format("%06d", RANDOM.nextInt(1_000_000));
         RegistrationEmailCode rec = RegistrationEmailCode.issue(email, code, expiryMinutes);
         codeRepository.save(rec); // 재발송 시 upsert로 코드 교체

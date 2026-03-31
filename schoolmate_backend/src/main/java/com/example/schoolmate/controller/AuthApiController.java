@@ -161,6 +161,8 @@ public class AuthApiController {
             return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(429).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             log.error("회원가입 인증 코드 발송 오류", e);
             return ResponseEntity.internalServerError().body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));
@@ -427,6 +429,8 @@ public class AuthApiController {
         try {
             passwordVerificationService.sendCode(user);
             return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(429).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));

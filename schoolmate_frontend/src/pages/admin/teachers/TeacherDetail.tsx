@@ -4,6 +4,7 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSchool } from '@/contexts/SchoolContext';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 import {
   TEACHER_STATUS,
   ROLE_REQUEST_STATUS,
@@ -111,6 +112,7 @@ export default function TeacherDetail() {
   const [activeTab, setActiveTab] = useState("info");
   const [saving, setSaving] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const { msg, error, setMsg, setError } = useAdminMsg();
 
   // 수업 분반 관련 state
   const [sections, setSections] = useState<any[]>([]);
@@ -171,8 +173,10 @@ export default function TeacherDetail() {
     setSaving(true);
     try {
       await admin.put(`/teachers/${uid}`, form);
-      alert("저장되었습니다.");
+      setMsg("저장되었습니다.");
       load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "저장에 실패했습니다."));
     } finally {
       setSaving(false);
     }
@@ -227,7 +231,7 @@ export default function TeacherDetail() {
   const statusCfg = TEACHER_STATUS[teacher.statusName] ?? STATUS_DEFAULT;
 
   return (
-    <AdminLayout>
+    <AdminLayout msg={msg} error={error}>
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => navigate(ADMIN_ROUTES.TEACHERS.LIST)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#6b7280', fontSize: 13 }}>← 뒤로</button>

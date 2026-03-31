@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 import admin from '@/api/adminApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSchool } from '@/contexts/SchoolContext';
@@ -91,6 +92,7 @@ export default function StaffDetail() {
   });
   const [activeTab, setActiveTab] = useState("info");
   const [saving, setSaving] = useState(false);
+  const { msg, error, setMsg, setError } = useAdminMsg();
 
   // 위임 권한 관련 state
   const [grants, setGrants] = useState<any[]>([]);
@@ -132,8 +134,10 @@ export default function StaffDetail() {
       const payload: any = { ...form };
       if (form.employmentType !== "FIXED_TERM") delete payload.contractEndDate;
       await admin.put(`/staffs/${uid}`, payload);
-      alert("저장되었습니다.");
+      setMsg("저장되었습니다.");
       load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "저장에 실패했습니다."));
     } finally {
       setSaving(false);
     }
@@ -170,7 +174,7 @@ export default function StaffDetail() {
   const empCfg = EMPLOYMENT_TYPE[staff.employmentType];
 
   return (
-    <AdminLayout>
+    <AdminLayout msg={msg} error={error}>
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => navigate(ADMIN_ROUTES.STAFFS.LIST)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#6b7280', fontSize: 13 }}>← 뒤로</button>

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
 export default function NoticeForm() {
   const { id } = useParams<{ id?: string }>();
@@ -14,6 +15,7 @@ export default function NoticeForm() {
     content: "",
   });
   const [saving, setSaving] = useState(false);
+  const { error, setError } = useAdminMsg();
 
   useEffect(() => {
     if (isEdit) {
@@ -39,13 +41,15 @@ export default function NoticeForm() {
         await admin.post("/notices", form);
         navigate(ADMIN_ROUTES.NOTICES.LIST);
       }
+    } catch (err: any) {
+      setError(apiErrMsg(err, "저장에 실패했습니다."));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout error={error}>
       {/* Page header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>

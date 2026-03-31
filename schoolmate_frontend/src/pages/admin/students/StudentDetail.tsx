@@ -4,6 +4,7 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
 const TH_STYLE: React.CSSProperties = {
   padding: "12px 16px",
@@ -26,7 +27,7 @@ export default function StudentDetail() {
   const [parentResults, setParentResults] = useState<any[]>([]);
   const [showParentModal, setShowParentModal] = useState(false);
   const [relationship, setRelationship] = useState("OTHER");
-  const [msg, setMsg] = useState("");
+  const { msg, error, setMsg, setError } = useAdminMsg();
   const [loadError, setLoadError] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
@@ -56,7 +57,7 @@ export default function StudentDetail() {
       setMsg("저장되었습니다.");
       load();
     } catch (err: any) {
-      setMsg(`저장 실패: ${err.response?.data ?? err.message}`);
+      setError(apiErrMsg(err, "저장에 실패했습니다."));
     }
   };
 
@@ -119,7 +120,7 @@ export default function StudentDetail() {
     );
 
   return (
-    <AdminLayout msg={msg}>
+    <AdminLayout msg={msg} error={error}>
       <div className="breadcrumb d-flex align-items-center gap-3" style={{ marginBottom: 24 }}>
         <button
           type="button"
