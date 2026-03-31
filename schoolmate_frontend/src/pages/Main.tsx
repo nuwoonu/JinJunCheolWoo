@@ -209,7 +209,7 @@ export default function Main() {
       <div className="main-root">
         {/* ── 네비게이션 ── */}
         <nav className="main-nav">
-          <div className="container d-flex justify-content-between align-items-center">
+          <div style={{ width: '100%', padding: '0 24px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="d-flex align-items-center gap-3">
               <a href="#hero" onClick={scrollTo("hero")} style={{ lineHeight: 0 }}>
                 <img src="/images/schoolmateLogo.png" alt="SchoolMate" width="160" height="37" />

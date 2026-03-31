@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import NotificationDropdown from "@/components/fragments/NotificationDropdown";
 import ProfileDropdown from "@/components/profile/ProfileDropdown";
@@ -39,6 +39,8 @@ interface AdminTopBarProps {
   quickLink?: NavLinkItem;
   /** 로고 클릭 시 이동할 경로 (기본값: /hub) */
   logoTo?: string;
+  /** 좌측 상단 로고 표시 여부 (사이드바 없는 독립 페이지용) */
+  showLogo?: boolean;
 }
 
 export default function AdminTopBar({
@@ -48,6 +50,7 @@ export default function AdminTopBar({
   navLinks,
   quickLink,
   logoTo = "/hub",
+  showLogo = false,
 }: AdminTopBarProps) {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -83,8 +86,15 @@ export default function AdminTopBar({
       }}
     >
       <div className="row align-items-center justify-content-between">
-        {/* ── 좌측: 빈 공간 (row justify-content-between 앵커용) ── */}
-        <div className="col-auto" />
+        {/* ── 좌측: 로고 (showLogo=true 시 표시) 또는 빈 공간 ── */}
+        {/* [soojin] 사이드바 없는 독립 페이지(관리자 메뉴·학부모 관리·서비스 공지 관리)에 로고 표시 */}
+        <div className="col-auto">
+          {showLogo && (
+            <Link to={logoTo} style={{ display: "flex", alignItems: "center", paddingLeft: "1.5rem", textDecoration: "none" }}>
+              <img src="/images/schoolmateLogo.png" alt="SchoolMate" width="160" height="37" style={{ objectFit: "contain" }} />
+            </Link>
+          )}
+        </div>
 
         {/* ── 중앙: 네비 링크 (사이드바 접힘 상태에 따라 left 동적 조정) ── */}
         {navLinks && navLinks.length > 0 && (

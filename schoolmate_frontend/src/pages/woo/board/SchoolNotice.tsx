@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ReactQuill, QUILL_MODULES_TEXT, QUILL_FORMATS_TEXT, isQuillEmpty } from '@/shared/quillConfig'
+import 'react-quill-new/dist/quill.snow.css'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -52,7 +54,7 @@ export default function SchoolNotice() {
   }, [showWriteModal])
 
   const handleWrite = async () => {
-    if (!writeForm.title.trim() || !writeForm.content.trim()) {
+    if (!writeForm.title.trim() || isQuillEmpty(writeForm.content)) {
       alert('제목과 내용을 입력해주세요.')
       return
     }
@@ -62,7 +64,7 @@ export default function SchoolNotice() {
         boardType: 'SCHOOL_NOTICE',
         title: writeForm.title,
         content: writeForm.content,
-        isPinned: writeForm.isPinned,
+        pinned: writeForm.isPinned,
       })
       setShowWriteModal(false)
       setWriteForm({ title: '', content: '', isPinned: false })
@@ -105,8 +107,8 @@ export default function SchoolNotice() {
         <div className="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
           <h6 className="mb-0">학교 공지</h6>
           {isAdmin && (
-            <button type="button" className="btn btn-primary-600 radius-8" onClick={() => setShowWriteModal(true)}>
-              <iconify-icon icon="mdi:plus" className="me-4" />
+            <button type="button" className="btn btn-primary-600 radius-8 d-flex align-items-center gap-2" onClick={() => setShowWriteModal(true)}>
+              <iconify-icon icon="mdi:plus" />
               글쓰기
             </button>
           )}
@@ -159,20 +161,20 @@ export default function SchoolNotice() {
           {totalPages > 1 && (
             <div className="d-flex justify-content-center py-16">
               <nav>
-                <ul className="pagination mb-0">
+                <ul className="pagination pagination-sm mb-0">
                   <li className={`page-item${page === 0 ? ' disabled' : ''}`}>
-                    <button className="page-link" onClick={() => fetchBoards(page - 1)}>
-                      <iconify-icon icon="mdi:chevron-left" />
+                    <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(page - 1)}>
+                      <i className="ri-arrow-left-s-line" />
                     </button>
                   </li>
                   {Array.from({ length: totalPages }, (_, i) => (
                     <li key={i} className={`page-item${i === page ? ' active' : ''}`}>
-                      <button className="page-link" onClick={() => fetchBoards(i)}>{i + 1}</button>
+                      <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(i)}>{i + 1}</button>
                     </li>
                   ))}
                   <li className={`page-item${page >= totalPages - 1 ? ' disabled' : ''}`}>
-                    <button className="page-link" onClick={() => fetchBoards(page + 1)}>
-                      <iconify-icon icon="mdi:chevron-right" />
+                    <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(page + 1)}>
+                      <i className="ri-arrow-right-s-line" />
                     </button>
                   </li>
                 </ul>
@@ -202,17 +204,22 @@ export default function SchoolNotice() {
                     onChange={e => setWriteForm(f => ({ ...f, title: e.target.value }))}
                   />
                 </div>
+                {/* [woo] WYSIWYG 에디터 적용 */}
                 <div className="mb-16">
                   <label className="form-label fw-semibold text-sm">내용 *</label>
-                  <textarea
-                    className="form-control"
-                    rows={10}
-                    placeholder="내용을 입력하세요"
-                    value={writeForm.content}
-                    onChange={e => setWriteForm(f => ({ ...f, content: e.target.value }))}
-                  />
+                  <div style={{ minHeight: 280 }}>
+                    <ReactQuill
+                      theme="snow"
+                      value={writeForm.content}
+                      onChange={(val: string) => setWriteForm(f => ({ ...f, content: val }))}
+                      modules={QUILL_MODULES_TEXT}
+                      formats={QUILL_FORMATS_TEXT}
+                      placeholder="내용을 입력하세요"
+                      style={{ height: 250 }}
+                    />
+                  </div>
                 </div>
-                <div className="form-check">
+                <div className="form-check" style={{ marginTop: 30 }}>
                   <input
                     type="checkbox"
                     className="form-check-input"

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.schoolmate.cheol.dto.SubjectDTO;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.UserSocialAccountRepository;
@@ -126,6 +127,15 @@ public class TeacherScheduleRestController {
         scheduleService.deleteSchedule(id, teacherId);
         log.info("[REST] 일정 삭제 완료 - id: {}", id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * [woo] 학교 등록 과목 목록 — 일정 추가 모달 과목명 드롭다운용
+     * GET /api/teacher/schedule/subjects
+     */
+    @GetMapping("/subjects")
+    public ResponseEntity<List<SubjectDTO.Response>> getSubjects() {
+        return ResponseEntity.ok(subjectService.getAllSubjects());
     }
 
     // ── 공통 헬퍼 ──────────────────────────────────────────────────────────

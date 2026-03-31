@@ -326,11 +326,12 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 출결 현황
                   </Link>
                 </li>
-                <li>
+                {/* [woo] /parent/grades 페이지 미구현 — 구현 후 주석 해제 */}
+                {/* <li>
                   <Link to="/parent/grades">
                     <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
                   </Link>
-                </li>
+                </li> */}
                 {/* [woo] 학부모 자녀 과제 조회 */}
                 <li>
                   <Link to="/parent/homework">
@@ -441,10 +442,10 @@ export default function Sidebar() {
                 <span>게시판</span>
               </a>
               <ul className="sidebar-submenu">
-                {/* [cheol] 학생 본인 학년으로 이동, TEACHER/ADMIN은 1학년 기본 */}
+                {/* [woo 03-27] 학급 게시판 */}
                 <li>
-                  <Link to={role === "STUDENT" ? `/board/grade/1` : "/board/grade/1"}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학년 게시판
+                  <Link to="/board/class-board">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 게시판
                   </Link>
                 </li>
                 {has("TEACHER", "ADMIN") && (
@@ -737,11 +738,6 @@ export default function Sidebar() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/board/grade/1">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 공지
-                  </Link>
-                </li>
-                <li>
                   <Link to="/school/gallery">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학교 갤러리
                   </Link>
@@ -775,6 +771,16 @@ export default function Sidebar() {
                   </Link>
                 </li>
               </ul>
+            </li>
+          )}
+
+          {/* [woo] 학급 앨범 - PARENT */}
+          {has("PARENT") && (
+            <li>
+              <Link to="/class/album">
+                <i className="ri-image-2-line" />
+                <span>학급 앨범</span>
+              </Link>
             </li>
           )}
         </ul>

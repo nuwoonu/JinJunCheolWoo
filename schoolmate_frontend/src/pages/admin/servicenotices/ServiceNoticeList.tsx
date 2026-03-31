@@ -82,7 +82,8 @@ export default function ServiceNoticeList() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <AdminTopBar position="sticky" showBackButton={true} sectionBadge="서비스 공지 관리" />
+      {/* [soojin] 사이드바 없는 페이지이므로 좌측 상단 로고 표시 */}
+      <AdminTopBar position="sticky" showBackButton={true} sectionBadge="서비스 공지 관리" showLogo />
 
       <main style={{ maxWidth: 960, margin: '0 auto', padding: '40px 24px' }}>
 

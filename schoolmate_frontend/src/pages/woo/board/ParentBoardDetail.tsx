@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ReactQuill, QUILL_MODULES_TEXT, QUILL_FORMATS_TEXT, isQuillEmpty } from '@/shared/quillConfig'
+import 'react-quill-new/dist/quill.snow.css'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -11,7 +13,7 @@ interface Board {
   title: string
   content: string
   writerName: string
-  writerEmail: string
+  writerId: number
   viewCount: number
   createDate: string
 }
@@ -28,9 +30,10 @@ export default function ParentBoardDetail() {
   // [woo] StrictMode 이중 실행 방지 - 조회수 POST를 최초 1회만 호출
   const viewedRef = useRef(false)
 
-  // [woo] 작성자 본인(email 비교) 또는 ADMIN만 수정/삭제 가능
+  // [woo] 작성자 본인(uid 비교), TEACHER, ADMIN 수정/삭제 가능
   const isAdmin = user?.role === 'ADMIN'
-  const canEdit = isAdmin || (board?.writerEmail != null && board.writerEmail === user?.email)
+  const isTeacher = user?.role === 'TEACHER'
+  const canEdit = isAdmin || isTeacher || (board?.writerId != null && board.writerId === user?.uid)
 
   useEffect(() => {
     if (!id) return
@@ -55,7 +58,7 @@ export default function ParentBoardDetail() {
   }, [showEditModal])
 
   const handleEdit = async () => {
-    if (!editForm.title.trim() || !editForm.content.trim()) {
+    if (!editForm.title.trim() || isQuillEmpty(editForm.content)) {
       alert('제목과 내용을 입력해주세요.')
       return
     }
@@ -139,11 +142,16 @@ export default function ParentBoardDetail() {
           </div>
         </div>
         <div className="card-body p-24">
-          <div style={{ minHeight: 300, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{board.content}</div>
+          {/* [woo] HTML(에디터 작성) 또는 일반 텍스트 렌더링 */}
+          {board.content.includes("<") ? (
+            <div className="ql-editor" style={{ minHeight: 300, lineHeight: 1.8, padding: 0 }} dangerouslySetInnerHTML={{ __html: board.content }} />
+          ) : (
+            <div style={{ minHeight: 300, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{board.content}</div>
+          )}
         </div>
         <div className="card-footer py-16 px-24 border-top">
           <Link to="/board/parent" className="btn btn-secondary-600 radius-8">
-            <iconify-icon icon="mdi:arrow-left" className="me-4" />목록으로
+            <i className="ri-list-unordered me-4" />목록으로
           </Link>
         </div>
       </div>
@@ -162,9 +170,20 @@ export default function ParentBoardDetail() {
                   <label className="form-label fw-semibold text-sm">제목</label>
                   <input type="text" className="form-control" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} />
                 </div>
+                {/* [woo] WYSIWYG 에디터 적용 */}
                 <div>
                   <label className="form-label fw-semibold text-sm">내용</label>
-                  <textarea className="form-control" rows={12} value={editForm.content} onChange={e => setEditForm(f => ({ ...f, content: e.target.value }))} />
+                  <div style={{ minHeight: 320 }}>
+                    <ReactQuill
+                      theme="snow"
+                      value={editForm.content}
+                      onChange={(val: string) => setEditForm(f => ({ ...f, content: val }))}
+                      modules={QUILL_MODULES_TEXT}
+                      formats={QUILL_FORMATS_TEXT}
+                      placeholder="내용을 입력하세요"
+                      style={{ height: 280 }}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="modal-footer border-top py-16 px-24 gap-8">
