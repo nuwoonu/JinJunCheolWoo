@@ -172,6 +172,24 @@ public class BoardRestController {
     }
 
     /**
+     * [woo] 교직원 게시판 목록
+     * GET /api/board/teacher-board?page=0&size=10
+     */
+    @GetMapping("/teacher-board")
+    public ResponseEntity<Map<String, Object>> getTeacherBoard(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<BoardDTO.Response> result = boardService.getTeacherBoard(
+                PageRequest.of(page, size, Sort.by("createDate").descending()));
+        return ResponseEntity.ok(Map.of(
+                "content", result.getContent(),
+                "totalElements", result.getTotalElements(),
+                "totalPages", result.getTotalPages(),
+                "currentPage", result.getNumber()));
+    }
+
+    /**
      * [woo] 게시물 상세 조회 - 읽기전용 (조회수 증가 없음)
      * GET /api/board/{id}
      */

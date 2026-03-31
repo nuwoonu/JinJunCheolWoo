@@ -33,10 +33,22 @@ const STATUS_CONFIG = {
 
 const FILTER_KEYS: FilterKey[] = ["PRESENT", "LATE", "ABSENT", "EARLY_LEAVE"];
 
+// [woo] 출결 변경 토스트 알림 타입
+interface Toast {
+  id: number;
+  message: string;
+  color: string;
+  bg: string;
+  icon: string;
+}
+
 export default function ClassAttendanceWidget({ grade, classNum }: Props) {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey | null>(null);
+  // [woo] 토스트 알림 목록 (여러 개 동시 표시 가능)
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastIdRef = { current: 0 };
 
   const now = new Date();
   const today = now.toISOString().split("T")[0];
@@ -126,8 +138,17 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
   // [woo] 필터 적용된 학생 목록 (null이면 전체)
   const filtered = filter === null ? records : records.filter((r) => r.status === filter);
 
+  // [woo] 토스트 띄우기 (2.5초 후 자동 제거)
+  const showToast = (message: string, color: string, bg: string, icon: string) => {
+    const id = ++toastIdRef.current;
+    setToasts((prev) => [...prev, { id, message, color, bg, icon }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2500);
+  };
+
   // [woo] 개별 학생 출결 변경
   const handleStatusChange = async (studentInfoId: number, status: string) => {
+    const studentName = records.find((r) => r.studentInfoId === studentInfoId)?.studentName ?? "";
+    const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.NONE;
     try {
       await api.put(`/attendance/student/update?studentInfoId=${studentInfoId}&date=${today}`, { status });
       setRecords((prev) =>
@@ -135,8 +156,9 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
           r.studentInfoId === studentInfoId ? { ...r, status: status as AttendanceRecord["status"] } : r,
         ),
       );
+      showToast(`${studentName} — ${cfg.label} 처리되었습니다`, cfg.color, cfg.bg, "ri-checkbox-circle-fill");
     } catch {
-      alert("출결 변경에 실패했습니다.");
+      showToast("출결 변경에 실패했습니다.", "#ef4444", "#fef2f2", "ri-error-warning-fill");
     }
   };
 
@@ -144,6 +166,7 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
   const getFilterColor = (key: FilterKey) => STATUS_CONFIG[key].color;
 
   return (
+    <>
     <div className="card shadow-sm h-100" style={{ borderRadius: 16 }}>
       {/* [woo] 헤더 */}
       <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
@@ -270,5 +293,54 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
         )}
       </div>
     </div>
+
+      {/* [woo] 출결 변경 토스트 알림 — 우하단 고정 */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          zIndex: 9999,
+          pointerEvents: "none",
+        }}
+      >
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              background: "#fff",
+              border: `1.5px solid ${t.color}`,
+              borderLeft: `4px solid ${t.color}`,
+              borderRadius: 10,
+              padding: "10px 16px",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#111827",
+              minWidth: 220,
+              maxWidth: 320,
+              animation: "toast-slide-in 0.25s ease",
+              pointerEvents: "auto",
+            }}
+          >
+            <i className={t.icon} style={{ fontSize: 18, color: t.color, flexShrink: 0 }} />
+            <span>{t.message}</span>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes toast-slide-in {
+          from { opacity: 0; transform: translateX(40px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
+    </>
   );
 }

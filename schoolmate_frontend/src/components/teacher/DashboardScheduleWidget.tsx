@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import api from "@/api/auth";
 import type { Schedule, DayKey } from '@/shared/types';
 
 // ── 타입 ─────────────────────────────────────────────────────────────────────
@@ -66,6 +67,14 @@ function emptyForm(): FormData {
   };
 }
 
+// ── 타입 추가 ─────────────────────────────────────────────────────────────────
+
+interface SubjectOption {
+  id: number;
+  code: string;
+  name: string;
+}
+
 // ── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
 
 export default function DashboardScheduleWidget() {
@@ -79,15 +88,23 @@ export default function DashboardScheduleWidget() {
   const [form, setForm] = useState<FormData>(emptyForm());
   const [submitting, setSubmitting] = useState(false);
 
+  // [woo] 학교 등록 과목 목록
+  const [subjects, setSubjects] = useState<SubjectOption[]>([]);
+
   // ── 데이터 로딩 ────────────────────────────────────────────────────────────
+
+  // [woo] 모달 열릴 때 과목 목록 로딩 (admin 등록 과목 드롭다운용)
+  useEffect(() => {
+    api.get<{ id: number; code: string; name: string }[]>("/teacher/schedule/subjects")
+      .then((res) => setSubjects(res.data))
+      .catch(() => setSubjects([]));
+  }, []);
 
   const fetchToday = useCallback(async () => {
     try {
       setLoading(true);
-      // [woo] credentials: 'include' → 쿠키의 accessToken을 JwtAuthFilter가 읽음
-      const res = await fetch("/api/teacher/schedule/today", { credentials: "include" });
-      if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
-      const data: TodayResponse = await res.json();
+      // [woo] api 클라이언트 사용 → JWT Authorization 헤더 자동 포함
+      const { data } = await api.get<TodayResponse>("/teacher/schedule/today");
       setLabel(data.label);
       setSchedules(data.schedules);
       setError(null);
@@ -166,17 +183,11 @@ export default function DashboardScheduleWidget() {
         specificDate: form.specificDate || null,
         memo: form.memo || null,
       };
-      const url = editTarget ? `/api/teacher/schedule/${editTarget.id}` : "/api/teacher/schedule";
-      const method = editTarget ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "저장에 실패했습니다.");
+      const url = editTarget ? `/teacher/schedule/${editTarget.id}` : "/teacher/schedule";
+      if (editTarget) {
+        await api.put(url, payload);
+      } else {
+        await api.post(url, payload);
       }
       closeModal();
       await fetchToday();
@@ -190,11 +201,7 @@ export default function DashboardScheduleWidget() {
   const handleDelete = async (id: number) => {
     if (!confirm("이 일정을 삭제하시겠습니까?")) return;
     try {
-      const res = await fetch(`/api/teacher/schedule/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("삭제 실패");
+      await api.delete(`/teacher/schedule/${id}`);
       setSchedules((prev) => prev.filter((s) => s.id !== id));
     } catch (e) {
       alert(e instanceof Error ? e.message : "삭제 중 오류가 발생했습니다.");
@@ -240,10 +247,7 @@ export default function DashboardScheduleWidget() {
           ) : schedules.length === 0 ? (
             <div style={css.empty}>
               <div style={{ fontSize: 40, marginBottom: 10 }}></div>
-              <p style={{ color: "#9ca3af", fontSize: 14, marginBottom: 12 }}>{label}이 없습니다</p>
-              <button onClick={openAdd} style={css.addBtn}>
-                + 일정 등록하기
-              </button>
+              <p style={{ color: "#9ca3af", fontSize: 14, marginBottom: 0 }}>{label}이 없습니다</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -267,6 +271,7 @@ export default function DashboardScheduleWidget() {
           form={form}
           isEdit={!!editTarget}
           submitting={submitting}
+          subjects={subjects}
           onChangeField={setField}
           onSubmit={handleSubmit}
           onClose={closeModal}
@@ -321,6 +326,7 @@ function ScheduleModal({
   form,
   isEdit,
   submitting,
+  subjects,
   onChangeField,
   onSubmit,
   onClose,
@@ -328,6 +334,7 @@ function ScheduleModal({
   form: FormData;
   isEdit: boolean;
   submitting: boolean;
+  subjects: SubjectOption[];
   onChangeField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
   onSubmit: () => void;
   onClose: () => void;
@@ -396,18 +403,33 @@ function ScheduleModal({
             </div>
           </div>
 
-          {/* 과목명 */}
+          {/* [woo] 과목명 — admin 등록 과목 있으면 드롭다운, 없으면 텍스트 입력 */}
           <div style={css.formGroup}>
             <label className="form-label" style={css.label}>
               과목명 <span style={{ color: "#ef4444" }}>*</span>
             </label>
-            <input
-              type="text"
-              placeholder="예: 수학"
-              className="form-control"
-              value={form.subjectName}
-              onChange={(e) => onChangeField("subjectName", e.target.value)}
-            />
+            {subjects.length > 0 ? (
+              <select
+                className="form-select"
+                value={form.subjectName}
+                onChange={(e) => onChangeField("subjectName", e.target.value)}
+              >
+                <option value="">과목을 선택하세요</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.name}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                placeholder="예: 수학"
+                className="form-control"
+                value={form.subjectName}
+                onChange={(e) => onChangeField("subjectName", e.target.value)}
+              />
+            )}
           </div>
 
           {/* 학급 + 장소 */}

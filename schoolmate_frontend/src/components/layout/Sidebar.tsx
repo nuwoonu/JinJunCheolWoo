@@ -10,33 +10,46 @@ import api from "@/api/auth";
 // CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전
 // [soojin] 현재 경로 기반으로 해당 드롭다운 자동 열림
 function useSubmenu() {
-  const location = useLocation()
+  const location = useLocation();
 
   function initOpen(p: string): Record<string, boolean> {
-    const r: Record<string, boolean> = {}
-    if (p.startsWith('/teacher/myclass')) r.myclass = true
-    if (p.startsWith('/student/list') || p.startsWith('/student/myinfo')) r.student = true
-    if (p.startsWith('/parent/children') || p.startsWith('/attendance/parent') || p.startsWith('/parent/grades') || p.startsWith('/parent/homework')) r.parent = true
-    if (p.startsWith('/teacher/list')) r.teacher = true
-    if (p.startsWith('/board/parent-notice') || p.startsWith('/board/parent') || p.startsWith('/teacher/parent')) r.parentList = true
-    if (p.startsWith('/board/school-notice')) { r.notice = true; r.parentNotice = true }
-    if (p.startsWith('/board/class-board') || p.startsWith('/board/teacher')) r.board = true
-    if (p.startsWith('/homework') || p.startsWith('/quiz')) r.homework = true
-    if (p.startsWith('/exam') || p.startsWith('/teacher/grade-classes')) r.exam = true
-    if (p.startsWith('/attendance/student') || p.startsWith('/attendance/teacher')) r.attendance = true
-    if (p.startsWith('/school/gallery') || p.startsWith('/school/schedule')) r.parentNotice = true
-    if (p.startsWith('/consultation')) { r.consultation = true; r.parentList = true }
-    return r
+    const r: Record<string, boolean> = {};
+    if (p.startsWith("/teacher/myclass")) r.myclass = true;
+    if (p.startsWith("/student/list") || p.startsWith("/student/myinfo")) r.student = true;
+    if (
+      p.startsWith("/parent/children") ||
+      p.startsWith("/attendance/parent") ||
+      p.startsWith("/parent/grades") ||
+      p.startsWith("/parent/homework")
+    )
+      r.parent = true;
+    if (p.startsWith("/teacher/list")) r.teacher = true;
+    if (p.startsWith("/board/parent-notice") || p.startsWith("/board/parent") || p.startsWith("/teacher/parent"))
+      r.parentList = true;
+    if (p.startsWith("/board/school-notice")) {
+      r.notice = true;
+      r.parentNotice = true;
+    }
+    if (p.startsWith("/board/class-board") || p.startsWith("/board/teacher")) r.board = true;
+    if (p.startsWith("/homework") || p.startsWith("/quiz")) r.homework = true;
+    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes")) r.exam = true;
+    if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.attendance = true;
+    if (p.startsWith("/school/gallery") || p.startsWith("/school/schedule")) r.parentNotice = true;
+    if (p.startsWith("/consultation")) {
+      r.consultation = true;
+      r.parentList = true;
+    }
+    return r;
   }
 
-  const [open, setOpen] = useState<Record<string, boolean>>(() => initOpen(location.pathname))
+  const [open, setOpen] = useState<Record<string, boolean>>(() => initOpen(location.pathname));
 
   useEffect(() => {
-    setOpen(initOpen(location.pathname))
-  }, [location.pathname])
+    setOpen(initOpen(location.pathname));
+  }, [location.pathname]);
 
-  const toggle = (key: string) => setOpen((prev) => ({ [key]: !prev[key] }))
-  return { open, toggle }
+  const toggle = (key: string) => setOpen((prev) => ({ [key]: !prev[key] }));
+  return { open, toggle };
 }
 
 // [woo] 열린 상태일 때 'open dropdown-open' 두 클래스 모두 붙여야 CSS가 작동함
@@ -47,7 +60,7 @@ function dc(isOpen: boolean) {
 // [soojin] 현재 페이지 링크만 primary 색상으로 표시, 나머지는 기본 색 유지
 function SNavLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <NavLink to={to} end style={({ isActive }) => isActive ? { color: '#25A194' } : {}}>
+    <NavLink to={to} end style={({ isActive }) => (isActive ? { color: "#25A194" } : {})}>
       {children}
     </NavLink>
   );

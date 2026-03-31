@@ -655,8 +655,10 @@ public class BoardService {
             return;
         }
 
-        // [woo] 학급 게시판·학부모 게시판 — 교사는 모든 글 수정/삭제 가능
-        if ((board.getBoardType() == BoardType.CLASS_BOARD || board.getBoardType() == BoardType.PARENT_BOARD)
+        // [woo] 교사 작성 게시판 — 교사는 모든 글 수정/삭제 가능
+        if ((board.getBoardType() == BoardType.CLASS_BOARD || board.getBoardType() == BoardType.PARENT_BOARD
+                || board.getBoardType() == BoardType.CLASS_DIARY || board.getBoardType() == BoardType.TEACHER_BOARD
+                || board.getBoardType() == BoardType.PARENT_NOTICE || board.getBoardType() == BoardType.CLASS_NOTICE)
                 && isTeacher(userDTO)) {
             return;
         }
