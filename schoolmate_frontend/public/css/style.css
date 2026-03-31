@@ -14747,13 +14747,14 @@ table.dataTable td.dt-type-date {
     font-size: 1.375rem;
   }
 }
+/* [soojin] 열린 메뉴: 배경 없애고 글자 색만 변경 */
 .sidebar-menu li.dropdown.open > a, .sidebar-menu li.dropdown.dropdown-open > a {
-  background-color: var(--primary-600);
-  color: #fff;
+  background-color: transparent;
+  color: var(--primary-600);
 }
 
 .sidebar-menu li.dropdown.open > a:hover, .sidebar-menu li.dropdown.dropdown-open > a:hover {
-  color: #fff;
+  color: var(--primary-600);
 }
 
 .sidebar-menu li.dropdown.open > a::after, .sidebar-menu li.dropdown.dropdown-open > a::after {
@@ -14766,13 +14767,10 @@ table.dataTable td.dt-type-date {
   display: block;
 }
 
-.sidebar-menu li > a.active-page {
-  background-color: var(--primary-600);
-  color: #fff;
-}
-
+.sidebar-menu li > a.active-page,
 .sidebar-menu li > a.active-page:hover {
-  color: #fff;
+  background-color: transparent;
+  color: var(--primary-600);
 }
 
 .sidebar-menu li a {
