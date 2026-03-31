@@ -23,6 +23,7 @@ public enum GrantedRole {
     SCHEDULE_MANAGER("일정 관리"), // 학사 일정 관리
     FACILITY_MANAGER("시설 관리"), // 시설·강의실 관리
     ASSET_MANAGER("기자재 관리"), // 기자재 관리
+    DORMITORY_MANAGER("기숙사 관리"), // 기숙사 배정·관리
     LIBRARIAN("도서 관리"), // 도서관 관리
     NURSE("보건 관리"), // 보건실 관리
     NUTRITIONIST("급식 관리"); // 급식 관리

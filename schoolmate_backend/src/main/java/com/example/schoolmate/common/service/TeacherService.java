@@ -3,6 +3,7 @@ package com.example.schoolmate.common.service;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -34,9 +35,13 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.notification.Notification;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.SchoolAdminGrant;
+import com.example.schoolmate.common.entity.user.constant.GrantedRole;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
+import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
@@ -75,6 +80,7 @@ public class TeacherService {
     private final NotificationRepository notificationRepository;
     private final SchoolRepository schoolRepository;
     private final RoleRequestRepository roleRequestRepository;
+    private final SchoolAdminGrantRepository schoolAdminGrantRepository;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========
@@ -87,9 +93,14 @@ public class TeacherService {
         Page<User> userPage = teacherInfoRepository.search(cond, pageable);
         return userPage.map(user -> {
             TeacherDTO.DetailResponse dto = new TeacherDTO.DetailResponse(user);
-            roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst().ifPresent(rr -> {
+            // [soojin] status 필터 시 해당 상태의 roleRequest를 직접 조회하여 createDate 정확히 세팅
+            Optional<RoleRequest> targetRr = (cond.getRoleRequestStatus() != null && !cond.getRoleRequestStatus().isEmpty())
+                    ? roleRequestRepository.findByUserAndRoleAndStatus(user, UserRole.TEACHER, RoleRequestStatus.valueOf(cond.getRoleRequestStatus()))
+                    : roleRequestRepository.findAllByUserAndRole(user, UserRole.TEACHER).stream().findFirst();
+            targetRr.ifPresent(rr -> {
                 dto.setRoleRequestId(rr.getId());
                 dto.setRoleRequestStatus(rr.getStatus().name());
+                dto.setRoleRequestCreateDate(rr.getCreateDate()); // [soojin] 대시보드 대기 목록 최신순 정렬용
             });
             return dto;
         });
@@ -161,6 +172,18 @@ public class TeacherService {
 
         // 관리자 직접 등록 시 즉시 ACTIVE RoleRequest 생성
         roleRequestRepository.save(RoleRequest.createActive(user, UserRole.TEACHER, schoolId, null));
+
+        // 권한 즉시 부여 (선택)
+        if (request.getGrantedRole() != null && !request.getGrantedRole().isBlank() && schoolId != null) {
+            try {
+                GrantedRole role = GrantedRole.valueOf(request.getGrantedRole().trim());
+                schoolRepository.findById(schoolId).ifPresent(school ->
+                    schoolAdminGrantRepository.save(new SchoolAdminGrant(user, school, role, null))
+                );
+            } catch (IllegalArgumentException e) {
+                log.warn("알 수 없는 권한 코드, 권한 부여 건너뜀: {}", request.getGrantedRole());
+            }
+        }
     }
 
     /**
@@ -201,7 +224,12 @@ public class TeacherService {
      * CSV 파일 일괄 교사 등록
      */
     @Transactional
-    public void importTeachersFromCsv(MultipartFile file) throws Exception {
+    public List<String> importTeachersFromCsv(MultipartFile file) throws Exception {
+        List<String> errors = new ArrayList<>();
+        List<TeacherDTO.CsvImportRequest> validRows = new ArrayList<>();
+        Set<String> seenEmails = new HashSet<>();
+        Set<String> seenCodes = new HashSet<>();
+
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             log.info("CSV 파일 읽기 시작: {}", file.getOriginalFilename());
             List<TeacherDTO.CsvImportRequest> beans = new CsvToBeanBuilder<TeacherDTO.CsvImportRequest>(reader)
@@ -210,34 +238,41 @@ public class TeacherService {
                     .build()
                     .parse();
             log.info("파싱된 데이터 개수: {}", beans.size());
-            for (TeacherDTO.CsvImportRequest csvReq : beans) {
-                try {
-                    // 이메일 중복은 전역 고유 식별자이므로 에러로 처리
-                    if (userRepository.existsByEmail(csvReq.getEmail())) {
-                        throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + csvReq.getEmail());
-                    }
-                    // 교사 코드 중복은 학교 범위 내에서만 체크 - 중복 행은 건너뜀
-                    if (codeExistsForTeacher(csvReq.getCode())) {
-                        log.warn("이미 존재하는 교사 코드 건너뜀: {}", csvReq.getCode());
-                        continue;
-                    }
-                    // 담당과목 코드가 DB에 없으면 경고 후 null로 등록 (에러 없이 진행)
-                    if (csvReq.getSubject() != null && !csvReq.getSubject().isBlank()
-                            && findSubjectByCode(csvReq.getSubject()).isEmpty()) {
-                        log.warn("존재하지 않는 과목 코드, 담당과목 null로 등록: {}", csvReq.getSubject());
-                        csvReq.setSubject(null);
-                    }
-                    this.createTeacher(new TeacherDTO.CreateRequest(csvReq));
-                    log.info("교사 등록 성공: {}", csvReq.getEmail());
-                } catch (Exception e) {
-                    log.error("교사 등록 중 상세 에러 ({}) : {}", csvReq.getEmail(), e.getMessage());
-                    throw e;
+
+            // 1단계: 검증 (읽기 전용)
+            for (int i = 0; i < beans.size(); i++) {
+                TeacherDTO.CsvImportRequest csvReq = beans.get(i);
+                String rowLabel = (i + 2) + "행" + (csvReq.getName() != null ? " (" + csvReq.getName() + ")" : "");
+
+                if (csvReq.getEmail() == null || csvReq.getEmail().isBlank()) {
+                    errors.add(rowLabel + ": 이메일이 비어있습니다.");
+                    continue;
                 }
+                if (userRepository.existsByEmail(csvReq.getEmail()) || seenEmails.contains(csvReq.getEmail())) {
+                    errors.add(rowLabel + ": 이미 존재하는 이메일입니다.");
+                    continue;
+                }
+                if (csvReq.getCode() != null && (codeExistsForTeacher(csvReq.getCode()) || seenCodes.contains(csvReq.getCode()))) {
+                    errors.add(rowLabel + ": 이미 존재하는 사번입니다.");
+                    continue;
+                }
+                if (csvReq.getSubject() != null && !csvReq.getSubject().isBlank()
+                        && findSubjectByCode(csvReq.getSubject()).isEmpty()) {
+                    log.warn("존재하지 않는 과목 코드, 담당과목 null로 등록: {}", csvReq.getSubject());
+                    csvReq.setSubject(null);
+                }
+                seenEmails.add(csvReq.getEmail());
+                if (csvReq.getCode() != null) seenCodes.add(csvReq.getCode());
+                validRows.add(csvReq);
             }
-        } catch (Exception e) {
-            log.error("CSV 파싱 또는 처리 중 치명적 에러: ", e);
-            throw e;
+
+            // 2단계: 등록 (쓰기 전용)
+            for (TeacherDTO.CsvImportRequest csvReq : validRows) {
+                this.createTeacher(new TeacherDTO.CreateRequest(csvReq));
+                log.info("교사 등록 성공: {}", csvReq.getEmail());
+            }
         }
+        return errors;
     }
 
     /**

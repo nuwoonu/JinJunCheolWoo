@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ReactQuill, QUILL_MODULES_TEXT, QUILL_FORMATS_TEXT, isQuillEmpty } from '@/shared/quillConfig'
+import 'react-quill-new/dist/quill.snow.css'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -36,6 +38,7 @@ export default function ParentNotice() {
 
   const [showWriteModal, setShowWriteModal] = useState(false)
   const [writeForm, setWriteForm] = useState({ title: '', content: '', isPinned: false })
+  const [writeFile, setWriteFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
 
   // [woo] 교사일 때 담임 학급 정보 조회
@@ -131,20 +134,30 @@ export default function ParentNotice() {
   }, [])
 
   const handleWrite = async () => {
-    if (!writeForm.title.trim() || !writeForm.content.trim()) {
+    if (!writeForm.title.trim() || isQuillEmpty(writeForm.content)) {
       alert('제목과 내용을 입력해주세요.')
       return
     }
     setSaving(true)
     try {
+      let attachmentUrl = ''
+      // [woo] 파일 첨부 시 먼저 업로드
+      if (writeFile) {
+        const fd = new FormData()
+        fd.append('file', writeFile)
+        const uploadRes = await api.post('/board/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        attachmentUrl = uploadRes.data.url
+      }
       await api.post('/board', {
         boardType: 'PARENT_NOTICE',
         title: writeForm.title,
         content: writeForm.content,
         isPinned: writeForm.isPinned,
+        attachmentUrl,
       })
       setShowWriteModal(false)
       setWriteForm({ title: '', content: '', isPinned: false })
+      setWriteFile(null)
       fetchBoards(0)
     } catch {
       alert('게시물 작성에 실패했습니다.')
@@ -284,13 +297,6 @@ export default function ParentNotice() {
                                 padding: '3px 9px', borderRadius: 10,
                               }}>고정</span>
                             )}
-                            {board.targetClassroomName && (
-                              <span style={{
-                                background: '#e8f4fd', color: '#1976d2',
-                                fontSize: 11, fontWeight: 600,
-                                padding: '3px 9px', borderRadius: 10,
-                              }}>{board.targetClassroomName}</span>
-                            )}
                           </div>
                           <div style={{
                             fontSize: 17, fontWeight: isRead ? 500 : 700,
@@ -406,11 +412,6 @@ export default function ParentNotice() {
                             <i className="ri-pushpin-fill me-2" style={{ fontSize: 10 }} />고정
                           </span>
                         )}
-                        {board.targetClassroomName && (
-                          <span className="badge bg-primary-100 text-primary-600 text-xs px-6 py-2 rounded-pill">
-                            {board.targetClassroomName}
-                          </span>
-                        )}
                       </div>
                       <h6
                         className="fw-semibold mb-4"
@@ -522,12 +523,26 @@ export default function ParentNotice() {
                 </div>
                 <div className="mb-16">
                   <label className="form-label fw-semibold text-sm">내용 *</label>
-                  <textarea
+                  <div style={{ minHeight: 320 }}>
+                    <ReactQuill
+                      theme="snow"
+                      value={writeForm.content}
+                      onChange={(val: string) => setWriteForm(f => ({ ...f, content: val }))}
+                      modules={QUILL_MODULES_TEXT}
+                      formats={QUILL_FORMATS_TEXT}
+                      placeholder="학부모에게 전달할 내용을 입력하세요"
+                      style={{ height: 280 }}
+                    />
+                  </div>
+                </div>
+                {/* [woo] 첨부파일 */}
+                <div className="mb-16">
+                  <label className="form-label fw-semibold text-sm">첨부파일 (PDF, DOCX)</label>
+                  <input
+                    type="file"
                     className="form-control"
-                    rows={12}
-                    placeholder="학부모에게 전달할 내용을 입력하세요"
-                    value={writeForm.content}
-                    onChange={e => setWriteForm(f => ({ ...f, content: e.target.value }))}
+                    accept=".pdf,.docx,.doc,.hwp"
+                    onChange={e => setWriteFile(e.target.files?.[0] ?? null)}
                   />
                 </div>
                 <div className="form-check">

@@ -4,6 +4,8 @@ import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import NeisEventsWidget from "@/components/NeisEventsWidget";
 import ClassNotebookWidget from "@/components/teacher/ClassNotebookWidget";
+import TodayMealWidget from "@/components/student/TodayMealWidget";
+import TodayTimetableWidget from "@/components/student/TodayTimetableWidget";
 
 // [soojin] 학부모 자녀현황 - soojin/mychildren/status.html 마이그레이션
 // 레이아웃: 상단 3컬럼(프로필+출결 | 시간표 | 학교일정) + 하단 2컬럼(가정통신문 | 급식) + 알림장
@@ -11,17 +13,14 @@ import ClassNotebookWidget from "@/components/teacher/ClassNotebookWidget";
 interface Child {
   id: number;
   studentInfoId: number; // [woo] 출결 조회용
+  classroomId?: number; // [woo] 학부모 게시판 필터용
   name: string;
   grade?: number;
   classNum?: number;
   attendanceNum?: number;
   profileImageUrl?: string;
-}
-
-interface Board {
-  title: string;
-  createDate?: string;
-  writerName?: string;
+  // [soojin] 자녀 학교 ID — 급식 위젯에 전달
+  schoolId?: number;
 }
 
 interface CalendarEvent {
@@ -33,40 +32,29 @@ interface CalendarEvent {
   dateRangeText: string;
 }
 
-interface Meal {
-  mealType: string;
-  menu: string;
-  calories?: number;
-}
-
-interface TimetableItem {
-  period: number;
-  subject: string;
-}
-
 interface ParentDashboardData {
-  children?: Child[]
+  children?: Child[];
 }
-
-
 
 // [woo] 가정통신문 API 응답 타입
 interface ParentNoticeItem {
-  id: number
-  title: string
-  writerName?: string
-  createDate?: string
+  id: number;
+  title: string;
+  writerName?: string;
+  createDate?: string;
 }
 
-const MOCK_PARENT_POSTS: Board[] = [
-  { title: "3월 학급 사진 공유드립니다", writerName: "담임", createDate: "2026-03-18" },
-  { title: "이번 주 학습 안내 말씀드려요", writerName: "학부모", createDate: "2026-03-16" },
-  { title: "3월 학부모 모임 공지", writerName: "학부모회", createDate: "2026-03-12" },
-];
+// [woo] 학부모 게시판 API 응답 타입
+interface ParentBoardItem {
+  id: number;
+  title: string;
+  writerName: string;
+  createDate: string;
+}
 
 // [woo] 새글 표시: 오늘 작성된 글만
 function isNew(dateStr: string) {
-  return new Date(dateStr).toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10)
+  return new Date(dateStr).toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10);
 }
 
 // [woo] 학부모 자녀 출결 통계 타입
@@ -78,32 +66,39 @@ interface AttendanceSummary {
 }
 
 export default function ParentChildrenStatus() {
-  const location = useLocation()
-  const [children, setChildren] = useState<Child[]>([])
+  const location = useLocation();
+  const [children, setChildren] = useState<Child[]>([]);
   // [woo] 가정통신문 실제 API 데이터
-  const [parentNotices, setParentNotices] = useState<ParentNoticeItem[]>([])
+  const [parentNotices, setParentNotices] = useState<ParentNoticeItem[]>([]);
+  // [woo] 학부모 게시판 실제 API 데이터
+  const [parentPosts, setParentPosts] = useState<ParentBoardItem[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<number | null>(
     (location.state as { childId?: number } | null)?.childId ?? null,
   );
   const [todayEvents, setTodayEvents] = useState<CalendarEvent[]>([]);
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [timetable, setTimetable] = useState<TimetableItem[]>([]);
-  const [timetableLoading, setTimetableLoading] = useState(false);
   // [woo] 출결 통계 state
   const [attendanceMap, setAttendanceMap] = useState<Record<number, AttendanceSummary>>({});
 
   useEffect(() => {
-    api.get('/dashboard/parent').then(res => {
-      const d: ParentDashboardData = res.data
-      setChildren(d.children ?? [])
-      if (d.children && d.children.length > 0) {
-        const fromState = (location.state as { childId?: number } | null)?.childId
-        const valid = fromState && d.children.some(c => c.id === fromState)
-        const resolvedId = valid ? fromState : d.children[0].id
-        setSelectedChildId(resolvedId)
-        sessionStorage.setItem("selectedChildId", String(resolvedId))
-      }
-    }).catch(() => {})
+    api
+      .get("/dashboard/parent")
+      .then((res) => {
+        const d: ParentDashboardData = res.data;
+        setChildren(d.children ?? []);
+        if (d.children && d.children.length > 0) {
+          const fromState = (location.state as { childId?: number } | null)?.childId;
+          const valid = fromState && d.children.some((c) => c.id === fromState);
+          const resolvedId = valid ? fromState : d.children[0].id;
+          setSelectedChildId(resolvedId);
+          sessionStorage.setItem("selectedChildId", String(resolvedId));
+          // [woo] 선택된 자녀의 studentInfoId, classroomId도 저장 (학급 앨범/게시판 필터용)
+          const resolvedChild = d.children.find((c) => c.id === resolvedId);
+          if (resolvedChild?.studentInfoId) {
+            sessionStorage.setItem("selectedStudentInfoId", String(resolvedChild.studentInfoId));
+          }
+        }
+      })
+      .catch(() => {});
 
     // [woo] 오늘의 학사일정 (NEIS) - 오늘 날짜만 필터
     const now = new Date();
@@ -113,15 +108,6 @@ export default function ParentChildrenStatus() {
         const todayStr = now.toISOString().slice(0, 10);
         setTodayEvents(data.filter((e) => e.startDate === todayStr));
       })
-      .catch(() => {});
-
-    // [soojin] 오늘의 급식
-    const _d = new Date();
-    const _pad = (n: number) => String(n).padStart(2, "0");
-    const _today = `${_d.getFullYear()}-${_pad(_d.getMonth() + 1)}-${_pad(_d.getDate())}`;
-    fetch(`/api/meals/daily?date=${_today}`)
-      .then((r) => (r.ok ? r.json() : []))
-      .then(setMeals)
       .catch(() => {});
 
     // [woo] 학부모 자녀 출결 요약 API 호출
@@ -143,25 +129,21 @@ export default function ParentChildrenStatus() {
 
   // [woo] 선택된 자녀 기준 가정통신문 API 호출
   useEffect(() => {
-    if (!selectedChildId) return
-    api.get(`/board/parent-notice?page=0&size=5&studentUserUid=${selectedChildId}`)
-      .then(res => setParentNotices(res.data.content ?? []))
-      .catch(() => setParentNotices([]))
-  }, [selectedChildId])
+    if (!selectedChildId) return;
+    api
+      .get(`/board/parent-notice?page=0&size=5&studentUserUid=${selectedChildId}`)
+      .then((res) => setParentNotices(res.data.content ?? []))
+      .catch(() => setParentNotices([]));
+  }, [selectedChildId]);
 
-  // [woo] 선택된 자녀의 학년/반으로 NEIS 시간표 조회
+  // [woo] 학부모 게시판 — 선택된 자녀 기준 학급 필터링
   useEffect(() => {
-    const child = children.find((c) => c.id === selectedChildId) ?? children[0];
-    if (!child?.grade || !child?.classNum) return;
-    setTimetableLoading(true);
-    fetch(`/api/calendar/timetable?grade=${child.grade}&classNum=${child.classNum}`)
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => {
-        setTimetable(data);
-        setTimetableLoading(false);
-      })
-      .catch(() => setTimetableLoading(false));
-  }, [selectedChildId, children]);
+    if (!selectedChildId) return;
+    api
+      .get(`/board/parent-board?page=0&size=5&studentUserUid=${selectedChildId}`)
+      .then((res) => setParentPosts(res.data.content ?? []))
+      .catch(() => setParentPosts([]));
+  }, [selectedChildId]);
 
   const selectedChild = children.find((c) => c.id === selectedChildId) ?? children[0];
 
@@ -196,6 +178,8 @@ export default function ParentChildrenStatus() {
               onClick={() => {
                 setSelectedChildId(c.id);
                 sessionStorage.setItem("selectedChildId", String(c.id));
+                // [woo] studentInfoId, classroomId도 함께 저장 (학급 앨범/게시판 필터용)
+                if (c.studentInfoId) sessionStorage.setItem("selectedStudentInfoId", String(c.studentInfoId));
               }}
             >
               {c.name}
@@ -210,7 +194,7 @@ export default function ParentChildrenStatus() {
           <div className="row gy-4 mb-24">
             {/* 자녀 프로필 + 출결 현황 */}
             <div className="col-xl-4 col-md-5">
-              <div className="card shadow-sm p-24 h-100 text-center" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
+              <div className="card shadow-sm p-24 h-100 text-center" style={{ borderRadius: 16 }}>
                 <div className="w-120-px h-120-px rounded-circle bg-neutral-200 mx-auto mb-16 d-flex align-items-center justify-content-center text-secondary-light overflow-hidden">
                   {selectedChild.profileImageUrl ? (
                     <img
@@ -277,62 +261,14 @@ export default function ParentChildrenStatus() {
               </div>
             </div>
 
-            {/* 오늘의 시간표 */}
+            {/* 오늘의 시간표 — TodayTimetableWidget 공유 (학사일정 events prop으로 전달) */}
             <div className="col-xl-4 col-md-7">
-              <div className="card shadow-sm h-100 overflow-hidden" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
-                <div className="p-16 border-bottom">
-                  <h6 className="fw-bold mb-0 text-sm">
-                    <i className="ri-time-line text-primary-600 me-2" />
-                    오늘의 시간표 {timetable.length > 0 && `(${timetable.length}교시)`}
-                  </h6>
-                </div>
-                <div className="p-16">
-                  {timetableLoading ? (
-                    <p className="text-secondary-light text-sm text-center py-16 mb-0">시간표를 불러오는 중...</p>
-                  ) : timetable.length > 0 ? (
-                    timetable.map((s, i) => (
-                      <div
-                        key={s.period}
-                        className={`p-10 bg-neutral-50 rounded-8 d-flex justify-content-between align-items-center${i < timetable.length - 1 || todayEvents.length > 0 ? " mb-8" : ""}`}
-                      >
-                        <span className="text-sm fw-bold">{s.period}교시</span>
-                        <span className="fw-medium text-dark text-sm">{s.subject}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-secondary-light text-sm mb-0 py-20 text-center">오늘 시간표 정보가 없습니다.</p>
-                  )}
-                  {/* [woo] 오늘의 학사일정 (NEIS) - 시간표 아래 */}
-                  {todayEvents.map((evt, i) => {
-                    const colorMap: Record<string, string> = {
-                      HOLIDAY: "#ffc107",
-                      EXAM: "#dc3545",
-                      EVENT: "#0d6efd",
-                      ACADEMIC: "#198754",
-                      ETC: "#6c757d",
-                    };
-                    const color = colorMap[evt.eventType] ?? "#6c757d";
-                    return (
-                      <div
-                        key={i}
-                        className={`p-10 rounded-8 d-flex justify-content-between align-items-center${i < todayEvents.length - 1 ? " mb-8" : ""}`}
-                        style={{ background: color + "15", border: `1px solid ${color}50` }}
-                      >
-                        <span className="text-sm fw-medium" style={{ color }}>
-                          <i className="ri-calendar-event-fill me-8" />
-                          {evt.title}
-                        </span>
-                        <span
-                          className="badge text-white text-xs px-8 py-4 rounded-pill"
-                          style={{ background: color, flexShrink: 0 }}
-                        >
-                          학사일정
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <TodayTimetableWidget
+                grade={selectedChild?.grade}
+                classNum={selectedChild?.classNum}
+                schoolId={selectedChild?.schoolId}
+                events={todayEvents}
+              />
             </div>
 
             {/* 학교 일정 - [woo] NEIS API 연동 */}
@@ -344,13 +280,15 @@ export default function ParentChildrenStatus() {
           {/* 하단: 가정통신문 + 오늘의 급식 */}
           <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
             <div className="col-xl-8 d-flex flex-column">
-              <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
+              <div className="card shadow-sm h-100" style={{ borderRadius: 16 }}>
                 <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
                   <h6 className="fw-bold mb-0 text-sm">
                     <i className="ri-file-list-3-line text-primary-600 me-2" />
                     가정통신문
                   </h6>
-                  <Link to="/board/parent-notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>더보기</Link>
+                  <Link to="/board/parent-notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>
+                    더보기
+                  </Link>
                 </div>
                 <div className="p-16">
                   {/* 기존 UI 주석처리
@@ -369,83 +307,48 @@ export default function ParentChildrenStatus() {
                   <p className="text-secondary-light text-sm mb-0">등록된 가정통신문이 없습니다.</p>
                 )}
                 */}
-                {/* [woo] 가정통신문 실제 API 연동 */}
-                {parentNotices.length > 0 ? parentNotices.map((b, i) => (
-                  <Link
-                    key={b.id}
-                    to={`/board/parent-notice/${b.id}`}
-                    className={`d-flex align-items-center justify-content-between py-12 text-decoration-none${i < parentNotices.length - 1 ? ' border-bottom' : ''}`}
-                  >
-                    <div className="d-flex align-items-center gap-12">
-                      <i className="ri-file-text-line text-secondary-light" />
-                      <span className="text-sm" style={{ color: '#374151' }}>{b.title}</span>
-                      {b.createDate && isNew(b.createDate) && (
-                        <span style={{ background: '#25A194', color: 'white', borderRadius: 4, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>새글</span>
-                      )}
-                    </div>
-                    {b.createDate && <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{b.createDate.slice(0, 10)}</span>}
-                  </Link>
-                )) : (
-                  <p className="text-secondary-light text-sm mb-0 text-center py-20">등록된 가정통신문이 없습니다.</p>
-                )}
+                  {/* [woo] 가정통신문 실제 API 연동 */}
+                  {parentNotices.length > 0 ? (
+                    parentNotices.map((b, i) => (
+                      <Link
+                        key={b.id}
+                        to={`/board/parent-notice/${b.id}`}
+                        className={`d-flex align-items-center justify-content-between py-12 text-decoration-none${i < parentNotices.length - 1 ? " border-bottom" : ""}`}
+                      >
+                        <div className="d-flex align-items-center gap-12">
+                          <i className="ri-file-text-line text-secondary-light" />
+                          <span className="text-sm">{b.title}</span>
+                          {b.createDate && isNew(b.createDate) && (
+                            <span
+                              style={{
+                                background: "#25A194",
+                                color: "white",
+                                borderRadius: 4,
+                                padding: "1px 7px",
+                                fontSize: 11,
+                                fontWeight: 600,
+                              }}
+                            >
+                              새글
+                            </span>
+                          )}
+                        </div>
+                        {b.createDate && (
+                          <span className="text-xs text-secondary-light flex-shrink-0 ms-8">
+                            {b.createDate.slice(0, 10)}
+                          </span>
+                        )}
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="text-secondary-light text-sm mb-0 text-center py-20">등록된 가정통신문이 없습니다.</p>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="col-xl-4 d-flex flex-column">
-              <div className="card shadow-sm d-flex flex-column h-100" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
-                {/* 헤더 */}
-                <div className="p-16 border-bottom">
-                  <h6 className="fw-bold mb-0 text-sm">
-                    <i className="ri-restaurant-line text-primary-600 me-2" />
-                    오늘의 급식
-                  </h6>
-                </div>
-                {/* 본문: 세로 중앙 정렬 */}
-                <div className="d-flex flex-column align-items-center justify-content-center p-20" style={{ flex: 1 }}>
-                  {(() => {
-                    const meal = meals[0];
-                    const menu = meal?.menu ?? "잡곡밥, 미역국, 제육볶음, 배추김치, 과일";
-                    const calories = meal?.calories ?? 646;
-                    return (
-                      <>
-                        <p className="text-sm mb-12 text-center" style={{ color: "#374151", lineHeight: 1.7 }}>
-                          {menu}
-                        </p>
-                        <span
-                          style={{
-                            display: "block",
-                            width: "100%",
-                            textAlign: "center",
-                            background: "#25A194",
-                            color: "white",
-                            borderRadius: 20,
-                            padding: "5px 0",
-                            fontSize: 12,
-                            fontWeight: 500,
-                            marginBottom: 16,
-                          }}
-                        >
-                          칼로리: {calories}kcal
-                        </span>
-                        <div
-                          style={{
-                            width: "100%",
-                            height: 110,
-                            borderRadius: 10,
-                            background: "#f3f4f6",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <i className="ri-image-line" style={{ fontSize: 32, color: "#9ca3af" }} />
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
+              <TodayMealWidget schoolId={selectedChild?.schoolId} />
             </div>
           </div>
 
@@ -466,10 +369,10 @@ export default function ParentChildrenStatus() {
           {/* 3행: 학급 알림장 (col-6) | 학부모 게시판 (col-6) */}
           <div className="row gy-4">
             <div className="col-xl-6 d-flex flex-column">
-              <ClassNotebookWidget classroomId={null} readonly moreHref="/board/notebook" />
+              <ClassNotebookWidget classroomId={null} studentUserUid={selectedChildId} moreHref="/board/class-diary" />
             </div>
             <div className="col-xl-6 d-flex flex-column">
-              <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
+              <div className="card shadow-sm h-100" style={{ borderRadius: 16 }}>
                 <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
                   <h6 className="fw-bold mb-0 text-sm">
                     <i className="ri-parent-line text-primary-600 me-2" />
@@ -485,38 +388,42 @@ export default function ParentChildrenStatus() {
                     등록된 게시글이 없습니다.
                   </p>
                   */}
-                  {MOCK_PARENT_POSTS.map((b, i) => (
-                    <div
-                      key={i}
-                      className={`d-flex align-items-center justify-content-between py-12${i < MOCK_PARENT_POSTS.length - 1 ? " border-bottom" : ""}`}
-                    >
-                      <div className="d-flex align-items-center gap-12">
-                        <i className="ri-file-text-line text-secondary-light" />
-                        <span className="text-sm" style={{ color: "#374151" }}>
-                          {b.title}
-                        </span>
-                        {b.createDate && isNew(b.createDate) && (
-                          <span
-                            style={{
-                              background: "#25A194",
-                              color: "white",
-                              borderRadius: 4,
-                              padding: "1px 7px",
-                              fontSize: 11,
-                              fontWeight: 600,
-                            }}
-                          >
-                            새글
+                  {/* [woo] 학부모 게시판 실제 API 연동 */}
+                  {parentPosts.length > 0 ? (
+                    parentPosts.map((b, i) => (
+                      <Link
+                        key={b.id}
+                        to={`/board/parent/${b.id}`}
+                        className={`d-flex align-items-center justify-content-between py-12 text-decoration-none${i < parentPosts.length - 1 ? " border-bottom" : ""}`}
+                      >
+                        <div className="d-flex align-items-center gap-12">
+                          <i className="ri-file-text-line text-secondary-light" />
+                          <span className="text-sm">{b.title}</span>
+                          {b.createDate && isNew(b.createDate) && (
+                            <span
+                              style={{
+                                background: "#25A194",
+                                color: "white",
+                                borderRadius: 4,
+                                padding: "1px 7px",
+                                fontSize: 11,
+                                fontWeight: 600,
+                              }}
+                            >
+                              새글
+                            </span>
+                          )}
+                        </div>
+                        {b.createDate && (
+                          <span className="text-xs text-secondary-light flex-shrink-0 ms-8">
+                            {b.createDate.slice(0, 10)}
                           </span>
                         )}
-                      </div>
-                      {b.createDate && (
-                        <span className="text-xs text-secondary-light flex-shrink-0 ms-8">
-                          {b.createDate.slice(0, 10)}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="text-secondary-light text-sm mb-0 text-center py-20">등록된 게시글이 없습니다.</p>
+                  )}
                 </div>
               </div>
             </div>

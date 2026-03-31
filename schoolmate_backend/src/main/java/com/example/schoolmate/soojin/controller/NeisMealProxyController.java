@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.schoolmate.config.school.SchoolContextHolder;
@@ -29,15 +30,22 @@ public class NeisMealProxyController {
     private final NeisMealService neisMealService;
 
     /**
-     * GET /api/neis/meal/today
-     * 현재 학교 컨텍스트 기준으로 당일 급식(중식 우선) 정보를 반환합니다.
+     * GET /api/neis/meal/today[?schoolId=N]
+     * 당일 급식(중식 우선) 정보를 반환합니다.
      *
-     * 응답: { menu: string, calories: string, mealType: string }
+     * - schoolId 파라미터: 학부모처럼 JWT 컨텍스트에 schoolId가 없을 때 자녀 schoolId를 직접 전달
+     * - 파라미터 없으면 JWT 컨텍스트(SchoolContextHolder)에서 추출
+     *
+     * 응답: { menu, calories, mealType, menuItems }
      * 급식 정보 없음: 204 No Content
      */
     @GetMapping("/today")
-    public ResponseEntity<Map<String, Object>> getTodayMeal() {
-        Long schoolId = SchoolContextHolder.getSchoolId();
+    public ResponseEntity<Map<String, Object>> getTodayMeal(
+            // [soojin] 학부모 대시보드: JWT에 schoolId 없으므로 선택된 자녀의 schoolId를 query param으로 수신
+            @RequestParam(required = false) Long schoolId) {
+        if (schoolId == null) {
+            schoolId = SchoolContextHolder.getSchoolId();
+        }
         if (schoolId == null) {
             return ResponseEntity.noContent().build();
         }

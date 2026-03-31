@@ -33,6 +33,7 @@ public class AdminClassApiController {
     private final ClassroomService classService;
     private final AcademicTermService academicTermService;
 
+    @PreAuthorize("@grants.canAccessAdmin()")
     @GetMapping
     public ResponseEntity<Page<ClassDTO.DetailResponse>> list(
             ClassDTO.SearchCondition condition,

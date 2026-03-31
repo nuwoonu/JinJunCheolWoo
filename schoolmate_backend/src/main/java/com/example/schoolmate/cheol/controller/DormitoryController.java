@@ -18,6 +18,7 @@ import com.example.schoolmate.cheol.dto.dormitorydto.DormitoryDTO;
 import com.example.schoolmate.cheol.service.DormitoryService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/dormitories")
@@ -30,6 +31,7 @@ public class DormitoryController {
      * 기숙사 초기 데이터 생성
      * POST /api/dormitories/initialize
      */
+    @PreAuthorize("@grants.canManageDormitory()")
     @PostMapping("/initialize")
     public ResponseEntity<String> initializeDormitories() {
         dormitoryService.initializeDormitories();
@@ -84,6 +86,7 @@ public class DormitoryController {
      * 학생에게 기숙사 배정
      * POST /api/dormitories/assign
      */
+    @PreAuthorize("@grants.canManageDormitory()")
     @PostMapping("/assign")
     public ResponseEntity<DormitoryDTO> assignDormitory(
             @RequestBody DormitoryAssignDTO assignDTO) {
@@ -105,6 +108,7 @@ public class DormitoryController {
      * 기숙사 배정 해제
      * DELETE /api/dormitories/students/{studentId}
      */
+    @PreAuthorize("@grants.canManageDormitory()")
     @DeleteMapping("/students/{studentId}")
     public ResponseEntity<Void> unassignDormitory(@PathVariable Long studentId) {
         dormitoryService.unassignDormitory(studentId);
@@ -125,6 +129,7 @@ public class DormitoryController {
      * POST /api/dormitories/buildings
      * body: { buildingName, floors, roomsPerFloor, bedsPerRoom }
      */
+    @PreAuthorize("@grants.canManageDormitory()")
     @PostMapping("/buildings")
     public ResponseEntity<String> addBuilding(@RequestBody Map<String, Object> body) {
         String buildingName = (String) body.get("buildingName");
@@ -139,6 +144,7 @@ public class DormitoryController {
      * cheol: 건물 삭제
      * DELETE /api/dormitories/buildings/{buildingName}
      */
+    @PreAuthorize("@grants.canManageDormitory()")
     @DeleteMapping("/buildings/{buildingName}")
     public ResponseEntity<String> deleteBuilding(@PathVariable String buildingName) {
         dormitoryService.deleteBuilding(buildingName);

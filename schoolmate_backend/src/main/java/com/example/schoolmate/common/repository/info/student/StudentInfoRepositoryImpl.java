@@ -16,8 +16,10 @@ import com.example.schoolmate.common.entity.info.QStudentInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.QStudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.common.entity.user.QRoleRequest;
 import com.example.schoolmate.common.entity.user.QUser;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -37,21 +39,32 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     public Page<User> search(StudentDTO.StudentSearchCondition cond, Pageable pageable) {
         QUser user = QUser.user;
         QStudentInfo info = QStudentInfo.studentInfo;
+        QRoleRequest roleRequest = QRoleRequest.roleRequest; // [soojin] 대시보드 대기 목록 필터링용
 
         BooleanExpression schoolPredicate = cond.isIgnoreSchoolFilter() ? null : schoolFilter(info);
         BooleanExpression excludeLinkedPredicate = excludeLinkedFilter(info, cond.getExcludeParentId());
 
-        JPAQuery<User> contentQuery = query.selectFrom(user).distinct()
+        JPAQuery<User> contentQuery = query.selectFrom(user)
                 .leftJoin(info).on(info.user.eq(user))
                 .leftJoin(info.currentAssignment, QStudentAssignment.studentAssignment)
                 .leftJoin(QStudentAssignment.studentAssignment.classroom, QClassroom.classroom)
+                .leftJoin(roleRequest).on(roleRequest.user.eq(user).and(roleRequest.role.eq(UserRole.STUDENT))) // [soojin] roleRequest 조인
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
                         statusFilter(cond.getStatus(), info),
                         schoolPredicate,
-                        excludeLinkedPredicate)
-                .orderBy(user.uid.desc());
+                        excludeLinkedPredicate,
+                        roleRequestStatusFilter(cond.getRoleRequestStatus(), roleRequest)); // [soojin] 승인상태 필터
+
+        // [soojin] roleRequestStatus 필터 시 최신 요청순 정렬, 기본은 uid 내림차순
+        // [soojin] MySQL: DISTINCT + ORDER BY(SELECT 미포함 컬럼) 충돌 → roleRequestStatus 필터 시 DISTINCT 제거
+        if (cond.getRoleRequestStatus() != null) {
+            contentQuery.orderBy(roleRequest.createDate.desc());
+        } else {
+            contentQuery.distinct();
+            contentQuery.orderBy(user.uid.desc());
+        }
 
         if (pageable.isPaged()) {
             contentQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
@@ -63,12 +76,14 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .select(user.countDistinct())
                 .from(user)
                 .leftJoin(info).on(info.user.eq(user))
+                .leftJoin(roleRequest).on(roleRequest.user.eq(user).and(roleRequest.role.eq(UserRole.STUDENT))) // [soojin]
                 .where(
                         user.roles.contains(UserRole.STUDENT),
                         searchPredicate(cond.getType(), cond.getKeyword(), user, info),
                         statusFilter(cond.getStatus(), info),
                         schoolPredicate,
-                        excludeLinkedPredicate);
+                        excludeLinkedPredicate,
+                        roleRequestStatusFilter(cond.getRoleRequestStatus(), roleRequest)); // [soojin]
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -248,7 +263,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
         QClassroom classroom = QClassroom.classroom;
 
-        return query.selectFrom(user)
+        // [woo] distinct 추가 — collection join 중복 방지
+        return query.selectFrom(user).distinct()
                 .join(info).on(info.user.eq(user))
                 .join(info.assignments, assign)
                 .join(assign.classroom, classroom)
@@ -280,19 +296,21 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         return candidates.stream().limit(limit).toList();
     }
 
+    // [woo] countDistinct + schoolFilter 적용 — 교사 등 비학생 중복 카운트 방지
     @Override
     public long countByClassroom(int year, int grade, int classNum) {
         QStudentInfo info = QStudentInfo.studentInfo;
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
         QClassroom classroom = QClassroom.classroom;
 
-        Long count = query.select(info.count())
+        Long count = query.select(info.countDistinct())
                 .from(info)
                 .join(info.assignments, assign)
                 .join(assign.classroom, classroom)
                 .where(classroom.year.eq(year)
                         .and(classroom.grade.eq(grade))
-                        .and(classroom.classNum.eq(classNum)))
+                        .and(classroom.classNum.eq(classNum)),
+                        schoolFilter(info))
                 .fetchOne();
         return count != null ? count : 0L;
     }
@@ -342,6 +360,12 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         if (status == null || status.isEmpty())
             return null;
         return info.status.eq(StudentStatus.valueOf(status));
+    }
+
+    private BooleanExpression roleRequestStatusFilter(String status, QRoleRequest roleRequest) { // [soojin] 대시보드 대기 목록 필터링용
+        if (status == null || status.isEmpty())
+            return null;
+        return roleRequest.status.eq(RoleRequestStatus.valueOf(status));
     }
 
     private BooleanExpression searchPredicate(String type, String keyword, QUser user, QStudentInfo info) {

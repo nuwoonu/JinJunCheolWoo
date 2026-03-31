@@ -30,24 +30,31 @@ export default function AdminHeader() {
   const grants: GrantInfo[] = user?.grants ?? [];
   const isSuperAdmin = user?.roles?.includes('ADMIN') || user?.role === 'ADMIN';
 
+  // 관리자 메뉴 빠른링크는 SUPER_ADMIN만 표시
   const navLinks = useMemo(() => {
-    if (isSuperAdmin) return ALL_NAV_LINKS.map(({ grants: _, ...rest }) => rest);
-    return ALL_NAV_LINKS
-      .filter(item => hasGrant(grants, ...item.grants))
-      .map(({ grants: _, ...rest }) => rest);
-  }, [grants, isSuperAdmin]);
+    if (!isSuperAdmin) return [];
+    return ALL_NAV_LINKS.map(({ grants: _, ...rest }) => rest);
+  }, [isSuperAdmin]);
 
   const quickLink = useMemo(() => {
-    if (!isSuperAdmin && !hasGrant(grants, ...PARENT_QUICK_LINK_DEF.grants)) return undefined;
+    if (isSuperAdmin) {
+      const { grants: _, ...link } = PARENT_QUICK_LINK_DEF;
+      return link;
+    }
+    // 학부모 관리 버튼: PARENT_MANAGER 권한과 학교 관리 권한(비학부모)을 둘 다 가진 경우만 표시
+    const hasParentGrant = hasGrant(grants, 'PARENT_MANAGER');
+    const hasNonParentGrant = grants.some(g => g.grantedRole !== 'PARENT_MANAGER');
+    if (!hasParentGrant || !hasNonParentGrant) return undefined;
     const { grants: _, ...link } = PARENT_QUICK_LINK_DEF;
     return link;
   }, [grants, isSuperAdmin]);
 
   return (
     <AdminTopBar
-      position="fixed"
+      position="sticky"
       navLinks={navLinks}
       quickLink={quickLink}
+      logoTo={ADMIN_ROUTES.DASHBOARD}
     />
   );
 }

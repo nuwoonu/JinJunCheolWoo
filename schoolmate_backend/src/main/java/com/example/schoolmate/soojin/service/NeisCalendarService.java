@@ -27,6 +27,9 @@ public class NeisCalendarService {
 
     private static final String NEIS_SCHEDULE_URL = "https://open.neis.go.kr/hub/SchoolSchedule";
     private static final String NEIS_TIMETABLE_URL = "https://open.neis.go.kr/hub/hisTimetable";
+    // [soojin] 학교 종류별 시간표 엔드포인트 — schoolKind: "중학교" → misTimetable, "초등학교" → elsTimetable
+    private static final String NEIS_TIMETABLE_URL_MIS = "https://open.neis.go.kr/hub/misTimetable";
+    private static final String NEIS_TIMETABLE_URL_ELS = "https://open.neis.go.kr/hub/elsTimetable";
     private static final DateTimeFormatter NEIS_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter RANGE_FMT = DateTimeFormatter.ofPattern("M/d(E)", Locale.KOREAN);
 
@@ -133,9 +136,31 @@ public class NeisCalendarService {
 
     // [woo] NEIS 고등학교 시간표 조회 - 오늘 날짜 기준 특정 학년/반
     public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum) {
-        String today = LocalDate.now().format(NEIS_DATE_FMT);
+        return getTodayTimetable(grade, classNum, atptCode, schulCode);
+    }
 
-        String url = NEIS_TIMETABLE_URL
+    // [soojin] schoolId로 동적 학교 코드 지원 (학부모 다자녀 다학교 케이스)
+    public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum, String atptCode, String schulCode) {
+        return getTodayTimetable(grade, classNum, atptCode, schulCode, null);
+    }
+
+    // [soojin] schoolKind에 따라 올바른 NEIS 엔드포인트 선택 (고등학교=hisTimetable, 중학교=misTimetable, 초등학교=elsTimetable)
+    public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum, String atptCode, String schulCode, String schoolKind) {
+        String today = LocalDate.now().format(NEIS_DATE_FMT);
+        String baseUrl;
+        String responseKey;
+        if (schoolKind != null && schoolKind.contains("중학")) {
+            baseUrl = NEIS_TIMETABLE_URL_MIS;
+            responseKey = "misTimetable";
+        } else if (schoolKind != null && schoolKind.contains("초등")) {
+            baseUrl = NEIS_TIMETABLE_URL_ELS;
+            responseKey = "elsTimetable";
+        } else {
+            baseUrl = NEIS_TIMETABLE_URL;
+            responseKey = "hisTimetable";
+        }
+
+        String url = baseUrl
                 + "?KEY=" + apiKey
                 + "&Type=json&pIndex=1&pSize=20"
                 + "&ATPT_OFCDC_SC_CODE=" + atptCode
@@ -157,7 +182,7 @@ public class NeisCalendarService {
             if (response == null || response.containsKey("RESULT")) return Collections.emptyList();
 
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> wrapper = (List<Map<String, Object>>) response.get("hisTimetable");
+            List<Map<String, Object>> wrapper = (List<Map<String, Object>>) response.get(responseKey);
             if (wrapper == null || wrapper.size() < 2) return Collections.emptyList();
 
             @SuppressWarnings("unchecked")

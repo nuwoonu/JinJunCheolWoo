@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,9 +17,9 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.service.FileManager;
+import com.example.schoolmate.common.service.PasswordVerificationService;
 import com.example.schoolmate.common.service.UserService;
 import com.example.schoolmate.dto.AuthUserDTO;
-import com.example.schoolmate.dto.PasswordDTO;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +27,9 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 내 프로필 관련 API
- * - POST /api/user/profile/image : 프로필 이미지 변경
- * - POST /api/user/password      : 비밀번호 변경 (이메일 계정 전용)
+ * - POST /api/user/profile/image        : 프로필 이미지 변경
+ * - POST /api/user/password/send-code   : 비밀번호 변경용 이메일 인증 코드 발송
+ * - POST /api/user/password             : 비밀번호 변경 (인증 코드 검증 후 변경)
  */
 @RestController
 @RequestMapping("/api/user")
@@ -40,10 +40,10 @@ public class UserProfileController {
     private final ProfileRepository profileRepository;
     private final FileManager fileManager;
     private final UserService userService;
+    private final PasswordVerificationService passwordVerificationService;
 
     /**
      * 프로필 이미지 업로드
-     * multipart/form-data, field name: file
      */
     @PostMapping("/profile/image")
     public ResponseEntity<Map<String, Object>> uploadProfileImage(
@@ -59,7 +59,6 @@ public class UserProfileController {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 기존 이미지 파일 삭제 후 새 파일 업로드
         String oldFilename = profileRepository.findByUser(user)
                 .map(p -> p.getUuid()).orElse(null);
         String savedFilename = fileManager.replace(file, oldFilename, FileManager.UploadType.PROFILE);
@@ -80,8 +79,35 @@ public class UserProfileController {
     }
 
     /**
-     * 비밀번호 변경 (이메일 계정 전용)
-     * 소셜 로그인 사용자는 provider != null 이므로 클라이언트에서 차단
+     * 비밀번호 변경용 이메일 인증 코드 발송
+     * 소셜 로그인 계정은 불가
+     */
+    @PostMapping("/password/send-code")
+    public ResponseEntity<Map<String, Object>> sendPasswordVerificationCode(
+            @AuthenticationPrincipal AuthUserDTO auth) {
+
+        if (auth == null) return ResponseEntity.status(401).build();
+
+        Long uid = auth.getCustomUserDTO().getUid();
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getProvider() != null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다."));
+        }
+
+        try {
+            passwordVerificationService.sendCode(user);
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    /**
+     * 비밀번호 변경 (인증 코드 검증 후 변경)
      */
     @PostMapping("/password")
     public ResponseEntity<Map<String, Object>> changePassword(
@@ -100,11 +126,8 @@ public class UserProfileController {
         }
 
         try {
-            userService.changePassword(PasswordDTO.builder()
-                    .email(user.getEmail())
-                    .currentPassword(req.getCurrentPassword())
-                    .newPassword(req.getNewPassword())
-                    .build());
+            passwordVerificationService.verifyAndDelete(uid, req.getVerificationCode());
+            userService.changePassword(uid, req.getNewPassword());
             return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -114,7 +137,7 @@ public class UserProfileController {
     @Getter
     @NoArgsConstructor
     static class PasswordChangeRequest {
-        private String currentPassword;
+        private String verificationCode;
         private String newPassword;
     }
 }

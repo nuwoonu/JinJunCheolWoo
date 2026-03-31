@@ -29,6 +29,7 @@ public class AdminStaffApiController {
 
     private final StaffService staffService;
 
+    @PreAuthorize("@grants.canAccessAdmin()")
     @GetMapping
     public ResponseEntity<Page<StaffDTO.DetailResponse>> list(
             StaffDTO.StaffSearchCondition condition,
@@ -42,13 +43,13 @@ public class AdminStaffApiController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody StaffDTO.CreateRequest request) {
+    public ResponseEntity<?> create(@RequestBody StaffDTO.CreateRequest request) {
         try {
             staffService.createStaff(request);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("교직원 등록 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
@@ -71,13 +72,14 @@ public class AdminStaffApiController {
     }
 
     @PostMapping("/import-csv")
-    public ResponseEntity<String> importCsv(@RequestParam MultipartFile file) {
+    public ResponseEntity<List<String>> importCsv(@RequestParam MultipartFile file) {
         try {
-            staffService.importStaffsFromCsv(file);
-            return ResponseEntity.ok("등록되었습니다.");
+            List<String> errors = staffService.importStaffsFromCsv(file);
+            return ResponseEntity.ok(errors);
         } catch (Exception e) {
             log.error("교직원 CSV 가져오기 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of("CSV 처리 중 오류가 발생했습니다: " + e.getMessage()));
         }
     }
 

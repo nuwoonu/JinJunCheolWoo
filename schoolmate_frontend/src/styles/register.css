@@ -5,7 +5,7 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: #ffffff;
-  padding: 36px 48px;
+  padding: 20px 24px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box;
 }
@@ -28,8 +28,9 @@
 .register-body {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 25px;
 }
 
 .register-form {
@@ -38,10 +39,10 @@
 }
 
 .register-title {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 32px;
+  color: #333;
+  margin-bottom: 8px;
   text-align: center;
 }
 

@@ -7,7 +7,6 @@ import { useSchool } from '@/context/SchoolContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { ADMIN_ROUTES } from '@/constants/routes'
 import PageLoader from '@/components/PageLoader'
-import Footer from '@/components/layout/Footer'
 
 function Layout({ children, msg, error, requireSchool = true }: { children: ReactNode; msg?: string; error?: string; requireSchool?: boolean }) {
   const { isOpen, isCollapsed, closeSidebar } = useSidebar()
@@ -43,7 +42,7 @@ function Layout({ children, msg, error, requireSchool = true }: { children: Reac
       <AdminHeader />
       <div className={`body-overlay${isOpen ? ' show' : ''}`} onClick={closeSidebar} />
       <AdminSidebar />
-      <main className={`dashboard-main${isCollapsed ? ' active' : ''}`} style={{ paddingTop: '4.5rem' }}>
+      <main className={`dashboard-main${isCollapsed ? ' active' : ''}`}>
         <div className="dashboard-main-body">
           {msg && (
             <div
@@ -75,7 +74,6 @@ function Layout({ children, msg, error, requireSchool = true }: { children: Reac
           )}
           {children}
         </div>
-        <Footer />
       </main>
     </>
   )

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import api, { getRoleContexts, type RoleContext } from '@/api/auth'
 import { auth } from '@/shared/auth'
 import { useSchoolSearch, type SchoolSummary } from '@/hooks/useSchoolSearch'
+import MainFooter from '@/components/layout/MainFooter'
 
 // 이메일 가입: 학교 선택 후 /register로 이동 (state에 role+schoolId 전달)
 // SNS/Hub 가입: 학교 선택 후 POST /auth/select-role → /hub로 이동
@@ -74,6 +75,8 @@ export default function RegisterSchoolSelect() {
   }
 
   return (
+    <>
+    <div style={{ minHeight: '100dvh', background: '#ffffff' }}>
     <div className="register-container">
       {/* 왼쪽 상단 로고 */}
       <a href="/main" className="register-logo">
@@ -87,11 +90,31 @@ export default function RegisterSchoolSelect() {
             <a href="/main"><img src="/images/schoolmateLogo.png" alt="Schoolmate Logo" /></a>
           </div>
 
-          <div className="text-center mb-4">
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: '#333', marginBottom: 8 }}>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'none',
+              border: 'none',
+              color: '#666',
+              fontSize: 14,
+              cursor: 'pointer',
+              padding: '4px 0',
+              marginBottom: 16,
+            }}
+          >
+            <i className="fa-solid fa-arrow-left" />
+            이전으로
+          </button>
+
+          <div className="text-center" style={{ marginBottom: 70 }}>
+            <h2 className="register-title">
               {source === 'email' ? '학교 선택' : '소속 학교를 선택해 주세요'}
-            </h1>
-            <p style={{ color: '#666', fontSize: 14, margin: 0 }}>
+            </h2>
+            <p style={{ color: '#666', fontSize: 17, margin: 0 }}>
               {roleLabels[role]} 역할로 소속될 학교를 검색하여 선택해 주세요.
             </p>
           </div>
@@ -127,7 +150,7 @@ export default function RegisterSchoolSelect() {
                   className="btn w-100"
                   disabled={loading}
                   style={{
-                    background: 'linear-gradient(135deg, #25A194, #1a7a6e)',
+                    background: '#25A194',
                     color: '#fff',
                     border: 'none',
                     borderRadius: 8,
@@ -194,7 +217,7 @@ export default function RegisterSchoolSelect() {
                         onClick={() => handleSelect(school)}
                         disabled={submitting}
                         style={{
-                          background: 'linear-gradient(135deg, #25A194, #1a7a6e)',
+                          background: '#25A194',
                           color: '#fff',
                           border: 'none',
                           borderRadius: 8,
@@ -260,15 +283,11 @@ export default function RegisterSchoolSelect() {
             </div>
           )}
 
-          <button
-            type="button"
-            className="btn btn-link w-100 mt-3"
-            onClick={() => navigate(-1)}
-          >
-            ← 이전 단계로
-          </button>
         </div>
       </div>
     </div>
+    </div>
+    <MainFooter />
+    </>
   )
 }

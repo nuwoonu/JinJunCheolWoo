@@ -118,7 +118,7 @@ public class GrantPermissionChecker {
     }
 
     /** SCHOOL_ADMIN 이상 권한 보유 여부 (SUPER_ADMIN 포함) */
-    private boolean isSchoolAdmin() {
+    public boolean isSchoolAdmin() {
         return isSuperAdmin() || hasRoleInAnySchool(GrantedRole.SCHOOL_ADMIN);
     }
 
@@ -165,5 +165,10 @@ public class GrantPermissionChecker {
     /** 기자재 관리 (ASSET_MANAGER 또는 SCHOOL_ADMIN 이상) */
     public boolean canManageAssets() {
         return isSchoolAdmin() || hasRoleInAnySchool(GrantedRole.ASSET_MANAGER);
+    }
+
+    /** 기숙사 관리 (DORMITORY_MANAGER 또는 SCHOOL_ADMIN 이상) */
+    public boolean canManageDormitory() {
+        return isSchoolAdmin() || hasRoleInAnySchool(GrantedRole.DORMITORY_MANAGER);
     }
 }

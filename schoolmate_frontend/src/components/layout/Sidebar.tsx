@@ -123,8 +123,8 @@ export default function Sidebar() {
         >
           {!isCollapsed && (
             <a href="/main">
-              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="173" height="40" />
-              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="173" height="40" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="light-logo" width="160" height="37" />
+              <img src="/images/schoolmateLogo.png" alt="홈" className="dark-logo" width="160" height="37" />
               <img src="/images/schoolmateLogo.png" alt="홈" className="logo-icon" />
             </a>
           )}
@@ -247,12 +247,6 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
                   </Link>
                 </li>
-                {/* [cheol] 기숙사 */}
-                <li>
-                  <Link to="/student/dormitory">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
-                  </Link>
-                </li>
               </ul>
             </li>
           )}
@@ -301,12 +295,6 @@ export default function Sidebar() {
                 <li>
                   <Link to="/exam/schedule">
                     <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
-                  </Link>
-                </li>
-                {/* [cheol] 기숙사 */}
-                <li>
-                  <Link to="/student/dormitory">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
                 </li>
               </ul>
@@ -453,10 +441,10 @@ export default function Sidebar() {
                 <span>게시판</span>
               </a>
               <ul className="sidebar-submenu">
-                {/* [cheol] 학생 본인 학년으로 이동, TEACHER/ADMIN은 1학년 기본 */}
+                {/* [woo 03-27] 학급 게시판 */}
                 <li>
-                  <Link to={role === "STUDENT" ? `/board/grade/1` : "/board/grade/1"}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학년 게시판
+                  <Link to="/board/class-board">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 게시판
                   </Link>
                 </li>
                 {has("TEACHER", "ADMIN") && (
@@ -749,11 +737,6 @@ export default function Sidebar() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/board/grade/1">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 공지
-                  </Link>
-                </li>
-                <li>
                   <Link to="/school/gallery">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학교 갤러리
                   </Link>
@@ -787,6 +770,16 @@ export default function Sidebar() {
                   </Link>
                 </li>
               </ul>
+            </li>
+          )}
+
+          {/* [woo] 학급 앨범 - PARENT */}
+          {has("PARENT") && (
+            <li>
+              <Link to="/class/album">
+                <i className="ri-image-2-line" />
+                <span>학급 앨범</span>
+              </Link>
             </li>
           )}
         </ul>
