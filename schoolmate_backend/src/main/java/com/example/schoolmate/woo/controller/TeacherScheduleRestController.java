@@ -25,6 +25,7 @@ import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.soojin.entity.constant.DayOfWeek;
 import com.example.schoolmate.woo.dto.TeacherScheduleDTO;
 import com.example.schoolmate.common.service.TeacherScheduleService;
+import com.example.schoolmate.common.service.SubjectService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -42,6 +43,8 @@ public class TeacherScheduleRestController {
     private final TeacherScheduleService scheduleService;
     private final TeacherInfoRepository teacherInfoRepository;
     private final UserSocialAccountRepository socialAccountRepository;
+    private final SubjectService subjectService;
+    
 
     /**
      * 전체 일정 조회 (React 시간표 초기 로딩용)
