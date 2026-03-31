@@ -8,9 +8,13 @@ import java.util.Optional;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
+import com.example.schoolmate.cheol.entity.BankAccount;
+import com.example.schoolmate.cheol.entity.CareerAspiration;
 import com.example.schoolmate.cheol.entity.Dormitory;
 import com.example.schoolmate.cheol.entity.Grade;
+import com.example.schoolmate.cheol.entity.BookReport;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
+import com.example.schoolmate.cheol.entity.VolunteerActivity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
@@ -98,6 +102,23 @@ public class StudentInfo extends SchoolMemberInfo {
     // 의료기록
     @OneToMany(mappedBy = "studentInfo")
     private List<MedicalDetails> medicalDetails = new ArrayList<>();
+
+    // 진로희망
+    @OneToMany(mappedBy = "student")
+    private List<CareerAspiration> careerAspirations = new ArrayList<>();
+
+    // 납부 계좌 (학부모가 등록한 계좌)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bank_account_id", nullable = true)
+    private BankAccount bankAccount;
+
+    // 봉사활동
+    @OneToMany(mappedBy = "studentInfo")
+    private List<VolunteerActivity> volunteerActivities = new ArrayList<>();
+
+    // 독서록
+    @OneToMany(mappedBy = "studentInfo")
+    private List<BookReport> bookReports = new ArrayList<>();
 
     // 수상이력
     @OneToMany(mappedBy = "studentInfo")

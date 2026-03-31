@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.schoolmate.cheol.dto.DormitoryAssignDTO;
-import com.example.schoolmate.cheol.dto.DormitoryDTO;
+import com.example.schoolmate.cheol.dto.dormitorydto.DormitoryAssignDTO;
+import com.example.schoolmate.cheol.dto.dormitorydto.DormitoryDTO;
 import com.example.schoolmate.cheol.service.DormitoryService;
 
 import lombok.RequiredArgsConstructor;

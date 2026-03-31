@@ -1,7 +1,8 @@
 package com.example.schoolmate.cheol.entity;
 
+import java.time.LocalDate;
+
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.Year;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
@@ -23,13 +24,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "book_reports")
+@Table(name = "volunteer_activities")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "studentInfo")
-public class BookReport extends SchoolBaseEntity {
+public class VolunteerActivity extends SchoolBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,20 +40,35 @@ public class BookReport extends SchoolBaseEntity {
     @Column(nullable = false)
     private Year year; // 학년 (FIRST, SECOND, THIRD)
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Semester semester; // 학기 (FIRST, FALL)
+    private LocalDate startDate; // 일자 또는 기간 (시작일)
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String content; // 독서 감상문 내용
+    private LocalDate endDate; // 기간 종료일 (단일 일자면 null)
+
+    @Column(nullable = false, length = 200)
+    private String organizer; // 장소 또는 주관기관명
+
+    @Column(nullable = false, length = 500)
+    private String activityContent; // 활동내용
+
+    @Column(nullable = false)
+    private Double hours; // 시간 (해당 활동의 봉사 시간)
+
+    @Column(nullable = false)
+    private Double cumulativeHours; // 누계시간 (학년 기준 누적 봉사 시간)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_info_id", nullable = false)
+    @JoinColumn(name = "student_info_id")
     private StudentInfo studentInfo;
 
-    public void update(Year year, Semester semester, String content) {
+    public void update(Year year, LocalDate startDate, LocalDate endDate, String organizer,
+            String activityContent, Double hours, Double cumulativeHours) {
         this.year = year;
-        this.semester = semester;
-        this.content = content;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.organizer = organizer;
+        this.activityContent = activityContent;
+        this.hours = hours;
+        this.cumulativeHours = cumulativeHours;
     }
 }

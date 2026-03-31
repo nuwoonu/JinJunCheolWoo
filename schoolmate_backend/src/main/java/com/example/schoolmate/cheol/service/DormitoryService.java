@@ -10,8 +10,8 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.cheol.dto.DormitoryAssignDTO;
-import com.example.schoolmate.cheol.dto.DormitoryDTO;
+import com.example.schoolmate.cheol.dto.dormitorydto.DormitoryAssignDTO;
+import com.example.schoolmate.cheol.dto.dormitorydto.DormitoryDTO;
 import com.example.schoolmate.cheol.entity.Dormitory;
 import com.example.schoolmate.cheol.repository.DormitoryRepository;
 import com.example.schoolmate.common.entity.info.StudentInfo;
@@ -277,7 +277,8 @@ public class DormitoryService {
      * cheol: 학생 이름으로 해당 학생이 배정된 건물 목록 검색
      */
     public List<String> getBuildingsByStudentName(String name) {
-        if (name == null || name.trim().isEmpty()) return List.of();
+        if (name == null || name.trim().isEmpty())
+            return List.of();
         return dormitoryRepository.findBuildingsByStudentName(name.trim());
     }
 

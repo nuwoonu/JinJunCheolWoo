@@ -7,13 +7,17 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
-import com.example.schoolmate.cheol.entity.Dormitory;
+import com.example.schoolmate.cheol.entity.BankAccount;
+import com.example.schoolmate.cheol.entity.CareerAspiration;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
+import com.example.schoolmate.cheol.entity.VolunteerActivity;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.AchievementsGrade;
 import com.example.schoolmate.common.entity.user.constant.Gender;
+import com.example.schoolmate.common.entity.user.constant.Semester;
+import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -87,6 +91,17 @@ public class StudentResponseDTO {
     @Builder.Default
     private List<AwardInfo> awards = new ArrayList<>();
 
+    // 진로희망 리스트
+    @Builder.Default
+    private List<CareerAspirationInfo> careerAspirations = new ArrayList<>();
+
+    // 납부 계좌 정보
+    private BankAccountInfo bankAccount;
+
+    // 봉사활동 리스트
+    @Builder.Default
+    private List<VolunteerActivityInfo> volunteerActivities = new ArrayList<>();
+
     // 학부모/보호자 정보 내부 클래스
     @Getter
     @Setter
@@ -137,6 +152,90 @@ public class StudentResponseDTO {
                     .achievementsGrade(award.getAchievementsGrade())
                     .day(award.getDay())
                     .organization(award.getAwardingOrganization())
+                    .build();
+        }
+    }
+
+    // 진로희망 정보 내부 클래스
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CareerAspirationInfo {
+        private Long id;
+        private Year year;
+        private Semester semester;
+        private String specialtyOrInterest;
+        private String studentDesiredJob;
+        private String parentDesiredJob;
+        private String preparationPlan;
+        private String notes;
+
+        public static CareerAspirationInfo from(CareerAspiration ca) {
+            return CareerAspirationInfo.builder()
+                    .id(ca.getId())
+                    .year(ca.getYear())
+                    .semester(ca.getSemester())
+                    .specialtyOrInterest(ca.getSpecialtyOrInterest())
+                    .studentDesiredJob(ca.getStudentDesiredJob())
+                    .parentDesiredJob(ca.getParentDesiredJob())
+                    .preparationPlan(ca.getPreparationPlan())
+                    .notes(ca.getNotes())
+                    .build();
+        }
+    }
+
+    // 납부 계좌 정보 내부 클래스
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BankAccountInfo {
+        private Long id;
+        private String bankName;
+        private String accountNumber;
+        private String accountHolderName;
+        private String notes;
+
+        public static BankAccountInfo from(BankAccount ba) {
+            return BankAccountInfo.builder()
+                    .id(ba.getId())
+                    .bankName(ba.getBankName())
+                    .accountNumber(ba.getAccountNumber())
+                    .accountHolderName(ba.getAccountHolderName())
+                    .notes(ba.getNotes())
+                    .build();
+        }
+    }
+
+    // 봉사활동 정보 내부 클래스
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VolunteerActivityInfo {
+        private Long id;
+        private Year year;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private String organizer;
+        private String activityContent;
+        private Double hours;
+        private Double cumulativeHours;
+
+        public static VolunteerActivityInfo from(VolunteerActivity va) {
+            return VolunteerActivityInfo.builder()
+                    .id(va.getId())
+                    .year(va.getYear())
+                    .startDate(va.getStartDate())
+                    .endDate(va.getEndDate())
+                    .organizer(va.getOrganizer())
+                    .activityContent(va.getActivityContent())
+                    .hours(va.getHours())
+                    .cumulativeHours(va.getCumulativeHours())
                     .build();
         }
     }
@@ -204,6 +303,31 @@ public class StudentResponseDTO {
                     .map(ParentGuardianInfo::from)
                     .toList();
             builder.guardians(guardianList);
+        }
+
+        // 진로희망 매핑 (학년/학기 오름차순 정렬)
+        if (student.getCareerAspirations() != null && !student.getCareerAspirations().isEmpty()) {
+            List<CareerAspirationInfo> caList = student.getCareerAspirations().stream()
+                    .sorted(Comparator.comparing(CareerAspiration::getYear)
+                            .thenComparing(CareerAspiration::getSemester))
+                    .map(CareerAspirationInfo::from)
+                    .toList();
+            builder.careerAspirations(caList);
+        }
+
+        // 납부 계좌 매핑
+        if (student.getBankAccount() != null) {
+            builder.bankAccount(BankAccountInfo.from(student.getBankAccount()));
+        }
+
+        // 봉사활동 매핑 (학년 → 시작일 오름차순 정렬)
+        if (student.getVolunteerActivities() != null && !student.getVolunteerActivities().isEmpty()) {
+            List<VolunteerActivityInfo> vaList = student.getVolunteerActivities().stream()
+                    .sorted(Comparator.comparing(VolunteerActivity::getYear)
+                            .thenComparing(VolunteerActivity::getStartDate))
+                    .map(VolunteerActivityInfo::from)
+                    .toList();
+            builder.volunteerActivities(vaList);
         }
 
         return builder.build();

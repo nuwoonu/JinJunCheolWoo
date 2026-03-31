@@ -1,0 +1,104 @@
+package com.example.schoolmate.cheol.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.schoolmate.cheol.dto.bookreportdto.BookReportRequestDTO;
+import com.example.schoolmate.cheol.dto.bookreportdto.BookReportResponseDTO;
+import com.example.schoolmate.cheol.entity.BookReport;
+import com.example.schoolmate.cheol.repository.BookReportRepository;
+import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.user.constant.Semester;
+import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+@Log4j2
+public class BookReportService {
+
+    private final BookReportRepository bookReportRepository;
+    private final StudentInfoRepository studentInfoRepository;
+
+    // 독서록 작성
+    @Transactional
+    public BookReportResponseDTO create(Long studentInfoId, BookReportRequestDTO dto) {
+        log.info("독서록 작성 - studentInfoId: {}", studentInfoId);
+
+        StudentInfo student = studentInfoRepository.findById(studentInfoId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다. ID: " + studentInfoId));
+
+        BookReport bookReport = BookReport.builder()
+                .year(dto.getYear())
+                .semester(dto.getSemester())
+                .content(dto.getContent())
+                .studentInfo(student)
+                .build();
+        bookReport.setSchool(student.getSchool());
+
+        BookReport saved = bookReportRepository.save(bookReport);
+        log.info("독서록 작성 완료 - id: {}", saved.getId());
+        return BookReportResponseDTO.from(saved);
+    }
+
+    // 독서록 수정 (본인만 가능)
+    @Transactional
+    public BookReportResponseDTO update(Long studentInfoId, Long bookReportId, BookReportRequestDTO dto) {
+        log.info("독서록 수정 - studentInfoId: {}, bookReportId: {}", studentInfoId, bookReportId);
+
+        BookReport bookReport = bookReportRepository.findById(bookReportId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 독서록입니다. ID: " + bookReportId));
+
+        if (!bookReport.getStudentInfo().getId().equals(studentInfoId)) {
+            throw new IllegalArgumentException("본인의 독서록만 수정할 수 있습니다.");
+        }
+
+        bookReport.update(dto.getYear(), dto.getSemester(), dto.getContent());
+        log.info("독서록 수정 완료 - id: {}", bookReportId);
+        return BookReportResponseDTO.from(bookReport);
+    }
+
+    // 독서록 삭제 (본인만 가능)
+    @Transactional
+    public void delete(Long studentInfoId, Long bookReportId) {
+        log.info("독서록 삭제 - studentInfoId: {}, bookReportId: {}", studentInfoId, bookReportId);
+
+        BookReport bookReport = bookReportRepository.findById(bookReportId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 독서록입니다. ID: " + bookReportId));
+
+        if (!bookReport.getStudentInfo().getId().equals(studentInfoId)) {
+            throw new IllegalArgumentException("본인의 독서록만 삭제할 수 있습니다.");
+        }
+
+        bookReportRepository.delete(bookReport);
+        log.info("독서록 삭제 완료 - id: {}", bookReportId);
+    }
+
+    // 학생별 독서록 전체 조회
+    public List<BookReportResponseDTO> getByStudent(Long studentInfoId) {
+        log.info("독서록 목록 조회 - studentInfoId: {}", studentInfoId);
+        return bookReportRepository.findByStudentInfoIdOrderByCreateDateDesc(studentInfoId)
+                .stream().map(BookReportResponseDTO::from).toList();
+    }
+
+    // 학년 + 학기별 독서록 조회
+    public List<BookReportResponseDTO> getByStudentAndYearAndSemester(
+            Long studentInfoId, Year year, Semester semester) {
+        log.info("독서록 목록 조회 - studentInfoId: {}, year: {}, semester: {}", studentInfoId, year, semester);
+        return bookReportRepository.findByStudentInfoIdAndYearAndSemester(studentInfoId, year, semester)
+                .stream().map(BookReportResponseDTO::from).toList();
+    }
+
+    // 단건 조회
+    public BookReportResponseDTO getOne(Long bookReportId) {
+        BookReport bookReport = bookReportRepository.findById(bookReportId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 독서록입니다. ID: " + bookReportId));
+        return BookReportResponseDTO.from(bookReport);
+    }
+}
