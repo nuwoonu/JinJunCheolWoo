@@ -80,6 +80,15 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
+    // [soojin] 담임 반 학급 기간별 출결 조회 (월별 출석률 계산용)
+    @Query("SELECT sa FROM StudentAttendance sa " +
+            "WHERE sa.studentInfo.id IN :studentInfoIds " +
+            "AND sa.attendanceDate BETWEEN :startDate AND :endDate")
+    List<StudentAttendance> findByStudentInfoIdsAndDateRange(
+            @Param("studentInfoIds") Set<Long> studentInfoIds,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
     // [woo] 여러 학생의 특정 날짜 출결 조회 (담임 반 학생 출결 - school 무관)
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +

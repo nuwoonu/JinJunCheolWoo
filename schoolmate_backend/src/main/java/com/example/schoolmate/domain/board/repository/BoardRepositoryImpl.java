@@ -112,7 +112,8 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     }
 
     @Override
-    public Page<Board> findParentByClassroom(BoardType type, Long classroomId, int grade, Pageable pageable) {
+    // [soojin] keyword 파라미터 추가 - 가정통신문 학부모 뷰 제목 검색 지원
+    public Page<Board> findParentByClassroom(BoardType type, Long classroomId, int grade, String keyword, Pageable pageable) {
         QBoard board = QBoard.board;
 
         // 해당 학급 게시물 OR 해당 학년 전체 게시물 OR 전체 공지
@@ -123,7 +124,8 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
         BooleanExpression where = board.boardType.eq(type)
                 .and(board.isDeleted.isFalse())
                 .and(schoolFilter(board))
-                .and(targetFilter);
+                .and(targetFilter)
+                .and(keywordFilter(board, keyword));
 
         JPAQuery<Board> contentQuery = query.selectFrom(board)
                 .where(where)

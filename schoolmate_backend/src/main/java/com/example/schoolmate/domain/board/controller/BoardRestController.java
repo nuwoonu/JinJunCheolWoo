@@ -212,18 +212,21 @@ public class BoardRestController {
     /**
      * [woo] 학부모 공지(가정통신문) 목록 - 역할별 필터링
      * 교사: 전체 조회 / 학부모: 선택된 자녀 학급 기준 필터링
-     * GET /api/board/parent-notice?page=0&size=10&studentUserUid=123
+     * GET /api/board/parent-notice?page=0&size=10&studentUserUid=123&keyword=검색어
      */
     @GetMapping("/parent-notice")
     public ResponseEntity<Map<String, Object>> getParentNotices(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long studentUserUid,
+            // [soojin] keyword 파라미터 추가 - 가정통신문 제목 검색 지원
+            @RequestParam(required = false) String keyword,
             @AuthenticationPrincipal AuthUserDTO authUser) {
 
         Page<BoardDTO.Response> result = boardService.getParentNoticesFiltered(
                 authUser != null ? authUser.getCustomUserDTO() : null,
                 studentUserUid,
+                keyword,
                 PageRequest.of(page, size));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),

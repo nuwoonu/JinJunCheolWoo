@@ -1,47 +1,48 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import api from '@/api/auth'
-import DashboardLayout from '@/components/layout/DashboardLayout'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "@/api/auth";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 // [woo] /teacher/myclass - 담당 학급 현황 페이지 (Thymeleaf teacher/myclass/index.html 마이그레이션)
 
 interface Student {
-  studentId: number
-  name: string
-  studentNumber: number
-  phone?: string
-  email?: string
+  studentId: number;
+  name: string;
+  studentNumber: number;
+  phone?: string;
+  email?: string;
 }
 
 interface ClassInfo {
-  classroomId: number
-  year: number
-  grade: number
-  classNum: number
-  className: string
-  totalStudents: number
-  homeroomTeacherName?: string
-  students: Student[]
+  classroomId: number;
+  year: number;
+  grade: number;
+  classNum: number;
+  className: string;
+  totalStudents: number;
+  homeroomTeacherName?: string;
+  students: Student[];
 }
 
 export default function TeacherMyClass() {
-  const [classInfo, setClassInfo] = useState<ClassInfo | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/teacher/myclass')
-      .then(res => {
-        const data = res.data
+    api
+      .get("/teacher/myclass")
+      .then((res) => {
+        const data = res.data;
         if (data.hasClassroom === false) {
-          setErrorMessage(data.message ?? '담당 학급이 없습니다.')
+          setErrorMessage(data.message ?? "담당 학급이 없습니다.");
         } else {
-          setClassInfo(data)
+          setClassInfo(data);
         }
       })
-      .catch(() => setErrorMessage('학급 정보를 불러오지 못했습니다.'))
-      .finally(() => setLoading(false))
-  }, [])
+      .catch(() => setErrorMessage("학급 정보를 불러오지 못했습니다."))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <DashboardLayout>
@@ -51,29 +52,19 @@ export default function TeacherMyClass() {
           <h6 className="fw-semibold mb-0">나의 학급</h6>
           <p className="text-neutral-600 mt-4 mb-0">학급 현황</p>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
-              홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">나의 학급</li>
-          <li>-</li>
-          <li className="fw-medium">학급 현황</li>
-        </ul>
       </div>
 
-      {loading && (
-        <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
-      )}
+      {loading && <div className="text-center py-48 text-secondary-light">불러오는 중...</div>}
 
       {/* 학급 없음 */}
       {!loading && errorMessage && (
         <div className="card">
           <div className="card-body text-center py-48">
-            <iconify-icon icon="mdi:account-group-outline" className="text-neutral-400 mb-16" style={{ fontSize: 64 }} />
+            <iconify-icon
+              icon="mdi:account-group-outline"
+              className="text-neutral-400 mb-16"
+              style={{ fontSize: 64 }}
+            />
             <h5 className="text-neutral-600 mb-8">담당 학급이 없습니다</h5>
             <p className="text-neutral-500 mb-0">{errorMessage}</p>
           </div>
@@ -107,7 +98,7 @@ export default function TeacherMyClass() {
                   </div>
                   <div className="d-flex justify-content-between">
                     <span className="text-secondary-light">학급명</span>
-                    <span className="fw-semibold">{classInfo.className ?? '-'}</span>
+                    <span className="fw-semibold">{classInfo.className ?? "-"}</span>
                   </div>
                 </div>
               </div>
@@ -130,7 +121,7 @@ export default function TeacherMyClass() {
                 <div className="d-flex flex-column gap-12">
                   <div className="d-flex justify-content-between">
                     <span className="text-secondary-light">이름</span>
-                    <span className="fw-semibold">{classInfo.homeroomTeacherName ?? '-'}</span>
+                    <span className="fw-semibold">{classInfo.homeroomTeacherName ?? "-"}</span>
                   </div>
                 </div>
               </div>
@@ -164,55 +155,203 @@ export default function TeacherMyClass() {
             </div>
           </div>
 
-          {/* 학생 목록 미리보기 */}
+          {/* [soojin] 학생 목록 미리보기 - TeacherList 동일 패턴 */}
           <div className="col-12">
-            <div className="card radius-12">
-              <div className="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
-                <h6 className="mb-0">학생 목록</h6>
-                <Link to="/teacher/myclass/students" className="btn btn-sm btn-outline-primary-600">
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+              {/* 카드 헤더 */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "12px 24px",
+                  borderBottom: "1px solid #e5e7eb",
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "#111827",
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 8,
+                  }}
+                >
+                  학생 목록
+                  <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>
+                    전체 {classInfo.totalStudents}명
+                  </span>
+                </span>
+                <Link
+                  to="/teacher/myclass/students"
+                  style={{
+                    padding: "5px 12px",
+                    background: "#fff",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    color: "#374151",
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
                   전체 보기
-                  <iconify-icon icon="mdi:arrow-right" className="ms-4" />
+                  <i className="ri-arrow-right-s-line" style={{ fontSize: 14 }} />
                 </Link>
               </div>
-              <div className="card-body p-0">
-                <div className="table-responsive">
-                  <table className="table bordered-table mb-0">
-                    <thead>
+              {/* 테이블 */}
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                  <colgroup>
+                    <col style={{ width: 80 }} />
+                    <col style={{ width: 120 }} />
+                    <col style={{ width: 150 }} />
+                    <col />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th
+                        style={{
+                          padding: "10px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#6b7280",
+                          background: "#f9fafb",
+                          borderBottom: "1px solid #e5e7eb",
+                          whiteSpace: "nowrap",
+                          textAlign: "left",
+                        }}
+                      >
+                        번호
+                      </th>
+                      <th
+                        style={{
+                          padding: "10px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#6b7280",
+                          background: "#f9fafb",
+                          borderBottom: "1px solid #e5e7eb",
+                          whiteSpace: "nowrap",
+                          textAlign: "left",
+                        }}
+                      >
+                        이름
+                      </th>
+                      <th
+                        style={{
+                          padding: "10px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#6b7280",
+                          background: "#f9fafb",
+                          borderBottom: "1px solid #e5e7eb",
+                          whiteSpace: "nowrap",
+                          textAlign: "left",
+                        }}
+                      >
+                        연락처
+                      </th>
+                      <th
+                        style={{
+                          padding: "10px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#6b7280",
+                          background: "#f9fafb",
+                          borderBottom: "1px solid #e5e7eb",
+                          whiteSpace: "nowrap",
+                          textAlign: "left",
+                        }}
+                      >
+                        이메일
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {classInfo.students.length === 0 ? (
                       <tr>
-                        <th scope="col">번호</th>
-                        <th scope="col">이름</th>
-                        <th scope="col">연락처</th>
-                        <th scope="col">이메일</th>
+                        <td
+                          colSpan={4}
+                          style={{ padding: "32px 16px", textAlign: "center", fontSize: 13, color: "#9ca3af" }}
+                        >
+                          등록된 학생이 없습니다.
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {classInfo.students.length === 0 ? (
-                        <tr><td colSpan={4} className="text-center py-24 text-secondary-light">등록된 학생이 없습니다.</td></tr>
-                      ) : (
-                        classInfo.students.slice(0, 5).map(s => (
-                          <tr key={s.studentId}>
-                            <td>{s.studentNumber}</td>
-                            <td>{s.name}</td>
-                            <td>{s.phone ?? '-'}</td>
-                            <td>{s.email ?? '-'}</td>
-                          </tr>
-                        ))
-                      )}
-                      {classInfo.totalStudents > 5 && (
-                        <tr>
-                          <td colSpan={4} className="text-center py-8 text-secondary-light">
-                            외 {classInfo.totalStudents - 5}명...
+                    ) : (
+                      classInfo.students.slice(0, 5).map((s) => (
+                        <tr key={s.studentId}>
+                          <td
+                            style={{
+                              padding: "12px 16px",
+                              fontSize: 13,
+                              color: "#6b7280",
+                              borderBottom: "1px solid #f3f4f6",
+                              verticalAlign: "middle",
+                            }}
+                          >
+                            {s.studentNumber}
+                          </td>
+                          <td
+                            style={{
+                              padding: "12px 16px",
+                              fontSize: 13,
+                              color: "#374151",
+                              fontWeight: 600,
+                              borderBottom: "1px solid #f3f4f6",
+                              verticalAlign: "middle",
+                            }}
+                          >
+                            {s.name}
+                          </td>
+                          <td
+                            style={{
+                              padding: "12px 16px",
+                              fontSize: 13,
+                              color: "#6b7280",
+                              borderBottom: "1px solid #f3f4f6",
+                              verticalAlign: "middle",
+                            }}
+                          >
+                            {s.phone ?? "-"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "12px 16px",
+                              fontSize: 13,
+                              color: "#6b7280",
+                              borderBottom: "1px solid #f3f4f6",
+                              verticalAlign: "middle",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {s.email ?? "-"}
                           </td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                      ))
+                    )}
+                    {classInfo.totalStudents > 5 && (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, color: "#9ca3af" }}
+                        >
+                          외 {classInfo.totalStudents - 5}명 더 보기 →
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </div>
       )}
     </DashboardLayout>
-  )
+  );
 }

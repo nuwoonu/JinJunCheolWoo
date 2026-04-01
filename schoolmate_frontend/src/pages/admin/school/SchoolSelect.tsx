@@ -43,9 +43,6 @@ export default function SchoolSelect() {
 
   const [syncRunning, setSyncRunning] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // [soojin] 화면 비율에 맞게 콘텐츠를 동적으로 축소하기 위한 ref와 scale state
-  const contentRef = useRef<HTMLElement>(null);
-  const [scale, setScale] = useState(1);
 
   const checkSyncStatus = () => {
     admin
@@ -61,23 +58,6 @@ export default function SchoolSelect() {
       if (pollRef.current) clearInterval(pollRef.current);
     };
   }, []);
-
-  // [soojin] viewport 높이 기준으로 콘텐츠 scale 동적 계산 (topbar 72px 제외)
-  useEffect(() => {
-    const TOPBAR_H = 72;
-    const update = () => {
-      if (!contentRef.current) return;
-      const availH = window.innerHeight - TOPBAR_H;
-      const contentH = contentRef.current.scrollHeight;
-      setScale(Math.min(1, availH / contentH));
-    };
-    const timer = setTimeout(update, 0);
-    window.addEventListener("resize", update);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("resize", update);
-    };
-  }, [searched, schools.length]);
 
   const handleSelect = (school: SchoolSummary) => {
     const selected: SelectedSchool = {
@@ -109,22 +89,20 @@ export default function SchoolSelect() {
   };
 
   return (
-    <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100dvh" }}>
       {/* 표준 관리자 상단 바 */}
       {/* [soojin] 사이드바 없는 페이지이므로 좌측 상단 로고 표시 */}
       <AdminTopBar position="sticky" sectionBadge="학교 선택" showLogo />
 
       {/* 본문 */}
-      <div style={{ flex: 1, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {/* [soojin] scale 제거 — 검색 결과 표시 시 화면이 축소되는 문제 수정 */}
+      <div style={{ display: "flex", justifyContent: "center" }}>
         <main
-          ref={contentRef}
           style={{
             width: "100%",
             maxWidth: 820,
             padding: "40px 24px",
             boxSizing: "border-box",
-            transform: `scale(${scale})`,
-            transformOrigin: "center center",
           }}
         >
           {/* 타이틀 */}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 
@@ -32,7 +32,7 @@ const EMPTY_FORM = {
 
 const th: React.CSSProperties = {
   padding: "12px 16px",
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: 600,
   color: "#6b7280",
   background: "#f9fafb",
@@ -43,7 +43,7 @@ const th: React.CSSProperties = {
 
 const td: React.CSSProperties = {
   padding: "14px 16px",
-  fontSize: 14,
+  fontSize: 13,
   color: "#374151",
   borderBottom: "1px solid #f3f4f6",
   verticalAlign: "middle",
@@ -58,11 +58,25 @@ const statusStyle = (v: string): React.CSSProperties => {
 
 export default function Rooms() {
   const [facilities, setFacilities] = useState<any[]>([]);
+  // [soojin] 전체 건수 표시용 - 초기 로드 시 한 번만 세팅
+  const [totalAll, setTotalAll] = useState<number | null>(null);
+  const isInitialLoad = useRef(true);
+  // [soojin] 시설 검색 - 클라이언트 사이드 필터링
+  const [roomInput, setRoomInput] = useState("");
+  const [roomKeyword, setRoomKeyword] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<any>({ ...EMPTY_FORM });
 
   const load = () =>
-    admin.get("/resources/facilities/rooms").then((r) => setFacilities(r.data.facilities ?? []));
+    admin.get("/resources/facilities/rooms").then((r) => {
+      const data = r.data.facilities ?? [];
+      setFacilities(data);
+      // [soojin] 최초 로드 시에만 totalAll 세팅
+      if (isInitialLoad.current) {
+        setTotalAll(data.length);
+        isInitialLoad.current = false;
+      }
+    });
 
   useEffect(() => { load(); }, []);
 
@@ -98,17 +112,40 @@ export default function Rooms() {
       await admin.post("/resources/facilities/rooms", form);
     }
     setShowModal(false);
+    // [soojin] 등록/수정 후 totalAll도 갱신
+    isInitialLoad.current = true;
     load();
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("이 시설을 삭제하시겠습니까?")) return;
     await admin.delete(`/resources/facilities/rooms/${id}`);
+    // [soojin] 삭제 후 totalAll도 갱신
+    isInitialLoad.current = true;
     load();
   };
 
   const typeLabel = (v: string) => FACILITY_TYPES.find((t) => t.value === v)?.label ?? v;
   const statusLabel = (v: string) => FACILITY_STATUSES.find((s) => s.value === v)?.label ?? v;
+
+  // [soojin] 시설 검색 - 이름/위치/편의시설 기준 클라이언트 사이드 필터링
+  const filteredFacilities = roomKeyword
+    ? facilities.filter((r) =>
+        r.name?.toLowerCase().includes(roomKeyword.toLowerCase()) ||
+        r.location?.toLowerCase().includes(roomKeyword.toLowerCase()) ||
+        r.amenities?.toLowerCase().includes(roomKeyword.toLowerCase())
+      )
+    : facilities;
+
+  const handleRoomSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRoomKeyword(roomInput);
+  };
+
+  const handleRoomReset = () => {
+    setRoomInput("");
+    setRoomKeyword("");
+  };
 
   return (
     <AdminLayout>
@@ -167,66 +204,111 @@ export default function Rooms() {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>시설 관리</h5>
+      {/* [soojin] 테이블이 화면 높이를 꽉 채우도록 flex column 컨테이너 */}
+      <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 4.5rem - 48px)" }}>
+        {/* [soojin] 제목 + 전체 건수 인라인 표시 */}
+        <div style={{ marginBottom: 16, flexShrink: 0 }}>
+          <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4, display: "flex", alignItems: "baseline", gap: 8 }}>
+            시설 목록
+            <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalAll ?? 0}개</span>
+          </h6>
           <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>강의실 및 특별실 등 학교 시설을 관리합니다.</p>
         </div>
-        <button onClick={openCreate} style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}>
-          + 시설 등록
-        </button>
-      </div>
 
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-          <colgroup>
-            <col />
-            <col style={{ width: 160 }} />
-            <col style={{ width: 90 }} />
-            <col style={{ width: 120 }} />
-            <col />
-            <col style={{ width: 110 }} />
-            <col style={{ width: 130 }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th style={th}>시설명</th>
-              <th style={th}>유형</th>
-              <th style={{ ...th, textAlign: "center" }}>수용 인원</th>
-              <th style={th}>위치</th>
-              <th style={th}>편의시설</th>
-              <th style={{ ...th, textAlign: "center" }}>상태</th>
-              <th style={{ ...th, textAlign: "center" }}>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {facilities.map((r: any) => (
-              <tr key={r.id}>
-                <td style={{ ...td, fontWeight: 600 }}>{r.name}</td>
-                <td style={{ ...td, color: "#6b7280", fontSize: 13 }}>{typeLabel(r.type)}</td>
-                <td style={{ ...td, textAlign: "center", color: "#6b7280" }}>{r.capacity}명</td>
-                <td style={{ ...td, color: "#6b7280" }}>{r.location}</td>
-                <td style={{ ...td, color: "#9ca3af", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis" }}>{r.amenities}</td>
-                <td style={{ ...td, textAlign: "center" }}>
-                  <span style={statusStyle(r.status)}>{statusLabel(r.status)}</span>
-                </td>
-                <td style={{ ...td, textAlign: "center" }}>
-                  <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                    <button onClick={() => openEdit(r)} style={{ padding: "4px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#25A194", cursor: "pointer" }}>수정</button>
-                    <button onClick={() => handleDelete(r.id)} style={{ padding: "4px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#ef4444", cursor: "pointer" }}>삭제</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {facilities.length === 0 && (
-              <tr>
-                <td colSpan={7} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "40px 0", whiteSpace: "normal" }}>
-                  등록된 시설이 없습니다.
-                </td>
-              </tr>
+        {/* [soojin] 컨트롤 바: 검색(좌) + 버튼(우) */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
+          <form style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }} onSubmit={handleRoomSearch}>
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <i className="bi bi-search" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
+              <input
+                style={{ padding: "5px 8px 5px 28px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, minWidth: 200, background: "#fff" }}
+                placeholder="시설명, 위치 검색"
+                value={roomInput}
+                onChange={(e) => setRoomInput(e.target.value)}
+              />
+            </div>
+            <button
+              type="submit"
+              style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              검색
+            </button>
+            <button
+              type="button"
+              onClick={handleRoomReset}
+              style={{ padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, cursor: "pointer", color: "#374151", whiteSpace: "nowrap" }}
+            >
+              초기화
+            </button>
+            {roomKeyword && (
+              <span style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
+                <span style={{ fontWeight: 600, color: "#111827" }}>{filteredFacilities.length}개</span> / 전체 {totalAll ?? 0}개
+              </span>
             )}
-          </tbody>
-        </table>
+          </form>
+          <button
+            onClick={openCreate}
+            style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
+          >
+            + 시설 등록
+          </button>
+        </div>
+
+        {/* [soojin] 카드: flex:1로 남은 공간 채우기 */}
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+          {/* [soojin] 스크롤 div: 내부에서만 스크롤 */}
+          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+              <colgroup>
+                <col />
+                <col style={{ width: 160 }} />
+                <col style={{ width: 90 }} />
+                <col style={{ width: 120 }} />
+                <col />
+                <col style={{ width: 110 }} />
+                <col style={{ width: 130 }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th style={th}>시설명</th>
+                  <th style={th}>유형</th>
+                  <th style={{ ...th, textAlign: "center" }}>수용 인원</th>
+                  <th style={th}>위치</th>
+                  <th style={th}>편의시설</th>
+                  <th style={{ ...th, textAlign: "center" }}>상태</th>
+                  <th style={{ ...th, textAlign: "center" }}>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredFacilities.map((r: any) => (
+                  <tr key={r.id}>
+                    <td style={{ ...td, fontWeight: 600 }}>{r.name}</td>
+                    <td style={{ ...td, color: "#6b7280", fontSize: 13 }}>{typeLabel(r.type)}</td>
+                    <td style={{ ...td, textAlign: "center", color: "#6b7280" }}>{r.capacity}명</td>
+                    <td style={{ ...td, color: "#6b7280" }}>{r.location}</td>
+                    <td style={{ ...td, color: "#9ca3af", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis" }}>{r.amenities}</td>
+                    <td style={{ ...td, textAlign: "center" }}>
+                      <span style={statusStyle(r.status)}>{statusLabel(r.status)}</span>
+                    </td>
+                    <td style={{ ...td, textAlign: "center" }}>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                        <button onClick={() => openEdit(r)} style={{ padding: "4px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#25A194", cursor: "pointer" }}>수정</button>
+                        <button onClick={() => handleDelete(r.id)} style={{ padding: "4px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#ef4444", cursor: "pointer" }}>삭제</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredFacilities.length === 0 && (
+                  <tr>
+                    <td colSpan={7} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "48px 16px", whiteSpace: "normal" }}>
+                      {roomKeyword ? "검색 결과가 없습니다." : "등록된 시설이 없습니다."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

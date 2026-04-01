@@ -23,7 +23,8 @@ public interface BoardRepositoryCustom {
     Page<Board> findParentByGrade(BoardType type, int grade, Pageable pageable);
 
     /** 학부모 게시판 - 학급별 (해당 학급 + 해당 학년 전체 + 전체 공지 포함) */
-    Page<Board> findParentByClassroom(BoardType type, Long classroomId, int grade, Pageable pageable);
+    // [soojin] keyword 검색 지원 추가 (가정통신문 학부모 뷰 검색 기능)
+    Page<Board> findParentByClassroom(BoardType type, Long classroomId, int grade, String keyword, Pageable pageable);
 
     /** 최근 게시물 조회 (대시보드용) */
     List<Board> findRecentByType(BoardType type, int limit);

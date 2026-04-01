@@ -333,6 +333,48 @@ public class AttendanceService {
         return attendanceRepository.countDistinctDatesByStudentInfoIds(studentIds, startDate, endDate);
     }
 
+    // ========== [soojin] 담임 반 월별 출석률 ==========
+
+    /**
+     * [soojin] 담임 반의 해당 월 전체 출석률 계산
+     * NONE(미처리) 제외, 처리된 기록 중 PRESENT 비율
+     */
+    public Map<String, Object> getMonthlyAttendanceStats(Long teacherUid, int year, int month) {
+        List<StudentInfo> myStudents = getMyClassStudents(teacherUid, year);
+        if (myStudents.isEmpty()) return Map.of("rate", 0, "presentCount", 0L, "totalCount", 0L);
+
+        Set<Long> studentIds = myStudents.stream()
+                .map(StudentInfo::getId)
+                .collect(Collectors.toSet());
+
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        if (endDate.isAfter(LocalDate.now())) endDate = LocalDate.now();
+
+        List<StudentAttendance> records = attendanceRepository
+                .findByStudentInfoIdsAndDateRange(studentIds, startDate, endDate);
+
+        // [soojin] status는 nullable=false라 NONE 없음 → 전체 레코드가 처리된 기록
+        long total = records.size();
+        long present  = records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
+        long late     = records.stream().filter(r -> r.getStatus() == AttendanceStatus.LATE).count();
+        long earlyLeave = records.stream().filter(r -> r.getStatus() == AttendanceStatus.EARLY_LEAVE).count();
+        long absent   = records.stream().filter(r -> r.getStatus() == AttendanceStatus.ABSENT).count();
+        long sick     = records.stream().filter(r -> r.getStatus() == AttendanceStatus.SICK).count();
+        int rate = total > 0 ? (int) Math.round(present * 100.0 / total) : 0;
+
+        // [soojin] 각 상태별 카운트 추가 반환
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("rate", rate);
+        result.put("presentCount", present);
+        result.put("lateCount", late);
+        result.put("earlyLeaveCount", earlyLeave);
+        result.put("absentCount", absent);
+        result.put("sickCount", sick);
+        result.put("totalCount", total);
+        return result;
+    }
+
     // ========== [woo] 학생 본인 출결 요약 ==========
 
     /**
