@@ -6,7 +6,7 @@ const EMPTY = { id: null as number | null, originCode: "", code: "", name: "" };
 
 const th: React.CSSProperties = {
   padding: "12px 16px",
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: 600,
   color: "#6b7280",
   background: "#f9fafb",
@@ -17,7 +17,7 @@ const th: React.CSSProperties = {
 
 const td: React.CSSProperties = {
   padding: "14px 16px",
-  fontSize: 14,
+  fontSize: 13,
   color: "#374151",
   borderBottom: "1px solid #f3f4f6",
   verticalAlign: "middle",
@@ -26,6 +26,9 @@ const td: React.CSSProperties = {
 
 export default function Subjects() {
   const [subjects, setSubjects] = useState<any[]>([]);
+  // [soojin] 전체 건수 표시용 - 초기 로드 시 한 번만 세팅
+  const [totalAll, setTotalAll] = useState<number | null>(null);
+  const isInitialLoad = useRef(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ ...EMPTY });
   const [isEdit, setIsEdit] = useState(false);
@@ -33,7 +36,15 @@ export default function Subjects() {
   const csvRef = useRef<HTMLInputElement>(null);
 
   const load = () =>
-    admin.get("/subjects").then((r) => setSubjects(r.data ?? []));
+    admin.get("/subjects").then((r) => {
+      const data = r.data ?? [];
+      setSubjects(data);
+      // [soojin] 최초 로드 시에만 totalAll 세팅 (검색/필터 없으므로 전체 = 현재 목록)
+      if (isInitialLoad.current) {
+        setTotalAll(data.length);
+        isInitialLoad.current = false;
+      }
+    });
 
   useEffect(() => { load(); }, []);
 
@@ -64,12 +75,16 @@ export default function Subjects() {
       await admin.post("/subjects", payload);
     }
     setShowModal(false);
+    // [soojin] 등록/수정 후 totalAll도 갱신
+    isInitialLoad.current = true;
     load();
   };
 
   const handleDelete = async (s: any) => {
     if (!confirm(`"${s.code}" 과목을 삭제하시겠습니까?`)) return;
     await admin.delete(`/subjects/${s.id}`);
+    // [soojin] 삭제 후 totalAll도 갱신
+    isInitialLoad.current = true;
     load();
   };
 
@@ -81,6 +96,7 @@ export default function Subjects() {
     try {
       const res = await admin.post("/subjects/import-csv", fd);
       setCsvResults(res.data ?? []);
+      isInitialLoad.current = true;
       load();
     } catch {
       setCsvResults(["CSV 등록 중 오류가 발생했습니다."]);
@@ -173,12 +189,19 @@ export default function Subjects() {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>과목 관리</h5>
+      {/* [soojin] 자연 높이 - 내부 스크롤 없이 목록 전체 표시 */}
+      <div>
+        {/* [soojin] 제목 + 전체 건수 인라인 표시 */}
+        <div style={{ marginBottom: 16 }}>
+          <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4, display: "flex", alignItems: "baseline", gap: 8 }}>
+            과목 목록
+            <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalAll ?? 0}개</span>
+          </h6>
           <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>교과목 코드 및 과목명을 관리합니다.</p>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+
+        {/* [soojin] 컨트롤 바: 좌측 비움, 우측 버튼들 */}
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 16, gap: 8 }}>
           <input
             type="file"
             ref={csvRef}
@@ -188,65 +211,69 @@ export default function Subjects() {
           />
           <button
             onClick={() => csvRef.current?.click()}
-            style={{ padding: "9px 20px", background: "#fff", border: "1px solid #25A194", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#25A194", cursor: "pointer", whiteSpace: "nowrap" }}
+            style={{ padding: "5px 10px", background: "#fff", border: "1px solid #25A194", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#25A194", cursor: "pointer", whiteSpace: "nowrap" }}
           >
+            <i className="ri-file-excel-2-line" style={{ marginRight: 4, fontSize: "14px" }} />
             CSV 일괄 등록
           </button>
           <button
             onClick={openCreateModal}
-            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
+            style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
           >
             + 과목 등록
           </button>
         </div>
-      </div>
 
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-          <colgroup>
-            <col style={{ width: 160 }} />
-            <col />
-            <col style={{ width: 140 }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th style={th}>과목 코드</th>
-              <th style={th}>과목명</th>
-              <th style={{ ...th, textAlign: "center" }}>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {subjects.map((s: any) => (
-              <tr key={s.code}>
-                <td style={{ ...td, fontWeight: 600, color: "#1d4ed8" }}>{s.code}</td>
-                <td style={td}>{s.name}</td>
-                <td style={{ ...td, textAlign: "center" }}>
-                  <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                    <button
-                      onClick={() => openUpdateModal(s)}
-                      style={{ padding: "4px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#25A194", cursor: "pointer" }}
-                    >
-                      수정
-                    </button>
-                    <button
-                      onClick={() => handleDelete(s)}
-                      style={{ padding: "4px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#ef4444", cursor: "pointer" }}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {subjects.length === 0 && (
-              <tr>
-                <td colSpan={3} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "40px 0", whiteSpace: "normal" }}>
-                  등록된 과목이 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        {/* [soojin] 카드: 자연 높이, 가로 스크롤만 허용 */}
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+              <colgroup>
+                <col style={{ width: 160 }} />
+                <col />
+                <col style={{ width: 140 }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th style={th}>과목 코드</th>
+                  <th style={th}>과목명</th>
+                  <th style={{ ...th, textAlign: "center" }}>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subjects.map((s: any) => (
+                  <tr key={s.code}>
+                    <td style={{ ...td, fontWeight: 600, color: "#1d4ed8" }}>{s.code}</td>
+                    <td style={td}>{s.name}</td>
+                    <td style={{ ...td, textAlign: "center" }}>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                        <button
+                          onClick={() => openUpdateModal(s)}
+                          style={{ padding: "4px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#25A194", cursor: "pointer" }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          onClick={() => handleDelete(s)}
+                          style={{ padding: "4px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 12, fontWeight: 500, color: "#ef4444", cursor: "pointer" }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {subjects.length === 0 && (
+                  <tr>
+                    <td colSpan={3} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "48px 16px", whiteSpace: "normal" }}>
+                      등록된 과목이 없습니다.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

@@ -187,8 +187,9 @@ public class BoardService {
     /**
      * 학부모 공지 목록 (전체)
      */
-    public Page<BoardDTO.Response> getParentNotices(Pageable pageable) {
-        return boardRepository.findByType(BoardType.PARENT_NOTICE, null, pageable)
+    // [soojin] keyword 파라미터 추가 - 가정통신문 제목 검색 지원
+    public Page<BoardDTO.Response> getParentNotices(String keyword, Pageable pageable) {
+        return boardRepository.findByType(BoardType.PARENT_NOTICE, keyword, pageable)
                 .map(board -> {
                     BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
                     // [woo] 교사 확인용 읽음 수 포함
@@ -202,10 +203,11 @@ public class BoardService {
      * 학부모: 자녀 학급 + 학년 전체 + 전체 공지만 표시
      * 교사/관리자: 전체 조회
      */
-    public Page<BoardDTO.Response> getParentNoticesFiltered(CustomUserDTO userDTO, Long studentUserUid, Pageable pageable) {
+    // [soojin] keyword 파라미터 추가 - 역할별 검색 전파
+    public Page<BoardDTO.Response> getParentNoticesFiltered(CustomUserDTO userDTO, Long studentUserUid, String keyword, Pageable pageable) {
         // 비로그인 또는 교사/관리자 → 전체 조회
         if (userDTO == null || isAdmin(userDTO) || isTeacher(userDTO)) {
-            return getParentNotices(pageable);
+            return getParentNotices(keyword, pageable);
         }
 
         // [woo] 학부모 → 선택된 자녀(studentUserUid) 기준 학급+학교 필터링
@@ -236,11 +238,11 @@ public class BoardService {
                 if (targetStudent.getSchool() != null) {
                     SchoolContextHolder.setSchoolId(targetStudent.getSchool().getId());
                 }
-                return getParentNoticesByClassroom(classroom.getCid(), classroom.getGrade(), pageable);
+                return getParentNoticesByClassroom(classroom.getCid(), classroom.getGrade(), keyword, pageable);
             }
         }
 
-        return getParentNotices(pageable);
+        return getParentNotices(keyword, pageable);
     }
 
     /**
@@ -258,8 +260,9 @@ public class BoardService {
     /**
      * 학부모 공지 목록 (학급별)
      */
-    public Page<BoardDTO.Response> getParentNoticesByClassroom(Long classroomId, int grade, Pageable pageable) {
-        return boardRepository.findParentByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, pageable)
+    // [soojin] keyword 파라미터 추가 - 학부모 뷰 검색 지원
+    public Page<BoardDTO.Response> getParentNoticesByClassroom(Long classroomId, int grade, String keyword, Pageable pageable) {
+        return boardRepository.findParentByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, keyword, pageable)
                 .map(board -> {
                     BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
                     dto.setReadCount(boardReadRepository.countByBoardId(board.getId()));

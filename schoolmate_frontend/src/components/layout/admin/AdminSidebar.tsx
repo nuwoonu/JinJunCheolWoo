@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useSchool } from '@/context/SchoolContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,10 +7,39 @@ import { ADMIN_ROUTES } from '@/constants/routes';
 import type { GrantInfo } from '@/api/auth';
 
 
+// [soojin] 현재 경로 기반으로 해당 드롭다운 자동 열림 - 일반 Sidebar와 동일한 방식
 function useSubmenu() {
-  const [open, setOpen] = useState<Record<string, boolean>>({});
+  const location = useLocation();
+
+  function initOpen(p: string): Record<string, boolean> {
+    const r: Record<string, boolean> = {};
+    if (p.startsWith("/admin/students") || p.startsWith("/admin/teachers") ||
+        p.startsWith("/admin/staffs") || p.startsWith("/admin/parents")) r.adminUsers = true;
+    // [soojin] 학급 관리 + 기준 정보 + 학사 일정을 "학사 운영"으로 통합
+    if (p.startsWith("/admin/classes") || p.startsWith("/admin/master")) r.adminAcademic = true;
+    if (p.startsWith("/admin/facilities") || p.startsWith("/admin/assets") ||
+        p.startsWith("/admin/dormitory")) r.adminFacilities = true;
+    if (p.startsWith("/admin/audit")) r.adminAudit = true;
+    return r;
+  }
+
+  const [open, setOpen] = useState<Record<string, boolean>>(() => initOpen(location.pathname));
+
+  useEffect(() => {
+    setOpen(initOpen(location.pathname));
+  }, [location.pathname]);
+
   const toggle = (key: string) => setOpen((prev) => ({ [key]: !prev[key] }));
   return { open, toggle };
+}
+
+// [soojin] 현재 페이지 링크만 primary 색상으로 표시
+function SNavLink({ to, children }: { to: string; children: React.ReactNode }) {
+  return (
+    <NavLink to={to} end style={({ isActive }) => (isActive ? { color: "#25A194" } : {})}>
+      {children}
+    </NavLink>
+  );
 }
 
 function dc(isOpen: boolean) {
@@ -48,6 +77,8 @@ export default function AdminSidebar() {
   const canSeeAudit       = isSuperAdmin;
 
   const canSeeMembers = canSeeStudents || canSeeTeachers || canSeeStaffs;
+  // [soojin] 학사 운영 그룹: 학급 관리 + 학교 일정 + 학기 관리/교과목 중 하나라도 권한 있으면 표시
+  const canSeeAcademicGroup = canSeeClasses || canSeeSchedule || canSeeMaster;
   const canSeeFacilitiesGroup = canSeeFacilities || canSeeAssets || canSeeDormitory;
 
   const handleChangeSchool = () => {
@@ -99,137 +130,131 @@ export default function AdminSidebar() {
       <div className="sidebar-menu-area" style={{ flex: 1, overflowY: "auto" }}>
         <ul className="sidebar-menu" id="sidebar-menu">
           <li>
-            <Link to={ADMIN_ROUTES.DASHBOARD}>
+            <SNavLink to={ADMIN_ROUTES.DASHBOARD}>
               <i className="ri-layout-grid-line" />
               <span>관리자 대시보드</span>
-            </Link>
+            </SNavLink>
           </li>
 
           {canSeeMembers && (
             <li className={dc(open.adminUsers)}>
+              {/* [soojin] "구성원 관리" → "사용자 관리" */}
               <a href="#" onClick={(e) => { e.preventDefault(); toggle("adminUsers"); }}>
                 <i className="ri-group-line" />
-                <span>구성원 관리</span>
+                <span>사용자 관리</span>
               </a>
               <ul className="sidebar-submenu">
                 {canSeeStudents && (
                   <li>
-                    <Link to={ADMIN_ROUTES.STUDENTS.LIST}>
+                    <SNavLink to={ADMIN_ROUTES.STUDENTS.LIST}>
                       <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
                 {canSeeTeachers && (
                   <li>
-                    <Link to={ADMIN_ROUTES.TEACHERS.LIST}>
+                    <SNavLink to={ADMIN_ROUTES.TEACHERS.LIST}>
                       <i className="ri-circle-fill circle-icon w-auto" /> 교사 관리
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
                 {canSeeStaffs && (
                   <li>
-                    <Link to={ADMIN_ROUTES.STAFFS.LIST}>
+                    <SNavLink to={ADMIN_ROUTES.STAFFS.LIST}>
                       <i className="ri-circle-fill circle-icon w-auto" /> 교직원 관리
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
               </ul>
             </li>
           )}
 
-          {canSeeClasses && (
-            <li className={dc(open.adminClasses)}>
-              <a href="#" onClick={(e) => { e.preventDefault(); toggle("adminClasses"); }}>
-                <i className="ri-building-2-line" />
-                <span>학급 관리</span>
+          {/* [soojin] 학급 관리 + 학사 일정 + 기준 정보를 "학사 운영"으로 통합 */}
+          {canSeeAcademicGroup && (
+            <li className={dc(open.adminAcademic)}>
+              <a href="#" onClick={(e) => { e.preventDefault(); toggle("adminAcademic"); }}>
+                <i className="ri-book-open-line" />
+                <span>학사 운영</span>
               </a>
               <ul className="sidebar-submenu">
-                <li>
-                  <Link to={ADMIN_ROUTES.CLASSES.LIST}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 목록
-                  </Link>
-                </li>
-                <li>
-                  <Link to={ADMIN_ROUTES.CLASSES.CREATE}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 생성
-                  </Link>
-                </li>
+                {canSeeClasses && (
+                  <>
+                    <li>
+                      <SNavLink to={ADMIN_ROUTES.CLASSES.LIST}>
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학급 목록
+                      </SNavLink>
+                    </li>
+                    <li>
+                      <SNavLink to={ADMIN_ROUTES.CLASSES.CREATE}>
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학급 생성
+                      </SNavLink>
+                    </li>
+                  </>
+                )}
+                {canSeeSchedule && (
+                  <li>
+                    <SNavLink to={ADMIN_ROUTES.MASTER.SCHEDULE}>
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학교 일정
+                    </SNavLink>
+                  </li>
+                )}
+                {canSeeMaster && (
+                  <li>
+                    <SNavLink to={ADMIN_ROUTES.MASTER.SETTINGS}>
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학기 관리
+                    </SNavLink>
+                  </li>
+                )}
+                {canSeeMaster && (
+                  <li>
+                    <SNavLink to={ADMIN_ROUTES.MASTER.SUBJECTS}>
+                      <i className="ri-circle-fill circle-icon w-auto" /> 교과목
+                    </SNavLink>
+                  </li>
+                )}
               </ul>
             </li>
           )}
 
           {canSeeNotices && (
             <li>
-              <Link to={ADMIN_ROUTES.NOTICES.LIST}>
+              {/* [soojin] "공지사항 관리" → "공지사항" */}
+              <SNavLink to={ADMIN_ROUTES.NOTICES.LIST}>
                 <i className="ri-megaphone-line" />
-                <span>공지사항 관리</span>
-              </Link>
-            </li>
-          )}
-
-          {canSeeSchedule && !canSeeMaster && (
-            <li>
-              <Link to={ADMIN_ROUTES.MASTER.SCHEDULE}>
-                <i className="ri-calendar-line" />
-                <span>학사 일정</span>
-              </Link>
+                <span>공지사항</span>
+              </SNavLink>
             </li>
           )}
 
           {canSeeFacilitiesGroup && (
             <li className={dc(open.adminFacilities)}>
+              {/* [soojin] "시설/기자재" → "시설 및 자산 관리" */}
               <a href="#" onClick={(e) => { e.preventDefault(); toggle("adminFacilities"); }}>
                 <i className="ri-store-2-line" />
-                <span>시설/기자재</span>
+                <span>시설 및 자산 관리</span>
               </a>
               <ul className="sidebar-submenu">
                 {canSeeFacilities && (
                   <li>
-                    <Link to={ADMIN_ROUTES.FACILITIES}>
+                    <SNavLink to={ADMIN_ROUTES.FACILITIES}>
                       <i className="ri-circle-fill circle-icon w-auto" /> 시설 관리
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
                 {canSeeAssets && (
                   <li>
-                    <Link to={ADMIN_ROUTES.ASSETS}>
+                    <SNavLink to={ADMIN_ROUTES.ASSETS}>
                       <i className="ri-circle-fill circle-icon w-auto" /> 기자재 관리
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
                 {canSeeDormitory && (
                   <li>
-                    <Link to={ADMIN_ROUTES.DORMITORY}>
+                    <SNavLink to={ADMIN_ROUTES.DORMITORY}>
                       <i className="ri-circle-fill circle-icon w-auto" /> 기숙사 관리
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
-              </ul>
-            </li>
-          )}
-
-          {canSeeMaster && (
-            <li className={dc(open.adminMaster)}>
-              <a href="#" onClick={(e) => { e.preventDefault(); toggle("adminMaster"); }}>
-                <i className="ri-settings-3-line" />
-                <span>기준 정보</span>
-              </a>
-              <ul className="sidebar-submenu">
-                <li>
-                  <Link to={ADMIN_ROUTES.MASTER.SCHEDULE}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학사 일정
-                  </Link>
-                </li>
-                <li>
-                  <Link to={ADMIN_ROUTES.MASTER.SUBJECTS}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 교과목
-                  </Link>
-                </li>
-                <li>
-                  <Link to={ADMIN_ROUTES.MASTER.SETTINGS}>
-                    <i className="ri-circle-fill circle-icon w-auto" /> 시스템 설정
-                  </Link>
-                </li>
               </ul>
             </li>
           )}
@@ -242,14 +267,14 @@ export default function AdminSidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to={ADMIN_ROUTES.AUDIT.ACCESS}>
+                  <SNavLink to={ADMIN_ROUTES.AUDIT.ACCESS}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 접근 로그
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.AUDIT.CHANGES}>
+                  <SNavLink to={ADMIN_ROUTES.AUDIT.CHANGES}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 변경 로그
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>

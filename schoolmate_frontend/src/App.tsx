@@ -283,7 +283,15 @@ function App() {
         }
       />
 
-      {/* [woo] 퀴즈 (목록은 /homework?tab=quiz 탭으로 통합) */}
+      {/* [soojin] 퀴즈 목록 전용 라우트 - 사이드바에서 직접 진입 */}
+      <Route
+        path="/quiz"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <HomeworkList />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/quiz/create"
         element={

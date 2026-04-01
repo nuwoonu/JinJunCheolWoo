@@ -94,9 +94,11 @@ export default function TeacherMyClassStudents() {
 
   // [woo] 모달 열릴 때 배경 스크롤 방지
   useEffect(() => {
-    const open = showAssignModal || showAddModal || !!selectedStudent
-    document.body.style.overflow = open ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    const open = showAssignModal || showAddModal || !!selectedStudent;
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [showAssignModal, showAddModal, selectedStudent]);
 
   const filtered =
@@ -209,21 +211,6 @@ export default function TeacherMyClassStudents() {
           <h6 className="fw-semibold mb-0">나의 학급</h6>
           <p className="text-neutral-600 mt-4 mb-0">학생 관리</p>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">
-            <Link to="/teacher/myclass" className="hover-text-primary">
-              나의 학급
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">학생 관리</li>
-        </ul>
       </div>
 
       {loading && <div className="text-center py-48 text-secondary-light">불러오는 중...</div>}
@@ -337,88 +324,272 @@ export default function TeacherMyClassStudents() {
             </div>
           )}
 
-          {/* [woo] 학생 목록 */}
-          <div className="card radius-12">
-            <div className="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
-              <h6 className="mb-0">학생 목록</h6>
-              <div className="d-flex gap-8 align-items-center">
-                <input
-                  type="text"
-                  className="form-control w-auto"
-                  placeholder="이름 또는 번호 검색"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  style={{ maxWidth: 200 }}
-                />
+          {/* [soojin] 학생 목록 - TeacherList 동일 패턴 */}
+          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+            {/* 카드 헤더 */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "12px 24px",
+                borderBottom: "1px solid #e5e7eb",
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#111827",
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 8,
+                }}
+              >
+                학생 목록
+                <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>
+                  전체 {classInfo.totalStudents}명
+                </span>
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <i
+                    className="bi bi-search"
+                    style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
+                  />
+                  <input
+                    type="text"
+                    style={{
+                      padding: "5px 8px 5px 28px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: 6,
+                      fontSize: 13,
+                      width: 180,
+                      background: "#fff",
+                    }}
+                    placeholder="이름 또는 번호 검색"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
                 <button
                   type="button"
-                  className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
+                  style={{
+                    padding: "5px 12px",
+                    background: "#25A194",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
                   onClick={() => {
                     setShowAddModal(true);
                     setAddError(null);
                     setAddForm(EMPTY_ADD_FORM);
                   }}
                 >
-                  <i className="ri-user-add-line" /> 학생 추가
+                  <i className="ri-user-add-line" style={{ fontSize: 14 }} /> 학생 추가
                 </button>
               </div>
             </div>
-            <div className="card-body p-24">
-              <div className="table-responsive">
-                <table className="table bordered-table mb-0">
-                  <thead>
+            {/* 테이블 */}
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                <colgroup>
+                  <col style={{ width: 80 }} />
+                  <col style={{ width: 180 }} />
+                  <col style={{ width: 140 }} />
+                  <col />
+                  <col style={{ width: 90 }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        padding: "10px 16px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#6b7280",
+                        background: "#f9fafb",
+                        borderBottom: "1px solid #e5e7eb",
+                        whiteSpace: "nowrap",
+                        textAlign: "left",
+                      }}
+                    >
+                      번호
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px 16px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#6b7280",
+                        background: "#f9fafb",
+                        borderBottom: "1px solid #e5e7eb",
+                        whiteSpace: "nowrap",
+                        textAlign: "left",
+                      }}
+                    >
+                      이름
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px 16px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#6b7280",
+                        background: "#f9fafb",
+                        borderBottom: "1px solid #e5e7eb",
+                        whiteSpace: "nowrap",
+                        textAlign: "left",
+                      }}
+                    >
+                      연락처
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px 16px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#6b7280",
+                        background: "#f9fafb",
+                        borderBottom: "1px solid #e5e7eb",
+                        whiteSpace: "nowrap",
+                        textAlign: "left",
+                      }}
+                    >
+                      이메일
+                    </th>
+                    <th
+                      style={{
+                        padding: "10px 16px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#6b7280",
+                        background: "#f9fafb",
+                        borderBottom: "1px solid #e5e7eb",
+                        whiteSpace: "nowrap",
+                        textAlign: "left",
+                      }}
+                    >
+                      상세
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
                     <tr>
-                      <th scope="col" className="text-center" style={{ width: 80 }}>
-                        번호
-                      </th>
-                      <th scope="col">이름</th>
-                      <th scope="col">연락처</th>
-                      <th scope="col">이메일</th>
-                      <th scope="col" className="text-center" style={{ width: 120 }}>
-                        상세
-                      </th>
+                      <td
+                        colSpan={5}
+                        style={{ padding: "32px 16px", textAlign: "center", fontSize: 13, color: "#9ca3af" }}
+                      >
+                        등록된 학생이 없습니다.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="text-center py-24 text-secondary-light">
-                          등록된 학생이 없습니다.
+                  ) : (
+                    filtered.map((s) => (
+                      <tr key={s.studentId}>
+                        <td
+                          style={{
+                            padding: "12px 16px",
+                            fontSize: 13,
+                            color: "#6b7280",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {s.studentNumber}
                         </td>
-                      </tr>
-                    ) : (
-                      filtered.map((s) => (
-                        <tr key={s.studentId}>
-                          <td className="text-center">{s.studentNumber}</td>
-                          <td>
-                            <div className="d-flex align-items-center gap-12">
-                              <div className="w-40-px h-40-px bg-neutral-100 rounded-circle d-flex justify-content-center align-items-center">
-                                <iconify-icon icon="mdi:account" className="text-neutral-500 text-xl" />
-                              </div>
-                              <span className="fw-medium">{s.name}</span>
-                            </div>
-                          </td>
-                          <td>{s.phone ?? "-"}</td>
-                          <td>{s.email ?? "-"}</td>
-                          <td className="text-center">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-primary-600 radius-4"
-                              onClick={() => {
-                                setSelectedStudent(s);
-                                setEditingNum(String(s.studentNumber));
+                        <td
+                          style={{
+                            padding: "12px 16px",
+                            fontSize: 13,
+                            color: "#374151",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div
+                              style={{
+                                width: 32,
+                                height: 32,
+                                background: "#f3f4f6",
+                                borderRadius: "50%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
                               }}
                             >
-                              <iconify-icon icon="mdi:eye-outline" />
-                              보기
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                              <i className="ri-user-line" style={{ fontSize: 14, color: "#6b7280" }} />
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{s.name}</span>
+                          </div>
+                        </td>
+                        <td
+                          style={{
+                            padding: "12px 16px",
+                            fontSize: 13,
+                            color: "#6b7280",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {s.phone ?? "-"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "12px 16px",
+                            fontSize: 13,
+                            color: "#6b7280",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {s.email ?? "-"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "12px 16px",
+                            fontSize: 13,
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            style={{
+                              padding: "4px 10px",
+                              background: "#fff",
+                              border: "1px solid #d1d5db",
+                              borderRadius: 6,
+                              fontSize: 12,
+                              color: "#374151",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              setSelectedStudent(s);
+                              setEditingNum(String(s.studentNumber));
+                            }}
+                          >
+                            보기
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </>

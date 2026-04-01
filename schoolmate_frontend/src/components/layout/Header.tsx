@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSidebar } from '@/contexts/SidebarContext'
+import { useAuth } from '@/contexts/AuthContext'
 import NotificationDropdown from '@/components/fragments/NotificationDropdown'
 import ProfileDropdown from '@/components/profile/ProfileDropdown'
 
@@ -26,7 +27,16 @@ function useTheme() {
 
 export default function Header({ showLogo }: { showLogo?: boolean } = {}) {
   const { openSidebar } = useSidebar()
+  const { user } = useAuth()
   const theme = useTheme()
+
+  // [soojin] 역할별 대시보드 경로 - 사이드바 홈 제거 후 헤더로 이동
+  const role = user?.role ?? ''
+  const dashboardPath =
+    role === 'STUDENT' ? '/student/dashboard'
+    : role === 'TEACHER' ? '/teacher/dashboard'
+    : role === 'PARENT' ? '/parent/dashboard'
+    : '/main'
 
   return (
     <div className="navbar-header" style={{ borderBottom: "1px solid #e0e0e0" }}>
@@ -51,6 +61,12 @@ export default function Header({ showLogo }: { showLogo?: boolean } = {}) {
               <input type="text" className="bg-transparent" name="search" placeholder="Search" />
               <iconify-icon icon="ion:search-outline" className="icon" />
             </form>
+            {/* [soojin] 홈 아이콘 - 사이드바에서 헤더로 이동, 역할별 대시보드로 이동 */}
+            {user?.authenticated && (
+              <a href={dashboardPath} className="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" aria-label="홈" style={{ textDecoration: 'none' }}>
+                <iconify-icon icon="ri:home-4-line" className="text-primary-light text-xl" />
+              </a>
+            )}
             {/* [woo] 다크모드 토글 - useTheme hook으로 제어 */}
             <button type="button" onClick={theme.toggle} className="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" aria-label="Dark & Light Mode Button">
               <iconify-icon icon={theme.isDark ? 'ri:sun-line' : 'ri:moon-line'} className="text-primary-light text-xl" />

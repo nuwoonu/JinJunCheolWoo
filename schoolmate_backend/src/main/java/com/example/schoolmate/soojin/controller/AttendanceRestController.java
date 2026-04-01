@@ -130,6 +130,19 @@ public class AttendanceRestController {
         }
     }
 
+    /**
+     * GET /api/attendance/student/monthly-stats?year=2026&month=3
+     * [soojin] 담임 반 월별 전체 출석률 조회
+     */
+    @GetMapping("/student/monthly-stats")
+    public ResponseEntity<?> getMonthlyStats(
+            @RequestParam int year,
+            @RequestParam int month,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        Long teacherUid = authUser.getCustomUserDTO().getUid();
+        return ResponseEntity.ok(attendanceService.getMonthlyAttendanceStats(teacherUid, year, month));
+    }
+
     // ========== [woo] 교사 출결 (관리자) ==========
 
     /**
