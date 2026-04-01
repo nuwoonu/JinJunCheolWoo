@@ -289,6 +289,7 @@ public class BoardService {
                             BoardType.PARENT_BOARD,
                             assignment.getClassroom().getCid(),
                             assignment.getGrade(),
+                            null, // [soojin] keyword 누락으로 인한 컴파일 오류 수정
                             pageable)
                             .map(BoardDTO.Response::fromEntityForList);
                 }
@@ -307,6 +308,7 @@ public class BoardService {
                                 BoardType.PARENT_BOARD,
                                 asgn.getClassroom().getCid(),
                                 asgn.getGrade(),
+                                null, // [soojin] keyword 누락으로 인한 컴파일 오류 수정
                                 pageable)
                                 .map(BoardDTO.Response::fromEntityForList);
                     }
@@ -330,7 +332,7 @@ public class BoardService {
      * 학부모 게시판 목록 (학급별)
      */
     public Page<BoardDTO.Response> getParentBoardByClassroom(Long classroomId, int grade, Pageable pageable) {
-        return boardRepository.findParentByClassroom(BoardType.PARENT_BOARD, classroomId, grade, pageable)
+        return boardRepository.findParentByClassroom(BoardType.PARENT_BOARD, classroomId, grade, null, pageable) // [soojin] keyword 누락으로 인한 컴파일 오류 수정
                 .map(BoardDTO.Response::fromEntityForList);
     }
 

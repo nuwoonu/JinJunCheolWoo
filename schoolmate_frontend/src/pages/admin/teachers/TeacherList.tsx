@@ -371,7 +371,7 @@ export default function TeacherList() {
               onClick={triggerUpload}
             >
               <i className="ri-file-excel-2-line" style={{ marginRight: 4, fontSize: "14px" }} />
-              CSV 교사 등록
+              CSV 등록
             </button>
             <Link
               to={ADMIN_ROUTES.TEACHERS.CREATE}
