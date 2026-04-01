@@ -119,6 +119,8 @@ import JoonChangeLogs from "@/pages/admin/audit/ChangeLogs";
 import ServiceNoticeList from "@/pages/admin/servicenotices/ServiceNoticeList";
 import ServiceNoticeForm from "@/pages/admin/servicenotices/ServiceNoticeForm";
 import ServiceNoticeDetail from "@/pages/admin/servicenotices/ServiceNoticeDetail";
+import JoonTransfer from "@/pages/admin/Transfer";
+import JoonTestMode from "@/pages/admin/TestMode";
 
 function SchoolSelectGuard() {
   const { selectedSchool, setSelectedSchool } = useSchool();
@@ -702,6 +704,26 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STAFFS}>
             <JoonStaffDetail />
+          </PrivateRoute>
+        }
+      />
+
+      {/* [joon] 전입 처리 */}
+      <Route
+        path={ADMIN_ROUTES.TRANSFER}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]} requiredGrants={ADMIN_GRANTS.STUDENTS}>
+            <JoonTransfer />
+          </PrivateRoute>
+        }
+      />
+
+      {/* [joon] 테스트 데이터 생성 (SUPER_ADMIN + testMode 활성화 시) */}
+      <Route
+        path={ADMIN_ROUTES.TEST_MODE}
+        element={
+          <PrivateRoute allowedRoles={["ADMIN"]}>
+            <JoonTestMode />
           </PrivateRoute>
         }
       />

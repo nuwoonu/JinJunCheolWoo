@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum TeacherStatus {
     EMPLOYED("재직"),
     LEAVE("휴직"),
-    RETIRED("퇴직");
+    RETIRED("퇴직"),
+    TRANSFERRED("전출");
 
     private final String description;
 }

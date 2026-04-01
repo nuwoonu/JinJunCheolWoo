@@ -194,7 +194,7 @@ public class TeacherService {
 
         user.setName(request.getName());
 
-        TeacherInfo info = user.getInfo(TeacherInfo.class);
+        TeacherInfo info = user.getInfoForSchool(TeacherInfo.class, SchoolContextHolder.getSchoolId());
         if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
                 Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
@@ -281,7 +281,7 @@ public class TeacherService {
         TeacherStatus status = TeacherStatus.valueOf(statusName);
         List<User> users = userRepository.findAllById(uids);
         for (User user : users) {
-            TeacherInfo info = user.getInfo(TeacherInfo.class);
+            TeacherInfo info = user.getInfoForSchool(TeacherInfo.class, SchoolContextHolder.getSchoolId());
             if (info != null) {
                 info.setStatus(status);
                 NotificationHelper.send(

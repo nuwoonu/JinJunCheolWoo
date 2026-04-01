@@ -36,10 +36,11 @@ public class StaffInfoRepositoryImpl implements StaffInfoRepositoryCustom {
         BooleanExpression schoolFilter = SchoolQueryFilter.schoolIdEq(info.school.id);
 
         JPAQuery<User> contentQuery = query
-                .selectFrom(user).distinct()
+                .selectFrom(user)
                 .leftJoin(info).on(info.user.eq(user))
                 .where(isStaff, searchFilter, statusFilter, employmentTypeFilter, schoolFilter)
-                .orderBy(user.uid.desc());
+                .groupBy(user.uid)
+                .orderBy(info.code.max().desc());
 
         if (pageable.isPaged()) {
             contentQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
