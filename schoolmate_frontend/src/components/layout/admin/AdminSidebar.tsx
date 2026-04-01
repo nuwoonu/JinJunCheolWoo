@@ -166,9 +166,9 @@ export default function AdminSidebar() {
                   </li>
                 )}
                 <li>
-                  <Link to={ADMIN_ROUTES.TRANSFER}>
+                  <SNavLink to={ADMIN_ROUTES.TRANSFER}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 전입 처리
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
