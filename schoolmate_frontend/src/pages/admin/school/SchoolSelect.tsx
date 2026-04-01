@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "@/api/auth";
 import admin from "@/api/adminApi";
 import { ADMIN_ROUTES } from "@/constants/routes";
-import { useSchool, type SelectedSchool } from "@/context/SchoolContext";
+import { useSchool, type SelectedSchool } from "@/contexts/SchoolContext";
 import AdminTopBar from "@/components/layout/admin/AdminTopBar";
 import { useSchoolSearch, type SchoolSummary } from "@/hooks/useSchoolSearch";
 

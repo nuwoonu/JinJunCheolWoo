@@ -27,7 +27,6 @@ export default function TeacherCreate() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    code: "",
     password: "",
     subject: "",
     department: "",
@@ -98,16 +97,6 @@ export default function TeacherCreate() {
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   placeholder="example@school.com"
-                />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-bold">사번</label>
-                <input
-                  className="form-control"
-                  required
-                  value={form.code}
-                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                  placeholder="T2024001"
                 />
               </div>
               <div className="col-md-12">

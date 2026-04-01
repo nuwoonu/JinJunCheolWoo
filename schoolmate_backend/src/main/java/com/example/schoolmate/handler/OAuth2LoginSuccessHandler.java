@@ -13,7 +13,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.entity.user.UserSocialAccount;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
 import com.example.schoolmate.config.jwt.AuthService;
 
 import jakarta.servlet.ServletException;
@@ -34,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
-    private final UserRepository userRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
@@ -46,22 +47,24 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User oAuth2User = oauthToken.getPrincipal();
         String provider = oauthToken.getAuthorizedClientRegistrationId();
+        Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        String email = extractEmail(provider, oAuth2User.getAttributes());
-        log.info("OAuth2 로그인 성공 - provider: {}, email: {}", provider, email);
+        String providerId = extractProviderId(provider, attributes);
+        log.info("OAuth2 로그인 성공 - provider: {}, providerId: {}", provider, providerId);
 
-        if (email == null) {
-            log.warn("OAuth2 사용자 이메일 추출 실패 - provider: {}", provider);
-            response.sendRedirect(frontendUrl + "/login?error=email_missing");
-            return;
-        }
+        // (provider, providerId) 기준으로 유저 조회 — 이메일이 달라도 정확히 찾음
+        UserSocialAccount socialAccount = socialAccountRepository
+                .findByProviderAndProviderId(provider, providerId)
+                .orElse(null);
 
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null) {
-            log.warn("OAuth2 사용자 DB 조회 실패 - email: {}", email);
+        if (socialAccount == null) {
+            log.warn("OAuth2 소셜 계정 DB 조회 실패 - provider: {}, providerId: {}", provider, providerId);
             response.sendRedirect(frontendUrl + "/login?error=user_not_found");
             return;
         }
+
+        User user = socialAccount.getUser();
+        String email = user.getEmail();
 
         // 신규 사용자(역할 없음) → GUEST 토큰 발급 후 역할 선택 페이지
         if (user.getRoles().isEmpty()) {
@@ -85,15 +88,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.sendRedirect(redirectUrl);
     }
 
-    private String extractEmail(String provider, Map<String, Object> attributes) {
+    private String extractProviderId(String provider, Map<String, Object> attributes) {
         if ("kakao".equals(provider)) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            if (kakaoAccount != null) {
-                return (String) kakaoAccount.get("email");
-            }
+            return String.valueOf(attributes.get("id"));
         } else if ("google".equals(provider)) {
-            return (String) attributes.get("email");
+            return (String) attributes.get("sub");
         }
         return null;
     }

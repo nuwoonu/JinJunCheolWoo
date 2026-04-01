@@ -59,6 +59,7 @@ public class StaffService {
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CodeSequenceService codeSequenceService;
 
     @Transactional(readOnly = true)
     public Page<StaffDTO.DetailResponse> getStaffList(StaffDTO.StaffSearchCondition cond, Pageable pageable) {
@@ -79,9 +80,6 @@ public class StaffService {
     }
 
     public User createStaff(StaffDTO.CreateRequest request) {
-        if (request.getCode() != null && codeExistsForStaff(request.getCode())) {
-            throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
-        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
@@ -93,8 +91,11 @@ public class StaffService {
                 .roles(new HashSet<>(Set.of(UserRole.STAFF)))
                 .build();
 
+        // 학교 소속 설정 (X-School-Id 헤더 기반)
+        Long schoolId = SchoolContextHolder.getSchoolId();
+
         StaffInfo info = new StaffInfo();
-        info.setCode(request.getCode());
+        info.setCode(codeSequenceService.issue(schoolId, "E"));
         info.setPrimary(true);
         info.setDepartment(request.getDepartment());
         info.setJobTitle(request.getJobTitle());
@@ -107,8 +108,6 @@ public class StaffService {
         info.setStatus(StaffStatus.EMPLOYED);
         info.setUser(user);
 
-        // 학교 소속 설정 (X-School-Id 헤더 기반)
-        Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
@@ -144,7 +143,11 @@ public class StaffService {
         StaffInfo info = user.getInfo(StaffInfo.class);
         if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-                if (codeExistsForStaff(request.getCode())) {
+                Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
+                boolean exists = (targetSchoolId != null)
+                        ? staffInfoRepository.existsByCodeAndSchoolId(request.getCode(), targetSchoolId)
+                        : staffInfoRepository.existsByCode(request.getCode());
+                if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());
@@ -165,7 +168,6 @@ public class StaffService {
         List<String> errors = new ArrayList<>();
         List<StaffDTO.CsvImportRequest> validRows = new ArrayList<>();
         Set<String> seenEmails = new HashSet<>();
-        Set<String> seenCodes = new HashSet<>();
 
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             List<StaffDTO.CsvImportRequest> beans = new CsvToBeanBuilder<StaffDTO.CsvImportRequest>(reader)
@@ -187,12 +189,7 @@ public class StaffService {
                     errors.add(rowLabel + ": 이미 존재하는 이메일입니다.");
                     continue;
                 }
-                if (csvReq.getCode() != null && (codeExistsForStaff(csvReq.getCode()) || seenCodes.contains(csvReq.getCode()))) {
-                    errors.add(rowLabel + ": 이미 존재하는 사번입니다.");
-                    continue;
-                }
                 seenEmails.add(csvReq.getEmail());
-                if (csvReq.getCode() != null) seenCodes.add(csvReq.getCode());
                 validRows.add(csvReq);
             }
 
@@ -214,14 +211,6 @@ public class StaffService {
             if (info != null)
                 info.setStatus(status);
         }
-    }
-
-    /** 학교 범위 내 교직원 사번 중복 여부 확인 (schoolId가 없으면 전역 체크) */
-    private boolean codeExistsForStaff(String code) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        return (schoolId != null)
-                ? staffInfoRepository.existsByCodeAndSchoolId(code, schoolId)
-                : staffInfoRepository.existsByCode(code);
     }
 
     public void addRole(Long uid, String roleName) {

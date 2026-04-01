@@ -47,8 +47,10 @@ export type AuthUser = {
   grants?: GrantInfo[];
   /** 역할 신청 목록 (Hub 카드 상태 표시용) */
   roleRequests?: RoleRequestInfo[];
-  /** 소셜 로그인 제공자 (null=이메일, "google", "kakao") */
-  provider?: string | null;
+  /** 연동된 소셜 계정 제공자 목록 (["google"], ["kakao"], [] 등) */
+  providers?: string[];
+  /** 비밀번호 설정 여부 (false면 비밀번호 변경 불가) */
+  hasPassword?: boolean;
   /** 프로필 이미지 URL */
   profileImageUrl?: string | null;
 };

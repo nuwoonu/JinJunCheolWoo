@@ -47,7 +47,6 @@ public class ParentDTO {
         private String email;
         private String password;
         private String phone;
-        private String code;
         private List<StudentRelationRequest> students = new ArrayList<>();
 
         public CreateRequest(CsvImportRequest csv) {
@@ -55,7 +54,6 @@ public class ParentDTO {
             this.email = csv.getEmail();
             this.password = csv.getPassword();
             this.phone = csv.getPhone();
-            this.code = csv.getCode();
         }
     }
 
@@ -226,8 +224,5 @@ public class ParentDTO {
 
         @CsvBindByName(column = "연락처")
         private String phone;
-
-        @CsvBindByName(column = "학부모코드")
-        private String code;
     }
 }

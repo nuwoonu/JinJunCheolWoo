@@ -4,9 +4,11 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.common.entity.info.StaffInfo;
 import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
+import com.example.schoolmate.common.entity.info.constant.StaffStatus;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.Profile;
 import com.example.schoolmate.common.entity.Classroom;
@@ -14,9 +16,6 @@ import com.example.schoolmate.common.entity.user.RoleRequest;
 import com.example.schoolmate.common.entity.user.SchoolAdminGrant;
 import com.example.schoolmate.common.entity.user.constant.GrantedRole;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
-import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository;
-import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
-import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
@@ -27,7 +26,6 @@ import com.example.schoolmate.common.util.NotificationHelper;
 import com.example.schoolmate.dto.CustomUserDTO;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
-import org.springframework.data.domain.PageRequest;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,14 +51,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
-    private final ParentInfoRepository parentInfoRepository;
-    private final StudentInfoRepository studentInfoRepository;
-    private final TeacherInfoRepository teacherInfoRepository;
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
     private final SchoolRepository schoolRepository;
+    private final CodeSequenceService codeSequenceService;
 
     /**
      * 이메일 회원가입
@@ -100,25 +96,28 @@ public class UserService {
      * @param dto 이메일 가입 시에만 존재 (전화번호, 학번 등 추가 정보). SNS 가입은 null.
      */
     private void processRoleSetup(User user, UserRole role, Long schoolId, CustomUserDTO dto) {
-        // 1. 역할별 Info 엔티티 생성 (ADMIN은 Info 없음)
+        // 1. 중복 신청 방지 (ADMIN 제외) — Info 생성 전에 체크하여 중복 INSERT 방지
+        if (role != UserRole.ADMIN) {
+            boolean alreadyExists = schoolId != null
+                    ? roleRequestRepository.existsByUserAndRoleAndSchoolId(user, role, schoolId)
+                    : roleRequestRepository.existsByUserAndRoleAndSchoolIdIsNull(user, role);
+            if (alreadyExists) return;
+        }
+
+        // 2. 역할별 Info 엔티티 생성 (ADMIN은 Info 없음)
         switch (role) {
             case STUDENT -> buildStudentInfo(user, schoolId, dto);
             case TEACHER -> buildTeacherInfo(user, schoolId, dto);
+            case STAFF   -> buildStaffInfo(user, schoolId, dto);
             case PARENT  -> buildParentInfo(user, schoolId, dto);
             case ADMIN   -> { /* Info 없음 */ }
             default -> throw new IllegalArgumentException("지원하지 않는 역할입니다: " + role);
         }
 
-        // 2. 저장 (cascade로 Info도 함께 저장)
+        // 3. 저장 (cascade로 Info도 함께 저장)
         userRepository.save(user);
 
-        // 3. RoleRequest 생성 (ADMIN 제외, 중복 신청 무시)
         if (role == UserRole.ADMIN) return;
-
-        boolean alreadyExists = schoolId != null
-                ? roleRequestRepository.existsByUserAndRoleAndSchoolId(user, role, schoolId)
-                : roleRequestRepository.existsByUserAndRoleAndSchoolIdIsNull(user, role);
-        if (alreadyExists) return;
 
         boolean isSuperAdmin = user.getRoles().contains(UserRole.ADMIN);
         roleRequestRepository.save(isSuperAdmin
@@ -148,9 +147,9 @@ public class UserService {
             schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
 
-        // 학번: dto에서 가져오거나 연도+순번으로 자동 생성 (예: 20250001)
+        // 학번: dto에서 가져오거나 S+연도+4자리 순번으로 자동 채번 (예: S20260001)
         String code = (dto != null) ? dto.getStudentIdentityNum() : null;
-        info.setCode((code != null && !code.isEmpty()) ? code : generateStudentCode(schoolId));
+        info.setCode((code != null && !code.isEmpty()) ? code : codeSequenceService.issue(schoolId, "S"));
 
         if (dto != null) {
             info.setPhone(dto.getPhoneNumber());
@@ -186,9 +185,9 @@ public class UserService {
             schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
 
-        // 사번: dto에서 가져오거나 연도+순번으로 자동 생성 (예: T20250001)
+        // 사번: dto에서 가져오거나 T+연도+4자리 순번으로 자동 채번 (예: T20260001)
         String code = (dto != null) ? dto.getEmployeeNumber() : null;
-        info.setCode((code != null && !code.isEmpty()) ? code : generateTeacherCode(schoolId));
+        info.setCode((code != null && !code.isEmpty()) ? code : codeSequenceService.issue(schoolId, "T"));
 
         if (dto != null) {
             info.setPhone(dto.getPhoneNumber());
@@ -209,16 +208,24 @@ public class UserService {
             info.setPhone(dto.getPhoneNumber());
         }
 
-        // 학부모 코드: TEMP_{이메일 아이디}, 중복 시 TEMP_{UUID 앞 8자리}
-        String code = "TEMP_" + user.getEmail().split("@")[0];
-        if (parentInfoRepository.existsByCode(code)) {
-            if (dto != null) {
-                // 이메일 가입: 동일 이메일 아이디 중복은 가입 불가
-                throw new IllegalStateException("이미 사용 중인 아이디입니다. 다른 이메일로 가입해주세요.");
-            }
-            code = "TEMP_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+        // 학부모 코드: P+연도+4자리 순번 전역 채번 (예: P20260001)
+        info.setCode(codeSequenceService.issue(null, "P"));
+
+        user.getInfos().add(info);
+    }
+
+    private void buildStaffInfo(User user, Long schoolId, CustomUserDTO dto) {
+        boolean isFirst = user.getInfos().stream().noneMatch(i -> i instanceof StaffInfo);
+        StaffInfo info = new StaffInfo();
+        info.setUser(user);
+        info.setStatus(StaffStatus.EMPLOYED);
+        info.setPrimary(isFirst);
+        if (schoolId != null) {
+            schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
-        info.setCode(code);
+
+        // 교직원 코드: E+연도+4자리 순번으로 자동 채번 (예: E20260001)
+        info.setCode(codeSequenceService.issue(schoolId, "E"));
 
         user.getInfos().add(info);
     }
@@ -285,46 +292,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
-    }
-
-    /**
-     * 학번 자동 생성: YYYY + 4자리 순번 (예: 20250001)
-     * 학교 내 동일 연도 기준 마지막 학번에서 +1
-     */
-    private String generateStudentCode(Long schoolId) {
-        String prefix = String.valueOf(LocalDate.now().getYear());
-        if (schoolId != null) {
-            List<StudentInfo> latest = studentInfoRepository
-                    .findBySchoolIdAndCodeStartingWithOrderByCodeDesc(schoolId, prefix, PageRequest.of(0, 1));
-            if (!latest.isEmpty()) {
-                try {
-                    int seq = Integer.parseInt(latest.get(0).getCode().substring(4)) + 1;
-                    return prefix + String.format("%04d", seq);
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-        return prefix + "0001";
-    }
-
-    /**
-     * 사번 자동 생성: T + YYYY + 4자리 순번 (예: T20250001)
-     * 학교 내 동일 연도 기준 마지막 사번에서 +1
-     */
-    private String generateTeacherCode(Long schoolId) {
-        String prefix = "T" + LocalDate.now().getYear();
-        if (schoolId != null) {
-            List<TeacherInfo> latest = teacherInfoRepository
-                    .findBySchoolIdAndCodeStartingWithOrderByCodeDesc(schoolId, prefix, PageRequest.of(0, 1));
-            if (!latest.isEmpty()) {
-                try {
-                    int seq = Integer.parseInt(latest.get(0).getCode().substring(5)) + 1;
-                    return prefix + String.format("%04d", seq);
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-        return prefix + "0001";
     }
 
     /**
