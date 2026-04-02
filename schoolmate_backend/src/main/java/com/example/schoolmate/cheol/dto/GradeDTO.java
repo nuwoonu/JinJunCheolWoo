@@ -1,8 +1,6 @@
 package com.example.schoolmate.cheol.dto;
 
-import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +20,10 @@ public class GradeDTO {
     private String subjectCode;
     private TestType examType;
     private Double score;
-    private Semester semester;
-    private Year year;
 
+    // AcademicTerm 기반
+    private Long academicTermId;
+    private int schoolYear;
+    private int semester;
+    private String termDisplayName; // "2025학년도 1학기"
 }

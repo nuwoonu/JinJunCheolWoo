@@ -78,7 +78,7 @@ public class ClassroomService {
         ClassDTO.DetailResponse response = ClassDTO.DetailResponse.from(classroom, students.size());
 
         List<ClassDTO.StudentSummary> studentSummaries = students.stream().map(u -> {
-            StudentInfo info = u.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+            StudentInfo info = u.getInfo(StudentInfo.class);
             StudentAssignment assign = info.getAssignments().stream()
                     .filter(a -> a.getSchoolYear() == classroom.getYear())
                     .findFirst().orElse(null);
@@ -148,23 +148,23 @@ public class ClassroomService {
         List<User> allUsers = userRepository.findAll();
 
         return allUsers.stream()
-                .filter(u -> u.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId()) != null) // 학생 정보가 있는 유저만
+                .filter(u -> u.getInfo(StudentInfo.class) != null) // 학생 정보가 있는 유저만
                 .filter(u -> {
                     // 키워드 검색 (이름 또는 학번)
                     if (keyword == null || keyword.isBlank())
                         return true;
                     String k = keyword.trim();
-                    StudentInfo info = u.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+                    StudentInfo info = u.getInfo(StudentInfo.class);
                     return u.getName().contains(k) || (info.getCode() != null && info.getCode().contains(k));
                 })
                 .filter(u -> {
                     // 해당 학년도에 배정된 기록이 없는지 확인
-                    StudentInfo info = u.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+                    StudentInfo info = u.getInfo(StudentInfo.class);
                     return info.getAssignments().stream()
                             .noneMatch(a -> a.getSchoolYear() == year);
                 })
                 .map(u -> {
-                    StudentInfo info = u.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+                    StudentInfo info = u.getInfo(StudentInfo.class);
                     return new ClassDTO.StudentSummary(
                             u.getUid(), u.getName(), info.getCode(), null, "-", info.getStatus().getDescription());
                 })
@@ -296,7 +296,7 @@ public class ClassroomService {
         int nextNum = maxNum + 1;
 
         for (User user : users) {
-            StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+            StudentInfo info = user.getInfo(StudentInfo.class);
 
             // 이미 해당 학년도에 배정된 정보가 있는지 확인
             StudentAssignment assignment = info.getAssignments().stream()
@@ -319,7 +319,6 @@ public class ClassroomService {
                 newAssignment.setClassroom(classroom);
                 newAssignment.setAttendanceNum(nextNum++);
                 info.getAssignments().add(newAssignment);
-                info.setCurrentAssignment(newAssignment);
             }
         }
 
@@ -364,16 +363,10 @@ public class ClassroomService {
         User user = userRepository.findById(studentUid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+        StudentInfo info = user.getInfo(StudentInfo.class);
 
         // 해당 학년도의 배정 정보 삭제
         info.getAssignments().removeIf(a -> a.getClassroom().getCid().equals(classroom.getCid()));
-
-        // 현재 학적 삭제 시 처리
-        if (info.getCurrentAssignment() != null
-                && info.getCurrentAssignment().getClassroom().getCid().equals(classroom.getCid())) {
-            info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
-        }
 
         logChange(cid, "REMOVE_STUDENT", "학생 제외: " + user.getName());
     }
@@ -385,15 +378,9 @@ public class ClassroomService {
         List<User> users = userRepository.findAllById(studentUids);
 
         for (User user : users) {
-            StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+            StudentInfo info = user.getInfo(StudentInfo.class);
             // 해당 학년도의 배정 정보 삭제
             info.getAssignments().removeIf(a -> a.getClassroom().getCid().equals(classroom.getCid()));
-
-            // 현재 학적 삭제 시 처리
-            if (info.getCurrentAssignment() != null
-                    && info.getCurrentAssignment().getClassroom().getCid().equals(classroom.getCid())) {
-                info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
-            }
         }
 
         logChange(cid, "REMOVE_STUDENT", users.size() + "명 학생 일괄 제외");
@@ -406,7 +393,7 @@ public class ClassroomService {
         User user = userRepository.findById(studentUid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
+        StudentInfo info = user.getInfo(StudentInfo.class);
 
         StudentAssignment assignment = info.getAssignments().stream()
                 .filter(a -> a.getClassroom().getCid().equals(currentCid))

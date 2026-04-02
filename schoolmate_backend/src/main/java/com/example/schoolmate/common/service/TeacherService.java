@@ -50,6 +50,7 @@ import com.example.schoolmate.common.repository.notice.NotificationRepository;
 import com.example.schoolmate.common.util.NotificationHelper;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.woo.dto.teacherdto.TeacherResponseDTO;
@@ -82,6 +83,7 @@ public class TeacherService {
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final CodeSequenceService codeSequenceService;
+    private final AcademicTermRepository academicTermRepository;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========
@@ -385,7 +387,6 @@ public class TeacherService {
         assignment.setClassroom(classroom);
         assignment.setStudentInfo(student);
         student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
@@ -509,10 +510,10 @@ public class TeacherService {
         StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-        // 동일 조건(학생/과목/시험종류/학기/학년) 성적이 이미 있으면 점수만 덮어씀 (upsert)
+        // 동일 조건(학생/과목/시험종류/학기) 성적이 이미 있으면 점수만 덮어씀 (upsert)
         gradeRepository.findDuplicate(
                 student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+                gradeDTO.getTestType(), gradeDTO.getAcademicTermId())
                 .ifPresentOrElse(
                         existing -> {
                             existing.changeScore(gradeDTO.getScore());
@@ -520,12 +521,14 @@ public class TeacherService {
                                     student.getId(), subject.getName(), gradeDTO.getScore());
                         },
                         () -> {
+                            com.example.schoolmate.domain.term.entity.AcademicTerm term =
+                                    academicTermRepository.findById(gradeDTO.getAcademicTermId())
+                                            .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
                             gradeRepository.save(Grade.builder()
                                     .student(student)
                                     .subject(subject)
                                     .testType(gradeDTO.getTestType())
-                                    .semester(gradeDTO.getSemester())
-                                    .year(gradeDTO.getYear())
+                                    .academicTerm(term)
                                     .score(gradeDTO.getScore())
                                     .build());
                             log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
@@ -610,7 +613,6 @@ public class TeacherService {
         assignment.setClassroom(myClassroom);
         assignment.setStudentInfo(student);
         student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
@@ -708,7 +710,7 @@ public class TeacherService {
         // 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
         gradeRepository.findDuplicate(
                 student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+                gradeDTO.getTestType(), gradeDTO.getAcademicTermId())
                 .ifPresentOrElse(
                         existing -> {
                             existing.changeScore(gradeDTO.getScore());
@@ -716,12 +718,14 @@ public class TeacherService {
                                     student.getId(), subject.getName(), gradeDTO.getScore());
                         },
                         () -> {
+                            com.example.schoolmate.domain.term.entity.AcademicTerm term =
+                                    academicTermRepository.findById(gradeDTO.getAcademicTermId())
+                                            .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
                             gradeRepository.save(Grade.builder()
                                     .student(student)
                                     .subject(subject)
                                     .testType(gradeDTO.getTestType())
-                                    .semester(gradeDTO.getSemester())
-                                    .year(gradeDTO.getYear())
+                                    .academicTerm(term)
                                     .score(gradeDTO.getScore())
                                     .build());
                             log.info("담당 학급 학생 성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
@@ -806,15 +810,19 @@ public class TeacherService {
     }
 
     private GradeDTO entityToDto(Grade grade) {
-        return GradeDTO.builder()
+        GradeDTO.GradeDTOBuilder builder = GradeDTO.builder()
                 .id(grade.getId())
                 .studentId(grade.getStudent() != null ? grade.getStudent().getId() : null)
                 .subjectName(grade.getSubject() != null ? grade.getSubject().getName() : null)
                 .subjectCode(grade.getSubject() != null ? grade.getSubject().getCode() : null)
                 .examType(grade.getTestType())
-                .score(grade.getScore())
-                .semester(grade.getSemester())
-                .year(grade.getYear())
-                .build();
+                .score(grade.getScore());
+        if (grade.getAcademicTerm() != null) {
+            builder.academicTermId(grade.getAcademicTerm().getId())
+                    .schoolYear(grade.getAcademicTerm().getSchoolYear())
+                    .semester(grade.getAcademicTerm().getSemester())
+                    .termDisplayName(grade.getAcademicTerm().getDisplayName());
+        }
+        return builder.build();
     }
 }

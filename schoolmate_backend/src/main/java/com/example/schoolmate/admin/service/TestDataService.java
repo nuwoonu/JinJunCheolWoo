@@ -387,9 +387,6 @@ public class TestDataService {
             info.setAddressDetail(i + "번지");
             info.setBirthDate(LocalDate.of(2010 + (i % 6), 1 + (i % 12), 1 + (i % 28)));
             info.setGender(gender);
-            info.setBasicHabits("성실하고 예의 바름");
-            info.setSpecialNotes("특이사항 없음");
-
             // 학급 배정
             if (!classrooms.isEmpty()) {
                 Classroom c = classrooms.get(classIdx % classrooms.size());
@@ -403,9 +400,10 @@ public class TestDataService {
                 assignment.setSchoolYear(year);
                 assignment.setClassroom(c);
                 assignment.setAttendanceNum(num);
+                assignment.setBasicHabits("성실하고 예의 바름");
+                assignment.setSpecialNotes("특이사항 없음");
 
                 info.getAssignments().add(assignment);
-                info.setCurrentAssignment(assignment);
             }
 
             user.getInfos().add(info);

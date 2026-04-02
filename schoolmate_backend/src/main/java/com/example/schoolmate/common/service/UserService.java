@@ -172,7 +172,6 @@ public class UserService {
                                     .attendanceNum(dto.getStudentNum())
                                     .build();
                             info.getAssignments().add(assignment);
-                            info.setCurrentAssignment(assignment);
                         });
             }
         }

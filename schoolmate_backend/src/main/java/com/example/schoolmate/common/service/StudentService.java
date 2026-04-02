@@ -174,7 +174,6 @@ public class StudentService {
                         assignment.setAttendanceNum(nextNum);
 
                         info.getAssignments().add(assignment);
-                        info.setCurrentAssignment(assignment);
                     });
         } else if (request.getYear() != null && request.getGrade() != null && request.getClassNum() != null) {
             // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
@@ -187,7 +186,6 @@ public class StudentService {
                         assignment.setAttendanceNum(request.getAttendanceNum());
                         assignment.setStudentInfo(info);
                         info.getAssignments().add(assignment);
-                        info.setCurrentAssignment(assignment);
                     });
         }
 
@@ -332,10 +330,6 @@ public class StudentService {
         // 해당 학년도의 이력만 제거
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
 
-        if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getSchoolYear() == schoolYear) {
-            info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
-        }
-
         return user.getUid();
     }
 
@@ -476,7 +470,6 @@ public class StudentService {
         assignment.setClassroom(classroom);
         assignment.setAttendanceNum(createDTO.getStudentNumber());
         student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
 
         userRepository.save(user);
         return convertToResponseDTO(student);

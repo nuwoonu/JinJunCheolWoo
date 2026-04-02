@@ -166,7 +166,6 @@ public class TeacherMyClassRestController {
                     .build();
             assignment.setSchool(student.getSchool());
 
-            student.setCurrentAssignment(assignment);
             student.getAssignments().add(assignment);
             studentInfoRepository.save(student);
 

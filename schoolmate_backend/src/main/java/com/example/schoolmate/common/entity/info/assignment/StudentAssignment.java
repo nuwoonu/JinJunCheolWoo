@@ -37,6 +37,14 @@ public class StudentAssignment extends SchoolBaseEntity {
 
     private Integer attendanceNum; // 번호 (출석번호)
 
+    // 학년도별 기초 생활 기록
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String basicHabits;
+
+    // 학년도별 특이사항
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String specialNotes;
+
     @Builder
     public StudentAssignment(StudentInfo studentInfo, int schoolYear, Classroom classroom, Integer attendanceNum) {
         this.studentInfo = studentInfo;
