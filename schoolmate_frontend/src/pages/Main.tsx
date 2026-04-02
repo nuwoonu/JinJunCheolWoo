@@ -33,16 +33,26 @@ const NAV_H = 64;
 export default function Main() {
   const { user, loading } = useAuth();
 
-  const schoolSearch = useSchoolSearch((params) => api.get("/schools", { params }), 5);
-  const [selectedSchool, setSelectedSchool] = useState<SchoolSummary | null>(null);
+  const schoolSearch = useSchoolSearch(
+    (params) => api.get("/schools", { params }),
+    5,
+  );
+  const [selectedSchool, setSelectedSchool] = useState<SchoolSummary | null>(
+    null,
+  );
 
   const [notices, setNotices] = useState<ServiceNotice[]>([]);
   const [noticePage, setNoticePage] = useState(0);
   const [noticeTotalPages, setNoticeTotalPages] = useState(1);
   const [noticeTotalElements, setNoticeTotalElements] = useState(0);
   const [noticeLoading, setNoticeLoading] = useState(false);
-  const [selectedNotice, setSelectedNotice] = useState<ServiceNoticeDetail | null>(null);
+  const [selectedNotice, setSelectedNotice] =
+    useState<ServiceNoticeDetail | null>(null);
   const [noticeDetailLoading, setNoticeDetailLoading] = useState(false);
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     fetchNotices(0);
@@ -69,6 +79,63 @@ export default function Main() {
       .then((res) => setSelectedNotice(res.data))
       .catch(() => {})
       .finally(() => setNoticeDetailLoading(false));
+  };
+
+  // PWA 웹 앱 설치 권유 로직
+  useEffect(() => {
+    // 30일 이내 닫은 적 있으면 표시 안 함
+    const dismissed = localStorage.getItem("pwa-install-dismissed");
+    if (dismissed && Date.now() - parseInt(dismissed) < 30 * 24 * 60 * 60 * 1000) return;
+
+    // 이미 PWA(standalone)로 실행 중이면 표시 안 함
+    if (window.matchMedia("(display-mode: standalone)").matches) return;
+
+    // iOS Safari 감지 (beforeinstallprompt 미지원)
+    const iosDevice =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+      !(window as any).MSStream;
+    if (iosDevice) {
+      const isStandalone = (window.navigator as any).standalone === true;
+      if (!isStandalone) {
+        setIsIOS(true);
+        setShowInstallPrompt(true);
+      }
+      return;
+    }
+
+    // Android / 데스크탑: beforeinstallprompt 이벤트 사용
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", () => {
+      setShowInstallPrompt(false);
+      setDeferredPrompt(null);
+    });
+
+    return () =>
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setShowInstallPrompt(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const handleInstallDismiss = () => {
+    setShowInstallPrompt(false);
+    localStorage.setItem("pwa-install-dismissed", Date.now().toString());
   };
 
   const scrollTo = (id: string) => (e: React.MouseEvent) => {
@@ -129,6 +196,17 @@ export default function Main() {
           transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: inline-block;
         }
         .hero-btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+
+        /* PWA 설치 팝업 배너 */
+        .install-prompt-banner {
+          position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+          background: #fff; padding: 18px 24px; border-radius: 16px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.15); z-index: 9999;
+          width: 90%; max-width: 480px; border: 1px solid #e8ecec;
+          display: flex; align-items: center; justify-content: space-between; gap: 16px;
+          animation: slideUpPrompt 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUpPrompt { from { opacity: 0; transform: translate(-50%, 40px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .hero-avatars { display: flex; align-items: flex-end; gap: 14px; height: 340px; }
         .avatar-pill {
           border-radius: 100px;
@@ -209,10 +287,28 @@ export default function Main() {
       <div className="main-root">
         {/* ── 네비게이션 ── */}
         <nav className="main-nav">
-          <div style={{ width: '100%', padding: '0 24px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              width: "100%",
+              padding: "0 24px",
+              boxSizing: "border-box",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <div className="d-flex align-items-center gap-3">
-              <a href="#hero" onClick={scrollTo("hero")} style={{ lineHeight: 0 }}>
-                <img src="/images/schoolmateLogo.png" alt="SchoolMate" width="160" height="37" />
+              <a
+                href="#hero"
+                onClick={scrollTo("hero")}
+                style={{ lineHeight: 0 }}
+              >
+                <img
+                  src="/images/schoolmateLogo.png"
+                  alt="SchoolMate"
+                  width="160"
+                  height="37"
+                />
               </a>
               <div className="d-none d-md-flex gap-1 ms-2">
                 <button className="nav-link-tab" onClick={scrollTo("features")}>
@@ -289,7 +385,16 @@ export default function Main() {
         </section>
 
         {/* ════ 섹션 2: 기능 소개 (white) ════ */}
-        <section id="features" style={{ background: "#fff", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
+        <section
+          id="features"
+          style={{
+            background: "#fff",
+            padding: "80px 0",
+            minHeight: `calc(100vh - ${NAV_H}px)`,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <div className="container">
             <div className="row align-items-center g-5">
               <div className="col-lg-4">
@@ -301,7 +406,9 @@ export default function Main() {
                   <br />
                   어떤 것이 있나요?
                 </h2>
-                <p className="section-desc">출결·성적·과제·상담·일정을 하나의 시스템에서 통합 관리합니다.</p>
+                <p className="section-desc">
+                  출결·성적·과제·상담·일정을 하나의 시스템에서 통합 관리합니다.
+                </p>
               </div>
               <div className="col-lg-8">
                 <div className="row g-3">
@@ -341,16 +448,41 @@ export default function Main() {
                   ].map((f) => (
                     <div key={f.title} className="col-sm-6">
                       <div className="feature-card d-flex gap-3 align-items-start">
-                        <div className="feature-icon-wrap flex-shrink-0" style={{ background: f.bg }}>
-                          <i className={f.icon} style={{ fontSize: 22, color: f.color }} />
+                        <div
+                          className="feature-icon-wrap flex-shrink-0"
+                          style={{ background: f.bg }}
+                        >
+                          <i
+                            className={f.icon}
+                            style={{ fontSize: 22, color: f.color }}
+                          />
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 700, fontSize: "1rem", color: "#1a2e2c", marginBottom: 5 }}>
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              fontSize: "1rem",
+                              color: "#1a2e2c",
+                              marginBottom: 5,
+                            }}
+                          >
                             {f.title}
                           </div>
-                          <div style={{ fontSize: "0.85rem", color: "#6b7280", lineHeight: 1.6 }}>{f.desc}</div>
+                          <div
+                            style={{
+                              fontSize: "0.85rem",
+                              color: "#6b7280",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {f.desc}
+                          </div>
                         </div>
-                        <div style={{ fontSize: 28, flexShrink: 0, opacity: 0.4 }}>{f.emoji}</div>
+                        <div
+                          style={{ fontSize: 28, flexShrink: 0, opacity: 0.4 }}
+                        >
+                          {f.emoji}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -361,12 +493,24 @@ export default function Main() {
         </section>
 
         {/* ════ 섹션 3: 역할별 서비스 (light teal) ════ */}
-        <section style={{ background: "#f0faf9", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
+        <section
+          style={{
+            background: "#f0faf9",
+            padding: "80px 0",
+            minHeight: `calc(100vh - ${NAV_H}px)`,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <div className="container">
             <div className="text-center mb-5">
               <span className="section-tag">역할별 서비스</span>
-              <h2 className="section-title">역할에 맞는 맞춤 기능을 제공합니다</h2>
-              <p className="section-desc">관리자, 교사, 학부모, 학생 모두를 위한 전용 대시보드</p>
+              <h2 className="section-title">
+                역할에 맞는 맞춤 기능을 제공합니다
+              </h2>
+              <p className="section-desc">
+                관리자, 교사, 학부모, 학생 모두를 위한 전용 대시보드
+              </p>
             </div>
             <div className="row g-3">
               {[
@@ -376,7 +520,12 @@ export default function Main() {
                   bg: "#fee2e2",
                   label: "관리자",
                   badge: "Admin",
-                  items: ["권한 관리", "학사 데이터 관리", "공지 관리", "교직원 정보 관리"],
+                  items: [
+                    "권한 관리",
+                    "학사 데이터 관리",
+                    "공지 관리",
+                    "교직원 정보 관리",
+                  ],
                 },
                 {
                   icon: "ri-book-open-line",
@@ -384,7 +533,12 @@ export default function Main() {
                   bg: "#fef3c7",
                   label: "교사",
                   badge: "Teacher",
-                  items: ["교사 전용 대시보드", "출결·성적·과제 관리", "학급 관리", "학부모 상담 관리"],
+                  items: [
+                    "교사 전용 대시보드",
+                    "출결·성적·과제 관리",
+                    "학급 관리",
+                    "학부모 상담 관리",
+                  ],
                 },
                 {
                   icon: "ri-heart-2-line",
@@ -392,7 +546,12 @@ export default function Main() {
                   bg: "#ede9fe",
                   label: "학부모",
                   badge: "Parents",
-                  items: ["자녀 선택", "자녀 학습·생활 현황", "상담 신청", "학부모 게시판"],
+                  items: [
+                    "자녀 선택",
+                    "자녀 학습·생활 현황",
+                    "상담 신청",
+                    "학부모 게시판",
+                  ],
                 },
                 {
                   icon: "ri-graduation-cap-line",
@@ -400,13 +559,21 @@ export default function Main() {
                   bg: "rgba(37,161,148,0.1)",
                   label: "학생",
                   badge: "Student",
-                  items: ["개인 학습 대시보드", "과제·일정 확인", "성적 관리", "학생 게시판"],
+                  items: [
+                    "개인 학습 대시보드",
+                    "과제·일정 확인",
+                    "성적 관리",
+                    "학생 게시판",
+                  ],
                 },
               ].map((r) => (
                 <div key={r.label} className="col-md-6 col-lg-3">
                   <div className="role-card">
                     <div className="d-flex align-items-center gap-2 mb-3">
-                      <i className={r.icon} style={{ fontSize: 24, color: r.color }} />
+                      <i
+                        className={r.icon}
+                        style={{ fontSize: 24, color: r.color }}
+                      />
                       <div>
                         <span
                           style={{
@@ -420,7 +587,14 @@ export default function Main() {
                         >
                           {r.badge}
                         </span>
-                        <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#1a2e2c", marginTop: 2 }}>
+                        <div
+                          style={{
+                            fontSize: "1.05rem",
+                            fontWeight: 700,
+                            color: "#1a2e2c",
+                            marginTop: 2,
+                          }}
+                        >
                           {r.label}
                         </div>
                       </div>
@@ -428,7 +602,10 @@ export default function Main() {
                     <ul className="role-feature-list">
                       {r.items.map((it) => (
                         <li key={it}>
-                          <i className="ri-check-line" style={{ color: P, marginTop: 2 }} />
+                          <i
+                            className="ri-check-line"
+                            style={{ color: P, marginTop: 2 }}
+                          />
                           {it}
                         </li>
                       ))}
@@ -441,12 +618,23 @@ export default function Main() {
         </section>
 
         {/* ════ 섹션 4: 학교 찾기 (white) ════ */}
-        <section id="school" style={{ background: "#fff", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
+        <section
+          id="school"
+          style={{
+            background: "#fff",
+            padding: "80px 0",
+            minHeight: `calc(100vh - ${NAV_H}px)`,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <div className="container">
             <div className="text-center mb-4">
               <span className="section-tag">학교 찾기</span>
               <h2 className="section-title">우리 학교를 찾아보세요</h2>
-              <p className="section-desc">학교명 또는 종류로 검색하고 상세 정보를 확인하세요</p>
+              <p className="section-desc">
+                학교명 또는 종류로 검색하고 상세 정보를 확인하세요
+              </p>
             </div>
             <div className="row g-4 justify-content-center">
               <div className="col-lg-5">
@@ -464,7 +652,9 @@ export default function Main() {
                       <select
                         className="form-select"
                         value={schoolSearch.schoolKind}
-                        onChange={(e) => schoolSearch.setSchoolKind(e.target.value)}
+                        onChange={(e) =>
+                          schoolSearch.setSchoolKind(e.target.value)
+                        }
                         style={{ borderRadius: 8 }}
                       >
                         {SCHOOL_KIND_OPTIONS.map((o) => (
@@ -476,7 +666,13 @@ export default function Main() {
                       <button
                         type="submit"
                         className="btn flex-shrink-0"
-                        style={{ background: P, color: "#fff", borderRadius: 8, fontWeight: 600, minWidth: 64 }}
+                        style={{
+                          background: P,
+                          color: "#fff",
+                          borderRadius: 8,
+                          fontWeight: 600,
+                          minWidth: 64,
+                        }}
                         disabled={schoolSearch.loading}
                       >
                         {schoolSearch.loading ? "..." : "검색"}
@@ -486,12 +682,17 @@ export default function Main() {
                   {schoolSearch.searched && (
                     <div style={{ marginTop: 14 }}>
                       {schoolSearch.schools.length === 0 ? (
-                        <div className="text-center py-4 text-secondary" style={{ fontSize: "0.9rem" }}>
+                        <div
+                          className="text-center py-4 text-secondary"
+                          style={{ fontSize: "0.9rem" }}
+                        >
                           검색 결과가 없습니다.
                         </div>
                       ) : (
                         <>
-                          <small className="text-secondary px-1 d-block mb-2">총 {schoolSearch.totalElements}개</small>
+                          <small className="text-secondary px-1 d-block mb-2">
+                            총 {schoolSearch.totalElements}개
+                          </small>
                           {schoolSearch.schools.map((school) => (
                             <div
                               key={school.id}
@@ -511,14 +712,24 @@ export default function Main() {
                                 >
                                   {school.name}
                                 </div>
-                                <div style={{ fontSize: "0.78rem", color: "#9ca3af", marginTop: 2 }}>
-                                  {school.schoolKind} · {school.officeOfEducation}
+                                <div
+                                  style={{
+                                    fontSize: "0.78rem",
+                                    color: "#9ca3af",
+                                    marginTop: 2,
+                                  }}
+                                >
+                                  {school.schoolKind} ·{" "}
+                                  {school.officeOfEducation}
                                 </div>
                               </div>
                               <i
                                 className="ri-arrow-right-s-line"
                                 style={{
-                                  color: selectedSchool?.id === school.id ? P : "#d1d5db",
+                                  color:
+                                    selectedSchool?.id === school.id
+                                      ? P
+                                      : "#d1d5db",
                                   fontSize: 18,
                                   flexShrink: 0,
                                 }}
@@ -530,19 +741,36 @@ export default function Main() {
                               <button
                                 className="btn btn-sm btn-outline-secondary"
                                 disabled={schoolSearch.page === 0}
-                                onClick={() => schoolSearch.fetchSchools(schoolSearch.page - 1)}
+                                onClick={() =>
+                                  schoolSearch.fetchSchools(
+                                    schoolSearch.page - 1,
+                                  )
+                                }
                               >
                                 이전
                               </button>
                               <span
-                                style={{ lineHeight: "30px", fontSize: "0.82rem", color: "#6b7280", padding: "0 6px" }}
+                                style={{
+                                  lineHeight: "30px",
+                                  fontSize: "0.82rem",
+                                  color: "#6b7280",
+                                  padding: "0 6px",
+                                }}
                               >
-                                {schoolSearch.page + 1} / {schoolSearch.totalPages}
+                                {schoolSearch.page + 1} /{" "}
+                                {schoolSearch.totalPages}
                               </span>
                               <button
                                 className="btn btn-sm btn-outline-secondary"
-                                disabled={schoolSearch.page >= schoolSearch.totalPages - 1}
-                                onClick={() => schoolSearch.fetchSchools(schoolSearch.page + 1)}
+                                disabled={
+                                  schoolSearch.page >=
+                                  schoolSearch.totalPages - 1
+                                }
+                                onClick={() =>
+                                  schoolSearch.fetchSchools(
+                                    schoolSearch.page + 1,
+                                  )
+                                }
                               >
                                 다음
                               </button>
@@ -570,30 +798,54 @@ export default function Main() {
                           flexShrink: 0,
                         }}
                       >
-                        <i className="ri-building-2-line" style={{ fontSize: 24 }} />
+                        <i
+                          className="ri-building-2-line"
+                          style={{ fontSize: 24 }}
+                        />
                       </div>
                       <div>
-                        <div style={{ fontSize: "1.3rem", fontWeight: 800, lineHeight: 1.2 }}>
+                        <div
+                          style={{
+                            fontSize: "1.3rem",
+                            fontWeight: 800,
+                            lineHeight: 1.2,
+                          }}
+                        >
                           {selectedSchool.name}
                         </div>
-                        <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.72)", marginTop: 3 }}>
-                          {selectedSchool.schoolKind} · {selectedSchool.officeOfEducation}
+                        <div
+                          style={{
+                            fontSize: "0.82rem",
+                            color: "rgba(255,255,255,0.72)",
+                            marginTop: 3,
+                          }}
+                        >
+                          {selectedSchool.schoolKind} ·{" "}
+                          {selectedSchool.officeOfEducation}
                         </div>
                       </div>
                     </div>
                     <div className="school-info-item">
                       <div className="school-info-label">전화번호</div>
-                      <div className="school-info-value">{selectedSchool.phoneNumber || "—"}</div>
+                      <div className="school-info-value">
+                        {selectedSchool.phoneNumber || "—"}
+                      </div>
                     </div>
                     <div className="school-info-item">
                       <div className="school-info-label">홈페이지</div>
-                      <div className="school-info-value" style={{ wordBreak: "break-all" }}>
+                      <div
+                        className="school-info-value"
+                        style={{ wordBreak: "break-all" }}
+                      >
                         {selectedSchool.homepage ? (
                           <a
                             href={selectedSchool.homepage}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ color: "#fff", textDecoration: "underline" }}
+                            style={{
+                              color: "#fff",
+                              textDecoration: "underline",
+                            }}
                           >
                             {selectedSchool.homepage}
                           </a>
@@ -604,7 +856,10 @@ export default function Main() {
                     </div>
                     <div className="school-info-item">
                       <div className="school-info-label">주소</div>
-                      <div className="school-info-value" style={{ fontSize: "0.88rem" }}>
+                      <div
+                        className="school-info-value"
+                        style={{ fontSize: "0.88rem" }}
+                      >
                         {selectedSchool.address || "—"}
                       </div>
                     </div>
@@ -623,7 +878,10 @@ export default function Main() {
                       gap: 10,
                     }}
                   >
-                    <i className="ri-building-2-line" style={{ fontSize: 40, color: "#c5dedd" }} />
+                    <i
+                      className="ri-building-2-line"
+                      style={{ fontSize: 40, color: "#c5dedd" }}
+                    />
                     <div style={{ fontSize: "0.9rem", textAlign: "center" }}>
                       좌측에서 학교를 검색 후 클릭하면
                       <br />
@@ -637,33 +895,65 @@ export default function Main() {
         </section>
 
         {/* ════ 섹션 5: 공지사항 (light gray) ════ */}
-        <section id="notice" style={{ background: "#f8fafc", padding: "80px 0", minHeight: `calc(100vh - ${NAV_H}px)`, display: "flex", alignItems: "center" }}>
+        <section
+          id="notice"
+          style={{
+            background: "#f8fafc",
+            padding: "80px 0",
+            minHeight: `calc(100vh - ${NAV_H}px)`,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <div className="container">
             <div className="text-center mb-4">
               <span className="section-tag">공지사항</span>
               <h2 className="section-title">SchoolMate 소식</h2>
-              <p className="section-desc">서비스 업데이트 및 중요 공지를 확인하세요</p>
+              <p className="section-desc">
+                서비스 업데이트 및 중요 공지를 확인하세요
+              </p>
             </div>
             <div className="row justify-content-center">
               <div className="col-lg-8">
                 <div className="notice-wrap">
                   <div className="notice-hd">
-                    <span style={{ fontWeight: 700, color: "#1a2e2c", fontSize: "0.95rem" }}>전체 공지</span>
-                    <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>총 {noticeTotalElements}건</span>
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        color: "#1a2e2c",
+                        fontSize: "0.95rem",
+                      }}
+                    >
+                      전체 공지
+                    </span>
+                    <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>
+                      총 {noticeTotalElements}건
+                    </span>
                   </div>
                   {noticeLoading ? (
-                    <div className="text-center py-5 text-secondary">불러오는 중...</div>
+                    <div className="text-center py-5 text-secondary">
+                      불러오는 중...
+                    </div>
                   ) : notices.length === 0 ? (
-                    <div className="text-center py-5 text-secondary">등록된 공지사항이 없습니다.</div>
+                    <div className="text-center py-5 text-secondary">
+                      등록된 공지사항이 없습니다.
+                    </div>
                   ) : (
                     notices.map((n) => (
-                      <div key={n.id} className="notice-row" onClick={() => openNotice(n.id)}>
+                      <div
+                        key={n.id}
+                        className="notice-row"
+                        onClick={() => openNotice(n.id)}
+                      >
                         {n.isPinned && <span className="notice-pin">공지</span>}
                         <span className="notice-title">{n.title}</span>
                         <span className="notice-meta">
                           {n.writerName} · {n.createDate?.slice(0, 10)}
                         </span>
-                        <i className="ri-arrow-right-s-line" style={{ color: "#d1d5db", fontSize: 17 }} />
+                        <i
+                          className="ri-arrow-right-s-line"
+                          style={{ color: "#d1d5db", fontSize: 17 }}
+                        />
                       </div>
                     ))
                   )}
@@ -723,11 +1013,15 @@ export default function Main() {
               <br />
               <span>주소: 서울특별시 종로구 종로12길 15 코아빌딩 2층</span>
               <br />
-              <span>이메일: contact@schoolmate.kr &nbsp;|&nbsp; 전화: 0507-1430-7001</span>
+              <span>
+                이메일: contact@schoolmate.kr &nbsp;|&nbsp; 전화: 0507-1430-7001
+              </span>
             </div>
 
             {/* 저작권 */}
-            <div className="footer-copy">Copyright 2026 SchoolMate. All Rights Reserved.</div>
+            <div className="footer-copy">
+              Copyright 2026 SchoolMate. All Rights Reserved.
+            </div>
           </div>
         </footer>
       </div>
@@ -751,18 +1045,43 @@ export default function Main() {
               ) : (
                 selectedNotice && (
                   <>
-                    <div className="modal-header" style={{ borderBottom: "1px solid #f0f0f0", padding: "18px 24px" }}>
+                    <div
+                      className="modal-header"
+                      style={{
+                        borderBottom: "1px solid #f0f0f0",
+                        padding: "18px 24px",
+                      }}
+                    >
                       <div>
-                        {selectedNotice.isPinned && <span className="notice-pin me-2">공지</span>}
-                        <span style={{ fontWeight: 700, color: "#1a2e2c", fontSize: "1.05rem" }}>
+                        {selectedNotice.isPinned && (
+                          <span className="notice-pin me-2">공지</span>
+                        )}
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            color: "#1a2e2c",
+                            fontSize: "1.05rem",
+                          }}
+                        >
                           {selectedNotice.title}
                         </span>
-                        <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: 5 }}>
-                          {selectedNotice.writerName} · {selectedNotice.createDate?.slice(0, 10)} · 조회{" "}
+                        <div
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "#9ca3af",
+                            marginTop: 5,
+                          }}
+                        >
+                          {selectedNotice.writerName} ·{" "}
+                          {selectedNotice.createDate?.slice(0, 10)} · 조회{" "}
                           {selectedNotice.viewCount}
                         </div>
                       </div>
-                      <button type="button" className="btn-close" onClick={() => setSelectedNotice(null)} />
+                      <button
+                        type="button"
+                        className="btn-close"
+                        onClick={() => setSelectedNotice(null)}
+                      />
                     </div>
                     <div
                       className="modal-body"
@@ -776,10 +1095,20 @@ export default function Main() {
                     >
                       {selectedNotice.content}
                     </div>
-                    <div className="modal-footer" style={{ borderTop: "1px solid #f0f0f0", padding: "14px 24px" }}>
+                    <div
+                      className="modal-footer"
+                      style={{
+                        borderTop: "1px solid #f0f0f0",
+                        padding: "14px 24px",
+                      }}
+                    >
                       <button
                         className="btn"
-                        style={{ background: P, color: "#fff", borderRadius: 8 }}
+                        style={{
+                          background: P,
+                          color: "#fff",
+                          borderRadius: 8,
+                        }}
                         onClick={() => setSelectedNotice(null)}
                       >
                         닫기
@@ -789,6 +1118,82 @@ export default function Main() {
                 )
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* PWA 설치 권유 팝업 */}
+      {showInstallPrompt && (
+        <div className="install-prompt-banner">
+          <div
+            className="d-flex align-items-center gap-3"
+            style={{ minWidth: 0 }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                background: "#f0faf9",
+                borderRadius: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <i
+                className="ri-download-cloud-2-line"
+                style={{ fontSize: 24, color: P }}
+              />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  color: "#1a2e2c",
+                  fontSize: "0.95rem",
+                }}
+              >
+                SchoolMate 앱 설치하기
+              </div>
+              <div
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#6b7280",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: isIOS ? "normal" : "nowrap",
+                }}
+              >
+                {isIOS
+                  ? "Safari 하단 공유 버튼 → '홈 화면에 추가'를 눌러 설치하세요."
+                  : "바탕화면에서 더 빠르고 편리하게 접속하세요!"}
+              </div>
+            </div>
+          </div>
+          <div className="d-flex gap-2 flex-shrink-0">
+            <button
+              className="btn btn-sm btn-light"
+              onClick={handleInstallDismiss}
+              style={{ borderRadius: 8, fontSize: "0.85rem", fontWeight: 600 }}
+            >
+              나중에
+            </button>
+            {!isIOS && (
+              <button
+                className="btn btn-sm"
+                onClick={handleInstallClick}
+                style={{
+                  background: P,
+                  color: "#fff",
+                  borderRadius: 8,
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                }}
+              >
+                설치
+              </button>
+            )}
           </div>
         </div>
       )}

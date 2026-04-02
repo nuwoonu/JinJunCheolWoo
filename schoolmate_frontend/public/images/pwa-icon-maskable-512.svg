@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Full bleed background for maskable (safe zone: center 80% = 204px padding) -->
+  <rect width="512" height="512" fill="#25a194"/>
+  <!-- Icon content within safe zone (approx 128px inset on each side) -->
+  <rect x="128" y="128" width="256" height="256" rx="0" fill="none"/>
+  <!-- School building (scaled to fit safe zone) -->
+  <polygon points="128,232 256,148 384,232" fill="white" opacity="0.9"/>
+  <rect x="156" y="232" width="200" height="152" rx="4" fill="white" opacity="0.2"/>
+  <!-- Door -->
+  <rect x="220" y="310" width="72" height="74" rx="36" fill="#1a7a6e"/>
+  <!-- Windows -->
+  <rect x="166" y="252" width="46" height="36" rx="5" fill="white" opacity="0.8"/>
+  <rect x="300" y="252" width="46" height="36" rx="5" fill="white" opacity="0.8"/>
+</svg>

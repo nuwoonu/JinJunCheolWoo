@@ -5,6 +5,7 @@ import PageLoader from "@/components/PageLoader";
 import { ADMIN_ROUTES } from "@/constants/routes";
 import { useSchool } from "@/contexts/SchoolContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 // 공통
 import NotFound from "@/pages/error/NotFound";
 import Unauthorized from "@/pages/error/Unauthorized";
@@ -148,6 +149,9 @@ function SchoolSelectGuard() {
 }
 
 function App() {
+  const { user } = useAuth();
+  usePushSubscription(user?.authenticated === true);
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/hub" replace />} />
