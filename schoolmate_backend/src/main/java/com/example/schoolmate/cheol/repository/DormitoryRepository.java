@@ -33,34 +33,59 @@ public interface DormitoryRepository extends JpaRepository<Dormitory, Long> {
             @Param("floor") Integer floor,
             @Param("roomNumber") String roomNumber);
 
-    // 특정 호실의 모든 침대 + 학생 Fetch Join 조회 (같은 방 학생 표시용)
-    @Query("SELECT d FROM Dormitory d LEFT JOIN FETCH d.students s LEFT JOIN FETCH s.user WHERE d.building = :building AND d.floor = :floor AND d.roomNumber = :roomNumber ORDER BY d.bedNumber")
+    // 특정 호실의 모든 침대 + 현재 학기 배정 학생 Fetch Join 조회
+    @Query("SELECT DISTINCT d FROM Dormitory d " +
+           "LEFT JOIN FETCH d.dormitoryAssignments da " +
+           "LEFT JOIN FETCH da.studentInfo si " +
+           "LEFT JOIN FETCH si.user " +
+           "LEFT JOIN da.academicTerm t ON t.status = 'ACTIVE' " +
+           "WHERE d.building = :building AND d.floor = :floor AND d.roomNumber = :roomNumber " +
+           "ORDER BY d.bedNumber")
     List<Dormitory> findByRoomWithStudents(
             @Param("building") String building,
             @Param("floor") Integer floor,
             @Param("roomNumber") String roomNumber);
 
-    // 빈 침대 조회
-    @Query("SELECT d FROM Dormitory d WHERE d.students IS EMPTY ORDER BY d.building, d.floor DESC, d.roomNumber, d.bedNumber")
+    // 현재 학기 기준 빈 침대 조회
+    @Query("SELECT d FROM Dormitory d WHERE NOT EXISTS (" +
+           "SELECT da FROM DormitoryAssignment da JOIN da.academicTerm t " +
+           "WHERE da.dormitory = d AND t.status = 'ACTIVE') " +
+           "ORDER BY d.building, d.floor DESC, d.roomNumber, d.bedNumber")
     List<Dormitory> findEmptyBeds();
 
-    // 특정 건물의 빈 침대 조회
-    @Query("SELECT d FROM Dormitory d WHERE d.building = :building AND d.students IS EMPTY ORDER BY d.floor DESC, d.roomNumber, d.bedNumber")
+    // 특정 건물의 현재 학기 기준 빈 침대 조회
+    @Query("SELECT d FROM Dormitory d WHERE d.building = :building AND NOT EXISTS (" +
+           "SELECT da FROM DormitoryAssignment da JOIN da.academicTerm t " +
+           "WHERE da.dormitory = d AND t.status = 'ACTIVE') " +
+           "ORDER BY d.floor DESC, d.roomNumber, d.bedNumber")
     List<Dormitory> findEmptyBedsByBuilding(@Param("building") String building);
 
-    // 특정 방 타입의 빈 침대 조회
-    @Query("SELECT d FROM Dormitory d WHERE d.roomType = :roomType AND d.students IS EMPTY ORDER BY d.building, d.floor DESC, d.roomNumber, d.bedNumber")
+    // 특정 방 타입의 현재 학기 기준 빈 침대 조회
+    @Query("SELECT d FROM Dormitory d WHERE d.roomType = :roomType AND NOT EXISTS (" +
+           "SELECT da FROM DormitoryAssignment da JOIN da.academicTerm t " +
+           "WHERE da.dormitory = d AND t.status = 'ACTIVE') " +
+           "ORDER BY d.building, d.floor DESC, d.roomNumber, d.bedNumber")
     List<Dormitory> findEmptyBedsByRoomType(@Param("roomType") RoomType roomType);
 
-    // 학생과 함께 조회 (Fetch Join)
-    @Query("SELECT d FROM Dormitory d LEFT JOIN FETCH d.students WHERE d.building = :building ORDER BY d.floor DESC, d.roomNumber, d.bedNumber")
+    // 학생과 함께 조회 (현재 학기)
+    @Query("SELECT DISTINCT d FROM Dormitory d " +
+           "LEFT JOIN FETCH d.dormitoryAssignments da " +
+           "LEFT JOIN FETCH da.studentInfo si " +
+           "LEFT JOIN FETCH si.user " +
+           "LEFT JOIN da.academicTerm t ON t.status = 'ACTIVE' " +
+           "WHERE d.building = :building " +
+           "ORDER BY d.floor DESC, d.roomNumber, d.bedNumber")
     List<Dormitory> findByBuildingWithStudents(@Param("building") String building);
 
-    // cheol: 건물별 통계 (건물명, 전체침대수, 점유침대수, 최고층)
-    @Query("SELECT d.building, COUNT(d), SUM(CASE WHEN SIZE(d.students) > 0 THEN 1 ELSE 0 END), MAX(d.floor) FROM Dormitory d GROUP BY d.building ORDER BY d.building")
+    // 건물별 통계 (현재 학기 기준)
+    @Query("SELECT d.building, COUNT(d), " +
+           "SUM(CASE WHEN EXISTS (SELECT da FROM DormitoryAssignment da JOIN da.academicTerm t WHERE da.dormitory = d AND t.status = 'ACTIVE') THEN 1 ELSE 0 END), " +
+           "MAX(d.floor) FROM Dormitory d GROUP BY d.building ORDER BY d.building")
     List<Object[]> findBuildingSummaries();
 
-    // cheol: 학생 이름으로 해당 학생이 배정된 건물 목록 검색
-    @Query("SELECT DISTINCT d.building FROM Dormitory d JOIN d.students s JOIN s.user u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    // 학생 이름으로 해당 학생이 배정된 건물 목록 검색 (현재 학기)
+    @Query("SELECT DISTINCT d.building FROM Dormitory d " +
+           "JOIN d.dormitoryAssignments da JOIN da.studentInfo si JOIN si.user u JOIN da.academicTerm t " +
+           "WHERE t.status = 'ACTIVE' AND LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<String> findBuildingsByStudentName(@Param("name") String name);
 }

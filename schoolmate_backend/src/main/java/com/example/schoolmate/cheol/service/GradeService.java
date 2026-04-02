@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.schoolmate.cheol.dto.GradeDTO;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.repository.GradeRepository;
-import com.example.schoolmate.common.entity.user.constant.Year;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -34,17 +33,11 @@ public class GradeService {
                 .collect(Collectors.toList());
     }
 
-    // 학기/학년별 성적 조회
-    public List<GradeDTO> getGradesBySemesterAndYear(int semester, Year year) {
-        log.info("학기/학년별 성적 조회 - 학기: {}, 학년: {}", semester, year);
+    // 학기별 성적 조회 (AcademicTerm ID 기반)
+    public List<GradeDTO> getGradesByAcademicTerm(Long academicTermId) {
+        log.info("학기별 성적 조회 - academicTermId: {}", academicTermId);
 
-        // 입력 검증
-        if (semester < 1 || semester > 2) {
-            throw new IllegalArgumentException("학기는 1 또는 2만 가능합니다.");
-        }
-
-        // Subject를 Fetch Join으로 한 번에 가져옴
-        List<Grade> grades = gradeRepository.findBySemesterAndYearWithSubject(semester, year);
+        List<Grade> grades = gradeRepository.findByAcademicTermWithSubject(academicTermId);
 
         return grades.stream()
                 .map(this::entityToDto)
@@ -70,7 +63,6 @@ public class GradeService {
     public List<GradeDTO> getGradesByStudentId(Long studentId) {
         log.info("학생별 성적 조회 - 학생 ID: {}", studentId);
 
-        // 학생 존재 여부 확인
         if (!studentInfoRepository.existsById(studentId)) {
             throw new IllegalArgumentException("존재하지 않는 학생입니다. ID: " + studentId);
         }
@@ -82,21 +74,16 @@ public class GradeService {
                 .collect(Collectors.toList());
     }
 
-    // 학생의 특정 학기/ 학년 성적 조회
-    public List<GradeDTO> getGradesByStudentAndSemesterAndYear(Long studentId, int semester, Year year) {
-        log.info("학생의 학기/학년별 성적 조회 - 학생 ID: {}, 학기: {}, 학년: {}", studentId, semester, year);
-
-        // 입력 검증
-        if (semester < 1 || semester > 2) {
-            throw new IllegalArgumentException("학기는 1 또는 2만 가능합니다.");
-        }
+    // 학생의 특정 학기 성적 조회
+    public List<GradeDTO> getGradesByStudentAndAcademicTerm(Long studentId, Long academicTermId) {
+        log.info("학생의 학기별 성적 조회 - 학생 ID: {}, academicTermId: {}", studentId, academicTermId);
 
         if (!studentInfoRepository.existsById(studentId)) {
             throw new IllegalArgumentException("존재하지 않는 학생입니다. ID: " + studentId);
         }
 
-        List<Grade> grades = gradeRepository.findByStudentIdAndSemesterAndYearWithSubject(
-                studentId, semester, year);
+        List<Grade> grades = gradeRepository.findByStudentIdAndAcademicTermWithSubject(
+                studentId, academicTermId);
 
         return grades.stream()
                 .map(this::entityToDto)
@@ -105,16 +92,21 @@ public class GradeService {
 
     // entity to dto
     private GradeDTO entityToDto(Grade grade) {
-        return GradeDTO.builder()
+        GradeDTO.GradeDTOBuilder builder = GradeDTO.builder()
                 .id(grade.getId())
                 .studentId(grade.getStudent() != null ? grade.getStudent().getId() : null)
                 .subjectName(grade.getSubject() != null ? grade.getSubject().getName() : null)
                 .subjectCode(grade.getSubject() != null ? grade.getSubject().getCode() : null)
                 .examType(grade.getTestType())
-                .score(grade.getScore() != null ? grade.getScore().doubleValue() : null)
-                .semester(grade.getSemester())
-                .year(grade.getYear())
-                .build();
-    }
+                .score(grade.getScore() != null ? grade.getScore().doubleValue() : null);
 
+        if (grade.getAcademicTerm() != null) {
+            builder.academicTermId(grade.getAcademicTerm().getId())
+                    .schoolYear(grade.getAcademicTerm().getSchoolYear())
+                    .semester(grade.getAcademicTerm().getSemester())
+                    .termDisplayName(grade.getAcademicTerm().getDisplayName());
+        }
+
+        return builder.build();
+    }
 }

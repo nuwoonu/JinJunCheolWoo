@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.schoolmate.cheol.dto.GradeDTO;
 import com.example.schoolmate.cheol.service.GradeService;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,13 +31,12 @@ public class GradeController {
         return ResponseEntity.ok(grades);
     }
 
-    // 학기/학년별 성적 조회
-    // GET /api/grades/search?semester=1&year=FIRST
+    // 학기별 성적 조회 (AcademicTerm ID 기반)
+    // GET /api/grades/search?termId=1
     @GetMapping("/search")
-    public ResponseEntity<List<GradeDTO>> getGradesBySemesterAndYear(
-            @RequestParam int semester,
-            @RequestParam Year year) {
-        List<GradeDTO> grades = gradeService.getGradesBySemesterAndYear(semester, year);
+    public ResponseEntity<List<GradeDTO>> getGradesByAcademicTerm(
+            @RequestParam Long termId) {
+        List<GradeDTO> grades = gradeService.getGradesByAcademicTerm(termId);
         return ResponseEntity.ok(grades);
     }
 
@@ -61,16 +59,15 @@ public class GradeController {
         return ResponseEntity.ok(grades);
     }
 
-    // GET /api/grades/student/{studentId}/search?semester=1&year=FIRST
-    // 학생의 특정 학기/학년 성적 조회
+    // 학생의 특정 학기 성적 조회
+    // GET /api/grades/student/{studentId}/search?termId=1
     @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.customUserDTO.studentInfoId")
     @GetMapping("/student/{studentId}/search")
-    public ResponseEntity<List<GradeDTO>> getGradesByStudentAndSemesterAndYear(
+    public ResponseEntity<List<GradeDTO>> getGradesByStudentAndAcademicTerm(
             @PathVariable Long studentId,
-            @RequestParam int semester,
-            @RequestParam Year year) {
-        List<GradeDTO> grades = gradeService.getGradesByStudentAndSemesterAndYear(
-                studentId, semester, year);
+            @RequestParam Long termId) {
+        List<GradeDTO> grades = gradeService.getGradesByStudentAndAcademicTerm(
+                studentId, termId);
         return ResponseEntity.ok(grades);
     }
 }

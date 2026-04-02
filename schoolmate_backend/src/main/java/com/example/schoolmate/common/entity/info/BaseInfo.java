@@ -16,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.TableGenerator;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
@@ -37,7 +38,10 @@ import lombok.ToString;
 public abstract class BaseInfo extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "base_info_gen")
+    @TableGenerator(name = "base_info_gen", table = "id_generator",
+            pkColumnName = "gen_name", valueColumnName = "gen_val",
+            pkColumnValue = "base_info_id", allocationSize = 1)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

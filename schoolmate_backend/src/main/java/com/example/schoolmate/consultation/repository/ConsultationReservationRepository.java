@@ -15,9 +15,10 @@ public interface ConsultationReservationRepository extends JpaRepository<Consult
     // 날짜 범위로 예약 조회 (캘린더 뷰) - 교사: 담당 반만
     @Query("SELECT r FROM ConsultationReservation r " +
            "JOIN r.studentInfo si " +
-           "JOIN si.currentAssignment ca " +
+           "JOIN si.assignments ca " +
            "JOIN ca.classroom c " +
-           "WHERE c.teacher.uid = :teacherUid AND r.date BETWEEN :startDate AND :endDate")
+           "WHERE c.teacher.uid = :teacherUid AND r.date BETWEEN :startDate AND :endDate " +
+           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si)")
     List<ConsultationReservation> findByTeacherUidAndDateBetween(
             @Param("teacherUid") Long teacherUid,
             @Param("startDate") LocalDate startDate,
@@ -38,9 +39,10 @@ public interface ConsultationReservationRepository extends JpaRepository<Consult
     // 학급(classroom) 기준 날짜 범위 예약 조회 (학부모용 캘린더)
     @Query("SELECT r FROM ConsultationReservation r " +
            "JOIN r.studentInfo si " +
-           "JOIN si.currentAssignment ca " +
+           "JOIN si.assignments ca " +
            "JOIN ca.classroom c " +
-           "WHERE c.cid = :classroomId AND r.date BETWEEN :startDate AND :endDate")
+           "WHERE c.cid = :classroomId AND r.date BETWEEN :startDate AND :endDate " +
+           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si)")
     List<ConsultationReservation> findByClassroomIdAndDateBetween(
             @Param("classroomId") Long classroomId,
             @Param("startDate") LocalDate startDate,
@@ -49,9 +51,10 @@ public interface ConsultationReservationRepository extends JpaRepository<Consult
     // 담임 교사 uid 기준 담당 반 상담 조회
     @Query("SELECT r FROM ConsultationReservation r " +
            "JOIN r.studentInfo si " +
-           "JOIN si.currentAssignment ca " +
+           "JOIN si.assignments ca " +
            "JOIN ca.classroom c " +
            "WHERE c.teacher.uid = :teacherUid " +
+           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
            "ORDER BY r.date DESC, r.startTime DESC")
     List<ConsultationReservation> findByTeacherUidOrderByDateDescStartTimeDesc(@Param("teacherUid") Long teacherUid);
 

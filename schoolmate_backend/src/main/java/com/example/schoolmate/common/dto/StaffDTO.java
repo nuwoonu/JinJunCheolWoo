@@ -121,7 +121,8 @@ public class StaffDTO {
             this.email = user.getEmail();
             this.roles = user.getRoles();
 
-            StaffInfo info = user.getInfo(StaffInfo.class);
+            StaffInfo info = user.getInfoForSchool(StaffInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
             if (info != null) {
                 this.code = info.getCode();
                 this.department = info.getDepartment();

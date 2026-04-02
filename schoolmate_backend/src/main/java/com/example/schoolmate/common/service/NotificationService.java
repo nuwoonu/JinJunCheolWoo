@@ -23,6 +23,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final PushNotificationService pushNotificationService;
 
     // 알림 발송 (발신자 UID는 컨트롤러에서 인증 정보로 전달)
     public void sendNotification(NotificationDTO.SendRequest request, Long senderUid) {
@@ -42,6 +43,8 @@ public class NotificationService {
         notification.setDeleted(false);
 
         notificationRepository.save(notification);
+
+        pushNotificationService.sendToUser(receiver, request.getTitle(), request.getContent(), null);
     }
 
     // 내 알림 목록 조회 (논리 삭제 제외, 최신순)
@@ -97,6 +100,9 @@ public class NotificationService {
         n.setDeleted(false);
         n.setActionUrl(actionUrl);
         notificationRepository.save(n);
+
+        // 구독 정보가 있는 유저라면 푸쉬 알림도 전송
+        pushNotificationService.sendToUser(receiver, title, content, actionUrl);
     }
 
     // 알림 논리 삭제

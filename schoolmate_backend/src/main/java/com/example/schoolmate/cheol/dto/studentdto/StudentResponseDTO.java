@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
-import com.example.schoolmate.cheol.entity.Dormitory;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;
@@ -155,8 +154,8 @@ public class StudentResponseDTO {
                 .addressDetail(student.getAddressDetail())
                 .phone(student.getPhone())
                 .gender(student.getGender())
-                .basicHabits(student.getBasicHabits())
-                .specialNotes(student.getSpecialNotes())
+                .basicHabits(assignment != null ? assignment.getBasicHabits() : null)
+                .specialNotes(assignment != null ? assignment.getSpecialNotes() : null)
                 .status(student.getStatus());
 
         if (assignment != null && assignment.getClassroom() != null) {

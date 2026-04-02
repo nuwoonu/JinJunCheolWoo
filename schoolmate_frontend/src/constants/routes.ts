@@ -55,6 +55,8 @@ export const ADMIN_ROUTES = {
     ACCESS: `${ADMIN_BASE}/audit/access`,
     CHANGES: `${ADMIN_BASE}/audit/changes`,
   },
+  TRANSFER: `${ADMIN_BASE}/transfer`,
+  TEST_MODE: `${ADMIN_BASE}/test-mode`,
   SERVICE_NOTICES: {
     LIST: `${ADMIN_BASE}/service-notices`,
     CREATE: `${ADMIN_BASE}/service-notices/create`,

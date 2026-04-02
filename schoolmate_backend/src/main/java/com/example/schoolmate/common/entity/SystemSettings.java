@@ -28,4 +28,11 @@ public class SystemSettings {
      */
     @Column(nullable = false)
     private boolean emailVerificationEnabled = true;
+
+    /**
+     * 테스트 모드 활성화 여부 (기본값: false)
+     * true 설정 시 관리자 메인 페이지에서 테스트 데이터 생성 기능 접근 가능
+     */
+    @Column(nullable = false)
+    private boolean testMode = false;
 }

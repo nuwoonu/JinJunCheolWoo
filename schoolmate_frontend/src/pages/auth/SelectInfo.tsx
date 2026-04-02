@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import api, { getMe } from "@/api/auth";
+import api, { getMe, getRoleContexts } from "@/api/auth";
+import type { RoleRequestInfo, RoleContext } from "@/api/auth";
 import { auth } from "@/shared/auth";
 import MainFooter from "@/components/layout/MainFooter";
 
@@ -15,17 +16,16 @@ export default function SelectInfo() {
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [hasParent, setHasParent] = useState(false);
+  const [roleRequests, setRoleRequests] = useState<RoleRequestInfo[]>([]);
+  const [contexts, setContexts] = useState<RoleContext[]>([]);
 
-  // 기존 학부모 역할 여부 확인 (신규 이메일 가입 제외)
+  // 기존 역할 정보 조회 (신규 이메일 가입 제외)
   useEffect(() => {
     if (source === "email") return;
-    getMe()
-      .then((me) => {
-        const parentExists =
-          me.roleRequests?.some((r) => r.role === "PARENT" && (r.status === "ACTIVE" || r.status === "PENDING")) ??
-          false;
-        setHasParent(parentExists);
+    Promise.all([getMe(), getRoleContexts()])
+      .then(([me, ctxs]) => {
+        setRoleRequests(me.roleRequests ?? []);
+        setContexts(ctxs);
       })
       .catch(() => {});
   }, [source]);
@@ -51,8 +51,32 @@ export default function SelectInfo() {
     },
   ];
 
-  // 학부모는 이미 보유 중이면 목록에서 제외
-  const roles = allRoles.filter((r) => !(r.value === "PARENT" && hasParent));
+  const isHubSource = source === "hub" || source === "profile";
+
+  /**
+   * 역할 추가 가능 여부 판단:
+   * - PARENT: ACTIVE 또는 PENDING 상태가 이미 있으면 추가 불가
+   * - STUDENT/TEACHER: 해당 역할의 PENDING 요청이 있으면 추가 불가,
+   *   기존 인스턴스가 모두 TRANSFERRED인 경우에만 재추가 가능
+   */
+  const roles = allRoles.filter((r) => {
+    if (!isHubSource) return true; // 신규 가입 플로우에선 모두 노출
+
+    const role = r.value;
+    const hasPending = roleRequests.some((rr) => rr.role === role && rr.status === "PENDING");
+    if (hasPending) return false;
+
+    if (role === "PARENT") {
+      // 학부모: ACTIVE 또는 PENDING 이미 존재하면 불가
+      const hasActive = roleRequests.some((rr) => rr.role === "PARENT" && rr.status === "ACTIVE");
+      return !hasActive;
+    }
+
+    // STUDENT / TEACHER: 해당 역할의 context(인스턴스)가 있으면, 모두 TRANSFERRED여야 재추가 가능
+    const roleContexts = contexts.filter((c) => c.roleType === role);
+    if (roleContexts.length === 0) return true; // 인스턴스 없음 → 추가 가능
+    return roleContexts.every((c) => c.status === "TRANSFERRED");
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

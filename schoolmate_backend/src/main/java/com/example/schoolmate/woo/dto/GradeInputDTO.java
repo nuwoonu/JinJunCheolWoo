@@ -1,8 +1,6 @@
 package com.example.schoolmate.woo.dto;
 
-import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -30,11 +28,8 @@ public class GradeInputDTO {
     @NotNull(message = "시험 종류는 필수입니다.")
     private TestType testType;  // 중간고사, 기말고사 등
 
-    @NotNull(message = "학기는 필수입니다.")
-    private Semester semester;
-
-    @NotNull(message = "학년은 필수입니다.")
-    private Year year;
+    @NotNull(message = "학기 ID는 필수입니다.")
+    private Long academicTermId; // AcademicTerm PK
 
     @NotNull(message = "점수는 필수입니다.")
     @Min(value = 0, message = "점수는 0점 이상이어야 합니다.")

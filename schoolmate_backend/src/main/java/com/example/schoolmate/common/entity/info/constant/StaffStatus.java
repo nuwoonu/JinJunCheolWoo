@@ -10,7 +10,8 @@ public enum StaffStatus {
     LEAVE("휴직"),
     RETIRED("퇴직"),
     DISPATCHED("파견"), // 교육청이나 타 기관으로 파견 나간 상태
-    SUSPENDED("정직"); // 징계 등으로 업무가 정지된 상태
+    SUSPENDED("정직"), // 징계 등으로 업무가 정지된 상태
+    TRANSFERRED("전출");
 
     private final String description;
 }

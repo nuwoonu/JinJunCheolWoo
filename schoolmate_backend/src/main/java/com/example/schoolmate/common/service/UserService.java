@@ -76,6 +76,11 @@ public class UserService {
                 .build();
         user.addRole(dto.getRole());
 
+        // processRoleSetup 내부의 existsBy 쿼리가 User 객체를 파라미터로 사용하므로
+        // uid가 없는 transient 상태로 넘기면 TransientObjectException 발생.
+        // 먼저 저장해 uid를 확보한 뒤 호출한다.
+        userRepository.save(user);
+
         processRoleSetup(user, dto.getRole(), dto.getSchoolId(), dto);
 
         log.info("회원가입 완료: {}, ID: {}", user.getEmail(), user.getUid());
@@ -167,7 +172,6 @@ public class UserService {
                                     .attendanceNum(dto.getStudentNum())
                                     .build();
                             info.getAssignments().add(assignment);
-                            info.setCurrentAssignment(assignment);
                         });
             }
         }
