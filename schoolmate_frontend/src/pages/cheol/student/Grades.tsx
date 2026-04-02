@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import api from '@/api/auth'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import { getStudentFinalGrades } from '@/api/grade'
 
 // [cheol] /exam - 성적 조회 (cheol/exam/exam.html 마이그레이션)
 // 학생 본인의 성적을 학년/학기별로 조회
+// [woo] 종합 성적(FinalGrade) 탭 추가
 
 const YEAR_LABEL: Record<string, string> = { FIRST: '1학년', SECOND: '2학년', THIRD: '3학년' }
 const SEMESTER_LABEL: Record<string, string> = { FIRST: '1학기', FALL: '2학기' }
@@ -28,11 +30,30 @@ interface Grade {
   year: string
 }
 
+interface FinalGrade {
+  id: number
+  subjectName: string
+  subjectCode: string
+  semester: string
+  schoolYear: number
+  midtermScore: number | null
+  finalExamScore: number | null
+  homeworkScore: number | null
+  quizScore: number | null
+  totalScore: number | null
+  midtermRatio: number | null
+  finalRatio: number | null
+  homeworkRatio: number | null
+  quizRatio: number | null
+}
+
 export default function StudentGrades() {
   const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState<'exam' | 'final'>('exam')
   const [grades, setGrades] = useState<Grade[]>([])
+  const [finalGrades, setFinalGrades] = useState<FinalGrade[]>([])
   const [loading, setLoading] = useState(true)
-  const [, setStudentInfoId] = useState<number | null>(null)
+  const [studentInfoId, setStudentInfoId] = useState<number | null>(null)
   // [cheol] 필터: 학년/학기 선택
   const [filterYear, setFilterYear] = useState<string>('ALL')
   const [filterSemester, setFilterSemester] = useState<string>('ALL')
@@ -50,6 +71,15 @@ export default function StudentGrades() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [user?.uid])
+
+  // [woo] 종합 성적 탭 진입 시 로드
+  useEffect(() => {
+    if (activeTab === 'final' && studentInfoId) {
+      getStudentFinalGrades(studentInfoId)
+        .then(res => setFinalGrades(res.data))
+        .catch(() => setFinalGrades([]))
+    }
+  }, [activeTab, studentInfoId])
 
   const filtered = grades.filter(g => {
     if (filterYear !== 'ALL' && g.year !== filterYear) return false
@@ -124,8 +154,68 @@ export default function StudentGrades() {
         </div>
       </div>
 
-      {/* 필터 */}
-      <div className="card radius-12">
+      {/* [woo] 탭 */}
+      <ul className="nav nav-tabs mb-20">
+        <li className="nav-item">
+          <button className={`nav-link${activeTab === 'exam' ? ' active' : ''}`} onClick={() => setActiveTab('exam')}>
+            시험 성적
+          </button>
+        </li>
+        <li className="nav-item">
+          <button className={`nav-link${activeTab === 'final' ? ' active' : ''}`} onClick={() => setActiveTab('final')}>
+            종합 성적
+          </button>
+        </li>
+      </ul>
+
+      {/* [woo] 종합 성적 탭 */}
+      {activeTab === 'final' && (
+        <div className="card radius-12">
+          <div className="card-body p-0">
+            {finalGrades.length === 0 ? (
+              <div className="text-center py-48 text-secondary-light">종합 성적이 없습니다.</div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-bordered table-sm align-middle text-center mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th className="text-start">과목</th>
+                      <th>학기</th>
+                      <th>중간고사</th>
+                      <th>기말고사</th>
+                      <th>과제</th>
+                      <th>퀴즈</th>
+                      <th className="fw-bold">최종 점수</th>
+                      <th>비율 (중/기/과/퀴)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {finalGrades.map(fg => (
+                      <tr key={fg.id}>
+                        <td className="text-start fw-medium">{fg.subjectName}</td>
+                        <td>{SEMESTER_LABEL[fg.semester] ?? fg.semester}</td>
+                        <td>{fg.midtermScore != null ? fg.midtermScore.toFixed(1) : '-'}</td>
+                        <td>{fg.finalExamScore != null ? fg.finalExamScore.toFixed(1) : '-'}</td>
+                        <td>{fg.homeworkScore != null ? fg.homeworkScore.toFixed(1) : '-'}</td>
+                        <td>{fg.quizScore != null ? fg.quizScore.toFixed(1) : '-'}</td>
+                        <td className="fw-bold text-primary-600">
+                          {fg.totalScore != null ? fg.totalScore.toFixed(1) : '-'}
+                        </td>
+                        <td className="text-secondary-light text-xs">
+                          {fg.midtermRatio}/{fg.finalRatio}/{fg.homeworkRatio}/{fg.quizRatio}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 필터 - 시험 성적 탭만 표시 */}
+      {activeTab === 'exam' && <div className="card radius-12">
         <div className="card-header py-16 px-24 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-12">
           <h6 className="mb-0">성적 목록</h6>
           <div className="d-flex gap-12 align-items-center flex-wrap">
@@ -203,7 +293,7 @@ export default function StudentGrades() {
             })
           )}
         </div>
-      </div>
+      </div>}
     </DashboardLayout>
   )
 }

@@ -2,6 +2,7 @@ package com.example.schoolmate.cheol.entity;
 
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
 import com.example.schoolmate.common.entity.user.constant.Year;
@@ -54,6 +55,11 @@ public class Grade extends SchoolBaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id")
     private Subject subject;
+
+    // [woo] 성적 입력 교사 (nullable: 기존 데이터 호환)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "input_teacher_id")
+    private TeacherInfo inputTeacher;
 
     public void setSubject(Subject subject) {
         this.subject = subject;

@@ -40,6 +40,9 @@ import TeacherScheduleEdit from "@/pages/woo/teacher/ScheduleEdit";
 import TeacherList from "@/pages/woo/teacher/TeacherList";
 import ParentList from "@/pages/woo/teacher/ParentList";
 import TeacherGradeClasses from "@/pages/woo/teacher/GradeClasses";
+import GradeInput from "@/pages/woo/teacher/GradeInput";
+// [woo] 학부모 성적 조회
+import ParentGrades from "@/pages/jin/parent/ParentGrades";
 
 // [woo] 게시판
 import SchoolNotice from "@/pages/woo/board/SchoolNotice";
@@ -210,6 +213,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER"]}>
             <TeacherGradeClasses />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 교사 성적 입력 - 학급별 성적 관리 */}
+      <Route
+        path="/teacher/grade-input/:classroomId"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <GradeInput />
           </PrivateRoute>
         }
       />
@@ -489,6 +501,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
             <ParentChildrenStatus />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 학부모 자녀 성적 조회 */}
+      <Route
+        path="/parent/grades"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ParentGrades />
           </PrivateRoute>
         }
       />

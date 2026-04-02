@@ -21,13 +21,9 @@ import ClassGoalEditor from "@/components/teacher/ClassGoalEditor";
 import ClassNotebookWidget from "@/components/teacher/ClassNotebookWidget";
 import ClassAlbumWidget from "@/components/student/ClassAlbumWidget";
 
-interface TimetableItem {
-  period: number;
-  subject: string;
-}
-
 interface ClassInfo {
   classroomId: number;
+  schoolId?: number | null; // [woo] 학교별 NEIS 시간표 조회용
   year: number;
   grade: number;
   classNum: number;
@@ -37,8 +33,6 @@ interface ClassInfo {
 export default function TeacherMyClassDashboard() {
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timetable, setTimetable] = useState<TimetableItem[]>([]);
-  const [timetableLoading, setTimetableLoading] = useState(true);
 
   useEffect(() => {
     api
@@ -47,20 +41,8 @@ export default function TeacherMyClassDashboard() {
         const data = res.data;
         if (data.hasClassroom === false) return;
         setClassInfo(data);
-        // 학급 정보 획득 후 시간표 fetch
-        if (data.grade && data.classNum) {
-          fetch(`/api/calendar/timetable?grade=${data.grade}&classNum=${data.classNum}`)
-            .then((r) => (r.ok ? r.json() : []))
-            .then((d) => {
-              setTimetable(d);
-              setTimetableLoading(false);
-            })
-            .catch(() => setTimetableLoading(false));
-        } else {
-          setTimetableLoading(false);
-        }
       })
-      .catch(() => setTimetableLoading(false))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -85,7 +67,7 @@ export default function TeacherMyClassDashboard() {
     );
   }
 
-  const { classroomId, grade, classNum } = classInfo;
+  const { classroomId, schoolId, grade, classNum } = classInfo;
 
   return (
     <DashboardLayout>
@@ -116,7 +98,8 @@ export default function TeacherMyClassDashboard() {
           <ClassNotebookWidget classroomId={classroomId} canWrite={true} />
         </div>
         <div className="col-xl-4 d-flex flex-column">
-          <TodayTimetableWidget timetable={timetable} loading={timetableLoading} title="우리 반 시간표" />
+          {/* [woo] TodayTimetableWidget은 grade/classNum/schoolId를 받아 직접 fetch */}
+          <TodayTimetableWidget grade={grade} classNum={classNum} schoolId={schoolId} />
         </div>
       </div>
 

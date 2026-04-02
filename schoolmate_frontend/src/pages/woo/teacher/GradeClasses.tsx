@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { getMyGradeClassrooms } from "@/api/grade";
 
-// [cheol] /teacher/grade-classes - 교사 성적 채점 전 학급 선택 페이지
-// 교사의 담당 학년에 속한 모든 학급을 카드로 표시하고, 클릭 시 해당 학급의 studentlist로 이동
+// [woo] /teacher/grade-classes - 교사 성적 채점 전 학급 선택 페이지
+// 담임반 + 담당 학생 학급 합집합 표시, 클릭 시 grade-input으로 이동
 
 interface ClassCard {
-  cid: number;
+  classroomId: number;
   grade: number;
   classNum: number;
-  teacherName: string | null;
+  className: string;
+  homeroomTeacherName: string | null;
+  totalStudents: number;
 }
 
 const GRADE_COLORS = ["#3b82f6", "#8b5cf6", "#10b981"];
@@ -18,43 +20,22 @@ const GRADE_COLORS = ["#3b82f6", "#8b5cf6", "#10b981"];
 export default function TeacherGradeClasses() {
   const navigate = useNavigate();
 
-  // [cheol] 교사 담당 학년 및 과목 정보
-  const [teacherGrade, setTeacherGrade] = useState<number | null>(null);
-  const [subjectName, setSubjectName] = useState<string>("");
+  // [woo] 담임반 + 담당 학생 학급 합집합
   const [classes, setClasses] = useState<ClassCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // [cheol] 1단계: 교사 대시보드에서 담당 학년(grade)과 과목명 조회
-    api
-      .get("/dashboard/teacher")
-      .then((res) => {
-        const grade: number | undefined = res.data.classInfo?.grade;
-        const subject: string = res.data.teacherSubject ?? "";
-        setSubjectName(subject);
-
-        if (!grade) {
-          setError("담당 학급 정보가 없습니다. 관리자에게 담임 배정을 요청하세요.");
-          setLoading(false);
-          return;
-        }
-        setTeacherGrade(grade);
-
-        // [cheol] 2단계: 해당 학년의 전체 학급 목록 조회
-        return api.get(`/teacher/class/by-grade?grade=${grade}`);
-      })
-      .then((res) => {
-        if (!res) return;
-        setClasses(res.data);
-      })
+    // [woo] 교사가 접근 가능한 학급 목록 조회 (담임반 + 담당 학생 학급)
+    getMyGradeClassrooms()
+      .then((res) => setClasses(res.data))
       .catch(() => setError("학급 정보를 불러오지 못했습니다."))
       .finally(() => setLoading(false));
   }, []);
 
-  // [cheol] 학급 카드 클릭 → 해당 학급 학생리스트로 이동
+  // [woo] 학급 카드 클릭 → 성적 입력 페이지로 이동
   const handleClassClick = (cls: ClassCard) => {
-    navigate(`/student/list?classroomId=${cls.cid}`);
+    navigate(`/teacher/grade-input/${cls.classroomId}`);
   };
 
   return (
@@ -91,11 +72,9 @@ export default function TeacherGradeClasses() {
             <iconify-icon icon="mdi:pencil-box-outline" className="text-white text-3xl" />
           </div>
           <div>
-            <h5 className="fw-bold text-white mb-4">
-              {teacherGrade ? `${teacherGrade}학년` : "—"} 성적 채점
-            </h5>
+            <h5 className="fw-bold text-white mb-4">성적 채점</h5>
             <p className="text-white mb-0" style={{ opacity: 0.85 }}>
-              {subjectName ? `담당 과목: ${subjectName} | ` : ""}채점할 학급을 선택하세요.
+              채점할 학급을 선택하세요. (담임반 + 담당 학급)
             </p>
           </div>
         </div>
@@ -119,8 +98,8 @@ export default function TeacherGradeClasses() {
           {classes.map((cls, idx) => {
             const color = GRADE_COLORS[idx % GRADE_COLORS.length];
             return (
-              <div key={cls.cid} className="col-xl-3 col-lg-4 col-sm-6">
-                {/* [cheol] 학급 카드 — 클릭 시 studentlist?classroomId=xxx 이동 */}
+              <div key={cls.classroomId} className="col-xl-3 col-lg-4 col-sm-6">
+                {/* [woo] 학급 카드 — 클릭 시 grade-input/:classroomId 이동 */}
                 <button
                   type="button"
                   onClick={() => handleClassClick(cls)}
@@ -152,15 +131,18 @@ export default function TeacherGradeClasses() {
                     <h5 className="fw-bold mb-4" style={{ color }}>
                       {cls.grade}학년 {cls.classNum}반
                     </h5>
+                    <p className="text-secondary-light text-sm mb-4">
+                      {cls.homeroomTeacherName ? `담임: ${cls.homeroomTeacherName}` : "담임 미배정"}
+                    </p>
                     <p className="text-secondary-light text-sm mb-12">
-                      {cls.teacherName ? `담임: ${cls.teacherName}` : "담임 미배정"}
+                      학생 {cls.totalStudents}명
                     </p>
                     <div
                       className="d-flex align-items-center gap-6 fw-medium text-sm"
                       style={{ color }}
                     >
                       <iconify-icon icon="mdi:pencil-outline" />
-                      채점하기
+                      성적 입력
                     </div>
                   </div>
                 </button>

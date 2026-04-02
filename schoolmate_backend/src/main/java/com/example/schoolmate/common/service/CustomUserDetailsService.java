@@ -93,6 +93,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                         if (teacherInfo.getSchool() != null) {
                                 dto.setSchoolId(teacherInfo.getSchool().getId());
                         }
+                        // [woo] 교사 전화번호 세팅
+                        if (teacherInfo.getPhone() != null) {
+                                dto.setPhoneNumber(teacherInfo.getPhone());
+                        }
                 }
 
                 // ParentInfo가 있으면 학부모 정보 추가

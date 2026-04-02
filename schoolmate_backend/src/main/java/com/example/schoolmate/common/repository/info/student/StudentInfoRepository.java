@@ -27,4 +27,13 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
         List<StudentInfo> findBySchoolIdAndCodeStartingWithOrderByCodeDesc(Long schoolId, String prefix, Pageable pageable);
 
         // [joon] @Query가 필요한 메서드는 모두 StudentInfoRepositoryCustom(QueryDSL)으로 이동됨
+
+        // [woo] 학급에 속한 학생 목록 (currentAssignment 기반)
+        @org.springframework.data.jpa.repository.Query(
+            "SELECT s FROM StudentInfo s JOIN FETCH s.user " +
+            "JOIN FETCH s.currentAssignment sa " +
+            "WHERE sa.classroom.cid = :classroomId " +
+            "ORDER BY sa.attendanceNum ASC")
+        List<StudentInfo> findByCurrentClassroomId(
+            @org.springframework.data.repository.query.Param("classroomId") Long classroomId);
 }

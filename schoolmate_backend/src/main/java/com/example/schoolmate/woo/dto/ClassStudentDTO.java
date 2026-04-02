@@ -18,6 +18,9 @@ public class ClassStudentDTO {
 
     private Long classroomId;
 
+    // [woo] 학교별 NEIS 시간표 조회용
+    private Long schoolId;
+
     private int year; // 학년도
 
     private int grade; // 학년

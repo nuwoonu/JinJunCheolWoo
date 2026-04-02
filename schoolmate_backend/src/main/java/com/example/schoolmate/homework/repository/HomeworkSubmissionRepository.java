@@ -29,4 +29,17 @@ public interface HomeworkSubmissionRepository extends JpaRepository<HomeworkSubm
 
     // [woo] 특정 학생이 특정 과제에 제출했는지 여부
     boolean existsByHomeworkIdAndStudentId(Long homeworkId, Long studentInfoId);
+
+    // [woo] FinalGrade 계산용: 채점 완료된 제출 (학생+학급+과목 필터)
+    @Query("SELECT hs FROM HomeworkSubmission hs " +
+           "JOIN FETCH hs.homework h " +
+           "WHERE hs.student.id = :studentId " +
+           "AND h.courseSection.classroom.cid = :classroomId " +
+           "AND h.courseSection.subject.id = :subjectId " +
+           "AND hs.status = :status")
+    List<HomeworkSubmission> findGradedByStudentAndClassroomAndSubject(
+            @Param("studentId") Long studentId,
+            @Param("classroomId") Long classroomId,
+            @Param("subjectId") Long subjectId,
+            @Param("status") HomeworkSubmission.SubmissionStatus status);
 }

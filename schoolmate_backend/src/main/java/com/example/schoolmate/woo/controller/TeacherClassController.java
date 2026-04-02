@@ -297,7 +297,7 @@ public class TeacherClassController {
         response.put("success", true);
         response.put("message", "성적이 입력되었습니다.");
         response.put("studentId", gradeDTO.getStudentId());
-        response.put("subjectCode", gradeDTO.getSubjectCode());
+        response.put("subjectId", gradeDTO.getSubjectId());
         response.put("score", gradeDTO.getScore());
 
         return ResponseEntity.ok(response);

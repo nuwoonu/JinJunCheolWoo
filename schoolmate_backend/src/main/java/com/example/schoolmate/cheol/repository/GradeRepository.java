@@ -58,4 +58,23 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
             @Param("studentId") Long studentId,
             @Param("semester") int semester,
             @Param("year") Year year);
+
+    // [woo] 학급+과목+학기 기준 성적 목록 (교사 채점 목록)
+    @Query("SELECT g FROM Grade g JOIN FETCH g.student s JOIN FETCH s.user " +
+           "JOIN FETCH g.subject " +
+           "WHERE s.currentAssignment.classroom.cid = :classroomId " +
+           "AND g.subject.id = :subjectId AND g.semester = :semester")
+    List<Grade> findByClassroomAndSubjectAndSemester(
+            @Param("classroomId") Long classroomId,
+            @Param("subjectId") Long subjectId,
+            @Param("semester") Semester semester);
+
+    // [woo] 학생+과목+학기+시험유형 기준 (FinalGrade 계산: 중간/기말 각각)
+    @Query("SELECT g FROM Grade g WHERE g.student.id = :studentId " +
+           "AND g.subject.id = :subjectId AND g.semester = :semester AND g.testType = :testType")
+    List<Grade> findByStudentAndSubjectAndSemesterAndTestType(
+            @Param("studentId") Long studentId,
+            @Param("subjectId") Long subjectId,
+            @Param("semester") Semester semester,
+            @Param("testType") TestType testType);
 }

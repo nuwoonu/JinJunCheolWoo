@@ -2,6 +2,7 @@ package com.example.schoolmate.controller;
 
 import com.example.schoolmate.common.entity.info.SchoolMemberInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.common.entity.info.ParentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.TeacherStatus;
 import com.example.schoolmate.common.entity.info.constant.StaffStatus;
@@ -248,6 +249,21 @@ public class AuthApiController {
         // hasAdminAccess: grants가 하나라도 있으면 어드민 페이지 접근 가능
         boolean hasAdminAccess = !grants.isEmpty();
 
+        // [woo] 전화번호 — 역할별 Info 엔티티에서 조회 (JWT에 미포함이므로 DB 직접 조회)
+        String phoneNumber = null;
+        if (dbUser != null) {
+            if (primaryRole == UserRole.TEACHER || primaryRole == UserRole.STAFF) {
+                TeacherInfo ti = dbUser.getInfo(TeacherInfo.class);
+                if (ti != null) phoneNumber = ti.getPhone();
+            } else if (primaryRole == UserRole.PARENT) {
+                ParentInfo pi = dbUser.getInfo(ParentInfo.class);
+                if (pi != null) phoneNumber = pi.getPhone();
+            } else if (primaryRole == UserRole.STUDENT) {
+                StudentInfo si = dbUser.getInfo(StudentInfo.class);
+                if (si != null) phoneNumber = si.getPhone();
+            }
+        }
+
         // provider (소셜 로그인 구분: null=이메일, "google", "kakao")
         String provider = dbUser != null ? dbUser.getProvider() : null;
 
@@ -272,6 +288,7 @@ public class AuthApiController {
         response.put("roleRequests", roleRequests);
         response.put("provider", provider);
         response.put("profileImageUrl", profileImageUrl);
+        response.put("phoneNumber", phoneNumber);
 
         return ResponseEntity.ok(response);
     }

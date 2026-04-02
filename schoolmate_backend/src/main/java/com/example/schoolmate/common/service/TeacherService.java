@@ -495,26 +495,20 @@ public class TeacherService {
      */
     @Transactional
     public void inputGrade(Long teacherId, GradeInputDTO gradeDTO) {
-        log.info("성적 입력 - 교사: {}, 학생: {}, 과목: {}",
-                teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectCode());
+        log.info("성적 입력 - 교사: {}, 학생: {}, 과목ID: {}",
+                teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectId());
 
-        TeacherInfo teacherInfo = teacherInfoRepository.findById(teacherId)
-                .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
-
-        Subject subject = findSubjectByCode(gradeDTO.getSubjectCode())
-                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
-
-        if (teacherInfo.getSubject() == null || !teacherInfo.getSubject().getCode().equals(subject.getCode())) {
-            log.warn("담당 과목이 아닙니다. 교사: {}, 요청 과목: {}", teacherId, subject.getCode());
-        }
+        Subject subject = subjectRepository.findById(gradeDTO.getSubjectId())
+                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectId()));
 
         StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-        // 동일 조건(학생/과목/시험종류/학기/학년) 성적이 이미 있으면 점수만 덮어씀 (upsert)
-        gradeRepository.findDuplicate(
-                student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+        // [woo] 동일 조건(학생/과목/시험종류/학기) 성적이 이미 있으면 점수만 덮어씀 (upsert)
+        gradeRepository.findByStudentAndSubjectAndSemesterAndTestType(
+                student.getId(), subject.getId(),
+                gradeDTO.getSemester(), gradeDTO.getTestType())
+                .stream().findFirst()
                 .ifPresentOrElse(
                         existing -> {
                             existing.changeScore(gradeDTO.getScore());
@@ -527,7 +521,6 @@ public class TeacherService {
                                     .subject(subject)
                                     .testType(gradeDTO.getTestType())
                                     .semester(gradeDTO.getSemester())
-                                    .year(gradeDTO.getYear())
                                     .score(gradeDTO.getScore())
                                     .build());
                             log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
@@ -704,13 +697,14 @@ public class TeacherService {
             throw new IllegalArgumentException("담당 학급 학생이 아닙니다. 본인 반 학생의 성적만 입력할 수 있습니다.");
         }
 
-        Subject subject = findSubjectByCode(gradeDTO.getSubjectCode())
-                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
+        Subject subject = subjectRepository.findById(gradeDTO.getSubjectId())
+                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectId()));
 
-        // 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
-        gradeRepository.findDuplicate(
-                student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+        // [woo] 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
+        gradeRepository.findByStudentAndSubjectAndSemesterAndTestType(
+                student.getId(), subject.getId(),
+                gradeDTO.getSemester(), gradeDTO.getTestType())
+                .stream().findFirst()
                 .ifPresentOrElse(
                         existing -> {
                             existing.changeScore(gradeDTO.getScore());
@@ -723,7 +717,6 @@ public class TeacherService {
                                     .subject(subject)
                                     .testType(gradeDTO.getTestType())
                                     .semester(gradeDTO.getSemester())
-                                    .year(gradeDTO.getYear())
                                     .score(gradeDTO.getScore())
                                     .build());
                             log.info("담당 학급 학생 성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
@@ -778,8 +771,12 @@ public class TeacherService {
             homeroomName = classroom.getTeacher().getName();
         }
 
+        // [woo] 학교별 NEIS 시간표 조회를 위해 schoolId 포함
+        Long schoolId = classroom.getSchool() != null ? classroom.getSchool().getId() : null;
+
         return ClassStudentDTO.builder()
                 .classroomId(classroom.getCid())
+                .schoolId(schoolId)
                 .year(classroom.getYear())
                 .grade(classroom.getGrade())
                 .classNum(classroom.getClassNum())

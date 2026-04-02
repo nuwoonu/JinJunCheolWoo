@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// 교사가 학생 성적 입력할 때 쓰는 DTO
+// [woo] 교사가 학생 성적 입력할 때 쓰는 DTO
 @Getter
 @Setter
 @Builder
@@ -21,11 +21,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class GradeInputDTO {
 
+    @NotNull(message = "학급 ID는 필수입니다.")
+    private Long classroomId;
+
     @NotNull(message = "학생 ID는 필수입니다.")
     private Long studentId;
 
-    @NotNull(message = "과목 코드는 필수입니다.")
-    private String subjectCode;
+    @NotNull(message = "과목 ID는 필수입니다.")
+    private Long subjectId;
 
     @NotNull(message = "시험 종류는 필수입니다.")
     private TestType testType;  // 중간고사, 기말고사 등
@@ -33,8 +36,8 @@ public class GradeInputDTO {
     @NotNull(message = "학기는 필수입니다.")
     private Semester semester;
 
-    @NotNull(message = "학년은 필수입니다.")
-    private Year year;
+    @NotNull(message = "학년도는 필수입니다.")
+    private Integer schoolYear;
 
     @NotNull(message = "점수는 필수입니다.")
     @Min(value = 0, message = "점수는 0점 이상이어야 합니다.")

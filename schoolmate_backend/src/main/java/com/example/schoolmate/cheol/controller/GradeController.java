@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.schoolmate.cheol.dto.GradeDTO;
 import com.example.schoolmate.cheol.service.GradeService;
+import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.woo.dto.FinalGradeResponseDTO;
+import com.example.schoolmate.woo.service.FinalGradeService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class GradeController {
 
     private final GradeService gradeService;
+    // [woo] FinalGrade 서비스 주입
+    private final FinalGradeService finalGradeService;
 
     // 전체 성적 조회
     // GET /api/grades
@@ -72,5 +77,16 @@ public class GradeController {
         List<GradeDTO> grades = gradeService.getGradesByStudentAndSemesterAndYear(
                 studentId, semester, year);
         return ResponseEntity.ok(grades);
+    }
+
+    // [woo] 학생 최종 성적 조회 (FinalGrade)
+    // GET /api/grades/student/{studentId}/final?semester=FIRST&schoolYear=2025
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER') or #studentId == authentication.principal.customUserDTO.studentInfoId")
+    @GetMapping("/student/{studentId}/final")
+    public ResponseEntity<List<FinalGradeResponseDTO>> getStudentFinalGrades(
+            @PathVariable Long studentId,
+            @RequestParam(required = false) Semester semester,
+            @RequestParam(required = false, defaultValue = "0") int schoolYear) {
+        return ResponseEntity.ok(finalGradeService.getStudentFinalGrades(studentId, semester, schoolYear));
     }
 }
