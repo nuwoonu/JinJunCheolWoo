@@ -58,7 +58,8 @@ public class TeacherDTO {
             this.roles = user.getRoles();
 
             // 1. User 엔티티의 편의 메서드를 사용하여 TeacherInfo 추출
-            TeacherInfo ti = user.getInfo(TeacherInfo.class);
+            TeacherInfo ti = user.getInfoForSchool(TeacherInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
 
             // 2. TeacherInfo가 존재할 경우에만 상세 정보 세팅
             if (ti != null) {

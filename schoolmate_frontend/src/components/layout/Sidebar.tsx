@@ -124,7 +124,7 @@ export default function Sidebar() {
   const [, setStudentInfo] = useState<StudentProfile | null>(null);
   const [, setProfileImageUrl] = useState<string | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
-  // [woo] 교사일 때 소속 학교 이름
+  // [woo] 교사/학생 소속 학교 이름
   const [schoolName, setSchoolName] = useState<string | null>(null);
   // [soojin] 담임 학급 배정 여부 - null: 로딩 중, false: 미배정, true: 배정됨
   const [hasClassroom, setHasClassroom] = useState<boolean | null>(null);
@@ -136,6 +136,7 @@ export default function Sidebar() {
         .then((res) => {
           setStudentInfo(res.data?.student ?? null);
           setProfileImageUrl(res.data?.profileImageUrl ?? null);
+          setSchoolName(res.data?.student?.schoolName ?? null);
         })
         .catch(() => {});
 
@@ -992,8 +993,8 @@ export default function Sidebar() {
         </ul>
       </div>
 
-      {/* [woo] 교사 사이드바 하단 - 소속 학교 표시 */}
-      {has("TEACHER") && schoolName && !isCollapsed && (
+      {/* 교사/학생 사이드바 하단 - 소속 학교 표시 */}
+      {has("TEACHER", "STUDENT") && schoolName && !isCollapsed && (
         <div className="border-top border-neutral-200 px-16 py-12">
           <div
             className="text-secondary-light d-flex align-items-center gap-6"
@@ -1008,20 +1009,6 @@ export default function Sidebar() {
             <i className="ri-building-line text-primary-600" style={{ fontSize: 14, flexShrink: 0 }} />
             {schoolName}
           </div>
-        </div>
-      )}
-
-      {/* 로그아웃 - 학생 대시보드에서만 사이드바 맨 하단에 표시 */}
-      {isStudentDashboard && !isCollapsed && (
-        <div className="px-16 pb-16">
-          <button
-            type="button"
-            className="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-6"
-            onClick={signOut}
-          >
-            <i className="ri-shut-down-line" />
-            <span>로그아웃</span>
-          </button>
         </div>
       )}
     </aside>

@@ -500,6 +500,7 @@ export default function Hub() {
   const theme = useTheme();
 
   const [contexts, setContexts] = useState<RoleContext[]>([]);
+  const [allContexts, setAllContexts] = useState<RoleContext[]>([]); // TRANSFERRED 포함 전체 (역할 추가 판단용)
   const [contextsLoading, setContextsLoading] = useState(true);
   const [redirectChecked, setRedirectChecked] = useState(false);
   const [switchingId, setSwitchingId] = useState<number | null>(null);
@@ -509,10 +510,13 @@ export default function Hub() {
     refetch();
     getRoleContexts()
       .then((data) => {
-        setContexts(data);
+        setAllContexts(data);
+        // 전출/전학 처리된 인스턴스는 Hub에서 숨김 (데이터는 유지, 관리자만 조회)
+        setContexts(data.filter((c) => c.status !== "TRANSFERRED"));
         setContextsLoading(false);
       })
       .catch(() => {
+        setAllContexts([]);
         setContexts([]);
         setContextsLoading(false);
       });
@@ -527,7 +531,10 @@ export default function Hub() {
     }
 
     const grants: GrantInfo[] = user.grants ?? [];
-    const isSuperAdmin = grants.some((g) => g.grantedRole === "SUPER_ADMIN");
+    const isSuperAdmin =
+      user.role === "ADMIN" ||
+      user.roles?.includes("ADMIN") ||
+      grants.some((g) => g.grantedRole === "SUPER_ADMIN");
     const roleRequests: RoleRequestInfo[] = user.roleRequests ?? [];
     const parentRequest = roleRequests.find((r) => r.role === "PARENT");
 
@@ -537,9 +544,16 @@ export default function Hub() {
     const hasAnyNonActive =
       contexts.some((c) => !c.isActive) || (parentRequest != null && parentRequest.status !== "ACTIVE");
 
-    // SUPER_ADMIN 단독 → admin으로 바로 이동
-    if (isSuperAdmin && totalActive === 0) {
-      navigate(ADMIN_ROUTES.MAIN, { replace: true });
+    // SUPER_ADMIN은 항상 역할 선택 허브 표시 (ADMIN 카드 + 보유 역할 카드)
+    if (isSuperAdmin) {
+      if (totalActive === 0 && !hasAnyNonActive) {
+        // SUPER_ADMIN 단독 (추가 역할 없음) → admin으로 바로 이동
+        navigate(ADMIN_ROUTES.MAIN, { replace: true });
+        return;
+      }
+      // SUPER_ADMIN + 다른 역할 보유 → 항상 허브 표시
+      setHubMode("select");
+      setRedirectChecked(true);
       return;
     }
 
@@ -582,7 +596,10 @@ export default function Hub() {
   if (!user?.authenticated) return <Navigate to="/login" replace />;
 
   const grants: GrantInfo[] = user.grants ?? [];
-  const isSuperAdmin = grants.some((g) => g.grantedRole === "SUPER_ADMIN");
+  const isSuperAdmin =
+    (user as AuthUser & { role?: string; roles?: string[] }).role === "ADMIN" ||
+    (user as AuthUser & { roles?: string[] }).roles?.includes("ADMIN") ||
+    grants.some((g) => g.grantedRole === "SUPER_ADMIN");
   const roleRequests: RoleRequestInfo[] = user.roleRequests ?? [];
   const parentRequest = roleRequests.find((r) => r.role === "PARENT");
   const parentCfg = ROLE_CONFIG.find((r) => r.role === "PARENT")!;
@@ -626,6 +643,18 @@ export default function Hub() {
       // no-op
     }
   }
+
+  // 역할 추가 가능 여부: 추가 가능한 역할이 하나라도 있으면 true
+  const canAddRole = (["STUDENT", "TEACHER", "PARENT"] as const).some((role) => {
+    const hasPending = roleRequests.some((rr) => rr.role === role && rr.status === "PENDING");
+    if (hasPending) return false;
+    if (role === "PARENT") {
+      return !roleRequests.some((rr) => rr.role === "PARENT" && rr.status === "ACTIVE");
+    }
+    const roleCtxs = allContexts.filter((c) => c.roleType === role);
+    if (roleCtxs.length === 0) return true;
+    return roleCtxs.every((c) => c.status === "TRANSFERRED");
+  });
 
   const primaryContexts = contexts.filter((c) => c.isPrimary);
   const secondaryContexts = contexts.filter((c) => !c.isPrimary);
@@ -707,26 +736,28 @@ export default function Hub() {
             </h5>
             <p style={{ fontSize: 14, color: textSecondary, margin: 0 }}>보유한 역할에 맞는 페이지로 이동합니다.</p>
           </div>
-          <button
-            onClick={() => navigate("/select-info?source=hub")}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "10px 20px",
-              fontSize: 14,
-              fontWeight: 600,
-              color: "#25A194",
-              background: isDark ? "rgba(37,161,148,0.12)" : "rgba(37,161,148,0.08)",
-              border: "1.5px solid rgba(37,161,148,0.4)",
-              borderRadius: 24,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <i className="ri-add-circle-line" style={{ fontSize: 16 }} />
-            역할 추가
-          </button>
+          {canAddRole && (
+            <button
+              onClick={() => navigate("/select-info?source=hub")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 20px",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#25A194",
+                background: isDark ? "rgba(37,161,148,0.12)" : "rgba(37,161,148,0.08)",
+                border: "1.5px solid rgba(37,161,148,0.4)",
+                borderRadius: 24,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <i className="ri-add-circle-line" style={{ fontSize: 16 }} />
+              역할 추가
+            </button>
+          )}
         </div>
 
         {/* ── 카드 그리드 ── */}

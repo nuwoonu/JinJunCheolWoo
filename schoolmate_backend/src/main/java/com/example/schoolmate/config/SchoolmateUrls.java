@@ -40,6 +40,8 @@ public class SchoolmateUrls {
     public static final String ADMIN_NOTICES = API_ADMIN + "/notices";
     public static final String ADMIN_ROLE_REQUESTS = API_ADMIN + "/role-requests";
     public static final String ADMIN_GRANTS = API_ADMIN + "/grants";
+    public static final String ADMIN_TRANSFER = API_ADMIN + "/transfer";
+    public static final String ADMIN_TEST = API_ADMIN + "/test";
 
     // 외부 API 주소
     public static class Api {

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="80" fill="#25a194"/>
+  <!-- School building -->
+  <rect x="136" y="220" width="240" height="180" rx="8" fill="white" opacity="0.15"/>
+  <rect x="156" y="240" width="200" height="160" rx="6" fill="white" opacity="0.2"/>
+  <!-- Roof triangle -->
+  <polygon points="116,224 256,120 396,224" fill="white" opacity="0.9"/>
+  <!-- Door -->
+  <rect x="220" y="310" width="72" height="90" rx="36" fill="#1a7a6e"/>
+  <!-- Windows -->
+  <rect x="160" y="260" width="50" height="40" rx="6" fill="white" opacity="0.8"/>
+  <rect x="302" y="260" width="50" height="40" rx="6" fill="white" opacity="0.8"/>
+  <!-- Flag pole -->
+  <rect x="250" y="88" width="12" height="60" rx="3" fill="white" opacity="0.7"/>
+  <polygon points="262,92 300,104 262,116" fill="white" opacity="0.9"/>
+</svg>

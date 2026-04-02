@@ -64,6 +64,10 @@ dependencies {
 
 	// 이메일 발송
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// Web Push (PWA 푸쉬 알림)
+	implementation 'nl.martijndwars:web-push:5.1.1'
+	implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
 }
 
 test {

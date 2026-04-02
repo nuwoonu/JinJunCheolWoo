@@ -174,7 +174,6 @@ public class StudentService {
                         assignment.setAttendanceNum(nextNum);
 
                         info.getAssignments().add(assignment);
-                        info.setCurrentAssignment(assignment);
                     });
         } else if (request.getYear() != null && request.getGrade() != null && request.getClassNum() != null) {
             // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
@@ -187,7 +186,6 @@ public class StudentService {
                         assignment.setAttendanceNum(request.getAttendanceNum());
                         assignment.setStudentInfo(info);
                         info.getAssignments().add(assignment);
-                        info.setCurrentAssignment(assignment);
                     });
         }
 
@@ -225,7 +223,7 @@ public class StudentService {
 
         user.setName(request.getName());
 
-        StudentInfo info = user.getInfo(StudentInfo.class);
+        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
                 Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
@@ -251,7 +249,7 @@ public class StudentService {
     public Long updateAssignment(StudentDTO.AssignmentRequest request) {
         User user = userRepository.findById(request.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo info = user.getInfo(StudentInfo.class);
+        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (info == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + request.getUid());
         }
@@ -324,17 +322,13 @@ public class StudentService {
     public Long deleteAssignment(Long uid, int schoolYear) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo info = user.getInfo(StudentInfo.class);
+        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (info == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
 
         // 해당 학년도의 이력만 제거
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
-
-        if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getSchoolYear() == schoolYear) {
-            info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
-        }
 
         return user.getUid();
     }
@@ -346,7 +340,7 @@ public class StudentService {
         StudentStatus status = StudentStatus.valueOf(statusName);
         List<User> users = userRepository.findAllById(uids);
         for (User user : users) {
-            StudentInfo info = user.getInfo(StudentInfo.class);
+            StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
             if (info != null) {
                 info.setStatus(status);
             }
@@ -359,7 +353,7 @@ public class StudentService {
     public void addGuardian(Long uid, Long parentId, FamilyRelationship relationship) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        StudentInfo studentInfo = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (studentInfo == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
@@ -385,7 +379,7 @@ public class StudentService {
     public void removeGuardian(Long uid, Long parentId) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        StudentInfo studentInfo = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (studentInfo == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
@@ -402,7 +396,7 @@ public class StudentService {
     public void updateGuardianRelationship(Long uid, Long parentId, FamilyRelationship relationship) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        StudentInfo studentInfo = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (studentInfo == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
@@ -476,7 +470,6 @@ public class StudentService {
         assignment.setClassroom(classroom);
         assignment.setAttendanceNum(createDTO.getStudentNumber());
         student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
 
         userRepository.save(user);
         return convertToResponseDTO(student);

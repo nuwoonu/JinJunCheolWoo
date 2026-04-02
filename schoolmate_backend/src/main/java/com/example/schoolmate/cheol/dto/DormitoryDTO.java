@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.example.schoolmate.cheol.entity.Dormitory;
+import com.example.schoolmate.cheol.entity.DormitoryAssignment;
 import com.example.schoolmate.common.entity.user.constant.RoomType;
 
 import lombok.AllArgsConstructor;
@@ -35,8 +36,9 @@ public class DormitoryDTO {
     // 전체 주소
     private String fullAddress;
 
-    // Entity -> DTO
+    // Entity -> DTO (현재 학기 배정 기준)
     public static DormitoryDTO from(Dormitory dormitory) {
+        List<DormitoryAssignment> assignments = dormitory.getDormitoryAssignments();
         return DormitoryDTO.builder()
                 .id(dormitory.getId())
                 .building(dormitory.getBuilding())
@@ -45,14 +47,14 @@ public class DormitoryDTO {
                 .bedNumber(dormitory.getBedNumber())
                 .roomType(dormitory.getRoomType())
                 .roomTypeDescription(dormitory.getRoomType().getDescription())
-                .studentNames(dormitory.getStudents().stream()
-                        .map(student -> student.getUser().getName())
+                .studentNames(assignments.stream()
+                        .map(da -> da.getStudentInfo().getUser().getName())
                         .collect(Collectors.toList()))
-                .studentIds(dormitory.getStudents().stream() // cheol
-                        .map(student -> student.getId())
+                .studentIds(assignments.stream()
+                        .map(da -> da.getStudentInfo().getId())
                         .collect(Collectors.toList()))
-                .isEmpty(dormitory.isEmpty())
-                .occupiedCount(dormitory.getOccupiedCount())
+                .isEmpty(assignments.isEmpty())
+                .occupiedCount(assignments.size())
                 .fullAddress(dormitory.getFullAddress())
                 .build();
     }

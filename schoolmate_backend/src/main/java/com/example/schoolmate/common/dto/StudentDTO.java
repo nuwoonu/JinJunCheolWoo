@@ -140,7 +140,8 @@ public class StudentDTO {
             this.uid = user.getUid();
             this.name = user.getName();
             this.email = user.getEmail();
-            StudentInfo info = user.getInfo(StudentInfo.class);
+            StudentInfo info = user.getInfoForSchool(StudentInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
             if (info != null) {
                 this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : null;
@@ -192,7 +193,8 @@ public class StudentDTO {
             this.uid = user.getUid();
             this.name = user.getName();
             this.email = user.getEmail();
-            StudentInfo info = user.getInfo(StudentInfo.class);
+            StudentInfo info = user.getInfoForSchool(StudentInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
             if (info != null) {
                 this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : "";

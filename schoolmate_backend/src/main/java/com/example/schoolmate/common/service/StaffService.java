@@ -140,7 +140,7 @@ public class StaffService {
 
         user.setName(request.getName());
 
-        StaffInfo info = user.getInfo(StaffInfo.class);
+        StaffInfo info = user.getInfoForSchool(StaffInfo.class, SchoolContextHolder.getSchoolId());
         if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
                 Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
@@ -207,7 +207,7 @@ public class StaffService {
         StaffStatus status = StaffStatus.valueOf(statusName);
         List<User> users = userRepository.findAllById(uids);
         for (User user : users) {
-            StaffInfo info = user.getInfo(StaffInfo.class);
+            StaffInfo info = user.getInfoForSchool(StaffInfo.class, SchoolContextHolder.getSchoolId());
             if (info != null)
                 info.setStatus(status);
         }
