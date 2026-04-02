@@ -757,15 +757,29 @@ public class TeacherService {
         List<StudentInfo> students = studentInfoRepository.findByClassroomCid(classroom.getCid());
 
         List<ClassStudentDTO.StudentSimpleDTO> studentDTOs = students.stream()
-                .map(s -> ClassStudentDTO.StudentSimpleDTO.builder()
-                        .studentId(s.getId())
-                        .name(s.getUser() != null ? s.getUser().getName() : "이름없음")
-                        .studentNumber(s.getCurrentAssignment() != null
-                                ? s.getCurrentAssignment().getAttendanceNum()
-                                : null)
-                        .phone(s.getPhone())
-                        .email(s.getUser() != null ? s.getUser().getEmail() : null)
-                        .build())
+                .map(s -> {
+                    // [soojin] 학생 관리 페이지 - 성별, 생년월일, 학부모 성함 추가
+                    String parentName = s.getFamilyRelations().stream()
+                            .filter(fr -> fr.isRepresentative() && fr.getParentInfo() != null)
+                            .findFirst()
+                            .or(() -> s.getFamilyRelations().stream()
+                                    .filter(fr -> fr.getParentInfo() != null)
+                                    .findFirst())
+                            .map(fr -> fr.getParentInfo().getParentName())
+                            .orElse(null);
+                    return ClassStudentDTO.StudentSimpleDTO.builder()
+                            .studentId(s.getId())
+                            .name(s.getUser() != null ? s.getUser().getName() : "이름없음")
+                            .studentNumber(s.getCurrentAssignment() != null
+                                    ? s.getCurrentAssignment().getAttendanceNum()
+                                    : null)
+                            .phone(s.getPhone())
+                            .email(s.getUser() != null ? s.getUser().getEmail() : null)
+                            .gender(s.getGender() != null ? s.getGender().name() : null)
+                            .birthDate(s.getBirthDate())
+                            .parentName(parentName)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         // [woo] 담임 이름: homeroomTeacher(TeacherInfo) 우선, 없으면 teacher(User) fallback

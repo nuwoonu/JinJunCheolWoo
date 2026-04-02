@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import java.util.Set;
+
+import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.domain.board.entity.Board;
 import com.example.schoolmate.domain.board.entity.BoardType;
 
@@ -54,6 +57,24 @@ public class BoardDTO {
 
         // [woo] 학부모 게시판 작성 시 선택된 자녀 uid (school + classroom 자동 연결용)
         private Long studentUserUid;
+
+        // [soojin] 태그 (CLASS_BOARD/PARENT_BOARD/TEACHER_BOARD 분류용 - 질문/모임/유머/공지 등)
+        private String tag;
+
+        // [soojin] 다중 첨부파일 목록 (업로드 후 storedName/originalName 전달)
+        private List<AttachmentRequest> attachmentFiles;
+    }
+
+    // [soojin] 첨부파일 요청 내부 클래스 (게시글 작성/수정 시 다중 파일 정보 전달)
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AttachmentRequest {
+        private String originalName;
+        private String storedName;
+        private Long fileSize;
+        private String fileType;
     }
 
     /** 게시물 응답 (목록/상세 공용) */
@@ -91,6 +112,17 @@ public class BoardDTO {
         private long consentDisagreeCount;
         private long consentTotalCount;
 
+        // [soojin] 태그, 좋아요/댓글 수 (likeCount·commentCount: 목록+상세, isLiked: 상세 전용)
+        private String tag;
+        private long likeCount;
+        private long commentCount;
+        private boolean isLiked;
+        // [soojin] 북마크 여부 (상세 전용), 작성자 역할 (UI 배지 표시용 - 역할 우선순위: ADMIN>TEACHER>STAFF>PARENT>STUDENT)
+        private boolean isBookmarked;
+        private String writerRole;
+        // [soojin] 다중 첨부파일 목록 (상세 조회 시 반환)
+        private List<AttachmentInfo> attachments;
+
         /** 상세 조회용 (content 포함) */
         public static Response fromEntity(Board board) {
             return Response.builder()
@@ -115,6 +147,9 @@ public class BoardDTO {
                     .schoolName(board.getSchool() != null ? board.getSchool().getName() : null)
                     // [woo] 회신 필요 여부
                     .requiresConsent(board.isRequiresConsent())
+                    // [soojin] 태그, 작성자 역할
+                    .tag(board.getTag())
+                    .writerRole(resolveWriterRole(board.getWriter().getRoles()))
                     .build();
         }
 
@@ -139,7 +174,33 @@ public class BoardDTO {
                     .updateDate(board.getUpdateDate())
                     // [woo] 회신 필요 여부
                     .requiresConsent(board.isRequiresConsent())
+                    // [soojin] 태그, 작성자 역할
+                    .tag(board.getTag())
+                    .writerRole(resolveWriterRole(board.getWriter().getRoles()))
                     .build();
+        }
+
+        // [soojin] 작성자 역할 우선순위 결정 (ADMIN > TEACHER > STAFF > PARENT > STUDENT)
+        private static String resolveWriterRole(Set<UserRole> roles) {
+            if (roles == null || roles.isEmpty()) return UserRole.STUDENT.name();
+            if (roles.contains(UserRole.ADMIN)) return UserRole.ADMIN.name();
+            if (roles.contains(UserRole.TEACHER)) return UserRole.TEACHER.name();
+            if (roles.contains(UserRole.STAFF)) return UserRole.STAFF.name();
+            if (roles.contains(UserRole.PARENT)) return UserRole.PARENT.name();
+            return UserRole.STUDENT.name();
+        }
+
+        // [soojin] 첨부파일 응답 내부 클래스
+        @Getter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        public static class AttachmentInfo {
+            private Long id;
+            private String originalName;
+            private String storedName;
+            private Long fileSize;
+            private String fileType;
         }
 
         private static String getBoardTypeName(BoardType type) {

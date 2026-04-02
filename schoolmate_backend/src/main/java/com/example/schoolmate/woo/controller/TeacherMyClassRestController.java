@@ -95,13 +95,29 @@ public class TeacherMyClassRestController {
         // [joon] PENDING과 같은 기존 상태를 RoleRequest 엔티티로 변경하여 해당 함수 수정
         List<StudentInfo> unassignedStudents = studentInfoRepository.findUnassignedBySchoolId(schoolId);
 
+        // [soojin] 승인대기 학생 카드에 학부모 성함, 신청일 추가 표시
         List<Map<String, Object>> result = unassignedStudents.stream()
-                .map(s -> Map.<String, Object>of(
-                        "studentInfoId", s.getId(),
-                        "name", s.getUser() != null ? s.getUser().getName() : "이름없음",
-                        "email", s.getUser() != null && s.getUser().getEmail() != null ? s.getUser().getEmail() : "-",
-                        "phone", s.getPhone() != null ? s.getPhone() : "-",
-                        "status", s.getStatus().getDescription()))
+                .map(s -> {
+                    String parentName = s.getFamilyRelations().stream()
+                            .filter(fr -> fr.isRepresentative() && fr.getParentInfo() != null)
+                            .findFirst()
+                            .or(() -> s.getFamilyRelations().stream()
+                                    .filter(fr -> fr.getParentInfo() != null)
+                                    .findFirst())
+                            .map(fr -> fr.getParentInfo().getParentName())
+                            .orElse("-");
+                    String createdAt = s.getCreateDate() != null ? s.getCreateDate().toString() : "-";
+
+                    java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+                    map.put("studentInfoId", s.getId());
+                    map.put("name", s.getUser() != null ? s.getUser().getName() : "이름없음");
+                    map.put("email", s.getUser() != null && s.getUser().getEmail() != null ? s.getUser().getEmail() : "-");
+                    map.put("phone", s.getPhone() != null ? s.getPhone() : "-");
+                    map.put("status", s.getStatus().getDescription());
+                    map.put("parentName", parentName);
+                    map.put("createdAt", createdAt);
+                    return map;
+                })
                 .collect(Collectors.toList());
 
         log.info("[woo] 미배정 학생 조회 - schoolId: {}, count: {}", schoolId, result.size());

@@ -17,11 +17,7 @@ function useSubmenu() {
     if (p.startsWith("/teacher/myclass")) r.myclass = true;
     if (p.startsWith("/student/list") || p.startsWith("/student/myinfo")) r.student = true;
     // [soojin] 자녀 현황: /parent/children 제거 (헤더 탭으로 이동 예정)
-    if (
-      p.startsWith("/attendance/parent") ||
-      p.startsWith("/parent/grades") ||
-      p.startsWith("/parent/homework")
-    )
+    if (p.startsWith("/attendance/parent") || p.startsWith("/parent/grades") || p.startsWith("/parent/homework"))
       r.parent = true;
     if (p.startsWith("/teacher/list")) r.teacher = true;
     if (p.startsWith("/board/parent-notice") || p.startsWith("/board/parent") || p.startsWith("/teacher/parent"))
@@ -62,7 +58,7 @@ function useSubmenu() {
 
   // [soojin] nested=true 시 기존 상태 유지 - 중첩 드롭다운 토글 시 부모가 닫히지 않도록
   const toggle = (key: string, nested?: boolean) =>
-    setOpen((prev) => nested ? { ...prev, [key]: !prev[key] } : { [key]: !prev[key] });
+    setOpen((prev) => (nested ? { ...prev, [key]: !prev[key] } : { [key]: !prev[key] }));
   return { open, toggle };
 }
 
@@ -273,7 +269,13 @@ export default function Sidebar() {
             <>
               {/* 수업 관리 */}
               <li className={dc(open.teacherSchedule)}>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherSchedule"); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherSchedule");
+                  }}
+                >
                   <i className="ri-calendar-schedule-line" />
                   <span>수업 관리</span>
                 </a>
@@ -289,16 +291,18 @@ export default function Sidebar() {
               {/* 학급 관리 - 담임만 */}
               {hasClassroom && (
                 <li className={dc(open.myclass)}>
-                  <a href="#" onClick={(e) => { e.preventDefault(); toggle("myclass"); }}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggle("myclass");
+                    }}
+                  >
                     <i className="ri-team-line" />
                     <span>학급 관리</span>
                   </a>
                   <ul className="sidebar-submenu">
-                    <li>
-                      <SNavLink to="/teacher/myclass">
-                        <i className="ri-circle-fill circle-icon w-auto" /> 학급 현황
-                      </SNavLink>
-                    </li>
+                    {/* [soojin] 학급 현황 + 학생 관리 페이지 통합 → 학급 현황 메뉴 제거 */}
                     <li>
                       <SNavLink to="/teacher/myclass/students">
                         <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
@@ -326,7 +330,13 @@ export default function Sidebar() {
               {/* 학부모 - 담임만 */}
               {hasClassroom && (
                 <li className={dc(open.parentList)}>
-                  <a href="#" onClick={(e) => { e.preventDefault(); toggle("parentList"); }}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggle("parentList");
+                    }}
+                  >
                     <i className="ri-user-heart-line" />
                     <span>학부모</span>
                   </a>
@@ -357,14 +367,26 @@ export default function Sidebar() {
 
               {/* 과제/퀴즈 - 2단계 드롭다운 */}
               <li className={dc(open.teacherHomework)}>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherHomework"); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherHomework");
+                  }}
+                >
                   <i className="ri-draft-line" />
                   <span>과제/퀴즈</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li className={dc(open.teacherHomeworkAssign)}>
                     {/* [soojin] nested=true - 클릭 시 부모(과제/퀴즈) 드롭다운 유지 */}
-                    <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherHomeworkAssign", true); }}>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggle("teacherHomeworkAssign", true);
+                      }}
+                    >
                       <i className="ri-circle-fill circle-icon w-auto" /> 과제 관리
                     </a>
                     <ul className="sidebar-submenu">
@@ -378,7 +400,13 @@ export default function Sidebar() {
                   </li>
                   <li className={dc(open.teacherHomeworkQuiz)}>
                     {/* [soojin] nested=true - 클릭 시 부모(과제/퀴즈) 드롭다운 유지 */}
-                    <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherHomeworkQuiz", true); }}>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggle("teacherHomeworkQuiz", true);
+                      }}
+                    >
                       <i className="ri-circle-fill circle-icon w-auto" /> 퀴즈 관리
                     </a>
                     <ul className="sidebar-submenu">
@@ -395,7 +423,13 @@ export default function Sidebar() {
 
               {/* 평가 */}
               <li className={dc(open.teacherExam)}>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherExam"); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherExam");
+                  }}
+                >
                   <i className="ri-survey-line" />
                   <span>평가</span>
                 </a>
@@ -407,7 +441,7 @@ export default function Sidebar() {
                   </li>
                   <li>
                     <SNavLink to="/student/list?mode=view">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
                     </SNavLink>
                   </li>
                   <li>
@@ -420,7 +454,13 @@ export default function Sidebar() {
 
               {/* 출결 */}
               <li className={dc(open.teacherAttendance)}>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherAttendance"); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherAttendance");
+                  }}
+                >
                   <i className="ri-calendar-check-line" />
                   <span>출결</span>
                 </a>
@@ -442,7 +482,13 @@ export default function Sidebar() {
 
               {/* 공지사항 */}
               <li className={dc(open.teacherNotice)}>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherNotice"); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherNotice");
+                  }}
+                >
                   <i className="ri-megaphone-line" />
                   <span>공지사항</span>
                 </a>
@@ -462,7 +508,13 @@ export default function Sidebar() {
 
               {/* 교직원 */}
               <li className={dc(open.teacherStaff)}>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggle("teacherStaff"); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherStaff");
+                  }}
+                >
                   <i className="ri-user-follow-line" />
                   <span>교직원</span>
                 </a>
@@ -526,7 +578,13 @@ export default function Sidebar() {
           {/* [soojin] "나의 자녀" → "자녀 현황", 자녀 현황 서브 항목 제거 (헤더 대시보드 탭으로 이동 예정) */}
           {has("PARENT") && (
             <li className={dc(open.parent)}>
-              <a href="#" onClick={(e) => { e.preventDefault(); toggle("parent"); }}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggle("parent");
+                }}
+              >
                 <i className="ri-id-card-line" />
                 <span>자녀 현황</span>
               </a>
@@ -549,7 +607,6 @@ export default function Sidebar() {
               </ul>
             </li>
           )}
-
 
           {/* 공지사항 - ADMIN, STUDENT (TEACHER는 별도 블록) */}
           {has("ADMIN", "STUDENT") && (
@@ -812,7 +869,7 @@ export default function Sidebar() {
                 </li>
                 <li>
                   <SNavLink to="/exam/result">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
                   </SNavLink>
                 </li>
               </ul>
@@ -851,7 +908,13 @@ export default function Sidebar() {
           {/* [soojin] "공지사항" → "학교 소식", 학교 갤러리 제거, 순서 변경 */}
           {has("PARENT") && (
             <li className={dc(open.parentNotice)}>
-              <a href="#" onClick={(e) => { e.preventDefault(); toggle("parentNotice"); }}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggle("parentNotice");
+                }}
+              >
                 <i className="ri-megaphone-line" />
                 <span>학교 소식</span>
               </a>
@@ -879,7 +942,13 @@ export default function Sidebar() {
           {/* [soojin] 신규 섹션: 학급 알림장 + 학급 앨범 */}
           {has("PARENT") && (
             <li className={dc(open.classNews)}>
-              <a href="#" onClick={(e) => { e.preventDefault(); toggle("classNews"); }}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggle("classNews");
+                }}
+              >
                 <i className="ri-article-line" />
                 <span>학급 소식</span>
               </a>
@@ -901,7 +970,13 @@ export default function Sidebar() {
           {/* 상담 - PARENT */}
           {has("PARENT") && (
             <li className={dc(open.consultation)}>
-              <a href="#" onClick={(e) => { e.preventDefault(); toggle("consultation"); }}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggle("consultation");
+                }}
+              >
                 <i className="ri-customer-service-2-line" />
                 <span>상담</span>
               </a>

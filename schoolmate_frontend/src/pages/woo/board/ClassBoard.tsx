@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/api/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
-// [woo 03-27] /board/class-board - 학급 게시판 목록 (교사/학생 작성, 교사 모든글 수정, 학생 본인글만 수정)
+// [woo 03-27] /board/class-board - 학급 게시판 목록
+// [soojin] UI 리뉴얼 - 검색바(카드 내부) + 필터/정렬 + 통계/인기글 사이드바
+// [soojin] 추가 수정 - 인기글 상단, 통계 하단, 꽉차게
+// [soojin] 추가 수정 - 검색바 카드 통합, 좌측 필터 드롭다운(전체/제목/내용/작성자), 정렬 헤더 우측 이동
 
 interface Board {
   id: number;
@@ -15,13 +18,42 @@ interface Board {
   pinned: boolean;
   createDate: string;
   targetClassroomName?: string;
+  // [soojin] 태그, 좋아요/댓글 수
+  tag?: string;
+  likeCount?: number;
+  commentCount?: number;
 }
 
-// [woo] HTML 태그 제거 후 텍스트만 추출
-function stripHtml(html: string): string {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
+interface BoardStats {
+  totalCount: number;
+  totalViewCount: number;
+  todayCount: number;
+}
+
+// 정렬 옵션
+const SORT_OPTIONS = [
+  { label: "최신순", sortBy: "createDate" },
+  { label: "조회순", sortBy: "viewCount" },
+  { label: "인기순", sortBy: "viewCount" },
+] as const;
+
+// 검색 필터 옵션
+const FILTER_OPTIONS = [
+  { label: "전체", searchType: "ALL" },
+  { label: "제목", searchType: "TITLE" },
+  { label: "내용", searchType: "CONTENT" },
+  { label: "작성자", searchType: "WRITER" },
+] as const;
+
+// [soojin] 태그 배지 색상
+const TAG_COLORS: Record<string, { bg: string; color: string }> = {
+  질문:  { bg: "#eff6ff", color: "#3b82f6" },
+  모임:  { bg: "#f0fdf4", color: "#16a34a" },
+  유머:  { bg: "#fefce8", color: "#ca8a04" },
+  공지:  { bg: "#fef2f2", color: "#ef4444" },
+};
+function getTagStyle(tag: string) {
+  return TAG_COLORS[tag] ?? { bg: "#f3f4f6", color: "#6b7280" };
 }
 
 export default function ClassBoard() {
@@ -33,15 +65,38 @@ export default function ClassBoard() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
 
+  // [soojin] 검색 상태
+  const [searchInput, setSearchInput] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // [soojin] 검색 필터 드롭다운 (좌측)
+  const [filterLabel, setFilterLabel] = useState("전체");
+  const [searchType, setSearchType] = useState("ALL");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // [soojin] 정렬 드롭다운 (헤더 우측)
+  const [sortLabel, setSortLabel] = useState("최신순");
+  const [sortBy, setSortBy] = useState("createDate");
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  // [soojin] 사이드바 상태
+  const [stats, setStats] = useState<BoardStats>({ totalCount: 0, totalViewCount: 0, todayCount: 0 });
+  const [popularBoards, setPopularBoards] = useState<Board[]>([]);
+  const [sidebarLoading, setSidebarLoading] = useState(true);
+
   const isAdmin = user?.role === "ADMIN";
   const isTeacher = user?.role === "TEACHER";
   const isStudent = user?.role === "STUDENT";
 
-  // [woo 03-27] 교사/학생/관리자 공용 — 서버가 역할별로 학급을 자동 판별
-  const fetchBoards = (p = 0) => {
+  const fetchBoards = (p = 0, kw = keyword, st = searchType, sb = sortBy) => {
     setLoading(true);
+    const params = new URLSearchParams({ page: String(p), size: "10", searchType: st, sortBy: sb });
+    if (kw) params.set("keyword", kw);
     api
-      .get(`/board/class-board?page=${p}&size=10`)
+      .get(`/board/class-board?${params}`)
       .then((res) => {
         setBoards(res.data.content);
         setTotalPages(res.data.totalPages);
@@ -52,11 +107,64 @@ export default function ClassBoard() {
       .finally(() => setLoading(false));
   };
 
+  const fetchSidebar = () => {
+    setSidebarLoading(true);
+    Promise.all([
+      api.get("/board/stats?boardType=CLASS_BOARD"),
+      api.get("/board/popular?boardType=CLASS_BOARD&limit=5"),
+    ])
+      .then(([statsRes, popularRes]) => {
+        setStats({
+          totalCount: statsRes.data.totalCount ?? 0,
+          totalViewCount: statsRes.data.totalViewCount ?? 0,
+          todayCount: statsRes.data.todayCount ?? 0,
+        });
+        setPopularBoards(popularRes.data ?? []);
+      })
+      .catch(() => {})
+      .finally(() => setSidebarLoading(false));
+  };
+
   useEffect(() => {
-    fetchBoards();
+    fetchBoards(0, "", "ALL", "createDate");
+    fetchSidebar();
   }, []);
 
-  // [woo] 날짜 포맷 — 24시간 이내면 상대 시간, 아니면 날짜
+  // [soojin] 드롭다운 외부 클릭 닫기
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false);
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchInput(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setKeyword(val);
+      fetchBoards(0, val, searchType, sortBy);
+    }, 500);
+  };
+
+  const handleFilterSelect = (opt: (typeof FILTER_OPTIONS)[number]) => {
+    setFilterLabel(opt.label);
+    setSearchType(opt.searchType);
+    setFilterOpen(false);
+    fetchBoards(0, keyword, opt.searchType, sortBy);
+  };
+
+  const handleSortSelect = (opt: (typeof SORT_OPTIONS)[number]) => {
+    setSortLabel(opt.label);
+    setSortBy(opt.sortBy);
+    setSortOpen(false);
+    fetchBoards(0, keyword, searchType, opt.sortBy);
+  };
+
+  // [woo] 날짜 포맷
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
@@ -67,16 +175,27 @@ export default function ClassBoard() {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
   };
 
-  // [woo] 인기글 — 조회수 기준 상위 5개
-  const popularBoards = [...boards].sort((a, b) => b.viewCount - a.viewCount).slice(0, 5);
+  // 공통 드롭다운 버튼 스타일
+  const dropdownBtnStyle: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    padding: "0 12px",
+    height: "100%",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#374151",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    whiteSpace: "nowrap",
+  };
 
   return (
     <DashboardLayout>
       {/* [woo] 상단 헤더 */}
       <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h5 className="fw-bold mb-4">학급 게시판</h5>
-        </div>
+        <h5 className="fw-bold mb-0">학급 게시판</h5>
         {(isAdmin || isTeacher || isStudent) && (
           <button
             type="button"
@@ -89,213 +208,301 @@ export default function ClassBoard() {
         )}
       </div>
 
-      {/* [woo] 2단 레이아웃: 피드(좌) + 인기글 사이드바(우) */}
-      <div className="row">
-        {/* ===== 좌측: 메인 피드 ===== */}
-        <div className="col-12 col-xl-8">
-          <div className="card radius-12 overflow-hidden">
-            {/* [woo] 탭 영역 */}
+      <div className="row" style={{ alignItems: "stretch" }}>
+        {/* ===== 좌측: 통합 카드 (검색바 + 목록) ===== */}
+        <div className="col-12 col-xl-8 d-flex flex-column">
+          <div className="card radius-12 overflow-hidden" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 520 }}>
+
+            {/* [soojin] 검색 영역 — 카드 상단 헤더 */}
             <div
               style={{
+                padding: "12px 16px",
                 borderBottom: "1px solid #e5e7eb",
-                padding: "14px 24px 0",
+                display: "flex",
+                alignItems: "center",
+                gap: 0,
+                background: "#fff",
+              }}
+            >
+              {/* 좌측 필터 드롭다운 */}
+              <div ref={filterRef} style={{ position: "relative", flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={() => setFilterOpen((p) => !p)}
+                  style={{
+                    ...dropdownBtnStyle,
+                    borderRight: "1px solid #e5e7eb",
+                    paddingRight: 14,
+                    height: 38,
+                  }}
+                >
+                  {filterLabel}
+                  <i
+                    className={filterOpen ? "ri-arrow-up-s-line" : "ri-arrow-down-s-line"}
+                    style={{ fontSize: 15, color: "#9ca3af" }}
+                  />
+                </button>
+                {filterOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 4px)",
+                      left: 0,
+                      background: "#fff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 10,
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      zIndex: 200,
+                      minWidth: 90,
+                      overflow: "hidden",
+                    }}
+                  >
+                    {FILTER_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => handleFilterSelect(opt)}
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          padding: "9px 16px",
+                          background: filterLabel === opt.label ? "#eff6ff" : "transparent",
+                          border: "none",
+                          textAlign: "left",
+                          fontSize: 13,
+                          fontWeight: filterLabel === opt.label ? 700 : 500,
+                          color: filterLabel === opt.label ? "#3b82f6" : "#374151",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => { if (filterLabel !== opt.label) (e.currentTarget as HTMLButtonElement).style.background = "#f9fafb"; }}
+                        onMouseLeave={(e) => { if (filterLabel !== opt.label) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 검색 입력창 */}
+              <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "0 12px", gap: 8 }}>
+                <i className="ri-search-line" style={{ color: "#9ca3af", fontSize: 17, flexShrink: 0 }} />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={handleSearchChange}
+                  placeholder="검색어를 입력하세요..."
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    outline: "none",
+                    fontSize: 14,
+                    color: "#374151",
+                    background: "transparent",
+                  }}
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    style={{ background: "none", border: "none", padding: 0, cursor: "pointer", flexShrink: 0 }}
+                    onClick={() => {
+                      setSearchInput("");
+                      setKeyword("");
+                      fetchBoards(0, "", searchType, sortBy);
+                    }}
+                  >
+                    <i className="ri-close-line" style={{ color: "#9ca3af", fontSize: 16 }} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* [soojin] 서브 헤더: 결과 텍스트 + 총 N건 + 정렬 드롭다운 */}
+            <div
+              style={{
+                padding: "10px 20px",
+                borderBottom: "1px solid #e5e7eb",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                flexShrink: 0,
+                background: "#fafafa",
               }}
             >
-              <div className="d-flex gap-20">
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: "#3b82f6",
-                    paddingBottom: 12,
-                    borderBottom: "2px solid #3b82f6",
-                    cursor: "pointer",
-                  }}
-                >
-                  전체글
-                </span>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: "#9ca3af",
-                    paddingBottom: 12,
-                    cursor: "pointer",
-                  }}
-                >
-                  인기글
-                </span>
-              </div>
               <span style={{ fontSize: 13, color: "#6b7280" }}>
-                총 <b style={{ color: "#3b82f6" }}>{totalElements}</b>건
+                {keyword
+                  ? <><b style={{ color: "#374151" }}>"{keyword}"</b> 검색 결과</>
+                  : "전체 게시글"}
               </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 13, color: "#6b7280" }}>
+                  총 <b style={{ color: "#3b82f6" }}>{totalElements}</b>건
+                </span>
+                {/* [soojin] 정렬 드롭다운 — 총 N건 우측 */}
+                <div ref={sortRef} style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    onClick={() => setSortOpen((p) => !p)}
+                    style={{
+                      padding: "4px 10px",
+                      background: "#fff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 6,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#374151",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    {sortLabel}
+                    <i
+                      className={sortOpen ? "ri-arrow-up-s-line" : "ri-arrow-down-s-line"}
+                      style={{ fontSize: 14, color: "#9ca3af" }}
+                    />
+                  </button>
+                  {sortOpen && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "calc(100% + 4px)",
+                        right: 0,
+                        background: "#fff",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 10,
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                        zIndex: 200,
+                        minWidth: 90,
+                        overflow: "hidden",
+                      }}
+                    >
+                      {SORT_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() => handleSortSelect(opt)}
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            padding: "9px 16px",
+                            background: sortLabel === opt.label ? "#eff6ff" : "transparent",
+                            border: "none",
+                            textAlign: "left",
+                            fontSize: 13,
+                            fontWeight: sortLabel === opt.label ? 700 : 500,
+                            color: sortLabel === opt.label ? "#3b82f6" : "#374151",
+                            cursor: "pointer",
+                          }}
+                          onMouseEnter={(e) => { if (sortLabel !== opt.label) (e.currentTarget as HTMLButtonElement).style.background = "#f9fafb"; }}
+                          onMouseLeave={(e) => { if (sortLabel !== opt.label) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* [woo] 피드 리스트 */}
-            {loading ? (
-              <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
-            ) : boards.length === 0 ? (
-              <div className="text-center py-48">
-                <p className="text-secondary-light mb-0">등록된 게시글이 없습니다.</p>
-              </div>
-            ) : (
-              <div>
-                {boards.map((board) => {
-                  const isNew =
-                    Date.now() - new Date(board.createDate).getTime() < 24 * 60 * 60 * 1000;
-                  const preview = stripHtml(board.content || "").slice(0, 200);
-                  return (
-                    <div
-                      key={board.id}
-                      style={{
-                        padding: "20px 24px",
-                        borderBottom: "1px solid #f3f4f6",
-                        cursor: "pointer",
-                        transition: "background 0.15s",
-                      }}
-                      onClick={() => navigate(`/board/class-board/${board.id}`)}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    >
-                      {/* [woo] 작성자 + 날짜 */}
-                      <div className="d-flex align-items-center gap-8 mb-10">
-                        <div
-                          style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: "50%",
-                            background: "#e0e7ff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: "#4f46e5",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {board.writerName?.charAt(0)}
+            <div style={{ flex: 1 }}>
+              {loading ? (
+                <div className="d-flex align-items-center justify-content-center text-secondary-light" style={{ height: "100%", minHeight: 300 }}>
+                  불러오는 중...
+                </div>
+              ) : boards.length === 0 ? (
+                <div className="d-flex align-items-center justify-content-center" style={{ height: "100%", minHeight: 300 }}>
+                  <p className="text-secondary-light mb-0">
+                    {keyword ? "검색 결과가 없습니다." : "등록된 게시글이 없습니다."}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  {boards.map((board) => {
+                    const isNew = Date.now() - new Date(board.createDate).getTime() < 24 * 60 * 60 * 1000;
+                    const tagStyle = board.tag ? getTagStyle(board.tag) : null;
+                    return (
+                      <div
+                        key={board.id}
+                        style={{
+                          padding: "16px 24px",
+                          borderBottom: "1px solid #f3f4f6",
+                          cursor: "pointer",
+                          transition: "background 0.15s",
+                        }}
+                        onClick={() => navigate(`/board/class-board/${board.id}`)}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {/* [soojin] 제목 (크게) + 태그 배지 + 신규 배지 */}
+                        <div className="d-flex align-items-center gap-8 mb-6" style={{ flexWrap: "wrap" }}>
+                          {tagStyle && board.tag && (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: tagStyle.bg, color: tagStyle.color, flexShrink: 0 }}>
+                              {board.tag}
+                            </span>
+                          )}
+                          {isNew && (
+                            <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 5px", borderRadius: 3, background: "#ef4444", color: "#fff", flexShrink: 0, lineHeight: "14px" }}>
+                              N
+                            </span>
+                          )}
+                          <span style={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>
+                            {board.title}
+                          </span>
                         </div>
-                        <div className="d-flex flex-column" style={{ gap: 1 }}>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
+
+                        {/* [soojin] 작성자 / 날짜 / 조회수 / 좋아요 / 댓글 — 이미지 참고 한 줄 구조 */}
+                        <div className="d-flex align-items-center gap-12" style={{ fontSize: 12, color: "#9ca3af" }}>
+                          <span className="d-flex align-items-center gap-4">
+                            <i className="ri-user-line" style={{ fontSize: 13 }} />
                             {board.writerName}
                           </span>
-                          <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                          <span className="d-flex align-items-center gap-4">
+                            <i className="ri-calendar-line" style={{ fontSize: 13 }} />
                             {formatDate(board.createDate)}
                           </span>
-                        </div>
-                        {isNew && (
-                          <span
-                            style={{
-                              display: "inline-block",
-                              background: "#ef4444",
-                              color: "#fff",
-                              fontSize: 9,
-                              fontWeight: 800,
-                              padding: "1px 5px",
-                              borderRadius: 3,
-                              lineHeight: "14px",
-                              marginLeft: 4,
-                            }}
-                          >
-                            N
+                          <span className="d-flex align-items-center gap-4">
+                            <i className="ri-eye-line" style={{ fontSize: 13 }} />
+                            {board.viewCount}
                           </span>
-                        )}
-                      </div>
-
-                      {/* [woo] 제목 */}
-                      <div
-                        style={{
-                          fontSize: 15,
-                          fontWeight: 700,
-                          color: "#111827",
-                          marginBottom: 6,
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {board.title}
-                      </div>
-
-                      {/* [woo] 본문 미리보기 — 박스 형태 */}
-                      {preview && (
-                        <div
-                          style={{
-                            fontSize: 13,
-                            color: "#6b7280",
-                            marginBottom: 12,
-                            lineHeight: 1.7,
-                            padding: "10px 14px",
-                            background: "#f9fafb",
-                            borderRadius: 8,
-                            border: "1px solid #f3f4f6",
-                            overflow: "hidden",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
-                          {preview}
+                          <span className="d-flex align-items-center gap-4">
+                            <i className="ri-thumb-up-line" style={{ fontSize: 13 }} />
+                            {board.likeCount ?? 0}
+                          </span>
+                          <span className="d-flex align-items-center gap-4">
+                            <i className="ri-chat-1-line" style={{ fontSize: 13 }} />
+                            {board.commentCount ?? 0}
+                          </span>
                         </div>
-                      )}
-
-                      {/* [woo] 좋아요 + 조회수 */}
-                      <div className="d-flex align-items-center gap-16">
-                        <span
-                          className="d-flex align-items-center gap-4"
-                          style={{ fontSize: 12, color: "#9ca3af" }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <i className="ri-heart-line" style={{ fontSize: 15 }} />
-                          0
-                        </span>
-                        <span
-                          className="d-flex align-items-center gap-4"
-                          style={{ fontSize: 12, color: "#9ca3af" }}
-                        >
-                          <i className="ri-eye-line" style={{ fontSize: 15 }} />
-                          {board.viewCount}
-                        </span>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* [woo] 페이지네이션 */}
             {totalPages > 1 && (
-              <div className="d-flex justify-content-center py-16">
+              <div className="d-flex justify-content-center py-16" style={{ flexShrink: 0 }}>
                 <nav>
                   <ul className="pagination pagination-sm mb-0">
                     <li className={`page-item${page === 0 ? " disabled" : ""}`}>
-                      <button
-                        className="page-link d-flex align-items-center justify-content-center"
-                        style={{ minWidth: 32, minHeight: 32 }}
-                        onClick={() => fetchBoards(page - 1)}
-                      >
+                      <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(page - 1)}>
                         <i className="ri-arrow-left-s-line" />
                       </button>
                     </li>
                     {Array.from({ length: totalPages }, (_, i) => (
                       <li key={i} className={`page-item${i === page ? " active" : ""}`}>
-                        <button
-                          className="page-link d-flex align-items-center justify-content-center"
-                          style={{ minWidth: 32, minHeight: 32 }}
-                          onClick={() => fetchBoards(i)}
-                        >
+                        <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(i)}>
                           {i + 1}
                         </button>
                       </li>
                     ))}
                     <li className={`page-item${page >= totalPages - 1 ? " disabled" : ""}`}>
-                      <button
-                        className="page-link d-flex align-items-center justify-content-center"
-                        style={{ minWidth: 32, minHeight: 32 }}
-                        onClick={() => fetchBoards(page + 1)}
-                      >
+                      <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(page + 1)}>
                         <i className="ri-arrow-right-s-line" />
                       </button>
                     </li>
@@ -306,92 +513,78 @@ export default function ClassBoard() {
           </div>
         </div>
 
-        {/* ===== 우측: 인기글 사이드바 ===== */}
-        <div className="col-12 col-xl-4">
-          <div className="card radius-12 overflow-hidden" style={{ position: "sticky", top: 90 }}>
-            <div
-              style={{
-                padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <i className="ri-fire-fill" style={{ color: "#ef4444", fontSize: 18 }} />
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>인기글</span>
+        {/* ===== 우측: 인기글(상단) + 통계(하단) 사이드바 ===== */}
+        <div className="col-12 col-xl-4 d-flex flex-column">
+          <div style={{ position: "sticky", top: 90, display: "flex", flexDirection: "column", gap: 16, minHeight: 520 }}>
+            {/* [soojin] 인기글 카드 (상단) */}
+            <div className="card radius-12 overflow-hidden" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <div style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                <i className="ri-fire-fill" style={{ color: "#ef4444", fontSize: 18 }} />
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>인기 게시글</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                {sidebarLoading ? (
+                  <div className="d-flex align-items-center justify-content-center text-secondary-light" style={{ height: "100%", minHeight: 160, fontSize: 13 }}>불러오는 중...</div>
+                ) : popularBoards.length === 0 ? (
+                  <div className="d-flex align-items-center justify-content-center text-secondary-light" style={{ height: "100%", minHeight: 160, fontSize: 13 }}>게시글이 없습니다.</div>
+                ) : (
+                  <div>
+                    {popularBoards.map((board, idx) => (
+                      <div
+                        key={board.id}
+                        style={{ padding: "12px 20px", borderBottom: idx < popularBoards.length - 1 ? "1px solid #f3f4f6" : "none", cursor: "pointer", transition: "background 0.15s", display: "flex", gap: 12, alignItems: "flex-start" }}
+                        onClick={() => navigate(`/board/class-board/${board.id}`)}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <span style={{ fontSize: 14, fontWeight: 800, color: idx < 3 ? "#3b82f6" : "#9ca3af", minWidth: 20, lineHeight: "20px" }}>
+                          {idx + 1}
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#374151", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {board.title}
+                          </div>
+                          <div className="d-flex align-items-center gap-8" style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>
+                            <span>{board.writerName}</span>
+                            <span className="d-flex align-items-center gap-2">
+                              <i className="ri-eye-line" style={{ fontSize: 12 }} />
+                              {board.viewCount}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {loading ? (
-              <div className="text-center py-24 text-secondary-light" style={{ fontSize: 13 }}>
-                불러오는 중...
+            {/* [soojin] 게시판 통계 카드 (하단) */}
+            <div className="card radius-12 overflow-hidden">
+              <div style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8 }}>
+                <i className="ri-bar-chart-2-line" style={{ color: "#3b82f6", fontSize: 18 }} />
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>게시판 통계</span>
               </div>
-            ) : popularBoards.length === 0 ? (
-              <div className="text-center py-24 text-secondary-light" style={{ fontSize: 13 }}>
-                게시글이 없습니다.
-              </div>
-            ) : (
-              <div>
-                {popularBoards.map((board, idx) => (
-                  <div
-                    key={board.id}
-                    style={{
-                      padding: "12px 20px",
-                      borderBottom: idx < popularBoards.length - 1 ? "1px solid #f3f4f6" : "none",
-                      cursor: "pointer",
-                      transition: "background 0.15s",
-                      display: "flex",
-                      gap: 12,
-                      alignItems: "flex-start",
-                    }}
-                    onClick={() => navigate(`/board/class-board/${board.id}`)}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                  >
-                    {/* [woo] 순위 번호 */}
-                    <span
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 800,
-                        color: idx < 3 ? "#3b82f6" : "#9ca3af",
-                        minWidth: 20,
-                        lineHeight: "20px",
-                      }}
+              {sidebarLoading ? (
+                <div className="d-flex align-items-center justify-content-center text-secondary-light py-16" style={{ fontSize: 13 }}>불러오는 중...</div>
+              ) : (
+                <div style={{ padding: "12px 20px" }}>
+                  {[
+                    { label: "전체 게시글", value: stats.totalCount, color: "#3b82f6" },
+                    { label: "오늘 작성", value: stats.todayCount, color: "#10b981" },
+                    { label: "전체 조회", value: stats.totalViewCount, color: "#f97316" },
+                  ].map((item, i, arr) => (
+                    <div
+                      key={item.label}
+                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid #f3f4f6" : "none" }}
                     >
-                      {idx + 1}
-                    </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "#374151",
-                          lineHeight: 1.4,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {board.title}
-                      </div>
-                      <div
-                        className="d-flex align-items-center gap-8"
-                        style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}
-                      >
-                        <span>{board.writerName}</span>
-                        <span className="d-flex align-items-center gap-2">
-                          <i className="ri-eye-line" style={{ fontSize: 12 }} />
-                          {board.viewCount}
-                        </span>
-                        <span className="d-flex align-items-center gap-2">
-                          <i className="ri-heart-line" style={{ fontSize: 12 }} />0
-                        </span>
-                      </div>
+                      <span style={{ fontSize: 13, color: "#6b7280" }}>{item.label}</span>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: item.color }}>{item.value.toLocaleString()}</span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
