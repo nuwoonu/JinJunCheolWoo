@@ -60,7 +60,7 @@ public class BoardService {
 
     // [woo 03-27] 담임 학급 보유 여부 확인
     public boolean hasHomeroom(Long uid, int year) {
-        return classroomRepository.findByTeacherUidAndYear(uid, year).isPresent();
+        return classroomRepository.findByTeacherUidAndSchoolYear_Year(uid, year).isPresent();
     }
 
     // ========== 게시물 조회 ==========
@@ -117,7 +117,7 @@ public class BoardService {
         // [woo] 교사 → 담임 학급
         if (isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
-            return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+            return classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
                     .map(c -> getClassDiary(c.getCid(), pageable))
                     .orElse(Page.empty(pageable));
         }
@@ -168,7 +168,7 @@ public class BoardService {
         // [woo 03-27] 교사 → 담임 학급
         if (isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
-            return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+            return classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
                     .map(c -> getClassBoard(c.getCid(), pageable))
                     .orElse(Page.empty(pageable));
         }
@@ -414,7 +414,7 @@ public class BoardService {
         if ((request.getBoardType() == BoardType.PARENT_NOTICE || request.getBoardType() == BoardType.CLASS_DIARY)
                 && targetClassroom == null && isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
-            classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+            classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
                     .ifPresent(classroom -> {
                         request.setTargetClassroomId(classroom.getCid());
                         request.setTargetGrade(classroom.getGrade());
@@ -429,7 +429,7 @@ public class BoardService {
         if (request.getBoardType() == BoardType.CLASS_BOARD && targetClassroom == null) {
             if (isTeacher(userDTO)) {
                 int currentYear = java.time.LocalDate.now().getYear();
-                classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+                classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
                         .ifPresent(classroom -> {
                             request.setTargetClassroomId(classroom.getCid());
                             request.setTargetGrade(classroom.getGrade());
@@ -820,7 +820,7 @@ public class BoardService {
             classroomCid = board.getTargetClassroom().getCid();
         } else if (teacherUid != null) {
             int currentYear = java.time.LocalDate.now().getYear();
-            classroomCid = classroomRepository.findByTeacherUidAndYear(teacherUid, currentYear)
+            classroomCid = classroomRepository.findByTeacherUidAndSchoolYear_Year(teacherUid, currentYear)
                     .map(Classroom::getCid).orElse(null);
         }
         log.info("[woo] 읽음현황 - boardId={}, classroomCid={}", boardId, classroomCid);
@@ -931,7 +931,7 @@ public class BoardService {
             classroomCid = board.getTargetClassroom().getCid();
         } else if (teacherUid != null) {
             int currentYear = java.time.LocalDate.now().getYear();
-            classroomCid = classroomRepository.findByTeacherUidAndYear(teacherUid, currentYear)
+            classroomCid = classroomRepository.findByTeacherUidAndSchoolYear_Year(teacherUid, currentYear)
                     .map(Classroom::getCid).orElse(null);
         }
 

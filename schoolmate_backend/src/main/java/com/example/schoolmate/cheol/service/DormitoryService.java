@@ -41,15 +41,6 @@ public class DormitoryService {
     private final SchoolRepository schoolRepository;
 
     /**
-     * 초기 데이터 수동 생성 (전역 자동 생성을 막고 관리자 호출용으로 대체)
-     */
-    @Transactional
-    public void initIfEmpty() {
-        initializeDormitories();
-        log.info("현재 학교 기숙사 초기 데이터 자동 생성 완료");
-    }
-
-    /**
      * 기숙사 초기 데이터 생성
      */
     @Transactional

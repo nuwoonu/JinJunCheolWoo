@@ -102,7 +102,7 @@ public class GradeService {
 
         if (grade.getAcademicTerm() != null) {
             builder.academicTermId(grade.getAcademicTerm().getId())
-                    .schoolYear(grade.getAcademicTerm().getSchoolYear())
+                    .schoolYear(grade.getAcademicTerm().getSchoolYearInt())
                     .semester(grade.getAcademicTerm().getSemester())
                     .termDisplayName(grade.getAcademicTerm().getDisplayName());
         }

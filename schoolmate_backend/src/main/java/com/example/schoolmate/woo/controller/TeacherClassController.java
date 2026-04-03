@@ -74,7 +74,7 @@ public class TeacherClassController {
     public ResponseEntity<List<Map<String, Object>>> getClassesByGrade(
             @RequestParam int grade) {
         int currentYear = academicTermService.getCurrentSchoolYear();
-        List<Classroom> classrooms = classroomRepository.findByYearAndGrade(currentYear, grade);
+        List<Classroom> classrooms = classroomRepository.findBySchoolYear_YearAndGrade(currentYear, grade);
         List<Map<String, Object>> result = classrooms.stream()
                 .sorted((a, b) -> Integer.compare(a.getClassNum(), b.getClassNum()))
                 .map(c -> {

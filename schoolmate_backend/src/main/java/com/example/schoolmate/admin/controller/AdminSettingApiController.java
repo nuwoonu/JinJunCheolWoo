@@ -80,7 +80,7 @@ public class AdminSettingApiController {
     private Map<String, Object> toDto(AcademicTerm term) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", term.getId());
-        m.put("schoolYear", term.getSchoolYear());
+        m.put("schoolYear", term.getSchoolYearInt());
         m.put("semester", term.getSemester());
         m.put("startDate", term.getStartDate());
         m.put("endDate", term.getEndDate());

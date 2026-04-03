@@ -12,9 +12,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         @Override
         public void addInterceptors(InterceptorRegistry registry) {
-                // 어드민 API 요청에 X-School-Id 헤더를 처리하여 SchoolContextHolder에 저장
+                // X-School-Id 헤더를 읽어 SchoolContextHolder에 저장
+                // - 어드민 API: adminApi.ts 인터셉터가 헤더 자동 첨부
+                // - 기숙사 등 학교 스코프가 필요한 일반 API도 포함
                 registry.addInterceptor(new SchoolInterceptor())
-                                .addPathPatterns("/api/admin/**");
+                                .addPathPatterns("/api/admin/**", "/api/dormitories/**");
         }
 
         @Override

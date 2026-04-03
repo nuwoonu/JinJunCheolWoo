@@ -55,7 +55,7 @@ public class CourseSectionService {
     public int getStudentCount(CourseSection section) {
         Classroom classroom = section.getClassroom();
         return studentAssignmentRepository
-                .findByClassroomAndSchoolYear(classroom, classroom.getYear())
+                .findByClassroomAndSchoolYear(classroom, classroom.getSchoolYear())
                 .size();
     }
 

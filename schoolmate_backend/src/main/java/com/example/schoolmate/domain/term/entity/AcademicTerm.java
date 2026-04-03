@@ -47,9 +47,9 @@ public class AcademicTerm extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** 학년도 FK */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_year_id", nullable = false)
+    /** 학년도 FK - EAGER: 학기 조회 시 항상 함께 필요하며 작은 엔티티임 */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "school_year_id")
     private SchoolYear schoolYear;
 
     /** 학기 (1 또는 2) */

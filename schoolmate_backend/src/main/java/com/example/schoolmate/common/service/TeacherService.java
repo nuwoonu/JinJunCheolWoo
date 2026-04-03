@@ -468,7 +468,7 @@ public class TeacherService {
     public ClassStudentDTO getMyClassStudents(Long teacherId, int schoolYear) {
         log.info("담당 반 학생 조회 - 교사 ID: {}, 학년도: {}", teacherId, schoolYear);
         Long userUid = getUserUidFromTeacherId(teacherId);
-        Classroom classroom = classroomRepository.findByTeacherUidAndYear(userUid, schoolYear)
+        Classroom classroom = classroomRepository.findByTeacherUidAndSchoolYear_Year(userUid, schoolYear)
                 .orElseThrow(() -> new IllegalArgumentException("담당 학급이 없습니다."));
         return buildClassStudentDTO(classroom);
     }
@@ -480,7 +480,7 @@ public class TeacherService {
         log.info("학급 학생 조회 - {}학년도 {}학년 {}반", schoolYear, grade, classNum);
         // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
         Long schoolId = SchoolContextHolder.getSchoolId();
-        Classroom classroom = classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(schoolId, schoolYear, grade, classNum)
+        Classroom classroom = classroomRepository.findBySchoolIdAndSchoolYear_YearAndGradeAndClassNum(schoolId, schoolYear, grade, classNum)
                 .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다."));
         return buildClassStudentDTO(classroom);
     }
@@ -574,7 +574,7 @@ public class TeacherService {
      */
     public boolean isHomeroom(Long teacherId, int schoolYear) {
         Long userUid = getUserUidFromTeacherId(teacherId);
-        return classroomRepository.findByTeacherUidAndYear(userUid, schoolYear).isPresent();
+        return classroomRepository.findByTeacherUidAndSchoolYear_Year(userUid, schoolYear).isPresent();
     }
 
     /**
@@ -582,7 +582,7 @@ public class TeacherService {
      */
     public Optional<Classroom> getMyClassroom(Long teacherId, int schoolYear) {
         Long userUid = getUserUidFromTeacherId(teacherId);
-        return classroomRepository.findByTeacherUidAndYear(userUid, schoolYear);
+        return classroomRepository.findByTeacherUidAndSchoolYear_Year(userUid, schoolYear);
     }
 
     /**
@@ -590,7 +590,7 @@ public class TeacherService {
      */
     public Classroom getMyClassroomOrThrow(Long teacherId, int schoolYear) {
         Long userUid = getUserUidFromTeacherId(teacherId);
-        return classroomRepository.findByTeacherUidAndYear(userUid, schoolYear)
+        return classroomRepository.findByTeacherUidAndSchoolYear_Year(userUid, schoolYear)
                 .orElseThrow(() -> new IllegalArgumentException("담당 학급이 없습니다. 관리자에게 담임 배정을 요청하세요."));
     }
 
@@ -819,7 +819,7 @@ public class TeacherService {
                 .score(grade.getScore());
         if (grade.getAcademicTerm() != null) {
             builder.academicTermId(grade.getAcademicTerm().getId())
-                    .schoolYear(grade.getAcademicTerm().getSchoolYear())
+                    .schoolYear(grade.getAcademicTerm().getSchoolYearInt())
                     .semester(grade.getAcademicTerm().getSemester())
                     .termDisplayName(grade.getAcademicTerm().getDisplayName());
         }

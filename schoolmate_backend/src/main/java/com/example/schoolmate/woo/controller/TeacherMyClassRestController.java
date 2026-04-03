@@ -160,7 +160,7 @@ public class TeacherMyClassRestController {
             // [woo] StudentAssignment 생성 + 학생 상태 변경
             StudentAssignment assignment = StudentAssignment.builder()
                     .studentInfo(student)
-                    .schoolYear(currentYear)
+                    .schoolYear(classroom.getSchoolYear())
                     .classroom(classroom)
                     .attendanceNum(attendanceNum)
                     .build();

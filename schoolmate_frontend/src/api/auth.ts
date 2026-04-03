@@ -1,5 +1,5 @@
 import axios from "axios";
-import { auth } from '@/shared/auth';
+import { auth } from "@/shared/auth";
 
 const api = axios.create({
   baseURL: "/api",
@@ -12,12 +12,29 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // [woo/cheol] 멀티 테넌트 환경 대응: 최고 관리자 등 토큰에 학교 ID가 없는 경우
+  // 로컬 스토리지에 저장된 선택된 학교 ID가 있다면 X-School-Id 헤더로 명시적 전달
+  const activeSchoolId = (() => {
+    const plain = localStorage.getItem("schoolId") || localStorage.getItem("activeSchoolId");
+    if (plain) return plain;
+    try {
+      const obj = JSON.parse(localStorage.getItem("admin_selected_school") ?? "null");
+      return obj?.id != null ? String(obj.id) : null;
+    } catch {
+      return null;
+    }
+  })();
+  if (activeSchoolId) {
+    config.headers["X-School-Id"] = activeSchoolId;
+  }
+
   return config;
 });
 
 export type RoleRequestInfo = {
   role: string;
-  status: 'PENDING' | 'ACTIVE' | 'REJECTED' | 'SUSPENDED';
+  status: "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED";
   schoolId?: number | string;
   schoolName?: string;
 };
@@ -85,17 +102,20 @@ export async function getRoleContexts(): Promise<RoleContext[]> {
 /** 다른 역할 인스턴스로 컨텍스트 전환 → 새 JWT 쌍 반환 */
 export async function switchContext(
   infoId: number,
-  role: string
+  role: string,
 ): Promise<{ accessToken: string; refreshToken: string }> {
   const res = await api.post<{ accessToken: string; refreshToken: string }>(
     "/auth/switch-context",
-    { infoId, role }
+    { infoId, role },
   );
   return res.data;
 }
 
 /** 역할 인스턴스를 primary(메인)로 지정 */
-export async function setPrimaryRole(infoId: number, role: string): Promise<void> {
+export async function setPrimaryRole(
+  infoId: number,
+  role: string,
+): Promise<void> {
   await api.patch("/auth/primary-role", { infoId, role });
 }
 

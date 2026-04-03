@@ -28,6 +28,9 @@ import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.domain.term.entity.SchoolYear;
 import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
 import com.example.schoolmate.domain.term.repository.SchoolYearRepository;
+import com.example.schoolmate.cheol.service.DormitoryService;
+import com.example.schoolmate.cheol.repository.DormitoryRepository;
+import com.example.schoolmate.config.school.SchoolContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -70,6 +73,8 @@ public class TestDataService {
     private final PasswordEncoder passwordEncoder;
     private final SystemSettingsRepository systemSettingsRepository;
     private final SchoolYearRepository schoolYearRepository;
+    private final DormitoryService dormitoryService;
+    private final DormitoryRepository dormitoryRepository;
 
     // ── 랜덤 데이터 풀 ────────────────────────────────────────────────────────
 
@@ -205,6 +210,11 @@ public class TestDataService {
         int parents = seedParents(allStudents, 20);
         summary.put("parents", parents);
 
+        // 기숙사 생성 (각 학교별 1동~3동)
+        seedDormitories(elemSchool);
+        seedDormitories(midSchool);
+        summary.put("dormitories", "각 학교별 1동~3동 기숙사 생성 완료");
+
         log.info("[TestDataService] 테스트 데이터 생성 완료: {}", summary);
         return summary;
     }
@@ -228,18 +238,24 @@ public class TestDataService {
         });
     }
 
+    private void seedDormitories(School school) {
+        // 해당 학교에 이미 기숙사가 있는지 확인
+        if (dormitoryRepository.findBuildingSummaries(school.getId()).isEmpty()) {
+            SchoolContextHolder.setSchoolId(school.getId()); // 컨텍스트에 학교 지정
+            try {
+                dormitoryService.initializeDormitories(); // 기존 기숙사 초기화 로직 재활용
+            } finally {
+                SchoolContextHolder.clear(); // 부작용 방지를 위해 컨텍스트 클리어
+            }
+        }
+    }
+
     private void seedTerm(School school, int year, SchoolYear sy) {
         // 이미 해당 학교의 ACTIVE 학기가 있으면 스킵
         if (academicTermRepository.findBySchoolIdAndStatus(school.getId(), AcademicTermStatus.ACTIVE).isPresent()) {
             return;
         }
-        AcademicTerm term = AcademicTerm.builder()
-                .schoolYear(sy)
-                .semester(1)
-                .startDate(LocalDate.of(year, 3, 1))
-                .endDate(LocalDate.of(year + 1, 2, 28))
-                .status(AcademicTermStatus.ACTIVE)
-                .build();
+        AcademicTerm term = new AcademicTerm(sy, 1, LocalDate.of(year, 3, 1), LocalDate.of(year + 1, 2, 28), AcademicTermStatus.ACTIVE);
         term.setSchool(school);
         academicTermRepository.save(term);
     }
