@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ReactQuill, QUILL_MODULES_TEXT, QUILL_FORMATS_TEXT, isQuillEmpty } from "@/shared/quillConfig";
+import { ReactQuill, QUILL_MODULES, QUILL_FORMATS, isQuillEmpty } from "@/shared/quillConfig";
 import "react-quill-new/dist/quill.snow.css";
 import api from "@/api/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
-// [soojin] /board/teacher/:id - 교직원 게시판 상세 (좋아요/북마크/댓글/태그 UI 포함)
+// [soojin] /board/teacher/:id - 교직원 게시판 상세 (ClassBoardDetail.tsx 형식)
 
 interface Attachment {
   id: number;
@@ -45,14 +45,13 @@ interface Comment {
   replies: Comment[];
 }
 
-// [soojin] 역할 → 배지 레이블/색상 매핑
-function roleBadge(role: string): { label: string; color: string } {
+function roleBadge(role: string): { label: string; bg: string; color: string } {
   switch (role) {
-    case "ADMIN":   return { label: "관리자", color: "bg-purple-100 text-purple-700" };
-    case "TEACHER": return { label: "교사",   color: "bg-blue-100 text-blue-700" };
-    case "STAFF":   return { label: "교직원", color: "bg-cyan-100 text-cyan-700" };
-    case "PARENT":  return { label: "학부모", color: "bg-orange-100 text-orange-700" };
-    default:        return { label: "학생",   color: "bg-success-100 text-success-600" };
+    case "ADMIN":   return { label: "관리자", bg: "#f3e8ff", color: "#7c3aed" };
+    case "TEACHER": return { label: "교사",   bg: "#dbeafe", color: "#1d4ed8" };
+    case "STAFF":   return { label: "교직원", bg: "#cffafe", color: "#0e7490" };
+    case "PARENT":  return { label: "학부모", bg: "#ffedd5", color: "#c2410c" };
+    default:        return { label: "학생",   bg: "#dcfce7", color: "#16a34a" };
   }
 }
 
@@ -70,18 +69,9 @@ function formatDateTime(dateStr: string): string {
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
 function AvatarIcon({ name }: { name: string }) {
   return (
-    <div
-      className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
-      style={{ width: 36, height: 36, fontSize: 14, background: "#0ea5e9" }}
-    >
+    <div style={{ width: 36, height: 36, fontSize: 14, fontWeight: 700, background: "#0ea5e9", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
       {name ? name.charAt(0) : "?"}
     </div>
   );
@@ -98,7 +88,6 @@ export default function TeacherBoardDetail() {
   const [editForm, setEditForm] = useState({ title: "", content: "", tag: "" });
   const [saving, setSaving] = useState(false);
 
-  // [soojin] 댓글 상태
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [replyTo, setReplyTo] = useState<{ id: number; writerName: string } | null>(null);
@@ -109,7 +98,6 @@ export default function TeacherBoardDetail() {
   const isWriter = board?.writerId === user?.uid;
   const viewedRef = useRef(false);
 
-  // [soojin] 게시글 + 댓글 초기 로딩
   useEffect(() => {
     if (!id) return;
     api
@@ -133,7 +121,6 @@ export default function TeacherBoardDetail() {
     return () => { document.body.style.overflow = ""; };
   }, [showEditModal]);
 
-  // [soojin] 좋아요 토글 — 낙관적 UI 업데이트
   const handleLike = async () => {
     if (!board) return;
     const prev = { likeCount: board.likeCount, isLiked: board.isLiked };
@@ -146,7 +133,6 @@ export default function TeacherBoardDetail() {
     }
   };
 
-  // [soojin] 북마크 토글 — 낙관적 UI 업데이트
   const handleBookmark = async () => {
     if (!board) return;
     const prevBookmarked = board.isBookmarked;
@@ -163,7 +149,6 @@ export default function TeacherBoardDetail() {
     navigator.clipboard.writeText(window.location.href).then(() => alert("링크가 복사되었습니다.")).catch(() => {});
   };
 
-  // [soojin] 댓글/대댓글 작성
   const handleCommentSubmit = async () => {
     if (!newComment.trim()) return;
     setSubmitting(true);
@@ -224,32 +209,33 @@ export default function TeacherBoardDetail() {
     }
   };
 
-  // [soojin] 단일 댓글 렌더링 (재귀 — 대댓글 포함)
   const renderComment = (comment: Comment, isReply = false) => {
     const badge = roleBadge(comment.writerRole);
     const canDelete = user?.uid === comment.writerId || isAdmin || isTeacher;
     return (
       <div key={comment.id} style={{ marginBottom: 16, paddingLeft: isReply ? 44 : 0 }}>
-        <div className="d-flex gap-10">
+        <div style={{ display: "flex", gap: 10 }}>
           <AvatarIcon name={comment.writerName} />
           <div style={{ flex: 1 }}>
-            <div className="d-flex align-items-center gap-8 mb-4 flex-wrap">
-              <span className="fw-semibold" style={{ fontSize: 14 }}>{comment.writerName}</span>
-              <span className={`px-6 py-1 rounded fw-medium ${badge.color}`} style={{ fontSize: 11 }}>{badge.label}</span>
-              <span className="text-secondary-light" style={{ fontSize: 12 }}>{formatDateTime(comment.createDate)}</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{comment.writerName}</span>
+                <span style={{ fontSize: 11, padding: "1px 6px", borderRadius: 4, background: badge.bg, color: badge.color, fontWeight: 500 }}>{badge.label}</span>
+              </div>
+              <span style={{ fontSize: 12, color: "#9ca3af" }}>{formatDateTime(comment.createDate)}</span>
             </div>
-            <p className="mb-6" style={{ fontSize: 14, lineHeight: 1.7, color: comment.isDeleted ? "#94a3b8" : "#334155", fontStyle: comment.isDeleted ? "italic" : "normal", margin: 0 }}>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: comment.isDeleted ? "#94a3b8" : "#334155", fontStyle: comment.isDeleted ? "italic" : "normal", margin: 0 }}>
               {comment.content}
             </p>
-            <div className="d-flex align-items-center gap-12 mt-4">
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
               {!isReply && (
-                <button type="button" style={{ fontSize: 12, background: "none", border: "none", padding: 0, cursor: "pointer" }} className="d-flex align-items-center gap-4 text-secondary-light"
+                <button type="button" style={{ fontSize: 12, background: "none", border: "none", padding: 0, cursor: "pointer", color: "#9ca3af", display: "inline-flex", alignItems: "center", gap: 4 }}
                   onClick={() => setReplyTo(replyTo?.id === comment.id ? null : { id: comment.id, writerName: comment.writerName })}>
                   <i className="ri-reply-line" />답글
                 </button>
               )}
               {canDelete && !comment.isDeleted && (
-                <button type="button" style={{ fontSize: 12, background: "none", border: "none", padding: 0, cursor: "pointer" }} className="d-flex align-items-center gap-4 text-danger"
+                <button type="button" style={{ fontSize: 12, background: "none", border: "none", padding: 0, cursor: "pointer", color: "#ef4444", display: "inline-flex", alignItems: "center", gap: 4 }}
                   onClick={() => handleCommentDelete(comment.id)}>
                   <i className="ri-delete-bin-line" />삭제
                 </button>
@@ -259,14 +245,14 @@ export default function TeacherBoardDetail() {
         </div>
         {comment.replies?.map((reply) => renderComment(reply, true))}
         {replyTo?.id === comment.id && (
-          <div className="d-flex gap-8 mt-8" style={{ paddingLeft: 44 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, paddingLeft: 44 }}>
             <input type="text" className="form-control form-control-sm"
               placeholder={`${replyTo.writerName}님께 답글 작성...`}
               value={newComment} onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(); } }}
               style={{ fontSize: 13 }} />
-            <button type="button" className="btn btn-primary-600 btn-sm radius-8 flex-shrink-0" onClick={handleCommentSubmit} disabled={submitting}>등록</button>
-            <button type="button" className="btn btn-outline-neutral-300 btn-sm radius-8 flex-shrink-0" onClick={() => { setReplyTo(null); setNewComment(""); }}>취소</button>
+            <button type="button" style={{ padding: "4px 10px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, color: "#fff", cursor: "pointer", flexShrink: 0 }} onClick={handleCommentSubmit} disabled={submitting}>등록</button>
+            <button type="button" style={{ padding: "4px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: "#374151", cursor: "pointer", flexShrink: 0 }} onClick={() => { setReplyTo(null); setNewComment(""); }}>취소</button>
           </div>
         )}
       </div>
@@ -276,7 +262,7 @@ export default function TeacherBoardDetail() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
+        <div style={{ textAlign: "center", paddingTop: 48, paddingBottom: 48, color: "#94a3b8" }}>불러오는 중...</div>
       </DashboardLayout>
     );
   }
@@ -293,39 +279,54 @@ export default function TeacherBoardDetail() {
   return (
     <DashboardLayout>
       {/* 상단 네비게이션 */}
-      <div className="d-flex align-items-center gap-8 mb-24">
-        <Link to="/board/teacher" className="w-36-px h-36-px rounded-circle bg-neutral-100 d-flex align-items-center justify-content-center text-secondary-light">
-          <i className="ri-arrow-left-line text-lg" />
+      <div style={{ maxWidth: 860, margin: "0 auto 24px" }}>
+        <Link
+          to="/board/teacher"
+          style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#374151", textDecoration: "none", padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontWeight: 500 }}
+        >
+          <i className="ri-arrow-left-line" />
+          목록으로
         </Link>
-        <h5 className="fw-bold mb-0">교직원 게시판</h5>
       </div>
 
       {/* 게시글 카드 */}
-      <div className="card radius-12" style={{ maxWidth: 860, margin: "0 auto" }}>
-        {/* 헤더 */}
-        <div className="card-header py-20 px-24 border-bottom">
-          <div className="d-flex align-items-center gap-8 mb-10">
-            <span className="badge bg-cyan-100 text-cyan-700 fw-medium" style={{ fontSize: 12 }}>교직원 게시판</span>
-            {board.tag && <span className="badge bg-neutral-100 text-neutral-600 fw-medium" style={{ fontSize: 12 }}>{board.tag}</span>}
+      {/* [soojin] overflow:hidden — Bootstrap card-header 자체 border-radius를 카드 radius(12)로 클리핑 */}
+      <div className="card" style={{ maxWidth: 860, margin: "0 auto", borderRadius: 12, overflow: "hidden", border: "1px solid #e2e8f0" }}>
+        {/* [soojin] borderBottom 제거 → 아래 패딩 구분선으로 대체 */}
+        <div className="card-header" style={{ padding: "20px 24px", borderBottom: "none" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, background: "#cffafe", color: "#0e7490", display: "inline-block" }}>교직원 게시판</span>
+            {board.tag && <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, background: "#f3f4f6", color: "#4b5563", display: "inline-block" }}>{board.tag}</span>}
           </div>
-          <h5 className="fw-bold mb-12" style={{ lineHeight: 1.5 }}>{board.title}</h5>
-          <div className="d-flex align-items-center gap-12 flex-wrap">
-            <div className="d-flex align-items-center gap-8">
+          <h5 style={{ fontWeight: 700, marginBottom: 0, lineHeight: 1.5 }}>{board.title}</h5>
+        </div>
+        {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+        <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
+        {/* [soojin] borderBottom 제거 → 아래 패딩 구분선으로 대체 */}
+        <div style={{ padding: "16px 24px" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <AvatarIcon name={board.writerName} />
-              <span className="fw-semibold" style={{ fontSize: 14 }}>{board.writerName}</span>
-              <span className={`px-8 py-1 rounded fw-medium ${writerBadge.color}`} style={{ fontSize: 11 }}>{writerBadge.label}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>{board.writerName}</span>
+                  <span style={{ fontSize: 11, padding: "1px 8px", borderRadius: 4, background: writerBadge.bg, color: writerBadge.color, fontWeight: 500 }}>{writerBadge.label}</span>
+                </div>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>{formatDateTime(board.createDate)}</span>
+              </div>
             </div>
-            <span className="text-secondary-light" style={{ fontSize: 13 }}>{formatDate(board.createDate)}</span>
-            <div className="d-flex align-items-center gap-12 text-secondary-light ms-auto" style={{ fontSize: 13 }}>
-              <span><i className="ri-eye-line me-4" />조회 {board.viewCount}</span>
-              <span><i className="ri-heart-line me-4" />좋아요 {board.likeCount}</span>
-              <span><i className="ri-chat-3-line me-4" />댓글 {board.commentCount}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#94a3b8", fontSize: 13, marginLeft: "auto" }}>
+              <span><i className="ri-eye-line" style={{ marginRight: 4 }} />{board.viewCount}</span>
+              <span><i className="ri-heart-line" style={{ marginRight: 4 }} />{board.likeCount}</span>
+              <span><i className="ri-chat-3-line" style={{ marginRight: 4 }} />{board.commentCount}</span>
             </div>
           </div>
         </div>
+        {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+        <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
 
         {/* 본문 */}
-        <div className="card-body px-24 py-20">
+        <div className="card-body" style={{ padding: "20px 24px" }}>
           {board.content.includes("<") ? (
             <div className="ql-editor" style={{ fontSize: 15, lineHeight: 2, color: "#334155", minHeight: 120, padding: 0 }} dangerouslySetInnerHTML={{ __html: board.content }} />
           ) : (
@@ -335,50 +336,57 @@ export default function TeacherBoardDetail() {
 
         {/* 첨부파일 */}
         {attachments.length > 0 && (
-          <div className="px-24 py-16 border-top">
-            <p className="fw-semibold mb-10" style={{ fontSize: 14 }}><i className="ri-attachment-line me-6 text-primary-600" />첨부파일 ({attachments.length})</p>
-            <div className="d-flex flex-column gap-8">
-              {attachments.map((file, idx) => (
-                <div key={idx} className="d-flex align-items-center justify-content-between px-14 py-10 radius-8" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                  <div className="d-flex align-items-center gap-10">
-                    <i className="ri-file-line text-primary-600" style={{ fontSize: 18 }} />
-                    <div>
-                      <p className="fw-medium mb-0" style={{ fontSize: 13 }}>{file.name}</p>
-                      {file.size != null && <p className="text-secondary-light mb-0" style={{ fontSize: 11 }}>{formatFileSize(file.size)}</p>}
+          <>
+            {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+            <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
+            {/* [soojin] borderTop 제거 → 위 패딩 구분선으로 대체 */}
+            <div style={{ padding: "16px 24px" }}>
+              <p style={{ fontWeight: 600, marginBottom: 10, fontSize: 14 }}><i className="ri-attachment-line text-primary-600" style={{ marginRight: 6 }} />첨부파일 ({attachments.length})</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {attachments.map((file, idx) => (
+                  <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10, borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <i className="ri-file-line text-primary-600" style={{ fontSize: 18 }} />
+                      <div>
+                        <p style={{ fontWeight: 500, marginBottom: 0, fontSize: 13 }}>{file.name}</p>
+                        {file.size != null && <p style={{ color: "#94a3b8", marginBottom: 0, fontSize: 11 }}>{formatFileSize(file.size)}</p>}
+                      </div>
                     </div>
+                    <a href={file.url} download={file.name} style={{ fontSize: 12, padding: "4px 10px", border: "1px solid #3b82f6", borderRadius: 8, color: "#3b82f6", background: "#fff", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <i className="ri-download-line" />다운로드
+                    </a>
                   </div>
-                  <a href={file.url} download={file.name} className="btn btn-outline-primary-600 btn-sm radius-8 d-flex align-items-center gap-4" style={{ fontSize: 12 }}>
-                    <i className="ri-download-line" />다운로드
-                  </a>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
-        {/* 수정/삭제 + 좋아요/북마크/공유/목록 */}
-        <div className="px-24 py-16 border-top d-flex align-items-center justify-content-between flex-wrap gap-8">
+        {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+        <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
+        {/* [soojin] borderTop 제거 → 위 패딩 구분선으로 대체 */}
+        <div style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
           {(isAdmin || isWriter) ? (
-            <div className="d-flex gap-8">
-              <button type="button" className="btn btn-outline-primary-600 btn-sm radius-8 d-flex align-items-center gap-4" onClick={() => setShowEditModal(true)}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" style={{ padding: "5px 10px", background: "#fff", border: "1px solid #25A194", borderRadius: 6, fontSize: 13, color: "#25A194", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }} onClick={() => setShowEditModal(true)}>
                 <i className="ri-edit-line" />수정
               </button>
-              <button type="button" className="btn btn-outline-danger btn-sm radius-8 d-flex align-items-center gap-4" onClick={handleDelete}>
+              <button type="button" style={{ padding: "5px 10px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 13, color: "#dc2626", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }} onClick={handleDelete}>
                 <i className="ri-delete-bin-line" />삭제
               </button>
             </div>
           ) : <div />}
-          <div className="d-flex align-items-center gap-8 flex-wrap">
-            <button type="button" onClick={handleLike} className={`btn btn-sm radius-8 d-flex align-items-center gap-6 ${board.isLiked ? "btn-danger" : "btn-outline-neutral-300"}`} style={{ fontSize: 13, minWidth: 90 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <button type="button" onClick={handleLike} style={{ padding: "5px 10px", background: board.isLiked ? "#ef4444" : "#fff", border: board.isLiked ? "none" : "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: board.isLiked ? "#fff" : "#374151", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, minWidth: 90 }}>
               <i className={board.isLiked ? "ri-heart-fill" : "ri-heart-line"} />좋아요 {board.likeCount}
             </button>
-            <button type="button" onClick={handleBookmark} className={`btn btn-sm radius-8 d-flex align-items-center gap-6 ${board.isBookmarked ? "btn-warning" : "btn-outline-neutral-300"}`} style={{ fontSize: 13 }}>
+            <button type="button" onClick={handleBookmark} style={{ padding: "5px 10px", background: board.isBookmarked ? "#f59e0b" : "#fff", border: board.isBookmarked ? "none" : "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: board.isBookmarked ? "#fff" : "#374151", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
               <i className={board.isBookmarked ? "ri-bookmark-fill" : "ri-bookmark-line"} />북마크
             </button>
-            <button type="button" onClick={handleShare} className="btn btn-outline-neutral-300 btn-sm radius-8 d-flex align-items-center gap-6" style={{ fontSize: 13 }}>
+            <button type="button" onClick={handleShare} style={{ padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: "#374151", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
               <i className="ri-share-forward-line" />공유
             </button>
-            <Link to="/board/teacher" className="btn btn-outline-neutral-300 btn-sm radius-8 d-flex align-items-center gap-6" style={{ fontSize: 13 }}>
+            <Link to="/board/teacher" style={{ padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: "#374151", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
               <i className="ri-list-unordered" />목록
             </Link>
           </div>
@@ -386,21 +394,24 @@ export default function TeacherBoardDetail() {
       </div>
 
       {/* 댓글 섹션 */}
-      <div className="card radius-12" style={{ maxWidth: 860, margin: "16px auto 0" }}>
-        <div className="card-body px-24 py-20">
-          <h6 className="fw-bold mb-16 d-flex align-items-center gap-8">
+      <div className="card" style={{ maxWidth: 860, margin: "16px auto 0", borderRadius: 12, border: "1px solid #e2e8f0" }}>
+        <div className="card-body" style={{ padding: "20px 24px" }}>
+          <h6 style={{ fontWeight: 700, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
             <i className="ri-chat-3-line text-primary-600" />댓글 {board.commentCount}
           </h6>
+          {/* [soojin] 댓글 작성 버튼을 textarea 하단 우측으로 이동 */}
           {!replyTo && (
-            <div className="d-flex gap-8 mb-24 align-items-flex-end">
+            <div style={{ marginBottom: 24 }}>
               <textarea className="form-control" rows={2} placeholder="댓글을 입력하세요..." value={newComment} onChange={(e) => setNewComment(e.target.value)} style={{ fontSize: 14, resize: "none" }} />
-              <button type="button" className="btn btn-primary-600 radius-8 flex-shrink-0 d-flex align-items-center gap-4" style={{ fontSize: 13, height: 40, whiteSpace: "nowrap" }} onClick={handleCommentSubmit} disabled={submitting || !newComment.trim()}>
-                <i className="ri-send-plane-line" />댓글 작성
-              </button>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                <button type="button" style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }} onClick={handleCommentSubmit} disabled={submitting || !newComment.trim()}>
+                  <i className="ri-send-plane-line" />댓글 작성
+                </button>
+              </div>
             </div>
           )}
           {comments.length === 0 ? (
-            <p className="text-secondary-light text-center py-20" style={{ fontSize: 14 }}>첫 댓글을 남겨보세요.</p>
+            <p style={{ color: "#94a3b8", textAlign: "center", paddingTop: 20, paddingBottom: 20, fontSize: 14 }}>첫 댓글을 남겨보세요.</p>
           ) : (
             <div>{comments.map((c) => renderComment(c))}</div>
           )}
@@ -409,39 +420,38 @@ export default function TeacherBoardDetail() {
 
       {/* 수정 모달 */}
       {showEditModal && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div className="modal fade show" tabIndex={-1} style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content radius-12">
-              <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title"><i className="ri-edit-line me-8 text-primary-600" />게시글 수정</h6>
+            <div className="modal-content" style={{ borderRadius: 12 }}>
+              <div className="modal-header" style={{ padding: "16px 24px" }}>
+                <h6 className="modal-title"><i className="ri-edit-line text-primary-600" style={{ marginRight: 8 }} />게시글 수정</h6>
                 <button type="button" className="btn-close" onClick={() => setShowEditModal(false)} />
               </div>
-              <div className="modal-body p-24">
-                <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">제목</label>
+              <div className="modal-body" style={{ padding: 24 }}>
+                <div style={{ marginBottom: 16 }}>
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 13 }}>제목</label>
                   <input type="text" className="form-control" value={editForm.title} onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))} />
                 </div>
-                <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">태그</label>
+                <div style={{ marginBottom: 16 }}>
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 13 }}>태그</label>
                   <select className="form-select" value={editForm.tag} onChange={(e) => setEditForm((f) => ({ ...f, tag: e.target.value }))}>
                     <option value="">태그 없음</option>
-                    <option value="공지">공지</option>
                     <option value="질문">질문</option>
                     <option value="모임">모임</option>
-                    <option value="안건">안건</option>
-                    <option value="기타">기타</option>
+                    <option value="유머">유머</option>
+                    <option value="공지">공지</option>
                   </select>
                 </div>
                 <div>
-                  <label className="form-label fw-semibold text-sm">내용</label>
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 13 }}>내용</label>
                   <div style={{ minHeight: 320 }}>
-                    <ReactQuill theme="snow" value={editForm.content} onChange={(val: string) => setEditForm((f) => ({ ...f, content: val }))} modules={QUILL_MODULES_TEXT} formats={QUILL_FORMATS_TEXT} style={{ height: 280 }} />
+                    <ReactQuill theme="snow" value={editForm.content} onChange={(val: string) => setEditForm((f) => ({ ...f, content: val }))} modules={QUILL_MODULES} formats={QUILL_FORMATS} style={{ height: 280 }} />
                   </div>
                 </div>
               </div>
-              <div className="modal-footer border-top py-16 px-24 gap-8">
-                <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setShowEditModal(false)}>취소</button>
-                <button type="button" className="btn btn-primary-600 radius-8" onClick={handleEdit} disabled={saving}>{saving ? "저장 중..." : "저장"}</button>
+              <div className="modal-footer" style={{ padding: "16px 24px", gap: 8 }}>
+                <button type="button" style={{ padding: "5px 16px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: "#374151", cursor: "pointer" }} onClick={() => setShowEditModal(false)}>취소</button>
+                <button type="button" style={{ padding: "5px 16px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer" }} onClick={handleEdit} disabled={saving}>{saving ? "저장 중..." : "저장"}</button>
               </div>
             </div>
           </div>

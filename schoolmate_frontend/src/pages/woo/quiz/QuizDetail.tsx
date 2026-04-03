@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../../api/auth";
 import { useAuth } from "../../../contexts/AuthContext";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
@@ -84,6 +84,8 @@ export default function QuizDetail() {
   const [result, setResult] = useState<QuizSubmission | null>(null);
   // [woo] 학생: 퀴즈 풀기 모드
   const [takingQuiz, setTakingQuiz] = useState(false);
+  // [soojin] 교사: 학생별 답안 펼치기 토글 - 학생 카드 클릭 시 답안 상세 표시
+  const [expandedStudentId, setExpandedStudentId] = useState<number | null>(null);
 
   const fetchQuiz = () => {
     setLoading(true);
@@ -179,6 +181,317 @@ export default function QuizDetail() {
     quiz.status === "OPEN" &&
     (quiz.maxAttempts == null || (quiz.mySubmissions?.length ?? 0) < quiz.maxAttempts);
 
+  // [soojin] 교사 뷰 통계 계산 - 학생별 최신 응시 기준
+  const latestSubmissionByStudent = quiz.submissions
+    ? Object.values(
+        quiz.submissions.reduce((acc, sub) => {
+          const key = sub.studentInfoId;
+          if (!acc[key] || sub.attemptNumber > acc[key].attemptNumber) {
+            acc[key] = sub;
+          }
+          return acc;
+        }, {} as Record<number, QuizSubmission>)
+      )
+    : [];
+
+  const submittedCount = latestSubmissionByStudent.length;
+  const avgScore =
+    submittedCount > 0
+      ? Math.round(
+          (latestSubmissionByStudent.reduce((sum, s) => sum + (s.score / s.totalPoints) * 100, 0) / submittedCount) * 10
+        ) / 10
+      : 0;
+
+  // [soojin] 교사 뷰 전면 수정 - 스크린샷 디자인 반영
+  if (isTeacher) {
+    return (
+      <DashboardLayout>
+        {/* 브레드크럼 */}
+        <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+          <div>
+            <h6 className="fw-semibold mb-0">퀴즈</h6>
+            <p className="text-neutral-600 mt-4 mb-0">퀴즈 상세</p>
+          </div>
+        </div>
+
+        {/* 퀴즈 정보 카드 */}
+        <div className="card radius-12 mb-24">
+          <div className="card-body p-24">
+            {/* 제목 + 수정/삭제 */}
+            <div className="d-flex justify-content-between align-items-start mb-16">
+              <div className="flex-grow-1 me-16">
+                <div className="d-flex align-items-center gap-8 mb-8">
+                  <span
+                    className={`badge px-10 py-4 radius-6 fw-semibold text-xs ${
+                      quiz.status === "OPEN" ? "bg-success-100 text-success-600" : "bg-danger-100 text-danger-600"
+                    }`}
+                  >
+                    {quiz.status === "OPEN" ? "진행중" : "마감"}
+                  </span>
+                </div>
+                <h5 className="fw-bold mb-6">{quiz.title}</h5>
+                <p className="text-sm text-secondary-light mb-0">
+                  {quiz.teacherName} | {quiz.classroomName}
+                  {quiz.week ? ` | ${quiz.week}주차` : ""} | {quiz.createDate?.slice(0, 10)}
+                </p>
+                {quiz.description && (
+                  <p className="text-sm text-neutral-600 mt-8 mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                    {quiz.description}
+                  </p>
+                )}
+              </div>
+              <div className="d-flex gap-8 flex-shrink-0">
+                <button
+                  className="btn btn-outline-primary-600 btn-sm radius-8"
+                  onClick={() => navigate(`/quiz/${id}/edit`)}
+                >
+                  수정
+                </button>
+                <button className="btn btn-outline-danger-600 btn-sm radius-8" onClick={handleDelete}>
+                  삭제
+                </button>
+              </div>
+            </div>
+
+            {/* 통계 카드 4개 */}
+            <div className="row g-12 mb-20">
+              <div className="col-6 col-md-3">
+                <div className="p-16 radius-8 bg-neutral-50 text-center">
+                  <p className="text-xs text-secondary-light mb-6">문제수</p>
+                  <p className="fw-bold text-neutral-700 h6 mb-0">{quiz.questions.length}문항</p>
+                </div>
+              </div>
+              <div className="col-6 col-md-3">
+                <div className="p-16 radius-8 bg-primary-50 text-center">
+                  <p className="text-xs text-secondary-light mb-6">총 점수</p>
+                  <p className="fw-bold text-primary-600 h6 mb-0">{quiz.totalPoints}점</p>
+                </div>
+              </div>
+              <div className="col-6 col-md-3">
+                <div className="p-16 radius-8 bg-success-50 text-center">
+                  <p className="text-xs text-secondary-light mb-6">응시횟수</p>
+                  <p className="fw-bold text-success-600 h6 mb-0">
+                    {quiz.maxAttempts != null ? `${quiz.maxAttempts}회` : "무제한"}
+                  </p>
+                </div>
+              </div>
+              <div className="col-6 col-md-3">
+                <div className="p-16 radius-8 bg-danger-50 text-center">
+                  <p className="text-xs text-secondary-light mb-6">마감</p>
+                  <p className="fw-bold text-danger-600 h6 mb-0">
+                    {quiz.dueDate?.slice(0, 10).replace(/-/g, ".")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 상태 변경 */}
+            <div className="d-flex align-items-center gap-8 pt-16 border-top">
+              <span className="text-sm fw-semibold me-4">상태 변경:</span>
+              {(
+                [
+                  { value: "OPEN", label: "진행중", activeBtn: "btn-success-600", outlineBtn: "btn-outline-success-600" },
+                  { value: "CLOSED", label: "마감", activeBtn: "btn-danger-600", outlineBtn: "btn-outline-danger-600" },
+                ] as const
+              ).map((s) => (
+                <button
+                  key={s.value}
+                  className={`btn btn-sm radius-8 ${quiz.status === s.value ? s.activeBtn : s.outlineBtn}`}
+                  disabled={quiz.status === s.value}
+                  onClick={() => handleStatusChange(s.value)}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 문제 및 정답 */}
+        <div className="card radius-12 mb-24">
+          <div className="card-header py-16 px-24 border-bottom">
+            <h6 className="mb-0">문제 및 정답 ({quiz.questions.length}문항)</h6>
+          </div>
+          <div className="card-body p-24">
+            {quiz.questions.map((q, i) => (
+              <div key={q.id}>
+                {/* 문제 헤더 */}
+                <div className="d-flex justify-content-between align-items-center mb-12">
+                  <div className="d-flex align-items-center gap-8">
+                    <span className="fw-bold text-neutral-700">문제 {q.questionOrder}</span>
+                    <span
+                      className={`badge px-10 py-4 radius-6 text-xs ${
+                        q.questionType === "MULTIPLE_CHOICE"
+                          ? "bg-primary-100 text-primary-600"
+                          : "bg-warning-100 text-warning-600"
+                      }`}
+                    >
+                      {q.questionType === "MULTIPLE_CHOICE" ? "객관식" : "단답형"}
+                    </span>
+                    <span className="text-xs text-secondary-light">{q.points}점</span>
+                  </div>
+                  {/* [soojin] 문제별 수정/삭제 버튼 - 현재 퀴즈 수정 페이지로 이동, 개별 문제 API 연동 시 교체 예정 */}
+                  <div className="d-flex gap-12">
+                    <button
+                      className="btn p-0 text-sm text-primary-600"
+                      style={{ background: "none", border: "none" }}
+                      onClick={() => navigate(`/quiz/${id}/edit`)}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="btn p-0 text-sm text-danger-600"
+                      style={{ background: "none", border: "none" }}
+                      onClick={() => navigate(`/quiz/${id}/edit`)}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+
+                {/* 문제 텍스트 */}
+                <p className="mb-16 text-neutral-700" style={{ whiteSpace: "pre-wrap" }}>
+                  {q.questionText}
+                </p>
+
+                {/* 보기 또는 정답 */}
+                {q.questionType === "MULTIPLE_CHOICE" ? (
+                  <div className="d-flex flex-column gap-8">
+                    {q.options.map((o) => (
+                      <div
+                        key={o.id}
+                        className={`d-flex align-items-center gap-12 p-12 radius-8 border ${
+                          o.isCorrect ? "border-success-600 bg-success-50" : "border-neutral-200"
+                        }`}
+                      >
+                        <span style={{ width: 18, flexShrink: 0, display: "flex", alignItems: "center" }}>
+                          {o.isCorrect ? (
+                            <iconify-icon icon="mdi:check-circle" className="text-success-600" style={{ fontSize: 18 }} />
+                          ) : null}
+                        </span>
+                        <span className={`text-sm ${o.isCorrect ? "fw-semibold text-success-600" : "text-neutral-700"}`}>
+                          {o.optionOrder}. {o.optionText}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-12 radius-8 bg-success-50 border border-success-200">
+                    <span className="text-sm fw-semibold text-success-600">정답: {q.correctAnswer}</span>
+                  </div>
+                )}
+
+                {i < quiz.questions.length - 1 && <hr className="my-24 border-neutral-200" />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 응시 통계 */}
+        <div className="row g-12 mb-24">
+          <div className="col-4">
+            <div className="card radius-12 p-16 text-center h-100">
+              <p className="text-xs text-secondary-light mb-6">제출</p>
+              <p className="fw-bold text-neutral-700 h6 mb-0">{submittedCount}명</p>
+            </div>
+          </div>
+          <div className="col-4">
+            <div className="card radius-12 p-16 text-center h-100">
+              {/* [soojin] TODO: 전체 학생 수 API 연동 후 미제출 인원 계산 */}
+              <p className="text-xs text-secondary-light mb-6">미제출</p>
+              <p className="fw-bold text-danger-600 h6 mb-0">-</p>
+            </div>
+          </div>
+          <div className="col-4">
+            <div className="card radius-12 p-16 text-center h-100">
+              <p className="text-xs text-secondary-light mb-6">평균점수</p>
+              <p className="fw-bold text-primary-600 h6 mb-0">{submittedCount > 0 ? `${avgScore}점` : "-"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 학생별 응시 결과 */}
+        <div className="card radius-12 mb-24">
+          <div className="card-header py-16 px-24 border-bottom">
+            <h6 className="mb-0">학생별 응시 결과</h6>
+          </div>
+          <div className="card-body p-24">
+            {latestSubmissionByStudent.length === 0 ? (
+              <p className="text-center text-secondary-light py-24 mb-0">응시한 학생이 없습니다.</p>
+            ) : (
+              latestSubmissionByStudent.map((sub) => (
+                <div key={sub.id} className="mb-12">
+                  <div className="d-flex align-items-center p-16 radius-12 border border-neutral-200">
+                    {/* 아바타 */}
+                    <div
+                      className="d-flex align-items-center justify-content-center radius-8 bg-primary-100 text-primary-600 fw-bold me-16 flex-shrink-0"
+                      style={{ width: 40, height: 40, fontSize: 13 }}
+                    >
+                      {sub.studentNumber?.slice(-2) ?? "?"}
+                    </div>
+
+                    {/* 학생 정보 */}
+                    <div className="flex-grow-1">
+                      <div className="d-flex align-items-center gap-8 mb-2">
+                        <span className="fw-semibold text-neutral-700">{sub.studentName}</span>
+                        <span className="text-xs text-secondary-light">{sub.studentNumber}</span>
+                      </div>
+                      <div className="text-xs text-secondary-light">
+                        {sub.submittedAt?.slice(0, 16).replace("T", " ")} · {sub.attemptNumber}회차
+                      </div>
+                    </div>
+
+                    {/* 점수 */}
+                    <div className="text-end me-16">
+                      <p className="fw-bold text-primary-600 h5 mb-0">{sub.score}점</p>
+                      <p className="text-xs text-secondary-light mb-0">{sub.totalPoints}점 만점</p>
+                    </div>
+
+                    {/* 답안 보기 버튼 */}
+                    <button
+                      className="btn btn-outline-primary-600 btn-sm radius-8 flex-shrink-0"
+                      onClick={() =>
+                        setExpandedStudentId(expandedStudentId === sub.studentInfoId ? null : sub.studentInfoId)
+                      }
+                    >
+                      {expandedStudentId === sub.studentInfoId ? "접기" : "답안 보기"}
+                    </button>
+                  </div>
+
+                  {/* 답안 상세 펼치기 */}
+                  {expandedStudentId === sub.studentInfoId && sub.answers && (
+                    <div className="p-16 mt-4 radius-8 bg-neutral-50 border border-neutral-200">
+                      {sub.answers.map((a, idx) => (
+                        <div
+                          key={idx}
+                          className={`p-12 mb-8 radius-8 ${a.isCorrect ? "bg-success-50" : "bg-danger-50"}`}
+                        >
+                          <div className="d-flex align-items-center gap-8 mb-4">
+                            <span className="fw-semibold text-sm">문제 {idx + 1}</span>
+                            <span
+                              className={`badge ${
+                                a.isCorrect ? "bg-success-100 text-success-600" : "bg-danger-100 text-danger-600"
+                              }`}
+                            >
+                              {a.isCorrect ? "정답" : "오답"}
+                            </span>
+                            <span className="text-sm text-secondary-light">{a.earnedPoints}점</span>
+                          </div>
+                          <p className="text-sm mb-0 text-neutral-700">{a.questionText}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // ========== 학생 뷰 (기존 유지) ==========
   return (
     <DashboardLayout>
       {/* 브레드크럼 */}
@@ -222,40 +535,6 @@ export default function QuizDetail() {
         {quiz.description && (
           <div className="card-body p-24">
             <div style={{ whiteSpace: "pre-wrap" }}>{quiz.description}</div>
-          </div>
-        )}
-
-        {/* [woo] 교사: 상태 변경 + 삭제 */}
-        {isTeacher && (
-          <div className="card-footer px-24 py-16 border-top d-flex align-items-center gap-8">
-            <span className="text-sm fw-semibold me-4">상태 변경:</span>
-            {(
-              [
-                { value: "OPEN", label: "진행중", activeBtn: "btn-success-600", outlineBtn: "btn-outline-success-600" },
-                { value: "CLOSED", label: "마감", activeBtn: "btn-danger-600", outlineBtn: "btn-outline-danger-600" },
-              ] as const
-            ).map((s) => (
-              <button
-                key={s.value}
-                className={`btn btn-sm radius-8 ${quiz.status === s.value ? s.activeBtn : s.outlineBtn}`}
-                disabled={quiz.status === s.value}
-                onClick={() => handleStatusChange(s.value)}
-              >
-                {s.label}
-              </button>
-            ))}
-            <div className="ms-auto d-flex gap-8">
-              {/* [woo] 퀴즈 수정 버튼 */}
-              <button
-                className="btn btn-outline-primary-600 btn-sm radius-8"
-                onClick={() => navigate(`/quiz/${id}/edit`)}
-              >
-                수정
-              </button>
-              <button className="btn btn-outline-danger-600 btn-sm radius-8" onClick={handleDelete}>
-                삭제
-              </button>
-            </div>
           </div>
         )}
       </div>
@@ -344,7 +623,7 @@ export default function QuizDetail() {
         </div>
       )}
 
-      {/* ========== 학생: 퀴즈 풀기 시작 버튼 또는 풀기 화면 ========== */}
+      {/* ========== 학생: 퀴즈 풀기 시작 버튼 ========== */}
       {isStudent && !takingQuiz && !result && canTakeQuiz && (
         <div className="text-center mb-24">
           <button
@@ -439,93 +718,6 @@ export default function QuizDetail() {
             <button className="btn btn-primary-600 radius-8 px-32" onClick={handleSubmit} disabled={submitting}>
               {submitting ? "제출 중..." : "제출하기"}
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* ========== 교사: 문제 확인 ========== */}
-      {isTeacher && (
-        <div className="card radius-12 mb-24">
-          <div className="card-header py-16 px-24 border-bottom">
-            <h6 className="mb-0">문제 목록 ({quiz.questions.length}문제)</h6>
-          </div>
-          <div className="card-body p-24">
-            {quiz.questions.map((q) => (
-              <div key={q.id} className="p-16 mb-12 radius-8 bg-neutral-50">
-                <div className="d-flex align-items-center gap-8 mb-8">
-                  <span className="fw-semibold">문제 {q.questionOrder}</span>
-                  <span
-                    className={`badge ${q.questionType === "MULTIPLE_CHOICE" ? "bg-primary-100 text-primary-600" : "bg-warning-100 text-warning-600"}`}
-                  >
-                    {q.questionType === "MULTIPLE_CHOICE" ? "객관식" : "단답형"}
-                  </span>
-                  <span className="text-sm text-secondary-light">({q.points}점)</span>
-                </div>
-                <p className="mb-8" style={{ whiteSpace: "pre-wrap" }}>
-                  {q.questionText}
-                </p>
-
-                {q.questionType === "MULTIPLE_CHOICE" ? (
-                  <div className="ms-16">
-                    {q.options.map((o) => (
-                      <div key={o.id} className={`text-sm mb-4 ${o.isCorrect ? "fw-bold text-success-600" : ""}`}>
-                        {o.optionOrder}. {o.optionText}
-                        {o.isCorrect && " ✓ 정답"}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="ms-16 text-sm">
-                    <span className="fw-bold text-success-600">정답: {q.correctAnswer}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ========== 교사: 응시 현황 ========== */}
-      {isTeacher && quiz.submissions && (
-        <div className="card radius-12 mb-24">
-          <div className="card-header py-16 px-24 border-bottom">
-            <h6 className="mb-0">응시 현황 ({quiz.submissions.length}건)</h6>
-          </div>
-          <div className="card-body p-0">
-            <div className="table-responsive">
-              <table className="table bordered-table mb-0">
-                <thead>
-                  <tr>
-                    <th style={{ width: 80 }}>번호</th>
-                    <th>학생명</th>
-                    <th style={{ width: 80 }}>회차</th>
-                    <th style={{ width: 120 }}>점수</th>
-                    <th style={{ width: 160 }}>제출일</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {quiz.submissions.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="text-center py-24 text-secondary-light">
-                        응시한 학생이 없습니다.
-                      </td>
-                    </tr>
-                  ) : (
-                    quiz.submissions.map((sub) => (
-                      <tr key={sub.id}>
-                        <td>{sub.studentNumber}</td>
-                        <td>{sub.studentName}</td>
-                        <td>{sub.attemptNumber}회</td>
-                        <td className="fw-bold text-primary-600">
-                          {sub.score}/{sub.totalPoints}
-                        </td>
-                        <td className="text-secondary-light">{sub.submittedAt?.slice(0, 16).replace("T", " ")}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       )}

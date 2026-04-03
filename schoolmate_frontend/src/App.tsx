@@ -55,8 +55,10 @@ import ClassBoard from "@/pages/woo/board/ClassBoard";
 import ClassBoardWrite from "@/pages/woo/board/ClassBoardWrite";
 import ClassBoardDetail from "@/pages/woo/board/ClassBoardDetail";
 import ParentBoard from "@/pages/woo/board/ParentBoard";
+import ParentBoardWrite from "@/pages/woo/board/ParentBoardWrite";
 import ParentBoardDetail from "@/pages/woo/board/ParentBoardDetail";
 import TeacherBoard from "@/pages/woo/board/TeacherBoard";
+import TeacherBoardWrite from "@/pages/woo/board/TeacherBoardWrite";
 import TeacherBoardDetail from "@/pages/woo/board/TeacherBoardDetail";
 // [woo] 과제
 import HomeworkList from "@/pages/woo/homework/HomeworkList";
@@ -479,6 +481,15 @@ function App() {
           </PrivateRoute>
         }
       />
+      {/* [soojin] 학부모 게시판 글쓰기 — 별도 페이지 */}
+      <Route
+        path="/board/parent/write"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "TEACHER", "ADMIN"]}>
+            <ParentBoardWrite />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/board/parent/:id"
         element={
@@ -513,6 +524,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherBoard />
+          </PrivateRoute>
+        }
+      />
+      {/* [soojin] 교직원 게시판 글쓰기 — 별도 페이지 */}
+      <Route
+        path="/board/teacher/write"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherBoardWrite />
           </PrivateRoute>
         }
       />

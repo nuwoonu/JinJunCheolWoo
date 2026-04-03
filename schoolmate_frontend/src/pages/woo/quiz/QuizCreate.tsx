@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../../../api/auth";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 
@@ -37,6 +37,7 @@ export default function QuizCreate() {
     week: "",
     courseSectionId: "",
     dueDate: "",
+    dueTime: "",
     maxAttempts: "",
     showAnswer: true,
   });
@@ -96,6 +97,30 @@ export default function QuizCreate() {
     setQuestions((prev) => prev.map((q, i) => (i === idx ? { ...q, [field]: value } : q)));
   };
 
+  // [woo] 문제 유형 변경 시 options 초기화
+  const changeQuestionType = (idx: number, type: "MULTIPLE_CHOICE" | "SHORT_ANSWER") => {
+    setQuestions((prev) =>
+      prev.map((q, i) =>
+        i === idx
+          ? {
+              ...q,
+              questionType: type,
+              correctAnswer: "",
+              options:
+                type === "MULTIPLE_CHOICE"
+                  ? [
+                      { optionText: "", isCorrect: false },
+                      { optionText: "", isCorrect: false },
+                      { optionText: "", isCorrect: false },
+                      { optionText: "", isCorrect: false },
+                    ]
+                  : [],
+            }
+          : q,
+      ),
+    );
+  };
+
   // [woo] 선택지 수정
   const updateOption = (qIdx: number, oIdx: number, field: string, value: any) => {
     setQuestions((prev) =>
@@ -124,7 +149,7 @@ export default function QuizCreate() {
     );
   };
 
-  // [woo] 선택지 추가/삭제
+  // [woo] 선택지 추가
   const addOption = (qIdx: number) => {
     setQuestions((prev) =>
       prev.map((q, qi) =>
@@ -155,7 +180,6 @@ export default function QuizCreate() {
     if (!form.courseSectionId) return alert("수업 분반을 선택해주세요.");
     if (!form.dueDate) return alert("마감일을 선택해주세요.");
 
-    // 문제 검증
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.questionText.trim()) return alert(`${i + 1}번 문제 내용을 입력해주세요.`);
@@ -169,12 +193,13 @@ export default function QuizCreate() {
 
     setSaving(true);
     try {
+      const dueDateTimeStr = form.dueDate + "T" + (form.dueTime ? form.dueTime + ":00" : "23:59:59");
       await api.post("/quiz", {
         title: form.title,
         description: form.description || null,
         week: form.week ? Number(form.week) : null,
         courseSectionId: Number(form.courseSectionId),
-        dueDate: form.dueDate + "T23:59:59",
+        dueDate: dueDateTimeStr,
         maxAttempts: form.maxAttempts ? Number(form.maxAttempts) : null,
         showAnswer: form.showAnswer,
         questions: questions.map((q, i) => ({
@@ -205,39 +230,62 @@ export default function QuizCreate() {
   return (
     <DashboardLayout>
       {/* 브레드크럼 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 24,
+        }}
+      >
         <div>
-          <h6 className="fw-semibold mb-0">퀴즈</h6>
-          <p className="text-neutral-600 mt-4 mb-0">퀴즈 출제</p>
+          <h6 style={{ fontWeight: 600, marginBottom: 0 }}>퀴즈 출제</h6>
+          <p style={{ color: "#6c757d", marginTop: 4, marginBottom: 0 }}>새로운 퀴즈를 생성합니다.</p>
         </div>
       </div>
 
       {/* 기본 정보 카드 */}
-      <div className="card radius-12 mb-24">
-        <div className="card-header py-16 px-24 border-bottom">
-          <h6 className="mb-0">기본 정보</h6>
-        </div>
-        <div className="card-body p-24">
-          <div className="mb-20">
-            <label className="form-label fw-semibold text-sm">제목 *</label>
+      <div className="card" style={{ borderRadius: 12, marginBottom: 24 }}>
+        <div className="card-body" style={{ padding: 24 }}>
+          {/* 퀴즈 제목 */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>퀴즈 제목 *</label>
             <input
               type="text"
-              className="form-control radius-8"
+              className="form-control"
+              style={{ borderRadius: 8 }}
               placeholder="퀴즈 제목을 입력하세요"
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             />
           </div>
 
-          <div className="row mb-20">
-            <div className="col-md-3 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">수업 분반 *</label>
+          {/* 퀴즈 설명 */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>퀴즈 설명</label>
+            <textarea
+              className="form-control"
+              style={{ borderRadius: 8 }}
+              rows={3}
+              placeholder="퀴즈에 대한 간단한 설명을 입력하세요"
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            />
+          </div>
+
+          {/* 담당 반 + 주차 */}
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
+            <div style={{ flex: "1 1 200px" }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>담당 반 *</label>
               <select
-                className="form-select radius-8"
+                className="form-select"
+                style={{ borderRadius: 8 }}
                 value={form.courseSectionId}
                 onChange={(e) => setForm((f) => ({ ...f, courseSectionId: e.target.value }))}
               >
-                <option value="">수업 분반 선택</option>
+                <option value="">담당 반 선택</option>
                 {courseSections.map((cs) => (
                   <option key={cs.id} value={cs.id}>
                     {cs.name}
@@ -245,43 +293,60 @@ export default function QuizCreate() {
                 ))}
               </select>
             </div>
-            <div className="col-md-2 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">주차</label>
+            <div style={{ flex: "0 1 120px" }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>주차</label>
               <input
                 type="number"
-                className="form-control radius-8"
+                className="form-control"
+                style={{ borderRadius: 8 }}
                 placeholder="예: 1"
                 min={1}
                 value={form.week}
                 onChange={(e) => setForm((f) => ({ ...f, week: e.target.value }))}
               />
             </div>
-            <div className="col-md-3 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">마감일 *</label>
+          </div>
+
+          {/* 마감일 + 마감 시간 + 응시 횟수 + 정답 공개 */}
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+            <div style={{ flex: "1 1 160px" }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>마감일 *</label>
               <input
                 type="date"
-                className="form-control radius-8"
+                className="form-control"
+                style={{ borderRadius: 8 }}
                 value={form.dueDate}
                 min={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
               />
             </div>
-            <div className="col-md-2 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">응시 횟수</label>
+            <div style={{ flex: "1 1 140px" }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>마감 시간</label>
+              <input
+                type="time"
+                className="form-control"
+                style={{ borderRadius: 8 }}
+                value={form.dueTime}
+                onChange={(e) => setForm((f) => ({ ...f, dueTime: e.target.value }))}
+              />
+            </div>
+            <div style={{ flex: "1 1 140px" }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>응시 횟수</label>
               <input
                 type="number"
-                className="form-control radius-8"
+                className="form-control"
+                style={{ borderRadius: 8 }}
                 placeholder="무제한"
                 min={1}
                 value={form.maxAttempts}
                 onChange={(e) => setForm((f) => ({ ...f, maxAttempts: e.target.value }))}
               />
             </div>
-            {/* [woo] 정답 공개 토글 - remixicon 버튼으로 표시 */}
-            <div className="col-md-2 d-flex align-items-end">
+            <div style={{ paddingBottom: 2 }}>
               <button
                 type="button"
-                className={`btn btn-sm d-flex align-items-center gap-6 ${form.showAnswer ? "btn-success" : "btn-outline-secondary"}`}
+                className={`btn btn-sm ${form.showAnswer ? "btn-success" : "btn-outline-secondary"}`}
+                style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 8 }}
                 onClick={() => setForm((f) => ({ ...f, showAnswer: !f.showAnswer }))}
               >
                 <i className={`ri-${form.showAnswer ? "eye-line" : "eye-off-line"}`} />
@@ -289,56 +354,76 @@ export default function QuizCreate() {
               </button>
             </div>
           </div>
-
-          <div className="mb-0">
-            <label className="form-label fw-semibold text-sm">설명</label>
-            <textarea
-              className="form-control radius-8"
-              rows={3}
-              placeholder="퀴즈 설명 (선택)"
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            />
-          </div>
         </div>
       </div>
 
       {/* 문제 목록 */}
       {questions.map((q, qIdx) => (
-        <div key={qIdx} className="card radius-12 mb-16">
-          <div className="card-header py-12 px-24 border-bottom d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center gap-12">
-              <h6 className="mb-0 text-sm">문제 {qIdx + 1}</h6>
-              <span
-                className={`badge ${q.questionType === "MULTIPLE_CHOICE" ? "bg-primary-100 text-primary-600" : "bg-warning-100 text-warning-600"}`}
-              >
-                {q.questionType === "MULTIPLE_CHOICE" ? "객관식" : "단답형"}
-              </span>
-            </div>
-            <div className="d-flex align-items-center gap-8">
-              <div className="d-flex align-items-center gap-4">
-                <label className="text-sm text-secondary-light">배점:</label>
+        <div key={qIdx} className="card" style={{ borderRadius: 12, marginBottom: 16 }}>
+          <div
+            className="card-header"
+            style={{
+              padding: "12px 24px",
+              borderBottom: "1px solid #e9ecef",
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ fontWeight: 600, fontSize: 16, color: "#000" }}>문제 {qIdx + 1}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <label style={{ fontSize: 14, color: "#6c757d" }}>배점:</label>
                 <input
                   type="number"
-                  className="form-control form-control-sm radius-8"
-                  style={{ width: 70 }}
+                  className="form-control form-control-sm"
+                  style={{ width: 70, borderRadius: 8, fontSize: 13 }}
                   min={1}
                   value={q.points}
                   onChange={(e) => updateQuestion(qIdx, "points", Number(e.target.value) || 1)}
                 />
               </div>
-              <button className="btn btn-sm btn-outline-danger-600 radius-8" onClick={() => removeQuestion(qIdx)}>
+              <button
+                className="btn btn-sm btn-outline-danger"
+                style={{ borderRadius: 8, padding: "5px 12px", fontSize: 13, fontWeight: 600 }}
+                onClick={() => removeQuestion(qIdx)}
+              >
                 삭제
               </button>
             </div>
           </div>
-          <div className="card-body p-24">
+
+          <div className="card-body" style={{ padding: 24 }}>
+            {/* 문제 유형 토글 버튼 */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+              <button
+                type="button"
+                className={`btn btn-sm ${q.questionType === "MULTIPLE_CHOICE" ? "btn-primary" : "btn-outline-secondary"}`}
+                style={{ borderRadius: 8, padding: "5px 12px", fontSize: 13, fontWeight: 600 }}
+                onClick={() => changeQuestionType(qIdx, "MULTIPLE_CHOICE")}
+              >
+                객관식
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${q.questionType === "SHORT_ANSWER" ? "btn-warning" : "btn-outline-secondary"}`}
+                style={{ borderRadius: 8, padding: "5px 12px", fontSize: 13, fontWeight: 600 }}
+                onClick={() => changeQuestionType(qIdx, "SHORT_ANSWER")}
+              >
+                단답형
+              </button>
+            </div>
+
             {/* 문제 내용 */}
-            <div className="mb-16">
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>문제 *</label>
               <textarea
-                className="form-control radius-8"
-                rows={2}
-                placeholder="문제 내용을 입력하세요"
+                className="form-control"
+                style={{ borderRadius: 8 }}
+                rows={3}
+                placeholder="문제를 입력하세요"
                 value={q.questionText}
                 onChange={(e) => updateQuestion(qIdx, "questionText", e.target.value)}
               />
@@ -347,8 +432,12 @@ export default function QuizCreate() {
             {q.questionType === "MULTIPLE_CHOICE" ? (
               // [woo] 객관식 선택지
               <div>
+                <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 2 }}>선택지 *</label>
+                <p style={{ fontSize: 12, color: "#6c757d", marginTop: 0, marginBottom: 10 }}>
+                  라디오 버튼을 클릭하여 정답을 선택하세요.
+                </p>
                 {q.options.map((o, oIdx) => (
-                  <div key={oIdx} className="d-flex align-items-center gap-8 mb-8">
+                  <div key={oIdx} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <input
                       type="radio"
                       name={`correct-${qIdx}`}
@@ -356,20 +445,36 @@ export default function QuizCreate() {
                       onChange={() => setCorrectOption(qIdx, oIdx)}
                       className="form-check-input"
                       title="정답으로 선택"
+                      style={{ marginTop: 0, flexShrink: 0 }}
                     />
-                    <span className="text-sm text-secondary-light" style={{ width: 20 }}>
-                      {oIdx + 1}.
+                    <span
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        background: "#f1f3f5",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {oIdx + 1}
                     </span>
                     <input
                       type="text"
-                      className="form-control form-control-sm radius-8"
+                      className="form-control form-control-sm"
+                      style={{ borderRadius: 8 }}
                       placeholder={`선택지 ${oIdx + 1}`}
                       value={o.optionText}
                       onChange={(e) => updateOption(qIdx, oIdx, "optionText", e.target.value)}
                     />
                     {q.options.length > 2 && (
                       <button
-                        className="btn btn-sm btn-outline-neutral-300 radius-8"
+                        className="btn btn-sm btn-outline-secondary"
+                        style={{ borderRadius: 8, flexShrink: 0 }}
                         onClick={() => removeOption(qIdx, oIdx)}
                         title="선택지 삭제"
                       >
@@ -378,26 +483,29 @@ export default function QuizCreate() {
                     )}
                   </div>
                 ))}
-                <button className="btn btn-sm btn-outline-primary-600 radius-8 mt-8" onClick={() => addOption(qIdx)}>
-                  <iconify-icon icon="mdi:plus" className="me-4" />
+                <button
+                  className="btn btn-sm btn-outline-primary"
+                  style={{ borderRadius: 8, marginTop: 8, padding: "5px 12px", fontSize: 13, fontWeight: 600 }}
+                  onClick={() => addOption(qIdx)}
+                >
                   선택지 추가
                 </button>
-                <p className="text-xs text-secondary-light mt-8 mb-0">라디오 버튼을 클릭하여 정답을 선택하세요.</p>
               </div>
             ) : (
               // [woo] 단답형 정답 입력
               <div>
-                <label className="form-label fw-semibold text-sm">정답</label>
+                <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 0 }}>정답 *</label>
+                <p style={{ fontSize: 12, color: "#6c757d", marginTop: 0, marginBottom: 4 }}>
+                  대소문자 구분 없이 채점됩니다. 쉼표로 구분하면 복수 정답을 허용합니다.
+                </p>
                 <input
                   type="text"
-                  className="form-control radius-8"
+                  className="form-control"
+                  style={{ borderRadius: 8 }}
                   placeholder="정답을 입력하세요 (복수 정답은 쉼표로 구분, 예: 르네상스,Renaissance)"
                   value={q.correctAnswer}
                   onChange={(e) => updateQuestion(qIdx, "correctAnswer", e.target.value)}
                 />
-                <p className="text-xs text-secondary-light mt-4 mb-0">
-                  대소문자 구분 없이 채점됩니다. 쉼표로 구분하면 복수 정답을 허용합니다.
-                </p>
               </div>
             )}
           </div>
@@ -405,27 +513,54 @@ export default function QuizCreate() {
       ))}
 
       {/* 문제 추가 버튼 */}
-      <div className="d-flex gap-8 mb-24">
-        <button className="btn btn-outline-primary-600 radius-8" onClick={() => addQuestion("MULTIPLE_CHOICE")}>
-          <iconify-icon icon="mdi:plus" className="me-4" />
-          객관식 문제 추가
-        </button>
-        <button className="btn btn-outline-warning-600 radius-8" onClick={() => addQuestion("SHORT_ANSWER")}>
-          <iconify-icon icon="mdi:plus" className="me-4" />
-          단답형 문제 추가
+      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+        <button
+          className="btn btn-outline-primary"
+          style={{ borderRadius: 8, padding: "5px 12px", fontSize: 13, fontWeight: 600 }}
+          onClick={() => addQuestion("MULTIPLE_CHOICE")}
+        >
+          문제 추가
         </button>
       </div>
 
       {/* 제출 버튼 */}
-      <div className="d-flex justify-content-end gap-8 mb-24">
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 24 }}>
         <button
           type="button"
-          className="btn btn-outline-neutral-300 radius-8"
+          style={{
+            background: "#fff",
+            color: "#374151",
+            border: "1px solid #d1d5db",
+            borderRadius: 8,
+            padding: "5px 12px",
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
           onClick={() => navigate("/homework?tab=quiz")}
         >
           취소
         </button>
-        <button type="button" className="btn btn-primary-600 radius-8" onClick={handleSubmit} disabled={saving}>
+        <button
+          type="button"
+          style={{
+            background: "#25A194",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            padding: "5px 12px",
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: saving ? "not-allowed" : "pointer",
+            opacity: saving ? 0.7 : 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+          onClick={handleSubmit}
+          disabled={saving}
+        >
+          <iconify-icon icon="mdi:clipboard-list-outline" />
           {saving ? "저장 중..." : "퀴즈 출제"}
         </button>
       </div>

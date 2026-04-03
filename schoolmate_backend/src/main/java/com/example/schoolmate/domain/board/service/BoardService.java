@@ -86,7 +86,7 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getClassNotices(Long classroomId, Pageable pageable) {
         // [soojin] keyword=null, searchType=null - 학급 공지는 검색 미사용
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_NOTICE, classroomId, null, null, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_NOTICE, classroomId, null, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -97,7 +97,7 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getClassBoard(Long classroomId, Pageable pageable) {
         // [soojin] keyword=null, searchType=null - 검색 없이 전체 조회
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, null, null, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, null, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -108,7 +108,7 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getClassDiary(Long classroomId, Pageable pageable) {
         // [soojin] keyword=null, searchType=null - 알림장은 검색 미사용
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_DIARY, classroomId, null, null, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_DIARY, classroomId, null, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -168,14 +168,17 @@ public class BoardService {
      * 학생: 본인 학급 / 교사: 담임 학급
      */
     // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
-    public Page<BoardDTO.Response> getClassBoardAuto(CustomUserDTO userDTO, String keyword, String searchType, Pageable pageable) {
+    // [soojin] tag 파라미터 추가 - 태그 탭 필터링 지원
+    public Page<BoardDTO.Response> getClassBoardAuto(CustomUserDTO userDTO, String keyword, String searchType, String tag, Pageable pageable) {
         // [woo 03-27] 학생 → 본인 학급
         if (isStudent(userDTO)) {
             return studentInfoRepository.findByUserUid(userDTO.getUid())
                     .filter(s -> s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null)
                     .map(s -> boardRepository
-                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, s.getCurrentAssignment().getClassroom().getCid(), keyword, searchType, pageable)
-                            .map(BoardDTO.Response::fromEntityForList))
+                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, s.getCurrentAssignment().getClassroom().getCid(), keyword, searchType, tag, pageable)
+                            .map(b -> BoardDTO.Response.fromEntityForList(b,
+                                    boardLikeRepository.countByBoard_Id(b.getId()),
+                                    commentRepository.countByBoard_IdAndIsDeletedFalse(b.getId()))))
                     .orElse(Page.empty(pageable));
         }
 
@@ -184,8 +187,10 @@ public class BoardService {
             int currentYear = java.time.LocalDate.now().getYear();
             return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
                     .map(c -> boardRepository
-                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, c.getCid(), keyword, searchType, pageable)
-                            .map(BoardDTO.Response::fromEntityForList))
+                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, c.getCid(), keyword, searchType, tag, pageable)
+                            .map(b -> BoardDTO.Response.fromEntityForList(b,
+                                    boardLikeRepository.countByBoard_Id(b.getId()),
+                                    commentRepository.countByBoard_IdAndIsDeletedFalse(b.getId()))))
                     .orElse(Page.empty(pageable));
         }
 
@@ -196,7 +201,9 @@ public class BoardService {
     public List<BoardDTO.Response> getPopularBoards(BoardType boardType, int limit) {
         return boardRepository.findTopByViewCount(boardType, limit)
                 .stream()
-                .map(BoardDTO.Response::fromEntityForList)
+                .map(b -> BoardDTO.Response.fromEntityForList(b,
+                        boardLikeRepository.countByBoard_Id(b.getId()),
+                        commentRepository.countByBoard_IdAndIsDeletedFalse(b.getId())))
                 .collect(Collectors.toList());
     }
 

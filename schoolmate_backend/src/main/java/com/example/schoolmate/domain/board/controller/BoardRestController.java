@@ -157,6 +157,7 @@ public class BoardRestController {
      */
     // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
     // [soojin] sortBy 파라미터 추가 - createDate(최신순) / viewCount(조회순·인기순) 동적 정렬 지원
+    // [soojin] tag 파라미터 추가 - 태그 탭 필터링 지원
     @GetMapping("/class-board")
     public ResponseEntity<Map<String, Object>> getClassBoardAuto(
             @RequestParam(defaultValue = "0") int page,
@@ -164,6 +165,7 @@ public class BoardRestController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "ALL") String searchType,
             @RequestParam(defaultValue = "createDate") String sortBy,
+            @RequestParam(required = false) String tag,
             @AuthenticationPrincipal AuthUserDTO authUser) {
 
         Sort sort = "viewCount".equals(sortBy)
@@ -174,6 +176,7 @@ public class BoardRestController {
                 authUser.getCustomUserDTO(),
                 keyword,
                 searchType,
+                tag,
                 PageRequest.of(page, size, sort));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),

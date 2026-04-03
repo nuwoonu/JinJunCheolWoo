@@ -366,7 +366,7 @@ export default function Sidebar() {
                 </li>
               )}
 
-              {/* 과제/퀴즈 - 2단계 드롭다운 */}
+              {/* [soojin] 과제/퀴즈 - 중첩 드롭다운 제거, 과제 관리/퀴즈 관리 직접 링크로 단순화 */}
               <li className={dc(open.teacherHomework)}>
                 <a
                   href="#"
@@ -379,45 +379,15 @@ export default function Sidebar() {
                   <span>과제/퀴즈</span>
                 </a>
                 <ul className="sidebar-submenu">
-                  <li className={dc(open.teacherHomeworkAssign)}>
-                    {/* [soojin] nested=true - 클릭 시 부모(과제/퀴즈) 드롭다운 유지 */}
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggle("teacherHomeworkAssign", true);
-                      }}
-                    >
+                  <li>
+                    <SNavLink to="/homework">
                       <i className="ri-circle-fill circle-icon w-auto" /> 과제 관리
-                    </a>
-                    <ul className="sidebar-submenu">
-                      <li>
-                        <SNavLink to="/homework/create">과제 출제</SNavLink>
-                      </li>
-                      <li>
-                        <SNavLink to="/homework">과제 목록</SNavLink>
-                      </li>
-                    </ul>
+                    </SNavLink>
                   </li>
-                  <li className={dc(open.teacherHomeworkQuiz)}>
-                    {/* [soojin] nested=true - 클릭 시 부모(과제/퀴즈) 드롭다운 유지 */}
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggle("teacherHomeworkQuiz", true);
-                      }}
-                    >
+                  <li>
+                    <SNavLink to="/quiz">
                       <i className="ri-circle-fill circle-icon w-auto" /> 퀴즈 관리
-                    </a>
-                    <ul className="sidebar-submenu">
-                      <li>
-                        <SNavLink to="/quiz/create">퀴즈 출제</SNavLink>
-                      </li>
-                      <li>
-                        <SNavLink to="/quiz">퀴즈 목록</SNavLink>
-                      </li>
-                    </ul>
+                    </SNavLink>
                   </li>
                 </ul>
               </li>

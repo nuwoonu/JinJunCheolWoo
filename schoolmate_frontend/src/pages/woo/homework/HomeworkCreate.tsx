@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../../api/auth";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 // [woo] 과제 출제 페이지 (교사 전용)
-// - 제목, 내용, 학급 선택, 마감일, 첨부파일
+// - 제목, 내용, 학급 선택, 마감일, 마감시간, 첨부파일
 // - POST /api/homework (multipart/form-data)
 
-// [woo] 수업 분반 (과목 + 학급)
 interface CourseSectionOption {
   id: number;
   name: string;
@@ -16,16 +15,42 @@ interface CourseSectionOption {
   classroomId: number;
 }
 
+const label: React.CSSProperties = {
+  display: "block",
+  fontWeight: 600,
+  fontSize: 13,
+  marginBottom: 6,
+  color: "#1a1a2e",
+};
+
+const input: React.CSSProperties = {
+  width: "100%",
+  border: "1px solid #d1d5db",
+  borderRadius: 8,
+  padding: "8px 12px",
+  fontSize: 14,
+  color: "#374151",
+  outline: "none",
+  boxSizing: "border-box",
+  background: "#fff",
+};
+
+const fieldWrap: React.CSSProperties = { marginBottom: 20 };
+
 export default function HomeworkCreate() {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [courseSections, setCourseSections] = useState<CourseSectionOption[]>([]);
   const [saving, setSaving] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
     content: "",
     courseSectionId: "",
     dueDate: "",
+    // [soojin] 마감 시간 추가 - 미선택 시 23:59:00으로 처리
+    dueTime: "",
     maxScore: "100",
   });
   const [file, setFile] = useState<File | null>(null);
@@ -54,7 +79,8 @@ export default function HomeworkCreate() {
             title: form.title,
             content: form.content,
             courseSectionId: Number(form.courseSectionId),
-            dueDate: form.dueDate + "T23:59:59",
+            // [soojin] 마감시간 선택 시 해당 시간 사용, 미선택 시 23:59:00
+            dueDate: form.dueDate + "T" + (form.dueTime ? form.dueTime + ":00" : "23:59:00"),
             maxScore: form.maxScore ? Number(form.maxScore) : 100,
           }),
         ],
@@ -79,126 +105,201 @@ export default function HomeworkCreate() {
     }
   };
 
+  // [soojin] 드래그&드롭 파일 처리
+  const handleFileDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) setFile(dropped);
+  };
+
   return (
     <DashboardLayout>
-      {/* 브레드크럼 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h6 className="fw-semibold mb-0">과제</h6>
-          <p className="text-neutral-600 mt-4 mb-0">과제 출제</p>
-        </div>
+      <div style={{ marginBottom: 24 }}>
+        <h6 style={{ fontWeight: 600, marginBottom: 4 }}>과제 출제</h6>
+        <p style={{ color: "#6b7280", fontSize: 13, margin: 0 }}>새로운 과제를 생성합니다.</p>
       </div>
 
-      <div className="card radius-12">
-        <div className="card-header py-16 px-24 border-bottom">
-          <h6 className="mb-0">과제 출제</h6>
+      <div style={{ background: "#fff", borderRadius: 12, padding: 24, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+        {/* 과제 제목 */}
+        <div style={fieldWrap}>
+          <label style={label}>과제 제목 *</label>
+          <input
+            type="text"
+            style={input}
+            placeholder="과제 제목을 입력하세요"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
         </div>
-        <div className="card-body p-24">
-          {/* 제목 */}
-          <div className="mb-20">
-            <label className="form-label fw-semibold text-sm">제목 *</label>
-            <input
-              type="text"
-              className="form-control radius-8"
-              placeholder="과제 제목을 입력하세요"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            />
-          </div>
 
-          {/* 학급 선택 + 마감일 + 최대점수 */}
-          <div className="row mb-20">
-            <div className="col-md-4 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">수업 분반 *</label>
-              <select
-                className="form-select radius-8"
-                value={form.courseSectionId}
-                onChange={(e) => setForm((f) => ({ ...f, courseSectionId: e.target.value }))}
-              >
-                <option value="">수업 분반을 선택하세요</option>
-                {courseSections.map((cs) => (
-                  <option key={cs.id} value={cs.id}>
-                    {cs.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-4 mb-16 mb-md-0">
-              <label className="form-label fw-semibold text-sm">마감일 *</label>
-              <input
-                type="date"
-                className="form-control radius-8"
-                value={form.dueDate}
-                min={new Date().toISOString().slice(0, 10)}
-                onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
-              />
-            </div>
-            {/* [woo] 최대 점수 입력 */}
-            <div className="col-md-4">
-              <label className="form-label fw-semibold text-sm">최대 점수</label>
-              <input
-                type="number"
-                className="form-control radius-8"
-                placeholder="100"
-                min={1}
-                value={form.maxScore}
-                onChange={(e) => setForm((f) => ({ ...f, maxScore: e.target.value }))}
-              />
-            </div>
-          </div>
+        {/* 내용 */}
+        <div style={fieldWrap}>
+          <label style={label}>내용 *</label>
+          <textarea
+            style={{ ...input, resize: "vertical" }}
+            rows={8}
+            placeholder="과제 내용을 입력하세요"
+            value={form.content}
+            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+          />
+        </div>
 
-          {/* 내용 */}
-          <div className="mb-20">
-            <label className="form-label fw-semibold text-sm">내용 *</label>
-            <textarea
-              className="form-control radius-8"
-              rows={12}
-              placeholder="과제 내용을 입력하세요"
-              value={form.content}
-              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-            />
-          </div>
-
-          {/* [woo] 첨부파일 - 교사가 예시/참고 파일 첨부 */}
-          <div className="mb-20">
-            <label className="form-label fw-semibold text-sm">
-              첨부파일 <span className="text-secondary-light fw-normal">(예시 파일, 참고 자료 등)</span>
-            </label>
-            <input
-              type="file"
-              className="form-control radius-8"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-            {file && (
-              <div className="mt-8 d-flex align-items-center gap-8">
-                <span className="text-sm text-secondary-light">
-                  <iconify-icon icon="mdi:attachment" className="me-4" />
-                  {file.name} ({(file.size / 1024).toFixed(1)} KB)
-                </span>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger-600 radius-8"
-                  onClick={() => setFile(null)}
-                >
-                  삭제
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* 버튼 */}
-          <div className="d-flex justify-content-end gap-8">
-            <button
-              type="button"
-              className="btn btn-outline-neutral-300 radius-8"
-              onClick={() => navigate("/homework")}
+        {/* [soojin] 담당 반 + 배점 같은 줄 반반 */}
+        <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+          <div style={{ flex: 1 }}>
+            <label style={label}>담당 반 *</label>
+            <select
+              style={input}
+              value={form.courseSectionId}
+              onChange={(e) => setForm((f) => ({ ...f, courseSectionId: e.target.value }))}
             >
-              취소
-            </button>
-            <button type="button" className="btn btn-primary-600 radius-8" onClick={handleSubmit} disabled={saving}>
-              {saving ? "저장 중..." : "출제하기"}
-            </button>
+              <option value="">담당 반을 선택하세요</option>
+              {courseSections.map((cs) => (
+                <option key={cs.id} value={cs.id}>
+                  {cs.name}
+                </option>
+              ))}
+            </select>
           </div>
+          <div style={{ flex: 1 }}>
+            <label style={label}>배점 *</label>
+            <input
+              type="number"
+              style={input}
+              placeholder="100"
+              min={1}
+              value={form.maxScore}
+              onChange={(e) => setForm((f) => ({ ...f, maxScore: e.target.value }))}
+            />
+          </div>
+        </div>
+
+        {/* 제출 마감일 + 제출 마감시간 */}
+        <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+          <div style={{ flex: 1 }}>
+            <label style={label}>제출 마감일 *</label>
+            <input
+              type="date"
+              style={input}
+              value={form.dueDate}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+            />
+          </div>
+          {/* [soojin] 마감 시간 추가 */}
+          <div style={{ flex: 1 }}>
+            <label style={label}>제출 마감시간 *</label>
+            <input
+              type="time"
+              style={input}
+              value={form.dueTime}
+              onChange={(e) => setForm((f) => ({ ...f, dueTime: e.target.value }))}
+            />
+          </div>
+        </div>
+
+        {/* [soojin] 첨부파일 - 드래그&드롭 UI로 변경 */}
+        <div style={fieldWrap}>
+          <label style={label}>첨부 파일</label>
+          <div
+            style={{
+              border: `2px dashed ${isDragging ? "#25A194" : "#d1d5db"}`,
+              borderRadius: 10,
+              padding: "40px 24px",
+              textAlign: "center",
+              cursor: "pointer",
+              background: isDragging ? "#f0faf9" : "#fafafa",
+              transition: "border-color 0.2s, background 0.2s",
+            }}
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleFileDrop}
+          >
+            {/* [soojin] 아이콘 중앙 정렬 */}
+            <div style={{ fontSize: 32, color: "#9ca3af", marginBottom: 8, lineHeight: 1, display: "flex", justifyContent: "center" }}>
+              <iconify-icon icon="mdi:tray-arrow-up" />
+            </div>
+            <p style={{ color: "#374151", fontWeight: 500, fontSize: 14, margin: "0 0 4px" }}>
+              파일을 드래그하거나 클릭하여 업로드
+            </p>
+            <p style={{ color: "#9ca3af", fontSize: 12, margin: 0 }}>최대 10MB, PDF, 이미지, 문서 파일</p>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            style={{ display: "none" }}
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+          {file && (
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 13, color: "#6b7280" }}>
+                <iconify-icon icon="mdi:attachment" style={{ marginRight: 4 }} />
+                {file.name} ({(file.size / 1024).toFixed(1)} KB)
+              </span>
+              <button
+                type="button"
+                style={{
+                  background: "none",
+                  border: "1px solid #ef4444",
+                  color: "#ef4444",
+                  borderRadius: 6,
+                  padding: "2px 10px",
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+                onClick={() => setFile(null)}
+              >
+                삭제
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* 버튼 */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button
+            type="button"
+            style={{
+              background: "#fff",
+              color: "#374151",
+              border: "1px solid #d1d5db",
+              borderRadius: 8,
+              padding: "5px 12px",
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/homework")}
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            style={{
+              background: "#25A194",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              padding: "5px 12px",
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: saving ? "not-allowed" : "pointer",
+              opacity: saving ? 0.7 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+            onClick={handleSubmit}
+            disabled={saving}
+          >
+            <iconify-icon icon="mdi:clipboard-text-outline" />
+            {saving ? "저장 중..." : "과제 출제"}
+          </button>
         </div>
       </div>
     </DashboardLayout>

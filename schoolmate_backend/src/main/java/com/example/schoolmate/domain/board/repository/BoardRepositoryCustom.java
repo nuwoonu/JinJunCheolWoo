@@ -16,9 +16,10 @@ public interface BoardRepositoryCustom {
     /** 특정 학년 대상 게시판 */
     Page<Board> findByTypeAndGrade(BoardType type, int grade, Pageable pageable);
 
-    /** 특정 학급 대상 게시판 + 선택적 키워드/검색타입 */
+    /** 특정 학급 대상 게시판 + 선택적 키워드/검색타입/태그 */
     // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
-    Page<Board> findByTypeAndClassroom(BoardType type, Long classroomId, String keyword, String searchType, Pageable pageable);
+    // [soojin] tag 파라미터 추가 - 태그 탭 필터링 지원
+    Page<Board> findByTypeAndClassroom(BoardType type, Long classroomId, String keyword, String searchType, String tag, Pageable pageable);
 
     /** 학부모 게시판 - 학년별 (해당 학년 + 전체 공지 포함) */
     Page<Board> findParentByGrade(BoardType type, int grade, Pageable pageable);

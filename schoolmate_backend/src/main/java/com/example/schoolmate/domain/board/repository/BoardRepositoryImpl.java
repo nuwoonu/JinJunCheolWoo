@@ -71,14 +71,18 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     @Override
     // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
     // [soojin] Pageable sort 반영 - viewCount/createDate 동적 정렬 지원 (최신순/조회순/인기순)
-    public Page<Board> findByTypeAndClassroom(BoardType type, Long classroomId, String keyword, String searchType, Pageable pageable) {
+    // [soojin] tag 파라미터 추가 - 태그 탭 필터링 지원
+    public Page<Board> findByTypeAndClassroom(BoardType type, Long classroomId, String keyword, String searchType, String tag, Pageable pageable) {
         QBoard board = QBoard.board;
+
+        BooleanExpression tagFilter = (tag != null && !tag.isBlank()) ? board.tag.eq(tag) : null;
 
         BooleanExpression where = board.boardType.eq(type)
                 .and(board.targetClassroom.cid.eq(classroomId))
                 .and(board.isDeleted.isFalse())
                 .and(schoolFilter(board))
-                .and(keywordFilterByType(board, keyword, searchType));
+                .and(keywordFilterByType(board, keyword, searchType))
+                .and(tagFilter);
 
         com.querydsl.core.types.OrderSpecifier<?> dynamicSort = board.createDate.desc();
         if (pageable.getSort().isSorted()) {

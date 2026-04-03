@@ -47,13 +47,13 @@ interface Comment {
 }
 
 // [soojin] 역할 → 배지 레이블/색상 매핑
-function roleBadge(role: string): { label: string; color: string } {
+function roleBadge(role: string): { label: string; bg: string; color: string } {
   switch (role) {
-    case "ADMIN":   return { label: "관리자", color: "bg-purple-100 text-purple-700" };
-    case "TEACHER": return { label: "교사",   color: "bg-blue-100 text-blue-700" };
-    case "STAFF":   return { label: "교직원", color: "bg-cyan-100 text-cyan-700" };
-    case "PARENT":  return { label: "학부모", color: "bg-orange-100 text-orange-700" };
-    default:        return { label: "학생",   color: "bg-success-100 text-success-600" };
+    case "ADMIN":   return { label: "관리자", bg: "#f3e8ff", color: "#7c3aed" };
+    case "TEACHER": return { label: "교사",   bg: "#dbeafe", color: "#1d4ed8" };
+    case "STAFF":   return { label: "교직원", bg: "#cffafe", color: "#0e7490" };
+    case "PARENT":  return { label: "학부모", bg: "#ffedd5", color: "#c2410c" };
+    default:        return { label: "학생",   bg: "#dcfce7", color: "#16a34a" };
   }
 }
 
@@ -75,15 +75,15 @@ function formatDateTime(dateStr: string): string {
 function formatDate(dateStr: string): string {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
 }
 
 // [soojin] 작성자 이니셜 아바타
 function AvatarIcon({ name }: { name: string }) {
   return (
     <div
-      className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
-      style={{ width: 36, height: 36, fontSize: 14, background: "#6366f1" }}
+      style={{ width: 36, height: 36, fontSize: 14, fontWeight: 700, background: "#6366f1", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}
     >
       {name ? name.charAt(0) : "?"}
     </div>
@@ -128,24 +128,29 @@ export default function ClassBoardDetail() {
       .catch(() => navigate("/board/class-board"))
       .finally(() => setLoading(false));
 
-    api.get(`/board/${id}/comments`).then((res) => setComments(res.data)).catch(() => {});
+    api
+      .get(`/board/${id}/comments`)
+      .then((res) => setComments(res.data))
+      .catch(() => {});
   }, [id]);
 
   useEffect(() => {
     document.body.style.overflow = showEditModal ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [showEditModal]);
 
   // [soojin] 좋아요 토글 — 낙관적 UI 업데이트 후 서버 응답으로 보정
   const handleLike = async () => {
     if (!board) return;
     const prev = { likeCount: board.likeCount, isLiked: board.isLiked };
-    setBoard((b) => b ? { ...b, likeCount: b.isLiked ? b.likeCount - 1 : b.likeCount + 1, isLiked: !b.isLiked } : b);
+    setBoard((b) => (b ? { ...b, likeCount: b.isLiked ? b.likeCount - 1 : b.likeCount + 1, isLiked: !b.isLiked } : b));
     try {
       const res = await api.post(`/board/${id}/like`);
-      setBoard((b) => b ? { ...b, likeCount: res.data.likeCount, isLiked: res.data.liked } : b);
+      setBoard((b) => (b ? { ...b, likeCount: res.data.likeCount, isLiked: res.data.liked } : b));
     } catch {
-      setBoard((b) => b ? { ...b, ...prev } : b);
+      setBoard((b) => (b ? { ...b, ...prev } : b));
     }
   };
 
@@ -153,18 +158,19 @@ export default function ClassBoardDetail() {
   const handleBookmark = async () => {
     if (!board) return;
     const prevBookmarked = board.isBookmarked;
-    setBoard((b) => b ? { ...b, isBookmarked: !b.isBookmarked } : b);
+    setBoard((b) => (b ? { ...b, isBookmarked: !b.isBookmarked } : b));
     try {
       const res = await api.post(`/board/${id}/bookmark`);
-      setBoard((b) => b ? { ...b, isBookmarked: res.data.bookmarked } : b);
+      setBoard((b) => (b ? { ...b, isBookmarked: res.data.bookmarked } : b));
     } catch {
-      setBoard((b) => b ? { ...b, isBookmarked: prevBookmarked } : b);
+      setBoard((b) => (b ? { ...b, isBookmarked: prevBookmarked } : b));
     }
   };
 
   // [soojin] 공유 — 현재 URL 클립보드 복사
   const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href)
+    navigator.clipboard
+      .writeText(window.location.href)
       .then(() => alert("링크가 복사되었습니다."))
       .catch(() => {});
   };
@@ -182,7 +188,7 @@ export default function ClassBoardDetail() {
       setReplyTo(null);
       const res = await api.get(`/board/${id}/comments`);
       setComments(res.data);
-      setBoard((b) => b ? { ...b, commentCount: b.commentCount + 1 } : b);
+      setBoard((b) => (b ? { ...b, commentCount: b.commentCount + 1 } : b));
     } catch {
       alert("댓글 작성에 실패했습니다.");
     } finally {
@@ -197,15 +203,21 @@ export default function ClassBoardDetail() {
       await api.delete(`/board/${id}/comments/${commentId}`);
       const res = await api.get(`/board/${id}/comments`);
       setComments(res.data);
-      setBoard((b) => b ? { ...b, commentCount: Math.max(0, b.commentCount - 1) } : b);
+      setBoard((b) => (b ? { ...b, commentCount: Math.max(0, b.commentCount - 1) } : b));
     } catch {
       alert("댓글 삭제에 실패했습니다.");
     }
   };
 
   const handleEdit = async () => {
-    if (!editForm.title.trim()) { alert("제목을 입력해주세요."); return; }
-    if (isQuillEmpty(editForm.content)) { alert("내용을 입력해주세요."); return; }
+    if (!editForm.title.trim()) {
+      alert("제목을 입력해주세요.");
+      return;
+    }
+    if (isQuillEmpty(editForm.content)) {
+      alert("내용을 입력해주세요.");
+      return;
+    }
     setSaving(true);
     try {
       await api.put(`/board/${id}`, {
@@ -240,23 +252,23 @@ export default function ClassBoardDetail() {
     const canDelete = user?.uid === comment.writerId || isAdmin || isTeacher;
     return (
       <div key={comment.id} style={{ marginBottom: 16, paddingLeft: isReply ? 44 : 0 }}>
-        <div className="d-flex gap-10">
+        <div style={{ display: "flex", gap: 10 }}>
           <AvatarIcon name={comment.writerName} />
           <div style={{ flex: 1 }}>
-            <div className="d-flex align-items-center gap-8 mb-4 flex-wrap">
-              <span className="fw-semibold" style={{ fontSize: 14 }}>{comment.writerName}</span>
-              <span
-                className={`px-6 py-1 rounded fw-medium ${badge.color}`}
-                style={{ fontSize: 11 }}
-              >
-                {badge.label}
-              </span>
-              <span className="text-secondary-light" style={{ fontSize: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                  {comment.writerName}
+                </span>
+                <span style={{ fontSize: 11, padding: "1px 6px", borderRadius: 4, background: badge.bg, color: badge.color, fontWeight: 500 }}>
+                  {badge.label}
+                </span>
+              </div>
+              <span style={{ fontSize: 12, color: "#9ca3af" }}>
                 {formatDateTime(comment.createDate)}
               </span>
             </div>
             <p
-              className="mb-6"
               style={{
                 fontSize: 14,
                 lineHeight: 1.7,
@@ -267,12 +279,21 @@ export default function ClassBoardDetail() {
             >
               {comment.content}
             </p>
-            <div className="d-flex align-items-center gap-12 mt-4">
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
               {!isReply && (
                 <button
                   type="button"
-                  className="d-flex align-items-center gap-4 text-secondary-light"
-                  style={{ fontSize: 12, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                  style={{
+                    fontSize: 12,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: "#9ca3af",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
                   onClick={() =>
                     setReplyTo(replyTo?.id === comment.id ? null : { id: comment.id, writerName: comment.writerName })
                   }
@@ -284,8 +305,17 @@ export default function ClassBoardDetail() {
               {canDelete && !comment.isDeleted && (
                 <button
                   type="button"
-                  className="d-flex align-items-center gap-4 text-danger"
-                  style={{ fontSize: 12, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                  style={{
+                    fontSize: 12,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: "#ef4444",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
                   onClick={() => handleCommentDelete(comment.id)}
                 >
                   <i className="ri-delete-bin-line" />
@@ -301,7 +331,7 @@ export default function ClassBoardDetail() {
 
         {/* [soojin] 대댓글 입력창 — 해당 댓글에 답글 선택 시 표시 */}
         {replyTo?.id === comment.id && (
-          <div className="d-flex gap-8 mt-8" style={{ paddingLeft: 44 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, paddingLeft: 44 }}>
             <input
               type="text"
               className="form-control form-control-sm"
@@ -309,13 +339,26 @@ export default function ClassBoardDetail() {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(); }
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleCommentSubmit();
+                }
               }}
               style={{ fontSize: 13 }}
             />
             <button
               type="button"
-              className="btn btn-primary-600 btn-sm radius-8 flex-shrink-0"
+              style={{
+                padding: "4px 10px",
+                background: "#25A194",
+                border: "none",
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#fff",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
               onClick={handleCommentSubmit}
               disabled={submitting}
             >
@@ -323,8 +366,20 @@ export default function ClassBoardDetail() {
             </button>
             <button
               type="button"
-              className="btn btn-outline-neutral-300 btn-sm radius-8 flex-shrink-0"
-              onClick={() => { setReplyTo(null); setNewComment(""); }}
+              style={{
+                padding: "4px 10px",
+                background: "#fff",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                color: "#374151",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+              onClick={() => {
+                setReplyTo(null);
+                setNewComment("");
+              }}
             >
               취소
             </button>
@@ -337,7 +392,7 @@ export default function ClassBoardDetail() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
+        <div style={{ textAlign: "center", paddingTop: 48, paddingBottom: 48, color: "#94a3b8" }}>불러오는 중...</div>
       </DashboardLayout>
     );
   }
@@ -354,63 +409,99 @@ export default function ClassBoardDetail() {
           size: a.fileSize,
         }))
       : board.attachmentUrl
-      ? [{ name: board.attachmentUrl.split("/").pop() || "첨부파일", url: board.attachmentUrl }]
-      : [];
+        ? [{ name: board.attachmentUrl.split("/").pop() || "첨부파일", url: board.attachmentUrl }]
+        : [];
 
   return (
     <DashboardLayout>
       {/* 상단 네비게이션 */}
-      <div className="d-flex align-items-center gap-8 mb-24">
+      <div style={{ maxWidth: 860, margin: "0 auto 24px" }}>
         <Link
           to="/board/class-board"
-          className="w-36-px h-36-px rounded-circle bg-neutral-100 d-flex align-items-center justify-content-center text-secondary-light"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            fontSize: 13,
+            color: "#374151",
+            textDecoration: "none",
+            padding: "5px 10px",
+            background: "#fff",
+            border: "1px solid #d1d5db",
+            borderRadius: 6,
+            fontWeight: 500,
+          }}
         >
-          <i className="ri-arrow-left-line text-lg" />
+          <i className="ri-arrow-left-line" />
+          목록으로
         </Link>
-        <h5 className="fw-bold mb-0">학급 게시판</h5>
       </div>
 
       {/* 게시글 카드 */}
-      <div className="card radius-12" style={{ maxWidth: 860, margin: "0 auto" }}>
-        {/* 헤더 */}
-        <div className="card-header py-20 px-24 border-bottom">
+      {/* [soojin] overflow:hidden — Bootstrap card-header 자체 border-radius를 카드 radius(12)로 클리핑해 상하 둥근모양 통일 */}
+      <div className="card" style={{ maxWidth: 860, margin: "0 auto", borderRadius: 12, overflow: "hidden", border: "1px solid #e2e8f0" }}>
+        {/* [soojin] 헤더 — 태그+제목만 */}
+        {/* [soojin] borderBottom 제거 → 아래 패딩 구분선으로 대체 */}
+        <div className="card-header" style={{ padding: "20px 24px", borderBottom: "none" }}>
           {/* [soojin] 게시판 타입 + 태그 배지 */}
-          <div className="d-flex align-items-center gap-8 mb-10">
-            <span className="badge bg-primary-100 text-primary-600 fw-medium" style={{ fontSize: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, background: "#dbeafe", color: "#3b82f6", display: "inline-block" }}>
               학급 게시판
             </span>
             {board.tag && (
-              <span className="badge bg-warning-100 text-warning-600 fw-medium" style={{ fontSize: 12 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, background: "#fef9c3", color: "#ca8a04", display: "inline-block" }}>
                 {board.tag}
               </span>
             )}
           </div>
-          <h5 className="fw-bold mb-12" style={{ lineHeight: 1.5 }}>{board.title}</h5>
-          {/* [soojin] 작성자 아바타 + 이름 + 역할 배지 + 날짜 + 통계 */}
-          <div className="d-flex align-items-center gap-12 flex-wrap">
-            <div className="d-flex align-items-center gap-8">
+          <h5 style={{ fontWeight: 700, marginBottom: 0, lineHeight: 1.5 }}>
+            {board.title}
+          </h5>
+        </div>
+        {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+        <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
+        {/* [soojin] 작성자 섹션 — 제목 헤더와 분리된 별도 행 (패딩/구분선 일관성) */}
+        {/* [soojin] borderBottom 제거 → 아래 패딩 구분선으로 대체 */}
+        <div style={{ padding: "16px 24px" }}>
+          {/* [soojin] 작성자 아바타 + 이름 + 역할 배지 + 날짜시간 + 통계 */}
+          <div style={{ display: "flex", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <AvatarIcon name={board.writerName} />
-              <span className="fw-semibold" style={{ fontSize: 14 }}>{board.writerName}</span>
-              <span
-                className={`px-8 py-1 rounded fw-medium ${writerBadge.color}`}
-                style={{ fontSize: 11 }}
-              >
-                {writerBadge.label}
-              </span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>
+                    {board.writerName}
+                  </span>
+                  <span style={{ fontSize: 11, padding: "1px 8px", borderRadius: 4, background: writerBadge.bg, color: writerBadge.color, fontWeight: 500 }}>
+                    {writerBadge.label}
+                  </span>
+                </div>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>
+                  {formatDateTime(board.createDate)}
+                </span>
+              </div>
             </div>
-            <span className="text-secondary-light" style={{ fontSize: 13 }}>
-              {formatDate(board.createDate)}
-            </span>
-            <div className="d-flex align-items-center gap-12 text-secondary-light ms-auto" style={{ fontSize: 13 }}>
-              <span><i className="ri-eye-line me-4" />조회 {board.viewCount}</span>
-              <span><i className="ri-heart-line me-4" />좋아요 {board.likeCount}</span>
-              <span><i className="ri-chat-3-line me-4" />댓글 {board.commentCount}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#94a3b8", fontSize: 13, marginLeft: "auto" }}>
+              <span>
+                <i className="ri-eye-line" style={{ marginRight: 4 }} />
+                {board.viewCount}
+              </span>
+              <span>
+                <i className="ri-heart-line" style={{ marginRight: 4 }} />
+                {board.likeCount}
+              </span>
+              <span>
+                <i className="ri-chat-3-line" style={{ marginRight: 4 }} />
+                {board.commentCount}
+              </span>
             </div>
           </div>
         </div>
 
+        {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+        <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
         {/* 본문 */}
-        <div className="card-body px-24 py-20">
+        <div className="card-body" style={{ padding: "20px 24px" }}>
           {board.content.includes("<") ? (
             <div
               className="ql-editor"
@@ -426,24 +517,29 @@ export default function ClassBoardDetail() {
 
         {/* [soojin] 첨부파일 영역 */}
         {attachments.length > 0 && (
-          <div className="px-24 py-16 border-top">
-            <p className="fw-semibold mb-10" style={{ fontSize: 14 }}>
-              <i className="ri-attachment-line me-6 text-primary-600" />
+          <>
+          {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+          <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
+          {/* [soojin] borderTop 제거 → 위 패딩 구분선으로 대체 */}
+          <div style={{ padding: "16px 24px" }}>
+            <p style={{ fontWeight: 600, marginBottom: 10, fontSize: 14 }}>
+              <i className="ri-attachment-line text-primary-600" style={{ marginRight: 6 }} />
               첨부파일 ({attachments.length})
             </p>
-            <div className="d-flex flex-column gap-8">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {attachments.map((file, idx) => (
                 <div
                   key={idx}
-                  className="d-flex align-items-center justify-content-between px-14 py-10 radius-8"
-                  style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10, borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0" }}
                 >
-                  <div className="d-flex align-items-center gap-10">
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <i className="ri-file-line text-primary-600" style={{ fontSize: 18 }} />
                     <div>
-                      <p className="fw-medium mb-0" style={{ fontSize: 13 }}>{file.name}</p>
+                      <p style={{ fontWeight: 500, marginBottom: 0, fontSize: 13 }}>
+                        {file.name}
+                      </p>
                       {file.size != null && (
-                        <p className="text-secondary-light mb-0" style={{ fontSize: 11 }}>
+                        <p style={{ color: "#94a3b8", marginBottom: 0, fontSize: 11 }}>
                           {formatFileSize(file.size)}
                         </p>
                       )}
@@ -452,8 +548,7 @@ export default function ClassBoardDetail() {
                   <a
                     href={file.url}
                     download={file.name}
-                    className="btn btn-outline-primary-600 btn-sm radius-8 d-flex align-items-center gap-4"
-                    style={{ fontSize: 12 }}
+                    style={{ fontSize: 12, padding: "4px 10px", border: "1px solid #3b82f6", borderRadius: 8, color: "#3b82f6", background: "#fff", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
                   >
                     <i className="ri-download-line" />
                     다운로드
@@ -462,35 +557,76 @@ export default function ClassBoardDetail() {
               ))}
             </div>
           </div>
+          </>
         )}
 
         {/* [soojin] 수정/삭제 + 좋아요/북마크/공유/목록 버튼 */}
-        <div className="px-24 py-16 border-top d-flex align-items-center justify-content-between flex-wrap gap-8">
-          {(isAdmin || isTeacher || isWriter) ? (
-            <div className="d-flex gap-8">
+        {/* [soojin] 구분선: margin 0 24px → 본문 패딩값과 동일한 좌우 여백 */}
+        <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
+        {/* [soojin] borderTop 제거 → 위 패딩 구분선으로 대체 */}
+        <div style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+          {isAdmin || isTeacher || isWriter ? (
+            <div style={{ display: "flex", gap: 8 }}>
               <button
                 type="button"
-                className="btn btn-outline-primary-600 btn-sm radius-8 d-flex align-items-center gap-4"
+                style={{
+                  padding: "5px 10px",
+                  background: "#fff",
+                  border: "1px solid #25A194",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  color: "#25A194",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
                 onClick={() => setShowEditModal(true)}
               >
-                <i className="ri-edit-line" />수정
+                <i className="ri-edit-line" />
+                수정
               </button>
               <button
                 type="button"
-                className="btn btn-outline-danger btn-sm radius-8 d-flex align-items-center gap-4"
+                style={{
+                  padding: "5px 10px",
+                  background: "#fff",
+                  border: "1px solid #ef4444",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  color: "#dc2626",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
                 onClick={handleDelete}
               >
-                <i className="ri-delete-bin-line" />삭제
+                <i className="ri-delete-bin-line" />
+                삭제
               </button>
             </div>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
 
-          <div className="d-flex align-items-center gap-8 flex-wrap">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <button
               type="button"
               onClick={handleLike}
-              className={`btn btn-sm radius-8 d-flex align-items-center gap-6 ${board.isLiked ? "btn-danger" : "btn-outline-neutral-300"}`}
-              style={{ fontSize: 13, minWidth: 90 }}
+              style={{
+                padding: "5px 10px",
+                background: board.isLiked ? "#ef4444" : "#fff",
+                border: board.isLiked ? "none" : "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                color: board.isLiked ? "#fff" : "#374151",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                minWidth: 90,
+              }}
             >
               <i className={board.isLiked ? "ri-heart-fill" : "ri-heart-line"} />
               좋아요 {board.likeCount}
@@ -498,8 +634,18 @@ export default function ClassBoardDetail() {
             <button
               type="button"
               onClick={handleBookmark}
-              className={`btn btn-sm radius-8 d-flex align-items-center gap-6 ${board.isBookmarked ? "btn-warning" : "btn-outline-neutral-300"}`}
-              style={{ fontSize: 13 }}
+              style={{
+                padding: "5px 10px",
+                background: board.isBookmarked ? "#f59e0b" : "#fff",
+                border: board.isBookmarked ? "none" : "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                color: board.isBookmarked ? "#fff" : "#374151",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
               <i className={board.isBookmarked ? "ri-bookmark-fill" : "ri-bookmark-line"} />
               북마크
@@ -507,16 +653,36 @@ export default function ClassBoardDetail() {
             <button
               type="button"
               onClick={handleShare}
-              className="btn btn-outline-neutral-300 btn-sm radius-8 d-flex align-items-center gap-6"
-              style={{ fontSize: 13 }}
+              style={{
+                padding: "5px 10px",
+                background: "#fff",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                color: "#374151",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
               <i className="ri-share-forward-line" />
               공유
             </button>
             <Link
               to="/board/class-board"
-              className="btn btn-outline-neutral-300 btn-sm radius-8 d-flex align-items-center gap-6"
-              style={{ fontSize: 13 }}
+              style={{
+                padding: "5px 10px",
+                background: "#fff",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                color: "#374151",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
               <i className="ri-list-unordered" />
               목록
@@ -526,16 +692,17 @@ export default function ClassBoardDetail() {
       </div>
 
       {/* [soojin] 댓글 섹션 */}
-      <div className="card radius-12" style={{ maxWidth: 860, margin: "16px auto 0" }}>
-        <div className="card-body px-24 py-20">
-          <h6 className="fw-bold mb-16 d-flex align-items-center gap-8">
+      <div className="card" style={{ maxWidth: 860, margin: "16px auto 0", borderRadius: 12, border: "1px solid #e2e8f0" }}>
+        <div className="card-body" style={{ padding: "20px 24px" }}>
+          <h6 style={{ fontWeight: 700, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
             <i className="ri-chat-3-line text-primary-600" />
             댓글 {board.commentCount}
           </h6>
 
           {/* [soojin] 최상위 댓글 입력창 (대댓글 입력 중이 아닐 때) */}
+          {/* [soojin] 댓글 작성 버튼을 textarea 하단 우측으로 이동 */}
           {!replyTo && (
-            <div className="d-flex gap-8 mb-24 align-items-flex-end">
+            <div style={{ marginBottom: 24 }}>
               <textarea
                 className="form-control"
                 rows={2}
@@ -544,22 +711,36 @@ export default function ClassBoardDetail() {
                 onChange={(e) => setNewComment(e.target.value)}
                 style={{ fontSize: 14, resize: "none" }}
               />
-              <button
-                type="button"
-                className="btn btn-primary-600 radius-8 flex-shrink-0 d-flex align-items-center gap-4"
-                style={{ fontSize: 13, height: 40, whiteSpace: "nowrap" }}
-                onClick={handleCommentSubmit}
-                disabled={submitting || !newComment.trim()}
-              >
-                <i className="ri-send-plane-line" />
-                댓글 작성
-              </button>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                <button
+                  type="button"
+                  style={{
+                    padding: "5px 12px",
+                    background: "#25A194",
+                    border: "none",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    whiteSpace: "nowrap",
+                  }}
+                  onClick={handleCommentSubmit}
+                  disabled={submitting || !newComment.trim()}
+                >
+                  <i className="ri-send-plane-line" />
+                  댓글 작성
+                </button>
+              </div>
             </div>
           )}
 
           {/* [soojin] 댓글 목록 */}
           {comments.length === 0 ? (
-            <p className="text-secondary-light text-center py-20" style={{ fontSize: 14 }}>
+            <p style={{ color: "#94a3b8", textAlign: "center", paddingTop: 20, paddingBottom: 20, fontSize: 14 }}>
               첫 댓글을 남겨보세요.
             </p>
           ) : (
@@ -570,18 +751,19 @@ export default function ClassBoardDetail() {
 
       {/* [soojin] 수정 모달 */}
       {showEditModal && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div className="modal fade show" tabIndex={-1} style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content radius-12">
-              <div className="modal-header border-bottom py-16 px-24">
+            <div className="modal-content" style={{ borderRadius: 12 }}>
+              <div className="modal-header" style={{ padding: "16px 24px" }}>
                 <h6 className="modal-title">
-                  <i className="ri-edit-line me-8 text-primary-600" />게시글 수정
+                  <i className="ri-edit-line text-primary-600" style={{ marginRight: 8 }} />
+                  게시글 수정
                 </h6>
                 <button type="button" className="btn-close" onClick={() => setShowEditModal(false)} />
               </div>
-              <div className="modal-body p-24">
-                <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">제목</label>
+              <div className="modal-body" style={{ padding: 24 }}>
+                <div style={{ marginBottom: 16 }}>
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 13 }}>제목</label>
                   <input
                     type="text"
                     className="form-control"
@@ -590,8 +772,8 @@ export default function ClassBoardDetail() {
                   />
                 </div>
                 {/* [soojin] 태그 선택 */}
-                <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">태그</label>
+                <div style={{ marginBottom: 16 }}>
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 13 }}>태그</label>
                   <select
                     className="form-select"
                     value={editForm.tag}
@@ -606,7 +788,7 @@ export default function ClassBoardDetail() {
                   </select>
                 </div>
                 <div>
-                  <label className="form-label fw-semibold text-sm">내용</label>
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 13 }}>내용</label>
                   <div style={{ minHeight: 250 }}>
                     <ReactQuill
                       theme="snow"
@@ -619,17 +801,34 @@ export default function ClassBoardDetail() {
                   </div>
                 </div>
               </div>
-              <div className="modal-footer border-top py-16 px-24 gap-8">
+              <div className="modal-footer" style={{ padding: "16px 24px", gap: 8 }}>
                 <button
                   type="button"
-                  className="btn btn-outline-neutral-300 radius-8"
+                  style={{
+                    padding: "5px 16px",
+                    background: "#fff",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    color: "#374151",
+                    cursor: "pointer",
+                  }}
                   onClick={() => setShowEditModal(false)}
                 >
                   취소
                 </button>
                 <button
                   type="button"
-                  className="btn btn-primary-600 radius-8"
+                  style={{
+                    padding: "5px 16px",
+                    background: "#25A194",
+                    border: "none",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    cursor: "pointer",
+                  }}
                   onClick={handleEdit}
                   disabled={saving}
                 >
