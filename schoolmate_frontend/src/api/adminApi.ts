@@ -12,15 +12,8 @@ admin.interceptors.request.use((cfg) => {
   if (token) cfg.headers.Authorization = `Bearer ${token}`;
 
   // 선택된 학교 ID를 모든 요청 헤더에 자동 첨부
-  try {
-    const raw = localStorage.getItem("admin_selected_school");
-    if (raw) {
-      const school = JSON.parse(raw) as { id?: number };
-      if (school?.id) cfg.headers["X-School-Id"] = String(school.id);
-    }
-  } catch {
-    /* 무시 */
-  }
+  const activeSchoolId = auth.getActiveSchoolId();
+  if (activeSchoolId) cfg.headers["X-School-Id"] = activeSchoolId;
 
   return cfg;
 });

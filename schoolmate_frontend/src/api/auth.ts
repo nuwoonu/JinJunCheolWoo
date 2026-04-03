@@ -14,17 +14,8 @@ api.interceptors.request.use((config) => {
   }
 
   // [woo/cheol] 멀티 테넌트 환경 대응: 최고 관리자 등 토큰에 학교 ID가 없는 경우
-  // 로컬 스토리지에 저장된 선택된 학교 ID가 있다면 X-School-Id 헤더로 명시적 전달
-  const activeSchoolId = (() => {
-    const plain = localStorage.getItem("schoolId") || localStorage.getItem("activeSchoolId");
-    if (plain) return plain;
-    try {
-      const obj = JSON.parse(localStorage.getItem("admin_selected_school") ?? "null");
-      return obj?.id != null ? String(obj.id) : null;
-    } catch {
-      return null;
-    }
-  })();
+  // 선택된 학교 ID가 있다면 X-School-Id 헤더로 명시적 전달
+  const activeSchoolId = auth.getActiveSchoolId();
   if (activeSchoolId) {
     config.headers["X-School-Id"] = activeSchoolId;
   }

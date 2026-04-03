@@ -1,10 +1,29 @@
 // [woo] JWT 토큰 관리 유틸리티
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
+const ADMIN_SCHOOL_KEY = "admin_selected_school";
 
 export const auth = {
   getAccessToken: (): string | null => localStorage.getItem(ACCESS_TOKEN_KEY),
   getRefreshToken: (): string | null => localStorage.getItem(REFRESH_TOKEN_KEY),
+
+  /**
+   * 현재 선택된 학교 ID 반환 (X-School-Id 헤더용)
+   * - 어드민: SchoolContext가 admin_selected_school에 JSON 저장 → id 추출
+   * - 일반 사용자: JWT에 schoolId 포함되므로 null 반환해도 무방
+   */
+  getActiveSchoolId: (): string | null => {
+    try {
+      const raw = localStorage.getItem(ADMIN_SCHOOL_KEY);
+      if (raw) {
+        const obj = JSON.parse(raw) as { id?: number };
+        if (obj?.id != null) return String(obj.id);
+      }
+    } catch {
+      /* 무시 */
+    }
+    return null;
+  },
 
   setTokens: (accessToken: string, refreshToken: string): void => {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
