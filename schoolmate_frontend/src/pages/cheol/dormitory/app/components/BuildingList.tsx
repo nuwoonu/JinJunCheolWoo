@@ -408,12 +408,7 @@ export default function BuildingList() {
         {buildings.length === 0 && (
           <div style={{ textAlign: "center", padding: "80px 0", color: "#94a3b8" }}>
             <div style={{ fontSize: "52px", marginBottom: "12px" }}>🏢</div>
-            <p style={{ fontSize: "16px", margin: "0 0 4px" }}>등록된 건물이 없습니다.</p>
-            {!isStudent && ( // cheol
-              <p style={{ fontSize: "13px", margin: 0 }}>
-                백엔드에서 <code>POST /api/dormitories/initialize</code>를 호출해 초기 데이터를 생성하세요.
-              </p>
-            )}
+            <p style={{ fontSize: "16px", margin: 0 }}>등록된 건물이 없습니다.</p>
           </div>
         )}
       </div>
