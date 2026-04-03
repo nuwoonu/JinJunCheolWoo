@@ -368,13 +368,8 @@ export default function Subjects() {
 
         {/* [soojin] 카드: 자연 높이, 가로 스크롤만 허용 */}
         <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-              <colgroup>
-                <col style={{ width: 160 }} />
-                <col />
-                <col style={{ width: 140 }} />
-              </colgroup>
+          {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto" }}>
               <thead>
                 <tr>
                   <th style={th}>과목 코드</th>
@@ -441,7 +436,6 @@ export default function Subjects() {
                 )}
               </tbody>
             </table>
-          </div>
         </div>
       </div>
     </AdminLayout>

@@ -1,8 +1,8 @@
 // [Joon] 2026-03-13 기능, 디자인 부분 1차 수정 완료
 import { useEffect, useRef, useState } from "react";
-import AdminLayout from '@/components/layout/admin/AdminLayout';
-import admin from '@/api/adminApi';
-import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
+import AdminLayout from "@/components/layout/admin/AdminLayout";
+import admin from "@/api/adminApi";
+import { useAdminMsg, apiErrMsg } from "@/hooks/useAdminMsg";
 
 const EVENT_TYPES = ["ACADEMIC", "HOLIDAY", "EXAM", "EVENT", "VACATION"];
 const TYPE_LABELS: Record<string, string> = {
@@ -39,8 +39,7 @@ function buildCalendar(year: number, month: number): (Date | null)[] {
   const daysInMonth = new Date(year, month, 0).getDate();
   const cells: (Date | null)[] = [];
   for (let i = 0; i < firstDow; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++)
-    cells.push(new Date(year, month - 1, d));
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month - 1, d));
   while (cells.length % 7 !== 0) cells.push(null);
   return cells;
 }
@@ -52,8 +51,24 @@ function eventOnDate(ev: any, date: Date) {
   return date.getTime() >= s && date.getTime() <= e;
 }
 
-const th: React.CSSProperties = { padding: "12px 16px", fontSize: 12, fontWeight: 600, color: "#6b7280", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap", textAlign: "left" };
-const td: React.CSSProperties = { padding: "12px 16px", fontSize: 13, color: "#374151", borderBottom: "1px solid #f3f4f6", verticalAlign: "middle", whiteSpace: "nowrap" };
+const th: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+const td: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 13,
+  color: "#374151",
+  borderBottom: "1px solid #f3f4f6",
+  verticalAlign: "middle",
+  whiteSpace: "nowrap",
+};
 
 export default function Schedule() {
   const now = new Date();
@@ -73,9 +88,7 @@ export default function Schedule() {
   const load = (y = year, m = month) => {
     const start = toDateStr(new Date(y, m - 1, 1));
     const end = toDateStr(new Date(y, m, 0));
-    admin
-      .get("/schedule", { params: { start, end } })
-      .then((r) => setEvents(r.data ?? []));
+    admin.get("/schedule", { params: { start, end } }).then((r) => setEvents(r.data ?? []));
   };
 
   useEffect(() => {
@@ -84,8 +97,10 @@ export default function Schedule() {
 
   // [woo] 모달 열릴 때 배경 스크롤 방지
   useEffect(() => {
-    document.body.style.overflow = showModal ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    document.body.style.overflow = showModal ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [showModal]);
 
   const goMonth = (delta: number) => {
@@ -192,7 +207,15 @@ export default function Schedule() {
 
   const cells = buildCalendar(year, month);
 
-  const navBtnStyle: React.CSSProperties = { padding: "6px 12px", border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", fontSize: 13, color: "#374151", cursor: "pointer" };
+  const navBtnStyle: React.CSSProperties = {
+    padding: "6px 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: 6,
+    background: "#fff",
+    fontSize: 13,
+    color: "#374151",
+    cursor: "pointer",
+  };
 
   return (
     <AdminLayout msg={msg} error={error}>
@@ -253,9 +276,7 @@ export default function Schedule() {
                       className="form-control"
                       required
                       value={form.title}
-                      onChange={(e) =>
-                        setForm((f: any) => ({ ...f, title: e.target.value }))
-                      }
+                      onChange={(e) => setForm((f: any) => ({ ...f, title: e.target.value }))}
                     />
                   </div>
                   <div className="col-md-6">
@@ -302,9 +323,7 @@ export default function Schedule() {
                       className="form-control"
                       required
                       value={form.start}
-                      onChange={(e) =>
-                        setForm((f: any) => ({ ...f, start: e.target.value }))
-                      }
+                      onChange={(e) => setForm((f: any) => ({ ...f, start: e.target.value }))}
                     />
                   </div>
                   <div className="col-md-6">
@@ -314,9 +333,7 @@ export default function Schedule() {
                       className="form-control"
                       required
                       value={form.end}
-                      onChange={(e) =>
-                        setForm((f: any) => ({ ...f, end: e.target.value }))
-                      }
+                      onChange={(e) => setForm((f: any) => ({ ...f, end: e.target.value }))}
                     />
                   </div>
                   <div className="col-12">
@@ -347,7 +364,16 @@ export default function Schedule() {
                 {editId !== null && (
                   <button
                     type="button"
-                    style={{ padding: "7px 16px", background: "#fff", border: "1px solid #ef4444", borderRadius: 8, fontSize: 14, color: "#ef4444", cursor: "pointer", marginRight: "auto" }}
+                    style={{
+                      padding: "7px 16px",
+                      background: "#fff",
+                      border: "1px solid #ef4444",
+                      borderRadius: 8,
+                      fontSize: 14,
+                      color: "#ef4444",
+                      cursor: "pointer",
+                      marginRight: "auto",
+                    }}
                     onClick={() => {
                       handleDelete(editId!);
                       setShowModal(false);
@@ -358,14 +384,31 @@ export default function Schedule() {
                 )}
                 <button
                   type="button"
-                  style={{ padding: "7px 16px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 14, color: "#374151", cursor: "pointer" }}
+                  style={{
+                    padding: "7px 16px",
+                    background: "#fff",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    fontSize: 14,
+                    color: "#374151",
+                    cursor: "pointer",
+                  }}
                   onClick={() => setShowModal(false)}
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: "7px 16px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                  style={{
+                    padding: "7px 16px",
+                    background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "#fff",
+                    cursor: "pointer",
+                  }}
                 >
                   {editId !== null ? "수정" : "등록"}
                 </button>
@@ -377,48 +420,81 @@ export default function Schedule() {
 
       {importing && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
         >
           <div style={{ textAlign: "center" }}>
-            <div
-              className="spinner-border text-light"
-              style={{ width: "3rem", height: "3rem" }}
-            />
+            <div className="spinner-border text-light" style={{ width: "3rem", height: "3rem" }} />
             <h5 style={{ color: "#fff", marginTop: 12 }}>일정 데이터를 등록 중입니다...</h5>
           </div>
         </div>
       )}
-      <input
-        type="file"
-        ref={csvRef}
-        accept=".csv"
-        style={{ display: "none" }}
-        onChange={importCsv}
-      />
+      <input type="file" ref={csvRef} accept=".csv" style={{ display: "none" }} onChange={importCsv} />
 
       {/* 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 28,
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
         <div>
-          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>학사 일정 관리</h5>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
-            학년도별 학사 일정을 등록하고 관리합니다.
-          </p>
+          <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>학사 일정 관리</h6>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>학년도별 학사 일정을 등록하고 관리합니다.</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button
-            style={{ padding: "9px 16px", background: "#6b7280", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#fff", cursor: "pointer" }}
+            style={{
+              padding: "9px 16px",
+              background: "#6b7280",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "#fff",
+              cursor: "pointer",
+            }}
             onClick={exportCsv}
           >
             <i className="bi bi-file-earmark-arrow-down" /> CSV 내보내기
           </button>
           <button
-            style={{ padding: "9px 16px", background: "#22c55e", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#fff", cursor: "pointer" }}
+            style={{
+              padding: "9px 16px",
+              background: "#22c55e",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "#fff",
+              cursor: "pointer",
+            }}
             onClick={() => csvRef.current?.click()}
           >
             <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
           </button>
           <button
-            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+            style={{
+              padding: "9px 20px",
+              background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#fff",
+              cursor: "pointer",
+            }}
             onClick={() => openCreate()}
           >
             <i className="bi bi-plus-lg" /> 일정 등록
@@ -432,24 +508,15 @@ export default function Schedule() {
           {/* 1. 좌측 (월 이동 및 오늘 버튼) */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
             <div style={{ display: "flex" }}>
-              <button
-                style={navBtnStyle}
-                onClick={() => goMonth(-1)}
-              >
+              <button style={navBtnStyle} onClick={() => goMonth(-1)}>
                 <i className="bi bi-chevron-left" />
               </button>
-              <button
-                style={navBtnStyle}
-                onClick={() => goMonth(1)}
-              >
+              <button style={navBtnStyle} onClick={() => goMonth(1)}>
                 <i className="bi bi-chevron-right" />
               </button>
             </div>
-            <button
-              style={navBtnStyle}
-              onClick={goToday}
-            >
-              Today
+            <button style={navBtnStyle} onClick={goToday}>
+              오늘
             </button>
           </div>
 
@@ -464,20 +531,24 @@ export default function Schedule() {
           <div style={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
             <div style={{ display: "flex" }}>
               <button
-                style={view === "month"
-                  ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
-                  : navBtnStyle}
+                style={
+                  view === "month"
+                    ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
+                    : navBtnStyle
+                }
                 onClick={() => setView("month")}
               >
-                Month
+                달력
               </button>
               <button
-                style={view === "list"
-                  ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
-                  : navBtnStyle}
+                style={
+                  view === "list"
+                    ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
+                    : navBtnStyle
+                }
                 onClick={() => setView("list")}
               >
-                List
+                목록
               </button>
             </div>
           </div>
@@ -511,9 +582,7 @@ export default function Schedule() {
             </div>
 
             {/* 날짜 그리드 */}
-            <div
-              style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}
-            >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
               {cells.map((date, idx) => {
                 if (!date) {
                   return (
@@ -540,9 +609,7 @@ export default function Schedule() {
                       minHeight: 95,
                       borderRight: "1px solid rgba(0,0,0,0.05)",
                       borderBottom: "1px solid rgba(0,0,0,0.05)",
-                      background: isToday
-                        ? "rgba(var(--primary-rgb), 0.05)"
-                        : "transparent",
+                      background: isToday ? "rgba(var(--primary-rgb), 0.05)" : "transparent",
                       cursor: "pointer",
                     }}
                     onClick={() => openCreate(ds)}
@@ -577,7 +644,18 @@ export default function Schedule() {
                       {dayEvents.slice(0, 3).map((ev) => (
                         <div
                           key={ev.id}
-                          style={{ fontSize: "0.68rem", cursor: "pointer", lineHeight: "1.4", borderRadius: 4, padding: "2px 6px", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...(TYPE_COLORS_STYLE[ev.eventType] ?? {}) }}
+                          style={{
+                            fontSize: "0.68rem",
+                            cursor: "pointer",
+                            lineHeight: "1.4",
+                            borderRadius: 4,
+                            padding: "2px 6px",
+                            marginBottom: 4,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            ...(TYPE_COLORS_STYLE[ev.eventType] ?? {}),
+                          }}
                           onClick={(e) => {
                             e.stopPropagation();
                             openEdit(ev);
@@ -588,9 +666,7 @@ export default function Schedule() {
                         </div>
                       ))}
                       {dayEvents.length > 3 && (
-                        <div
-                          style={{ color: "#6c757d", paddingLeft: 4, fontSize: "0.7rem" }}
-                        >
+                        <div style={{ color: "#6c757d", paddingLeft: 4, fontSize: "0.7rem" }}>
                           +{dayEvents.length - 3}개 더
                         </div>
                       )}
@@ -621,25 +697,48 @@ export default function Schedule() {
                     <tr key={ev.id}>
                       <td style={{ ...td, fontWeight: 600 }}>{ev.title}</td>
                       <td style={td}>
-                        <span style={{ ...TYPE_COLORS_STYLE[ev.eventType], borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 }}>
+                        <span
+                          style={{
+                            ...TYPE_COLORS_STYLE[ev.eventType],
+                            borderRadius: 6,
+                            padding: "2px 10px",
+                            fontSize: 12,
+                            fontWeight: 500,
+                          }}
+                        >
                           {TYPE_LABELS[ev.eventType] ?? ev.eventType}
                         </span>
                       </td>
                       <td style={td}>{ev.start?.split("T")[0]}</td>
                       <td style={td}>{ev.end?.split("T")[0]}</td>
-                      <td style={td}>
-                        {ev.targetGrade ? `${ev.targetGrade}학년` : "전체"}
-                      </td>
+                      <td style={td}>{ev.targetGrade ? `${ev.targetGrade}학년` : "전체"}</td>
                       <td style={{ ...td, color: "#9ca3af", fontSize: 12 }}>{ev.description}</td>
                       <td style={{ ...td, textAlign: "right" }}>
                         <button
-                          style={{ padding: "5px 12px", background: "#fff", border: "1px solid #22c55e", borderRadius: 6, fontSize: 13, color: "#22c55e", cursor: "pointer", marginRight: 8 }}
+                          style={{
+                            padding: "5px 12px",
+                            background: "#fff",
+                            border: "1px solid #22c55e",
+                            borderRadius: 6,
+                            fontSize: 13,
+                            color: "#22c55e",
+                            cursor: "pointer",
+                            marginRight: 8,
+                          }}
                           onClick={() => openEdit(ev)}
                         >
                           수정
                         </button>
                         <button
-                          style={{ padding: "5px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 6, fontSize: 13, color: "#ef4444", cursor: "pointer" }}
+                          style={{
+                            padding: "5px 12px",
+                            background: "#fff",
+                            border: "1px solid #ef4444",
+                            borderRadius: 6,
+                            fontSize: 13,
+                            color: "#ef4444",
+                            cursor: "pointer",
+                          }}
                           onClick={() => handleDelete(ev.id)}
                         >
                           삭제

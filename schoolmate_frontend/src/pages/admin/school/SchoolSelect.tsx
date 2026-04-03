@@ -252,15 +252,8 @@ export default function SchoolSelect() {
           <>
             {/* [soojin] 결과 테이블 카드 — ServiceNoticeList 카드 스타일 */}
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                  <colgroup>
-                    <col />
-                    <col style={{ width: 90 }} />
-                    <col style={{ width: 160 }} />
-                    <col style={{ width: 220 }} />
-                    <col style={{ width: 80 }} />
-                  </colgroup>
+              {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto" }}>
                   <thead>
                     <tr>
                       <th style={th}>학교명</th>
@@ -349,7 +342,6 @@ export default function SchoolSelect() {
                     )}
                   </tbody>
                 </table>
-              </div>
             </div>
 
             {/* [soojin] 페이지네이션 카드 밖, 우측 정렬, 정사각형 버튼 — ServiceNoticeList 스타일 */}

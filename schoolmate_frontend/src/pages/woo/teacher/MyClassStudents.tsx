@@ -318,7 +318,8 @@ export default function TeacherMyClassStudents() {
           {/* ── 왼쪽 ── */}
           <div className="col-12 col-lg-4 mb-24 d-flex flex-column">
             {/* 학급 정보 카드 */}
-            <div className={`card radius-12 mb-20${pendingStudents.length === 0 ? " flex-grow-1" : ""}`}>
+            {/* [soojin] 승인대기 카드 항상 표시되므로 flex-grow-1 조건 제거 */}
+            <div className="card radius-12 mb-20">
               <div className="card-body p-24">
                 {/* 학급 요약 내부 카드 */}
                 <div
@@ -374,33 +375,37 @@ export default function TeacherMyClassStudents() {
               </div>
             </div>
 
-            {/* [soojin] 승인대기 학생 - 큰 카드 안에 작은 카드 목록 */}
-            {pendingStudents.length > 0 && (
-              <div className="card radius-12 flex-grow-1" style={{ border: "1px solid #fde68a" }}>
-                <div className="card-body p-20">
-                  <div className="d-flex align-items-center gap-8 mb-16">
-                    <span className="fw-bold text-sm" style={{ color: "#111827" }}>
-                      승인대기 학생
-                    </span>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        minWidth: 20,
-                        height: 20,
-                        padding: "0 6px",
-                        background: "#fef3c7",
-                        color: "#d97706",
-                        borderRadius: 10,
-                        fontSize: 11,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {pendingStudents.length}
-                    </span>
-                  </div>
+            {/* [soojin] 승인대기 학생 - 큰 카드 안에 작은 카드 목록, 목록 없어도 카드 항상 표시 */}
+            <div className="card radius-12 flex-grow-1" style={{ border: "1px solid #fde68a" }}>
+              <div className="card-body p-20">
+                <div className="d-flex align-items-center gap-8 mb-16">
+                  <span className="fw-bold text-sm" style={{ color: "#111827" }}>
+                    승인대기 학생
+                  </span>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 20,
+                      height: 20,
+                      padding: "0 6px",
+                      background: "#fef3c7",
+                      color: "#d97706",
+                      borderRadius: 10,
+                      fontSize: 11,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {pendingStudents.length}
+                  </span>
+                </div>
 
+                {pendingStudents.length === 0 ? (
+                  <div className="text-center text-secondary-light py-16" style={{ fontSize: 13 }}>
+                    승인대기 학생이 없습니다.
+                  </div>
+                ) : (
                   <div className="d-flex flex-column gap-10">
                     {pendingStudents.map((s) => (
                       <div
@@ -477,10 +482,10 @@ export default function TeacherMyClassStudents() {
                       </div>
                     ))}
                   </div>
-                </div>
-                {/* card-body */}
+                )}
               </div>
-            )}
+              {/* card-body */}
+            </div>
           </div>
 
           {/* ── 오른쪽: 학생목록 ── */}

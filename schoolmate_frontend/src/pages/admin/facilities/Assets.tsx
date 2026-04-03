@@ -516,18 +516,9 @@ export default function Assets() {
             {/* [soojin] 카드: flex:1로 남은 공간 채우기 */}
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
               {/* [soojin] 스크롤 div: 내부에서만 스크롤 */}
-              <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                  <colgroup>
-                    <col style={{ width: 120 }} />
-                    <col style={{ width: 160 }} />
-                    <col style={{ width: 100 }} />
-                    <col style={{ width: 140 }} />
-                    <col style={{ width: 110 }} />
-                    <col style={{ width: 120 }} />
-                    <col style={{ width: 100 }} />
-                    <col style={{ width: 110 }} />
-                  </colgroup>
+              {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto" }}>
                   <thead>
                     <tr>
                       <th style={thStyle}>관리 번호</th>
@@ -608,16 +599,9 @@ export default function Assets() {
             {/* [soojin] 카드: flex:1 */}
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
               {/* [soojin] 스크롤 div */}
-              <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                  <colgroup>
-                    <col style={{ width: 180 }} />
-                    <col style={{ width: 80 }} />
-                    <col style={{ width: 120 }} />
-                    <col style={{ width: 100 }} />
-                    <col />
-                    <col style={{ width: 110 }} />
-                  </colgroup>
+              {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto" }}>
                   <thead>
                     <tr>
                       <th style={thStyle}>모델명</th>

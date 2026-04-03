@@ -38,7 +38,7 @@ interface Teacher {
   displayName: string;
 }
 
-const thStyle: React.CSSProperties = {
+const TH_STYLE: React.CSSProperties = {
   padding: "12px 16px",
   fontSize: 12,
   fontWeight: 600,
@@ -47,6 +47,22 @@ const thStyle: React.CSSProperties = {
   borderBottom: "1px solid #e5e7eb",
   whiteSpace: "nowrap",
   textAlign: "left",
+};
+
+const TD_STYLE: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 13,
+  color: "#374151",
+  borderBottom: "1px solid #f3f4f6",
+  verticalAlign: "middle",
+};
+
+const LABEL_STYLE: React.CSSProperties = {
+  display: "block",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#374151",
+  marginBottom: 6,
 };
 
 export default function ClassDetail() {
@@ -106,12 +122,7 @@ export default function ClassDetail() {
   };
 
   const handleDelete = async () => {
-    if (
-      !confirm(
-        "정말 삭제하시겠습니까? 학생이나 교사가 배정되어 있으면 삭제되지 않습니다.",
-      )
-    )
-      return;
+    if (!confirm("정말 삭제하시겠습니까? 학생이나 교사가 배정되어 있으면 삭제되지 않습니다.")) return;
     try {
       await admin.delete(`/classes/${cid}`);
       navigate(ADMIN_ROUTES.CLASSES.LIST);
@@ -121,13 +132,9 @@ export default function ClassDetail() {
   };
 
   const searchStudents = async () => {
-    if (!studentSearch) return;
-    if (!classroom) return;
+    if (!studentSearch || !classroom) return;
     const res = await admin.get("/classes/students/unassigned", {
-      params: {
-        year: classroom.year,
-        keyword: studentSearch,
-      },
+      params: { year: classroom.year, keyword: studentSearch },
     });
     setSearchResults(res.data);
   };
@@ -174,7 +181,7 @@ export default function ClassDetail() {
   if (!classroom)
     return (
       <AdminLayout>
-        <div className="text-center py-5">
+        <div style={{ textAlign: "center", padding: "48px 0" }}>
           <div className="spinner-border" />
         </div>
       </AdminLayout>
@@ -182,69 +189,75 @@ export default function ClassDetail() {
 
   return (
     <AdminLayout msg={msg} error={error}>
-      <div className="breadcrumb d-flex align-items-center gap-3" style={{ marginBottom: 24 }}>
+      {/* 페이지 헤더 */}
+      <div style={{ marginBottom: 24 }}>
+        <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>학급 상세 정보</h6>
+        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>학급 정보를 확인하고 수정합니다.</p>
         <button
           type="button"
           onClick={() => navigate(ADMIN_ROUTES.CLASSES.LIST)}
-          style={{
-            background: "none",
-            border: "1px solid var(--border-color)",
-            borderRadius: 6,
-            padding: "4px 10px",
-            cursor: "pointer",
-            color: "var(--text-secondary-light)",
-          }}
+          style={{ marginTop: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280", fontSize: 13 }}
         >
-          <i className="bi bi-arrow-left" />
+          ← 목록으로
         </button>
-        <h6 className="fw-semibold mb-0">학급 상세 정보</h6>
       </div>
 
       <div className="row gy-4">
-        {/* 좌측 학급 정보 */}
+        {/* 좌측 학급 정보 카드 */}
         <div className="col-md-4">
-          <div className="card p-4 text-center">
-            <div className="d-flex gap-2 justify-content-center mb-3">
-              <span className="badge bg-primary">{classroom.year}학년도</span>
-              <span
-                className={`badge ${classroom.status === "ACTIVE" ? "bg-success" : "bg-secondary"}`}
-              >
-                {classroom.statusDescription}
-              </span>
-            </div>
-            <h4 className="fw-bold mb-4">
-              {classroom.grade}학년 {classroom.classNum}반
-            </h4>
-            <div className="text-start">
-              <div className="d-flex justify-content-between py-2 border-bottom">
-                <span className="text-muted small">담임 교사</span>
-                <span className="fw-semibold">
-                  {classroom.teacherName ?? "미배정"}
+          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", marginBottom: 16 }}>
+            <div style={{ padding: 24, textAlign: "center" }}>
+              <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(37,161,148,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                <i className="ri-group-line" style={{ fontSize: 40, color: "#25A194" }} />
+              </div>
+              <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 8 }}>
+                <span style={{ padding: "2px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "rgba(37,161,148,0.12)", color: "#25A194" }}>
+                  {classroom.year}학년도
+                </span>
+                <span style={{ padding: "2px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: classroom.status === "ACTIVE" ? "rgba(22,163,74,0.1)" : "#f3f4f6", color: classroom.status === "ACTIVE" ? "#16a34a" : "#6b7280" }}>
+                  {classroom.statusDescription}
                 </span>
               </div>
-              <div className="d-flex justify-content-between py-2">
-                <span className="text-muted small">총 학생 수</span>
-                <span className="fw-semibold">{classroom.studentCount}명</span>
+              <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 16 }}>
+                {classroom.grade}학년 {classroom.classNum}반
+              </h5>
+              <hr style={{ margin: '20px 0', borderColor: '#f3f4f6' }} />
+              <div style={{ textAlign: "left" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f3f4f6" }}>
+                  <span style={{ fontSize: 13, color: "#9ca3af" }}>담임 교사</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
+                    {classroom.teacherName ?? "미배정"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0" }}>
+                  <span style={{ fontSize: 13, color: "#9ca3af" }}>총 학생 수</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{classroom.studentCount}명</span>
+                </div>
               </div>
-            </div>
-            <div className="d-grid gap-2 mt-4">
-              <button
-                className="btn btn-outline-primary"
-                onClick={() => setShowEdit(true)}
-              >
-                <i className="bi bi-pencil me-1" /> 학급 정보 수정
-              </button>
-              <button className="btn btn-outline-danger" onClick={handleDelete}>
-                <i className="bi bi-trash me-1" /> 학급 삭제
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEdit(true)}
+                  style={{ padding: "7px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#25A194", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  <i className="bi bi-pencil" /> 학급 정보 수정
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  style={{ padding: "7px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  <i className="bi bi-trash" /> 학급 삭제
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 우측 탭 */}
+        {/* 우측 탭 카드 */}
         <div className="col-md-8">
-          <div className="card">
-            <div className="d-flex" style={{ borderBottom: "1px solid #e5e7eb" }}>
+          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb" }}>
               {(
                 [
                   ["students", "학생 명단"],
@@ -259,7 +272,7 @@ export default function ClassDetail() {
                     border: "none",
                     background: "none",
                     borderBottom: `2px solid ${tab === key ? "#25A194" : "transparent"}`,
-                    color: tab === key ? "#25A194" : "var(--text-secondary-light)",
+                    color: tab === key ? "#25A194" : "#6b7280",
                     fontWeight: tab === key ? 600 : 400,
                     fontSize: 14,
                     cursor: "pointer",
@@ -269,10 +282,12 @@ export default function ClassDetail() {
                 </button>
               ))}
             </div>
-            <div className="card-body p-4">
+
+            <div style={{ padding: "20px 24px" }}>
               {tab === "students" && (
                 <>
-                  <div className="d-flex gap-2 mb-3">
+                  {/* 학생 검색 */}
+                  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                     <input
                       className="form-control"
                       placeholder="학생 이름 검색"
@@ -281,108 +296,102 @@ export default function ClassDetail() {
                       onKeyDown={(e) => e.key === "Enter" && searchStudents()}
                     />
                     <button
-                      className="btn btn-outline-primary"
+                      type="button"
                       onClick={searchStudents}
+                      style={{ padding: "5px 12px", background: "#25A194", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
                     >
                       검색
                     </button>
                     <button
-                      className="btn btn-outline-danger"
+                      type="button"
                       onClick={removeSelected}
+                      style={{ padding: "5px 12px", background: "#fff", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
                     >
                       선택 제외
                     </button>
                     <button
-                      className="btn btn-outline-success"
+                      type="button"
                       onClick={downloadRoster}
+                      style={{ padding: "5px 12px", background: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4 }}
                     >
-                      <i className="bi bi-download me-1" />
-                      명렬표
+                      <i className="bi bi-download" /> 명렬표
                     </button>
                   </div>
+
+                  {/* 검색 결과 */}
                   {searchResults.length > 0 && (
-                    <div className="border rounded mb-3 p-3">
-                      <p className="text-muted small mb-2">
-                        검색 결과 (클릭하여 추가)
-                      </p>
-                      <div className="d-flex flex-wrap gap-2">
+                    <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12, marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 8 }}>검색 결과 (클릭하여 추가)</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                         {searchResults.map((s: any) => (
                           <button
                             key={s.uid}
-                            className="btn btn-sm btn-outline-primary"
+                            type="button"
                             onClick={() => addStudents([s.uid])}
+                            style={{ padding: "4px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 6, fontSize: 13, fontWeight: 500, color: "#25A194", cursor: "pointer" }}
                           >
                             {s.name} ({s.code})
                           </button>
                         ))}
                       </div>
-                      <div className="d-flex gap-2 mt-3 align-items-center">
-                        <span className="text-muted small">랜덤 배정:</span>
+                      <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
+                        <span style={{ fontSize: 13, color: "#9ca3af" }}>랜덤 배정:</span>
                         <input
                           type="number"
                           className="form-control"
                           style={{ maxWidth: 80 }}
                           min={0}
                           value={randomCount}
-                          onChange={(e) =>
-                            setRandomCount(Number(e.target.value))
-                          }
+                          onChange={(e) => setRandomCount(Number(e.target.value))}
                         />
-                        <span className="text-muted small">명</span>
+                        <span style={{ fontSize: 13, color: "#9ca3af" }}>명</span>
                         <button
-                          style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                          type="button"
                           onClick={() => addStudents([])}
+                          style={{ padding: "5px 12px", background: "#25A194", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
                         >
                           랜덤 배정
                         </button>
                       </div>
                     </div>
                   )}
-                  <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0">
+
+                  {/* 학생 테이블 */}
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
                       <thead>
                         <tr>
-                          <th style={{ ...thStyle, width: 40 }}>
+                          <th style={{ ...TH_STYLE, width: 40 }}>
                             <input
                               type="checkbox"
-                              className="form-check-input"
-                              checked={
-                                selected.length === classroom.students.length &&
-                                !!classroom.students.length
-                              }
+                              style={{ width: 15, height: 15, cursor: "pointer", accentColor: "#25A194" }}
+                              checked={selected.length === classroom.students.length && !!classroom.students.length}
                               onChange={(e) =>
-                                setSelected(
-                                  e.target.checked
-                                    ? classroom.students.map((s) => s.uid)
-                                    : [],
-                                )
+                                setSelected(e.target.checked ? classroom.students.map((s) => s.uid) : [])
                               }
                             />
                           </th>
-                          <th style={thStyle}>번호</th>
-                          <th style={thStyle}>이름</th>
-                          <th style={thStyle}>학번</th>
-                          <th style={thStyle}>상태</th>
-                          <th style={{ ...thStyle, textAlign: "right" }}>관리</th>
+                          <th style={TH_STYLE}>번호</th>
+                          <th style={TH_STYLE}>이름</th>
+                          <th style={TH_STYLE}>학번</th>
+                          <th style={TH_STYLE}>상태</th>
+                          <th style={{ ...TH_STYLE, textAlign: "right" }}>관리</th>
                         </tr>
                       </thead>
                       <tbody>
                         {!classroom.students.length ? (
                           <tr>
-                            <td
-                              colSpan={6}
-                              className="text-center py-5 text-muted"
-                            >
+                            <td colSpan={6} style={{ padding: "32px 16px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
                               배정된 학생이 없습니다.
                             </td>
                           </tr>
                         ) : (
                           classroom.students.map((s) => (
                             <tr key={s.uid}>
-                              <td>
+                              <td style={TD_STYLE}>
                                 <input
                                   type="checkbox"
-                                  className="form-check-input"
+                                  style={{ width: 15, height: 15, cursor: "pointer", accentColor: "#25A194" }}
                                   checked={selected.includes(s.uid)}
                                   onChange={() =>
                                     setSelected((prev) =>
@@ -393,27 +402,33 @@ export default function ClassDetail() {
                                   }
                                 />
                               </td>
-                              <td>{s.attendanceNum ?? "-"}</td>
-                              <td>
+                              <td style={TD_STYLE}>{s.attendanceNum ?? "-"}</td>
+                              <td style={TD_STYLE}>
                                 <Link
                                   to={ADMIN_ROUTES.STUDENTS.DETAIL(s.uid)}
-                                  className="text-primary fw-semibold text-decoration-none"
+                                  style={{ color: "#1d4ed8", fontWeight: 600, textDecoration: "none" }}
                                 >
                                   {s.name}
                                 </Link>
                               </td>
-                              <td className="text-muted">{s.code}</td>
-                              <td>
-                                <span
-                                  className={`badge ${s.status === "재학" ? "bg-success-subtle text-success border border-success-subtle" : "bg-secondary-subtle text-secondary border border-secondary-subtle"}`}
-                                >
+                              <td style={{ ...TD_STYLE, color: "#9ca3af" }}>{s.code}</td>
+                              <td style={TD_STYLE}>
+                                <span style={{
+                                  padding: "2px 10px",
+                                  borderRadius: 20,
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  background: s.status === "재학" ? "rgba(22,163,74,0.1)" : "#f3f4f6",
+                                  color: s.status === "재학" ? "#16a34a" : "#6b7280",
+                                }}>
                                   {s.status}
                                 </span>
                               </td>
-                              <td className="text-end">
+                              <td style={{ ...TD_STYLE, textAlign: "right" }}>
                                 <button
-                                  className="btn btn-sm btn-outline-danger"
+                                  type="button"
                                   onClick={() => removeStudent(s.uid)}
+                                  style={{ padding: "3px 10px", background: "rgba(239,68,68,0.1)", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
                                 >
                                   제외
                                 </button>
@@ -426,42 +441,38 @@ export default function ClassDetail() {
                   </div>
                 </>
               )}
+
               {tab === "history" && (
                 <>
-                  <h6 className="fw-bold mb-3">학급 관리 로그</h6>
-                  <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0">
+                  <h6 style={{ fontWeight: 600, color: "#111827", marginBottom: 12 }}>학급 관리 로그</h6>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
                       <thead>
                         <tr>
-                          <th style={thStyle}>일시</th>
-                          <th style={thStyle}>작업</th>
-                          <th style={thStyle}>내용</th>
-                          <th style={thStyle}>작업자</th>
+                          <th style={TH_STYLE}>일시</th>
+                          <th style={TH_STYLE}>작업</th>
+                          <th style={TH_STYLE}>내용</th>
+                          <th style={TH_STYLE}>작업자</th>
                         </tr>
                       </thead>
                       <tbody>
                         {!classroom.histories?.length ? (
                           <tr>
-                            <td
-                              colSpan={4}
-                              className="text-center py-5 text-muted"
-                            >
+                            <td colSpan={4} style={{ padding: "32px 16px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
                               이력이 없습니다.
                             </td>
                           </tr>
                         ) : (
                           classroom.histories.map((h, i) => (
                             <tr key={i}>
-                              <td className="small text-muted">
-                                {h.createdAt}
-                              </td>
-                              <td>
+                              <td style={{ ...TD_STYLE, color: "#9ca3af", fontSize: 12 }}>{h.createdAt}</td>
+                              <td style={TD_STYLE}>
                                 <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12 }}>
                                   {h.actionType}
                                 </span>
                               </td>
-                              <td className="small">{h.description}</td>
-                              <td>{h.createdBy}</td>
+                              <td style={{ ...TD_STYLE, fontSize: 12 }}>{h.description}</td>
+                              <td style={TD_STYLE}>{h.createdBy}</td>
                             </tr>
                           ))
                         )}
@@ -477,63 +488,26 @@ export default function ClassDetail() {
 
       {/* 수정 모달 */}
       {showEdit && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "var(--white)",
-              borderRadius: 12,
-              width: "100%",
-              maxWidth: 480,
-              margin: "0 16px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                borderBottom: "1px solid var(--border-color)",
-              }}
-            >
-              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
-                학급 정보 수정
-              </h6>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#fff", borderRadius: 12, width: "100%", maxWidth: 480, margin: "0 16px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>학급 정보 수정</h6>
               <button
                 onClick={() => setShowEdit(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: 18,
-                  cursor: "pointer",
-                  color: "var(--text-secondary-light)",
-                }}
+                style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#6b7280" }}
               >
                 ✕
               </button>
             </div>
             <form onSubmit={handleUpdate}>
-              <div style={{ padding: "20px" }}>
+              <div style={{ padding: 20 }}>
                 <div className="row g-3">
                   <div className="col-6">
-                    <label className="form-label fw-semibold">학년</label>
+                    <label style={LABEL_STYLE}>학년</label>
                     <select
                       className="form-select"
                       value={editForm.grade}
-                      onChange={(e) =>
-                        setEditForm((f) => ({ ...f, grade: e.target.value }))
-                      }
+                      onChange={(e) => setEditForm((f) => ({ ...f, grade: e.target.value }))}
                     >
                       <option value="1">1학년</option>
                       <option value="2">2학년</option>
@@ -541,71 +515,52 @@ export default function ClassDetail() {
                     </select>
                   </div>
                   <div className="col-6">
-                    <label className="form-label fw-semibold">반</label>
+                    <label style={LABEL_STYLE}>반</label>
                     <input
                       type="number"
                       className="form-control"
                       value={editForm.classNum}
-                      onChange={(e) =>
-                        setEditForm((f) => ({ ...f, classNum: e.target.value }))
-                      }
+                      onChange={(e) => setEditForm((f) => ({ ...f, classNum: e.target.value }))}
                       required
                     />
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-semibold">운영 상태</label>
+                    <label style={LABEL_STYLE}>운영 상태</label>
                     <select
                       className="form-select"
                       value={editForm.status}
-                      onChange={(e) =>
-                        setEditForm((f) => ({ ...f, status: e.target.value }))
-                      }
+                      onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
                     >
                       <option value="ACTIVE">운영</option>
                       <option value="FINISHED">종료</option>
                     </select>
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-semibold">담임 교사</label>
+                    <label style={LABEL_STYLE}>담임 교사</label>
                     <select
                       className="form-select"
                       value={editForm.teacherUid}
-                      onChange={(e) =>
-                        setEditForm((f) => ({
-                          ...f,
-                          teacherUid: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setEditForm((f) => ({ ...f, teacherUid: e.target.value }))}
                     >
                       <option value="">미배정</option>
                       {availableTeachers.map((t) => (
-                        <option key={t.uid} value={t.uid}>
-                          {t.displayName}
-                        </option>
+                        <option key={t.uid} value={t.uid}>{t.displayName}</option>
                       ))}
                     </select>
                   </div>
                 </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 8,
-                  padding: "12px 20px",
-                  borderTop: "1px solid var(--border-color)",
-                }}
-              >
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 20px", borderTop: "1px solid #e5e7eb" }}>
                 <button
                   type="button"
-                  className="btn btn-outline-secondary"
                   onClick={() => setShowEdit(false)}
+                  style={{ background: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: 8, padding: "5px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                  style={{ background: "#25A194", color: "#fff", border: "none", borderRadius: 8, padding: "5px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
                 >
                   수정 저장
                 </button>

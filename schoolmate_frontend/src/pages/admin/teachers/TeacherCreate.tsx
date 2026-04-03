@@ -4,6 +4,7 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
 import GrantRoleSelect from '@/components/GrantRoleSelect';
+
 const DEPARTMENTS = [
   "교무부",
   "학생부",
@@ -20,6 +21,36 @@ const POSITIONS = [
   "평교사",
   "기간제교사",
 ];
+
+const sectionTitle: React.CSSProperties = {
+  fontWeight: 700,
+  color: "#25A194",
+  fontSize: 16,
+  marginBottom: 16,
+  marginTop: 4,
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontWeight: 600,
+  fontSize: 13,
+  marginBottom: 6,
+  color: "#1a1a2e",
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  border: "1px solid #d1d5db",
+  borderRadius: 8,
+  padding: "8px 12px",
+  fontSize: 14,
+  color: "#374151",
+  outline: "none",
+  boxSizing: "border-box",
+  background: "#fff",
+};
+
+const fieldWrap: React.CSSProperties = { marginBottom: 20 };
 
 export default function TeacherCreate() {
   const navigate = useNavigate();
@@ -55,129 +86,125 @@ export default function TeacherCreate() {
   return (
     <AdminLayout>
       <div style={{ marginBottom: 28 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button onClick={() => navigate(-1)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#6b7280', fontSize: 13 }}>← 뒤로</button>
-            <div>
-              <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>신규 교사 등록</h5>
-              <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>새 교사 계정을 등록합니다.</p>
-            </div>
-          </div>
-        </div>
+        <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>신규 교사 등록</h6>
+        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>새 교사 계정을 등록합니다.</p>
+        <button
+          type="button"
+          onClick={() => navigate(ADMIN_ROUTES.TEACHERS.LIST)}
+          style={{ marginTop: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280", fontSize: 13 }}
+        >
+          ← 목록으로
+        </button>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+        <div style={{ background: "#fff", borderRadius: 12, padding: 24, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
           {submitError && (
-            <div style={{ margin: '16px 24px 0', padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 14 }}>
+            <div style={{ marginBottom: 16, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, color: "#dc2626", fontSize: 14 }}>
               {submitError}
             </div>
           )}
-          <div style={{ padding: 24 }}>
-            <h6 style={{ fontWeight: 700, color: '#25A194', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-              기본 정보
-            </h6>
-            <div className="row g-3" style={{ marginBottom: 24 }}>
-              <div className="col-md-6">
-                <label className="form-label fw-bold">이름</label>
-                <input
-                  className="form-control"
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="성함 입력"
-                />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-bold">이메일 (ID)</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  required
-                  value={form.email}
-                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  placeholder="example@school.com"
-                />
-              </div>
-              <div className="col-md-12">
-                <label className="form-label fw-bold">초기 비밀번호</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  required
-                  value={form.password}
-                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                />
-              </div>
-            </div>
 
-            <h6 style={{ fontWeight: 700, color: '#25A194', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-              직무 정보
-            </h6>
-            <div className="row g-3">
-              <div className="col-md-12">
-                <label className="form-label fw-bold">담당 과목</label>
-                <select
-                  className="form-select"
-                  value={form.subject}
-                  onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-                >
-                  <option value="">-- 과목 선택 (선택 사항) --</option>
-                  {subjects.map((s) => (
-                    <option key={s.code} value={s.code}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-bold">부서</label>
-                <select
-                  className="form-select"
-                  value={form.department}
-                  onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
-                >
-                  <option value="">부서 선택</option>
-                  {DEPARTMENTS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-bold">직책</label>
-                <select
-                  className="form-select"
-                  value={form.position}
-                  onChange={(e) => setForm((f) => ({ ...f, position: e.target.value }))}
-                >
-                  <option value="">직책 선택</option>
-                  {POSITIONS.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+          <h6 style={sectionTitle}>기본 정보</h6>
 
-            <h6 style={{ fontWeight: 700, color: '#25A194', marginBottom: 16, marginTop: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-              권한 설정 (선택)
-            </h6>
-            <div className="row g-3">
-              <GrantRoleSelect
-                value={form.grantedRole}
-                onChange={(v) => setForm((f) => ({ ...f, grantedRole: v }))}
+          <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>이름</label>
+              <input
+                type="text"
+                style={inputStyle}
+                required
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="성함 입력"
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>이메일 (ID)</label>
+              <input
+                type="email"
+                style={inputStyle}
+                required
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="example@school.com"
               />
             </div>
           </div>
+          <div style={{ marginBottom: 32 }}>
+            <label style={labelStyle}>초기 비밀번호</label>
+            <input
+              type="password"
+              style={inputStyle}
+              required
+              value={form.password}
+              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+            />
+          </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '16px 24px', borderTop: '1px solid #e5e7eb' }}>
+          <h6 style={sectionTitle}>직무 정보</h6>
+
+          <div style={fieldWrap}>
+            <label style={labelStyle}>담당 과목</label>
+            <select
+              style={inputStyle}
+              value={form.subject}
+              onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+            >
+              <option value="">-- 과목 선택 (선택 사항) --</option>
+              {subjects.map((s) => (
+                <option key={s.code} value={s.code}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: "flex", gap: 16, marginBottom: 32 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>부서</label>
+              <select
+                style={inputStyle}
+                value={form.department}
+                onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
+              >
+                <option value="">부서 선택</option>
+                {DEPARTMENTS.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>직책</label>
+              <select
+                style={inputStyle}
+                value={form.position}
+                onChange={(e) => setForm((f) => ({ ...f, position: e.target.value }))}
+              >
+                <option value="">직책 선택</option>
+                {POSITIONS.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <h6 style={sectionTitle}>권한 설정 (선택)</h6>
+          <div style={fieldWrap}>
+            <GrantRoleSelect
+              value={form.grantedRole}
+              onChange={(v) => setForm((f) => ({ ...f, grantedRole: v }))}
+            />
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
             <button
               type="button"
               onClick={() => navigate(-1)}
-              style={{ padding: '9px 14px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' }}
+              style={{ background: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: 8, padding: "5px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
             >
               취소
             </button>
             <button
               type="submit"
-              style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              style={{ background: "#25A194", color: "#fff", border: "none", borderRadius: 8, padding: "5px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
             >
               등록 완료
             </button>

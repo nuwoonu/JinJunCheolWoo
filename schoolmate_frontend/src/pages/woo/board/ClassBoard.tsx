@@ -232,10 +232,10 @@ export default function ClassBoard() {
         )}
       </div>
 
-      <div className="row" style={{ alignItems: "stretch" }}>
+      <div className="row" style={{ alignItems: "flex-start" }}>
         {/* ===== 좌측: 통합 카드 (검색바 + 목록) ===== */}
-        <div className="col-12 col-xl-8" style={{ display: "flex", flexDirection: "column" }}>
-          <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 520, borderRadius: 12, overflow: "hidden" }}>
+        <div className="col-12 col-xl-8" style={{ display: "flex", flexDirection: "column", minHeight: "calc(100vh - 12rem)" }}>
+          <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, borderRadius: 12, overflow: "hidden" }}>
 
             {/* [soojin] 검색 영역 — 카드 상단 헤더 */}
             <div

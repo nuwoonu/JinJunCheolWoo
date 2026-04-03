@@ -204,10 +204,10 @@ export default function ParentBoard() {
         )}
       </div>
 
-      <div className="row" style={{ alignItems: "stretch" }}>
+      <div className="row" style={{ alignItems: "flex-start" }}>
         {/* 좌측: 통합 카드 */}
-        <div className="col-12 col-xl-8" style={{ display: "flex", flexDirection: "column" }}>
-          <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 520, borderRadius: 12, overflow: "hidden" }}>
+        <div className="col-12 col-xl-8" style={{ display: "flex", flexDirection: "column", minHeight: "calc(100vh - 12rem)" }}>
+          <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, borderRadius: 12, overflow: "hidden" }}>
 
             {/* 검색 영역 */}
             <div style={{ padding: "12px 16px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 0, background: "#fff" }}>

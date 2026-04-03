@@ -257,16 +257,8 @@ export default function ParentList() {
 
           {/* [soojin] 테이블 카드 — ServiceNoticeList 카드 스타일 */}
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-                <colgroup>
-                  <col style={{ width: 100 }} />
-                  <col />
-                  <col style={{ width: 130 }} />
-                  <col style={{ width: 70 }} />
-                  <col style={{ width: 140 }} />
-                  <col style={{ width: 90 }} />
-                </colgroup>
+            {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
                 <thead>
                   <tr>
                     <th style={{ ...th, paddingLeft: 24 }}>이름</th>
@@ -334,7 +326,6 @@ export default function ParentList() {
                   )}
                 </tbody>
               </table>
-            </div>
           </div>
 
           {/* [soojin] 페이지네이션 카드 밖, 우측 정렬, 정사각형 버튼 */}

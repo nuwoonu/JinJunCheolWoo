@@ -407,19 +407,9 @@ export default function TeacherList() {
             minHeight: 0,
           }}
         >
-          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-              <colgroup>
-                <col style={{ width: 50 }} />
-                <col style={{ width: 130 }} />
-                <col style={{ width: 110 }} />
-                <col style={{ width: 200 }} />
-                <col style={{ width: 160 }} />
-                <col style={{ width: 120 }} />
-                <col style={{ width: 100 }} />
-                <col style={{ width: 120 }} />
-                <col style={{ width: 100 }} />
-              </colgroup>
+          {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+          <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto" }}>
               <thead>
                 <tr>
                   <th

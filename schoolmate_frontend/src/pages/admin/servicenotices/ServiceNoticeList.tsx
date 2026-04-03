@@ -165,16 +165,9 @@ export default function ServiceNoticeList() {
 
         {/* [soojin] 카드: 스크롤 div 추가 */}
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto', overflowY: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-              <colgroup>
-                <col style={{ width: 64 }} />
-                <col />
-                <col style={{ width: 100 }} />
-                <col style={{ width: 110 }} />
-                <col style={{ width: 64 }} />
-                <col style={{ width: 120 }} />
-              </colgroup>
+          {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+          <div style={{ overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
               <thead>
                 <tr>
                   <th style={{ ...th, textAlign: 'center' }}>번호</th>

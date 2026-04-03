@@ -140,18 +140,9 @@ export default function TeacherList() {
         {/* [soojin] 카드: flex:1 화면 꽉 채움 */}
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {/* [soojin] 스크롤 div: flex:1 overflowY:auto */}
-          <div style={{ flex: 1, overflowX: 'auto', overflowY: 'auto', minHeight: 0 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-              <colgroup>
-                <col style={{ width: 160 }} />
-                <col style={{ width: 200 }} />
-                <col style={{ width: 100 }} />
-                <col style={{ width: 120 }} />
-                <col style={{ width: 120 }} />
-                <col style={{ width: 100 }} />
-                <col style={{ width: 80 }} />
-                <col style={{ width: 60 }} />
-              </colgroup>
+          {/* [soojin] overflowX 래퍼 제거, tableLayout auto로 변경해 브라우저가 컬럼 너비 자동 분배 */}
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
               <thead>
                 <tr>
                   {['이름', '이메일', '사번', '담당 과목', '부서', '직책', '상태', '상세'].map(h => (

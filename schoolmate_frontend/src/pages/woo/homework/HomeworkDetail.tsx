@@ -222,13 +222,25 @@ export default function HomeworkDetailPage() {
 
   return (
     <DashboardLayout>
-      {/* 브레드크럼 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h6 className="fw-semibold mb-0">과제</h6>
-          <p className="text-neutral-600 mt-4 mb-0">과제 상세</p>
-        </div>
-      </div>
+      {/* [soojin] 브레드크럼 제거 → 목록으로 버튼으로 교체 */}
+      <button
+        onClick={() => navigate("/homework")}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "0.375rem",
+          marginBottom: "1.5rem",
+          padding: "0.375rem 0.875rem",
+          border: "1px solid var(--neutral-200)",
+          borderRadius: "0.5rem",
+          background: "none",
+          cursor: "pointer",
+          fontSize: "0.875rem",
+          color: "var(--neutral-700)",
+        }}
+      >
+        ← 과제 목록으로
+      </button>
 
       {/* 과제 내용 카드 */}
       <div className="card radius-12 mb-24">

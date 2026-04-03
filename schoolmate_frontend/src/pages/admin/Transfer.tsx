@@ -187,8 +187,8 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
               검색 결과가 없습니다.
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            // [soojin] overflowX 래퍼 제거 → 브라우저 자동 컬럼 분배
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: "#f9fafb" }}>
                     {["학교명", "종류", "관할 교육청", "주소", ""].map((h) => (
@@ -242,7 +242,6 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
                   ))}
                 </tbody>
               </table>
-            </div>
           )}
 
           {/* 페이지네이션 */}

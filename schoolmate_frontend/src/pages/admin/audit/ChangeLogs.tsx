@@ -183,16 +183,9 @@ export default function ChangeLogs() {
         {/* [soojin] 카드: flex:1로 남은 공간 채우기 */}
         <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
           {/* [soojin] 스크롤 div: 내부에서만 스크롤 */}
-          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-              {/* [soojin] 작업 유형, 대상 컬럼 폭 확대 */}
-              <colgroup>
-                <col style={{ width: 160 }} />
-                <col style={{ width: 150 }} />
-                <col style={{ width: 160 }} />
-                <col style={{ width: 200 }} />
-                <col />
-              </colgroup>
+          {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
+          <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto" }}>
               <thead>
                 <tr>
                   <th style={th}>일시</th>

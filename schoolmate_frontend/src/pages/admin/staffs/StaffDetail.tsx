@@ -175,13 +175,16 @@ export default function StaffDetail() {
 
   return (
     <AdminLayout msg={msg} error={error}>
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => navigate(ADMIN_ROUTES.STAFFS.LIST)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#6b7280', fontSize: 13 }}>← 뒤로</button>
-          <div>
-            <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>교직원 상세 정보</h5>
-          </div>
-        </div>
+      <div style={{ marginBottom: 24 }}>
+        <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>교직원 상세 정보</h6>
+        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>교직원 정보를 확인하고 수정합니다.</p>
+        <button
+          type="button"
+          onClick={() => navigate(ADMIN_ROUTES.STAFFS.LIST)}
+          style={{ marginTop: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 10px", cursor: "pointer", color: "#6b7280", fontSize: 13 }}
+        >
+          ← 목록으로
+        </button>
       </div>
 
       <div className="row">
