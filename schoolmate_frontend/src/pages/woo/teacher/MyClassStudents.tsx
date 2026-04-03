@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
-// [woo] /teacher/myclass/students - 학생 관리 페이지
+// [soojin] 학급 현황 + 학생 관리 페이지 통합: 2단 레이아웃 (학급정보+승인대기 / 학생목록)
 
 interface Student {
   studentId: number;
@@ -11,6 +10,10 @@ interface Student {
   studentNumber: number;
   phone?: string;
   email?: string;
+  // [soojin] 학생 관리 테이블 컬럼 추가
+  gender?: string;
+  birthDate?: string;
+  parentName?: string;
 }
 
 interface ClassInfo {
@@ -22,13 +25,15 @@ interface ClassInfo {
   students: Student[];
 }
 
-// [woo] 승인대기 학생 인터페이스
+// [soojin] 승인대기 학생 - 학부모 성함, 신청일 추가
 interface PendingStudent {
   studentInfoId: number;
   name: string;
   email: string;
   phone: string;
   status: string;
+  parentName?: string;
+  createdAt?: string;
 }
 
 const EMPTY_ADD_FORM = {
@@ -41,29 +46,48 @@ const EMPTY_ADD_FORM = {
   birthDate: "",
 };
 
+// [soojin] 성별 한글 변환
+const genderLabel = (gender?: string) => {
+  if (gender === "MALE") return "남";
+  if (gender === "FEMALE") return "여";
+  return "-";
+};
+
+// [soojin] 신청일 포맷 (ISO → YYYY.MM.DD)
+const formatDate = (dateStr?: string) => {
+  if (!dateStr || dateStr === "-") return "-";
+  try {
+    return dateStr.slice(0, 10).replace(/-/g, ".");
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function TeacherMyClassStudents() {
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // [soojin] 검색: input 입력값 / 실제 적용된 검색어 분리 (버튼 클릭 시 적용)
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [filterField, setFilterField] = useState("전체");
+  const [searchGender, setSearchGender] = useState("MALE");
+
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState(EMPTY_ADD_FORM);
   const [addError, setAddError] = useState<string | null>(null);
   const [addSaving, setAddSaving] = useState(false);
 
-  // [woo] 승인대기 학생 상태
   const [pendingStudents, setPendingStudents] = useState<PendingStudent[]>([]);
   const [assigningId, setAssigningId] = useState<number | null>(null);
-  // [woo] 배정 모달 상태
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignTarget, setAssignTarget] = useState<PendingStudent | null>(null);
   const [assignNum, setAssignNum] = useState("");
-  // [woo] 반번호 수정 상태
   const [editingNum, setEditingNum] = useState<string>("");
   const [editSaving, setEditSaving] = useState(false);
 
-  // [woo] 학급 정보 조회
   const fetchClassInfo = () => {
     api
       .get("/teacher/myclass")
@@ -79,7 +103,6 @@ export default function TeacherMyClassStudents() {
       .finally(() => setLoading(false));
   };
 
-  // [woo] 승인대기 학생 조회
   const fetchPendingStudents = () => {
     api
       .get("/teacher/myclass/pending-students")
@@ -94,13 +117,28 @@ export default function TeacherMyClassStudents() {
 
   // [woo] 모달 열릴 때 배경 스크롤 방지
   useEffect(() => {
-    const open = showAssignModal || showAddModal || !!selectedStudent
-    document.body.style.overflow = open ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    const open = showAssignModal || showAddModal || !!selectedStudent;
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [showAssignModal, showAddModal, selectedStudent]);
 
   const filtered =
-    classInfo?.students.filter((s) => s.name.includes(search) || String(s.studentNumber).includes(search)) ?? [];
+    classInfo?.students.filter((s) => {
+      if (filterField === "성별") return s.gender === searchGender;
+      if (!search) return true;
+      switch (filterField) {
+        case "이름":
+          return s.name.includes(search);
+        case "이메일":
+          return (s.email ?? "").includes(search);
+        case "연락처":
+          return (s.phone ?? "").includes(search);
+        default:
+          return s.name.includes(search) || (s.email ?? "").includes(search) || (s.phone ?? "").includes(search);
+      }
+    }) ?? [];
 
   const setField = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setAddForm((f) => ({ ...f, [field]: e.target.value }));
@@ -201,29 +239,60 @@ export default function TeacherMyClassStudents() {
     }
   };
 
+  // 공통 th 스타일
+  const thStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#6b7280",
+    background: "#f9fafb",
+    borderBottom: "1px solid #e5e7eb",
+    whiteSpace: "nowrap",
+    textAlign: "left",
+  };
+
+  // 공통 td 스타일
+  const tdStyle: React.CSSProperties = {
+    padding: "11px 12px",
+    fontSize: 13,
+    color: "#374151",
+    borderBottom: "1px solid #f3f4f6",
+    verticalAlign: "middle",
+  };
+
   return (
     <DashboardLayout>
       {/* 브레드크럼 */}
       <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
         <div>
           <h6 className="fw-semibold mb-0">나의 학급</h6>
-          <p className="text-neutral-600 mt-4 mb-0">학생 관리</p>
+          <p className="text-neutral-600 mt-4 mb-0">학급 정보, 학생 정보, 학생 승인 관리 페이지입니다.</p>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">
-            <Link to="/teacher/myclass" className="hover-text-primary">
-              나의 학급
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">학생 관리</li>
-        </ul>
+        {classInfo && (
+          <button
+            type="button"
+            style={{
+              padding: "5px 12px",
+              background: "#25A194",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#fff",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+            onClick={() => {
+              setShowAddModal(true);
+              setAddError(null);
+              setAddForm(EMPTY_ADD_FORM);
+            }}
+          >
+            <i className="ri-user-add-line" style={{ fontSize: 15 }} /> 학생 추가
+          </button>
+        )}
       </div>
 
       {loading && <div className="text-center py-48 text-secondary-light">불러오는 중...</div>}
@@ -243,173 +312,423 @@ export default function TeacherMyClassStudents() {
         </div>
       )}
 
-      {/* 학급 헤더 */}
+      {/* [soojin] 2단 레이아웃: 왼쪽(학급정보 + 승인대기) / 오른쪽(학생목록) */}
       {!loading && classInfo && (
-        <>
-          <div className="card radius-12 mb-24">
-            <div className="card-body p-20">
-              <div className="d-flex flex-wrap align-items-center justify-content-between gap-16">
-                <div className="d-flex align-items-center gap-16">
-                  <div className="w-48-px h-48-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center">
-                    <iconify-icon icon="mdi:google-classroom" className="text-primary-600 text-2xl" />
+        <div className="row align-items-stretch" style={{ minHeight: "calc(100vh - 180px)" }}>
+          {/* ── 왼쪽 ── */}
+          <div className="col-12 col-lg-4 mb-24 d-flex flex-column">
+            {/* 학급 정보 카드 */}
+            <div className={`card radius-12 mb-20${pendingStudents.length === 0 ? " flex-grow-1" : ""}`}>
+              <div className="card-body p-24">
+                {/* 학급 요약 내부 카드 */}
+                <div
+                  style={{
+                    background: "#f0fdf4",
+                    border: "1px solid #bbf7d0",
+                    borderRadius: 10,
+                    padding: "14px 16px",
+                    marginBottom: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <div
+                    className="d-flex justify-content-center align-items-center rounded-circle bg-primary-100"
+                    style={{ width: 44, height: 44, flexShrink: 0 }}
+                  >
+                    <iconify-icon icon="mdi:google-classroom" className="text-primary-600" style={{ fontSize: 22 }} />
                   </div>
                   <div>
-                    <h6 className="mb-0">
-                      {classInfo.year}학년도 {classInfo.grade}학년 {classInfo.classNum}반
-                    </h6>
-                    <span className="text-secondary-light text-sm">
-                      담임: {classInfo.homeroomTeacherName ?? "-"} | 총 {classInfo.totalStudents}명
-                    </span>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#15803d" }}>
+                      {classInfo.grade}학년 {classInfo.classNum}반
+                    </div>
+                    <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{classInfo.year}학년도</div>
                   </div>
                 </div>
-                <Link to="/teacher/myclass" className="btn btn-outline-neutral-300 radius-8">
-                  <iconify-icon icon="mdi:arrow-left" className="me-4" />
-                  학급 현황
-                </Link>
+
+                {/* 정보 항목 리스트 */}
+                <div className="d-flex flex-column gap-10">
+                  {[
+                    { icon: "mdi:account-tie", label: "담임 교사", value: classInfo.homeroomTeacherName ?? "-" },
+                    { icon: "mdi:account-group", label: "총 학생 수", value: `${classInfo.totalStudents}명` },
+                    // [soojin] 승인 대기 수 - pendingStudents 이미 fetching 중이라 추가 API 불필요
+                    {
+                      icon: "mdi:account-clock",
+                      label: "승인 대기",
+                      value: `${pendingStudents.length}명`,
+                      highlight: pendingStudents.length > 0,
+                    },
+                  ].map(({ icon, label, value, highlight }) => (
+                    <div key={label} className="d-flex align-items-center justify-content-between">
+                      <span className="text-secondary-light text-sm d-flex align-items-center gap-6">
+                        <iconify-icon icon={icon} style={{ fontSize: 15 }} />
+                        {label}
+                      </span>
+                      <span className="fw-semibold text-sm" style={{ color: highlight ? "#d97706" : "#111827" }}>
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* [woo] 승인대기 학생 목록 */}
-          {pendingStudents.length > 0 && (
-            <div className="card radius-12 mb-24">
-              <div className="card-header py-16 px-24 border-bottom d-flex align-items-center gap-10">
-                <div className="w-32-px h-32-px bg-warning-100 rounded-circle d-flex justify-content-center align-items-center">
-                  <iconify-icon icon="mdi:account-clock" className="text-warning-600" />
-                </div>
-                <h6 className="mb-0">승인대기 학생</h6>
-                <span className="badge bg-warning-100 text-warning-600 px-10 py-4 radius-4 text-xs">
-                  {pendingStudents.length}명
-                </span>
-              </div>
-              <div className="card-body p-0">
-                <div className="table-responsive">
-                  <table className="table bordered-table mb-0">
-                    <thead>
-                      <tr>
-                        <th scope="col">이름</th>
-                        <th scope="col">이메일</th>
-                        <th scope="col">연락처</th>
-                        <th scope="col" className="text-center">
-                          상태
-                        </th>
-                        <th scope="col" className="text-center" style={{ width: 140 }}>
-                          배정
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendingStudents.map((s) => (
-                        <tr key={s.studentInfoId}>
-                          <td>
-                            <div className="d-flex align-items-center gap-10">
-                              <div className="w-36-px h-36-px bg-warning-100 rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                                <iconify-icon icon="mdi:account-clock" className="text-warning-600" />
-                              </div>
-                              <span className="fw-medium">{s.name}</span>
+            {/* [soojin] 승인대기 학생 - 큰 카드 안에 작은 카드 목록 */}
+            {pendingStudents.length > 0 && (
+              <div className="card radius-12 flex-grow-1" style={{ border: "1px solid #fde68a" }}>
+                <div className="card-body p-20">
+                  <div className="d-flex align-items-center gap-8 mb-16">
+                    <span className="fw-bold text-sm" style={{ color: "#111827" }}>
+                      승인대기 학생
+                    </span>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: 20,
+                        height: 20,
+                        padding: "0 6px",
+                        background: "#fef3c7",
+                        color: "#d97706",
+                        borderRadius: 10,
+                        fontSize: 11,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {pendingStudents.length}
+                    </span>
+                  </div>
+
+                  <div className="d-flex flex-column gap-10">
+                    {pendingStudents.map((s) => (
+                      <div
+                        key={s.studentInfoId}
+                        className="card radius-8"
+                        style={{ border: "1px solid #fde68a", background: "#fffbeb" }}
+                      >
+                        <div className="card-body p-16">
+                          <div className="d-flex align-items-start gap-12">
+                            {/* 아바타 아이콘 */}
+                            <div
+                              style={{
+                                width: 40,
+                                height: 40,
+                                background: "#fef3c7",
+                                borderRadius: "50%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <i className="ri-time-line" style={{ fontSize: 16, color: "#d97706" }} />
                             </div>
-                          </td>
-                          <td className="text-secondary-light">{s.email}</td>
-                          <td className="text-secondary-light">{s.phone}</td>
-                          <td className="text-center">
-                            <span className="badge bg-warning-100 text-warning-600 px-8 py-4 radius-4 text-xs">
-                              {s.status}
-                            </span>
-                          </td>
-                          <td className="text-center">
-                            {/* [woo] 본인 학급으로 배정 버튼 */}
+
+                            {/* 학생 정보 */}
+                            <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                              <div className="fw-semibold mb-4" style={{ fontSize: 14, color: "#111827" }}>
+                                {s.name}
+                              </div>
+                              <div className="text-secondary-light" style={{ fontSize: 12, lineHeight: 1.6 }}>
+                                <div>학부모: {s.parentName ?? "-"}</div>
+                                <div>연락처: {s.phone}</div>
+                                <div
+                                  style={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  이메일: {s.email}
+                                </div>
+                                <div>신청일: {formatDate(s.createdAt)}</div>
+                              </div>
+                            </div>
+
+                            {/* 배정하기 버튼 - 상단 우측 */}
                             <button
                               type="button"
-                              className="btn btn-sm btn-success-600 radius-4 d-inline-flex align-items-center gap-4"
+                              style={{
+                                padding: "5px 12px",
+                                background: "#16a34a",
+                                border: "none",
+                                borderRadius: 6,
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#fff",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                flexShrink: 0,
+                                alignSelf: "flex-start",
+                                opacity: assigningId === s.studentInfoId ? 0.6 : 1,
+                              }}
                               onClick={() => openAssignModal(s)}
                               disabled={assigningId === s.studentInfoId}
                             >
-                              <iconify-icon icon="mdi:account-plus" />
-                              나의 학급으로 배정
+                              <i className="ri-user-add-line" style={{ fontSize: 13 }} />
+                              배정하기
                             </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+                {/* card-body */}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* [woo] 학생 목록 */}
-          <div className="card radius-12">
-            <div className="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
-              <h6 className="mb-0">학생 목록</h6>
-              <div className="d-flex gap-8 align-items-center">
-                <input
-                  type="text"
-                  className="form-control w-auto"
-                  placeholder="이름 또는 번호 검색"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  style={{ maxWidth: 200 }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
-                  onClick={() => {
-                    setShowAddModal(true);
-                    setAddError(null);
-                    setAddForm(EMPTY_ADD_FORM);
+          {/* ── 오른쪽: 학생목록 ── */}
+          <div className="col-12 col-lg-8 mb-24 d-flex flex-column">
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 12,
+                border: "1px solid #e5e7eb",
+                overflow: "hidden",
+                flex: 1,
+              }}
+            >
+              {/* 카드 헤더 */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 10,
+                  padding: "12px 20px",
+                  borderBottom: "1px solid #e5e7eb",
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "#111827",
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 8,
                   }}
                 >
-                  <i className="ri-user-add-line" /> 학생 추가
-                </button>
+                  학생 목록
+                  <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>
+                    전체 {classInfo.totalStudents}명
+                  </span>
+                </span>
+
+                {/* 검색 필터 영역 */}
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                  {/* 필드 선택 드롭다운 */}
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <select
+                      style={{
+                        padding: "5px 28px 5px 10px",
+                        border: "1px solid #d1d5db",
+                        borderRadius: 6,
+                        fontSize: 13,
+                        background: "#fff",
+                        appearance: "none",
+                        cursor: "pointer",
+                        color: "#374151",
+                      }}
+                      value={filterField}
+                      onChange={(e) => {
+                        setFilterField(e.target.value);
+                        setSearchInput("");
+                        setSearch("");
+                      }}
+                    >
+                      <option>전체</option>
+                      <option>이름</option>
+                      <option>성별</option>
+                      <option>이메일</option>
+                      <option>연락처</option>
+                    </select>
+                    <i
+                      className="ri-arrow-down-s-line"
+                      style={{ position: "absolute", right: 6, pointerEvents: "none", color: "#6b7280", fontSize: 14 }}
+                    />
+                  </div>
+
+                  {/* 성별 선택 or 텍스트 입력 */}
+                  {filterField === "성별" ? (
+                    <select
+                      style={{
+                        padding: "5px 28px 5px 10px",
+                        border: "1px solid #d1d5db",
+                        borderRadius: 6,
+                        fontSize: 13,
+                        background: "#fff",
+                        appearance: "none",
+                        cursor: "pointer",
+                        color: "#374151",
+                        position: "relative",
+                      }}
+                      value={searchGender}
+                      onChange={(e) => setSearchGender(e.target.value)}
+                    >
+                      <option value="MALE">남</option>
+                      <option value="FEMALE">여</option>
+                    </select>
+                  ) : (
+                    <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                      <i
+                        className="bi bi-search"
+                        style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
+                      />
+                      <input
+                        type="text"
+                        style={{
+                          padding: "5px 8px 5px 28px",
+                          border: "1px solid #d1d5db",
+                          borderRadius: 6,
+                          fontSize: 13,
+                          width: 160,
+                          background: "#fff",
+                        }}
+                        placeholder={filterField === "전체" ? "이름, 이메일, 연락처" : `${filterField} 검색`}
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") setSearch(searchInput);
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* 텍스트 필드일 때만 검색 버튼 */}
+                  {filterField !== "성별" && (
+                    <button
+                      type="button"
+                      style={{
+                        padding: "5px 10px",
+                        background: "#25A194",
+                        border: "none",
+                        borderRadius: 6,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#fff",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setSearch(searchInput)}
+                    >
+                      검색
+                    </button>
+                  )}
+
+                  {/* 초기화 버튼 */}
+                  <button
+                    type="button"
+                    style={{
+                      padding: "5px 10px",
+                      background: "#fff",
+                      border: "1px solid #d1d5db",
+                      borderRadius: 6,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#6b7280",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setSearchInput("");
+                      setSearch("");
+                      setFilterField("전체");
+                      setSearchGender("MALE");
+                    }}
+                  >
+                    초기화
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="card-body p-24">
-              <div className="table-responsive">
-                <table className="table bordered-table mb-0">
+
+              {/* [soojin] 학생목록 테이블 - 번호, 이름, 성별, 생년월일, 학부모, 연락처, 이메일, 상세 */}
+              <div>
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto" }}>
                   <thead>
                     <tr>
-                      <th scope="col" className="text-center" style={{ width: 80 }}>
-                        번호
-                      </th>
-                      <th scope="col">이름</th>
-                      <th scope="col">연락처</th>
-                      <th scope="col">이메일</th>
-                      <th scope="col" className="text-center" style={{ width: 120 }}>
-                        상세
-                      </th>
+                      {["번호", "이름", "성별", "생년월일", "학부모", "연락처", "이메일", "상세"].map((label) => (
+                        <th key={label} style={thStyle}>
+                          {label}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-24 text-secondary-light">
-                          등록된 학생이 없습니다.
+                        <td
+                          colSpan={8}
+                          style={{
+                            padding: "32px 16px",
+                            textAlign: "center",
+                            fontSize: 13,
+                            color: "#9ca3af",
+                          }}
+                        >
+                          {search ? "검색 결과가 없습니다." : "등록된 학생이 없습니다."}
                         </td>
                       </tr>
                     ) : (
                       filtered.map((s) => (
                         <tr key={s.studentId}>
-                          <td className="text-center">{s.studentNumber}</td>
-                          <td>
-                            <div className="d-flex align-items-center gap-12">
-                              <div className="w-40-px h-40-px bg-neutral-100 rounded-circle d-flex justify-content-center align-items-center">
-                                <iconify-icon icon="mdi:account" className="text-neutral-500 text-xl" />
+                          <td style={{ ...tdStyle, color: "#6b7280" }}>{s.studentNumber}</td>
+                          <td style={tdStyle}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  background: "#f3f4f6",
+                                  borderRadius: "50%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <i className="ri-user-line" style={{ fontSize: 13, color: "#6b7280" }} />
                               </div>
-                              <span className="fw-medium">{s.name}</span>
+                              <span style={{ fontWeight: 600 }}>{s.name}</span>
                             </div>
                           </td>
-                          <td>{s.phone ?? "-"}</td>
-                          <td>{s.email ?? "-"}</td>
-                          <td className="text-center">
+                          <td style={{ ...tdStyle, color: "#6b7280" }}>{genderLabel(s.gender)}</td>
+                          <td style={{ ...tdStyle, color: "#6b7280" }}>{s.birthDate ?? "-"}</td>
+                          <td style={{ ...tdStyle, color: "#6b7280" }}>{s.parentName ?? "-"}</td>
+                          <td style={{ ...tdStyle, color: "#6b7280" }}>{s.phone ?? "-"}</td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              color: "#6b7280",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {s.email ?? "-"}
+                          </td>
+                          <td style={tdStyle}>
                             <button
                               type="button"
-                              className="btn btn-sm btn-outline-primary-600 radius-4"
+                              style={{
+                                padding: "4px 10px",
+                                background: "#fff",
+                                border: "1px solid #d1d5db",
+                                borderRadius: 6,
+                                fontSize: 12,
+                                color: "#374151",
+                                cursor: "pointer",
+                              }}
                               onClick={() => {
                                 setSelectedStudent(s);
                                 setEditingNum(String(s.studentNumber));
                               }}
                             >
-                              <iconify-icon icon="mdi:eye-outline" />
                               보기
                             </button>
                           </td>
@@ -421,10 +740,10 @@ export default function TeacherMyClassStudents() {
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
-      {/* [woo] 학급 배정 모달 - 반번호 입력 후 배정 */}
+      {/* [woo] 학급 배정 모달 */}
       {showAssignModal && assignTarget && (
         <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered modal-sm">
@@ -493,7 +812,7 @@ export default function TeacherMyClassStudents() {
         </div>
       )}
 
-      {/* [woo] 학생 추가 모달 - 본인 학급 고정 */}
+      {/* [woo] 학생 추가 모달 */}
       {showAddModal && (
         <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">
@@ -605,7 +924,7 @@ export default function TeacherMyClassStudents() {
         </div>
       )}
 
-      {/* [woo] 학생 상세 모달 - 반번호 수정 기능 포함 */}
+      {/* [woo] 학생 상세 모달 */}
       {selectedStudent && (
         <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">

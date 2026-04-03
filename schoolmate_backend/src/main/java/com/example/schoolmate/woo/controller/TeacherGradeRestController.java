@@ -50,10 +50,9 @@ public class TeacherGradeRestController {
     public ResponseEntity<List<GradeResponseDTO>> getClassGrades(
             @PathVariable Long classroomId,
             @PathVariable Long subjectId,
-            @RequestParam Semester semester,
-            @RequestParam int schoolYear) {
+            @RequestParam Long termId) {
         return ResponseEntity.ok(
-                teacherGradeService.getGradesByClassroomAndSubject(classroomId, subjectId, semester, schoolYear));
+                teacherGradeService.getGradesByClassroomAndSubject(classroomId, subjectId, termId));
     }
 
     // [woo] 성적 입력 (upsert)

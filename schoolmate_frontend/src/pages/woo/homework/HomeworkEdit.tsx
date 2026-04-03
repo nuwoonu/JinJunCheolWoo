@@ -1,105 +1,107 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import api from '../../../api/auth'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import api from "../../../api/auth";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 // [woo] 과제 수정 페이지 (교사 전용)
 // - GET /api/homework/{id} 로 기존 데이터 불러오기
 // - PUT /api/homework/{id} (multipart/form-data) 로 수정 전송
 
 interface ClassroomOption {
-  id: number
-  name: string
-  grade: number
-  classNum: number
+  id: number;
+  name: string;
+  grade: number;
+  classNum: number;
 }
 
 export default function HomeworkEdit() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const [classrooms, setClassrooms] = useState<ClassroomOption[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [classrooms, setClassrooms] = useState<ClassroomOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    title: '',
-    content: '',
-    classroomId: '',
-    dueDate: '',
-    maxScore: '100',
-  })
+    title: "",
+    content: "",
+    classroomId: "",
+    dueDate: "",
+    maxScore: "100",
+  });
   // [woo] 기존 첨부파일 정보 (수정하지 않으면 그대로 유지)
-  const [existingFile, setExistingFile] = useState<{ url: string; name: string } | null>(null)
-  const [newFile, setNewFile] = useState<File | null>(null)
-  const [removeFile, setRemoveFile] = useState(false)
+  const [existingFile, setExistingFile] = useState<{ url: string; name: string } | null>(null);
+  const [newFile, setNewFile] = useState<File | null>(null);
+  const [removeFile, setRemoveFile] = useState(false);
 
   // [woo] 학급 목록 + 기존 과제 데이터 병렬 로드
   useEffect(() => {
-    Promise.all([
-      api.get('/homework/classrooms'),
-      api.get(`/homework/${id}`),
-    ])
+    Promise.all([api.get("/homework/classrooms"), api.get(`/homework/${id}`)])
       .then(([classRes, hwRes]) => {
-        setClassrooms(classRes.data)
-        const hw = hwRes.data
+        setClassrooms(classRes.data);
+        const hw = hwRes.data;
         setForm({
-          title: hw.title ?? '',
-          content: hw.content ?? '',
-          classroomId: String(hw.classroomId ?? ''),
-          dueDate: hw.dueDate?.slice(0, 10) ?? '',
+          title: hw.title ?? "",
+          content: hw.content ?? "",
+          classroomId: String(hw.classroomId ?? ""),
+          dueDate: hw.dueDate?.slice(0, 10) ?? "",
           maxScore: String(hw.maxScore ?? 100),
-        })
+        });
         if (hw.attachmentUrl) {
-          setExistingFile({ url: hw.attachmentUrl, name: hw.attachmentOriginalName ?? hw.attachmentUrl })
+          setExistingFile({ url: hw.attachmentUrl, name: hw.attachmentOriginalName ?? hw.attachmentUrl });
         }
       })
-      .catch(() => alert('과제 정보를 불러올 수 없습니다.'))
-      .finally(() => setLoading(false))
-  }, [id])
+      .catch(() => alert("과제 정보를 불러올 수 없습니다."))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const handleSubmit = async () => {
-    if (!form.title.trim()) return alert('제목을 입력해주세요.')
-    if (!form.content.trim()) return alert('내용을 입력해주세요.')
-    if (!form.classroomId) return alert('대상 학급을 선택해주세요.')
-    if (!form.dueDate) return alert('마감일을 선택해주세요.')
+    if (!form.title.trim()) return alert("제목을 입력해주세요.");
+    if (!form.content.trim()) return alert("내용을 입력해주세요.");
+    if (!form.classroomId) return alert("대상 학급을 선택해주세요.");
+    if (!form.dueDate) return alert("마감일을 선택해주세요.");
 
-    setSaving(true)
+    setSaving(true);
     try {
-      const formData = new FormData()
+      const formData = new FormData();
       // [woo] JSON 데이터를 Blob으로 전송 (Spring @RequestPart("data") 대응)
-      const jsonBlob = new Blob([JSON.stringify({
-        title: form.title,
-        content: form.content,
-        classroomId: Number(form.classroomId),
-        dueDate: form.dueDate + 'T23:59:59',
-        maxScore: form.maxScore ? Number(form.maxScore) : 100,
-      })], { type: 'application/json' })
-      formData.append('data', jsonBlob)
+      const jsonBlob = new Blob(
+        [
+          JSON.stringify({
+            title: form.title,
+            content: form.content,
+            classroomId: Number(form.classroomId),
+            dueDate: form.dueDate + "T23:59:59",
+            maxScore: form.maxScore ? Number(form.maxScore) : 100,
+          }),
+        ],
+        { type: "application/json" },
+      );
+      formData.append("data", jsonBlob);
 
       // [woo] 새 파일 첨부 또는 기존 파일 유지 (removeFile=true면 파일 없이 전송)
       if (newFile) {
-        formData.append('file', newFile)
+        formData.append("file", newFile);
       }
 
       await api.put(`/homework/${id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      alert('과제가 수정되었습니다.')
-      navigate(`/homework/${id}`)
+      alert("과제가 수정되었습니다.");
+      navigate(`/homework/${id}`);
     } catch (err: any) {
-      alert(err.response?.data || '과제 수정에 실패했습니다.')
+      alert(err.response?.data || "과제 수정에 실패했습니다.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className="text-center py-40 text-secondary-light">불러오는 중...</div>
       </DashboardLayout>
-    )
+    );
   }
 
   return (
@@ -110,24 +112,6 @@ export default function HomeworkEdit() {
           <h6 className="fw-semibold mb-0">과제</h6>
           <p className="text-neutral-600 mt-4 mb-0">과제 수정</p>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
-              홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">
-            <Link to="/homework" className="hover-text-primary">과제</Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">
-            <Link to={`/homework/${id}`} className="hover-text-primary">상세</Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">수정</li>
-        </ul>
       </div>
 
       <div className="card radius-12">
@@ -143,7 +127,7 @@ export default function HomeworkEdit() {
               className="form-control radius-8"
               placeholder="과제 제목을 입력하세요"
               value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             />
           </div>
 
@@ -154,11 +138,13 @@ export default function HomeworkEdit() {
               <select
                 className="form-select radius-8"
                 value={form.classroomId}
-                onChange={e => setForm(f => ({ ...f, classroomId: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, classroomId: e.target.value }))}
               >
                 <option value="">학급을 선택하세요</option>
-                {classrooms.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                {classrooms.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -169,7 +155,7 @@ export default function HomeworkEdit() {
                 className="form-control radius-8"
                 value={form.dueDate}
                 min={new Date().toISOString().slice(0, 10)}
-                onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
               />
             </div>
             {/* [woo] 최대 점수 입력 */}
@@ -181,7 +167,7 @@ export default function HomeworkEdit() {
                 placeholder="100"
                 min={1}
                 value={form.maxScore}
-                onChange={e => setForm(f => ({ ...f, maxScore: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, maxScore: e.target.value }))}
               />
             </div>
           </div>
@@ -194,7 +180,7 @@ export default function HomeworkEdit() {
               rows={12}
               placeholder="과제 내용을 입력하세요"
               value={form.content}
-              onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
             />
           </div>
 
@@ -222,9 +208,9 @@ export default function HomeworkEdit() {
             <input
               type="file"
               className="form-control radius-8"
-              onChange={e => {
-                setNewFile(e.target.files?.[0] ?? null)
-                setRemoveFile(false)
+              onChange={(e) => {
+                setNewFile(e.target.files?.[0] ?? null);
+                setRemoveFile(false);
               }}
             />
             {newFile && (
@@ -253,17 +239,12 @@ export default function HomeworkEdit() {
             >
               취소
             </button>
-            <button
-              type="button"
-              className="btn btn-primary-600 radius-8"
-              onClick={handleSubmit}
-              disabled={saving}
-            >
-              {saving ? '저장 중...' : '수정하기'}
+            <button type="button" className="btn btn-primary-600 radius-8" onClick={handleSubmit} disabled={saving}>
+              {saving ? "저장 중..." : "수정하기"}
             </button>
           </div>
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }

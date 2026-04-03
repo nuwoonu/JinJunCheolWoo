@@ -58,7 +58,8 @@ public class TeacherDTO {
             this.roles = user.getRoles();
 
             // 1. User 엔티티의 편의 메서드를 사용하여 TeacherInfo 추출
-            TeacherInfo ti = user.getInfo(TeacherInfo.class);
+            TeacherInfo ti = user.getInfoForSchool(TeacherInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
 
             // 2. TeacherInfo가 존재할 경우에만 상세 정보 세팅
             if (ti != null) {
@@ -118,7 +119,6 @@ public class TeacherDTO {
         private String name;
         private String email;
         private String password;
-        private String code;
         private String subject;
         private String department;
         private String position;
@@ -128,7 +128,6 @@ public class TeacherDTO {
             this.name = csv.getName();
             this.email = csv.getEmail();
             this.password = csv.getPassword();
-            this.code = csv.getCode();
             this.subject = csv.getSubject();
             this.department = csv.getDepartment();
             this.position = csv.getPosition();
@@ -161,9 +160,6 @@ public class TeacherDTO {
 
         @CsvBindByName(column = "비밀번호")
         private String password;
-
-        @CsvBindByName(column = "사번")
-        private String code;
 
         @CsvBindByName(column = "부서")
         private String department;

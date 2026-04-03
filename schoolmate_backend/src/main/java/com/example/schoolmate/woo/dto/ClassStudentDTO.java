@@ -1,5 +1,6 @@
 package com.example.schoolmate.woo.dto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -49,5 +50,9 @@ public class ClassStudentDTO {
         private Integer studentNumber; // 번호
         private String phone;
         private String email;
+        // [soojin] 학생 관리 페이지 테이블 컬럼 추가
+        private String gender;
+        private LocalDate birthDate;
+        private String parentName;
     }
 }

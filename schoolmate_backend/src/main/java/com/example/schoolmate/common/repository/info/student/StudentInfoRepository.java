@@ -3,7 +3,6 @@ package com.example.schoolmate.common.repository.info.student;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.schoolmate.common.entity.info.StudentInfo;
@@ -23,8 +22,9 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
         // primary 인스턴스 조회 (로그인·토큰 발급 기본값)
         Optional<StudentInfo> findByUserUidAndPrimaryTrue(Long uid);
 
-        // 학교 + 코드 접두어로 최신 코드 조회 (순번 자동 생성용)
-        List<StudentInfo> findBySchoolIdAndCodeStartingWithOrderByCodeDesc(Long schoolId, String prefix, Pageable pageable);
+
+        // 학교 범위 내 학번 중복 체크
+        boolean existsByCodeAndSchoolId(String code, Long schoolId);
 
         // [joon] @Query가 필요한 메서드는 모두 StudentInfoRepositoryCustom(QueryDSL)으로 이동됨
 

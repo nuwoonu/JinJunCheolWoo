@@ -319,7 +319,6 @@ public class ClassroomService {
                 newAssignment.setClassroom(classroom);
                 newAssignment.setAttendanceNum(nextNum++);
                 info.getAssignments().add(newAssignment);
-                info.setCurrentAssignment(newAssignment);
             }
         }
 
@@ -369,12 +368,6 @@ public class ClassroomService {
         // 해당 학년도의 배정 정보 삭제
         info.getAssignments().removeIf(a -> a.getClassroom().getCid().equals(classroom.getCid()));
 
-        // 현재 학적 삭제 시 처리
-        if (info.getCurrentAssignment() != null
-                && info.getCurrentAssignment().getClassroom().getCid().equals(classroom.getCid())) {
-            info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
-        }
-
         logChange(cid, "REMOVE_STUDENT", "학생 제외: " + user.getName());
     }
 
@@ -388,12 +381,6 @@ public class ClassroomService {
             StudentInfo info = user.getInfo(StudentInfo.class);
             // 해당 학년도의 배정 정보 삭제
             info.getAssignments().removeIf(a -> a.getClassroom().getCid().equals(classroom.getCid()));
-
-            // 현재 학적 삭제 시 처리
-            if (info.getCurrentAssignment() != null
-                    && info.getCurrentAssignment().getClassroom().getCid().equals(classroom.getCid())) {
-                info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
-            }
         }
 
         logChange(cid, "REMOVE_STUDENT", users.size() + "명 학생 일괄 제외");

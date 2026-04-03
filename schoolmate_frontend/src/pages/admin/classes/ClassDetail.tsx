@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
 // [joon] 학급 상세
 
@@ -54,7 +55,7 @@ export default function ClassDetail() {
   const [classroom, setClassroom] = useState<ClassDetail | null>(null);
   const [availableTeachers, setAvailableTeachers] = useState<Teacher[]>([]);
   const [tab, setTab] = useState<"students" | "history">("students");
-  const [msg, setMsg] = useState("");
+  const { msg, error, setMsg, setError } = useAdminMsg();
   const [selected, setSelected] = useState<number[]>([]);
   const [editForm, setEditForm] = useState({
     grade: "1",
@@ -89,15 +90,19 @@ export default function ClassDetail() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await admin.put(`/classes/${cid}`, {
-      grade: Number(editForm.grade),
-      classNum: Number(editForm.classNum),
-      status: editForm.status,
-      teacherUid: editForm.teacherUid ? Number(editForm.teacherUid) : null,
-    });
-    setShowEdit(false);
-    setMsg("수정되었습니다.");
-    load();
+    try {
+      await admin.put(`/classes/${cid}`, {
+        grade: Number(editForm.grade),
+        classNum: Number(editForm.classNum),
+        status: editForm.status,
+        teacherUid: editForm.teacherUid ? Number(editForm.teacherUid) : null,
+      });
+      setShowEdit(false);
+      setMsg("수정되었습니다.");
+      load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "수정에 실패했습니다."));
+    }
   };
 
   const handleDelete = async () => {
@@ -111,7 +116,7 @@ export default function ClassDetail() {
       await admin.delete(`/classes/${cid}`);
       navigate(ADMIN_ROUTES.CLASSES.LIST);
     } catch (err: any) {
-      setMsg(err.response?.data ?? "삭제 실패");
+      setError(apiErrMsg(err, "삭제에 실패했습니다."));
     }
   };
 
@@ -131,17 +136,25 @@ export default function ClassDetail() {
     const params = new URLSearchParams();
     studentUids.forEach((u) => params.append("studentUids", String(u)));
     if (randomCount > 0) params.set("randomCount", String(randomCount));
-    await admin.post(`/classes/${cid}/students?${params}`);
-    setSearchResults([]);
-    setStudentSearch("");
-    setRandomCount(0);
-    load();
+    try {
+      await admin.post(`/classes/${cid}/students?${params}`);
+      setSearchResults([]);
+      setStudentSearch("");
+      setRandomCount(0);
+      load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "학생 배정에 실패했습니다."));
+    }
   };
 
   const removeStudent = async (studentUid: number) => {
     if (!confirm("배정을 해제할까요?")) return;
-    await admin.delete(`/classes/${cid}/students/${studentUid}`);
-    load();
+    try {
+      await admin.delete(`/classes/${cid}/students/${studentUid}`);
+      load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "배정 해제에 실패했습니다."));
+    }
   };
 
   const removeSelected = async () => {
@@ -168,7 +181,7 @@ export default function ClassDetail() {
     );
 
   return (
-    <AdminLayout>
+    <AdminLayout msg={msg} error={error}>
       <div className="breadcrumb d-flex align-items-center gap-3" style={{ marginBottom: 24 }}>
         <button
           type="button"
@@ -186,7 +199,6 @@ export default function ClassDetail() {
         </button>
         <h6 className="fw-semibold mb-0">학급 상세 정보</h6>
       </div>
-      {msg && <div className="alert alert-info mb-3">{msg}</div>}
 
       <div className="row gy-4">
         {/* 좌측 학급 정보 */}

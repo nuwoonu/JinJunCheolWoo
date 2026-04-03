@@ -72,16 +72,20 @@ export default function MiniCalendar() {
   }
 
   return (
-    <div style={{ fontSize: 11, userSelect: 'none' }}>
-      {/* [woo] 월 네비게이션 */}
-      <div className="d-flex align-items-center justify-content-between mb-8">
-        <button onClick={prevMonth} className="btn btn-sm px-8 py-2" style={{ fontSize: 13, lineHeight: 1 }}>‹</button>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>{year}년 {month + 1}월</span>
-        <button onClick={nextMonth} className="btn btn-sm px-8 py-2" style={{ fontSize: 13, lineHeight: 1 }}>›</button>
+    <div style={{ fontSize: 11, userSelect: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* [woo] 월 네비게이션 - 목록 뷰와 동일한 스타일 */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid #e5e7eb', marginBottom: 4, flexShrink: 0 }}>
+        <button onClick={prevMonth} style={{ background: 'none', border: 'none', padding: '2px 4px', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center' }}>
+          <i className="ri-arrow-left-s-line" style={{ fontSize: 18 }} />
+        </button>
+        <span style={{ fontSize: 15, fontWeight: 600, color: '#111827', minWidth: 90, textAlign: 'center' }}>{year}년 {month + 1}월</span>
+        <button onClick={nextMonth} style={{ background: 'none', border: 'none', padding: '2px 4px', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center' }}>
+          <i className="ri-arrow-right-s-line" style={{ fontSize: 18 }} />
+        </button>
       </div>
 
       {/* [woo] 요일 헤더 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', borderBottom: '1px solid #dee2e6', paddingBottom: 4, marginBottom: 4 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', borderBottom: '1px solid #dee2e6', paddingBottom: 4, marginBottom: 4, flexShrink: 0 }}>
         {WEEK_LABELS.map((d, i) => (
           <span key={d} style={{ fontWeight: 600, color: i === 0 ? '#dc3545' : i === 6 ? '#0d6efd' : '#6c757d', padding: '2px 0' }}>
             {d}
@@ -89,11 +93,10 @@ export default function MiniCalendar() {
         ))}
       </div>
 
-      {/* [woo] 날짜 + 이벤트 그리드 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+      {/* [woo] 날짜 + 이벤트 그리드 - flex:1로 남은 공간 꽉 채움 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridTemplateRows: `repeat(${cells.length / 7}, 1fr)`, flex: 1, minHeight: 0 }}>
         {cells.map((day, idx) => {
-          // [soojin] minHeight 고정 → aspect-ratio: 1 로 변경 (정사각형 셀 유지)
-          if (day === null) return <div key={idx} style={{ aspectRatio: '1' }} />
+          if (day === null) return <div key={idx} style={{ borderRight: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0' }} />
 
           const ds = toDateStr(day)
           const isToday = ds === todayStr
@@ -101,7 +104,7 @@ export default function MiniCalendar() {
           const col = idx % 7
 
           return (
-            <div key={idx} style={{ aspectRatio: '1', padding: '2px 2px', borderRight: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', overflow: 'hidden' }}>
+            <div key={idx} style={{ padding: '2px 2px', borderRight: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', overflow: 'hidden', minHeight: 0 }}>
               {/* 날짜 숫자 */}
               <div style={{ textAlign: 'right', paddingRight: 3 }}>
                 <span style={{

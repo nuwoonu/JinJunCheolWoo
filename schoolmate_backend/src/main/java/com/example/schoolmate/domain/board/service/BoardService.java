@@ -14,6 +14,9 @@ import java.util.Set;
 
 import com.example.schoolmate.domain.board.dto.BoardDTO;
 import com.example.schoolmate.domain.board.entity.Board;
+import com.example.schoolmate.domain.board.entity.BoardAttachment;
+import com.example.schoolmate.domain.board.entity.BoardBookmark;
+import com.example.schoolmate.domain.board.entity.BoardLike;
 import com.example.schoolmate.domain.board.entity.BoardConsent;
 import com.example.schoolmate.domain.board.entity.BoardRead;
 import com.example.schoolmate.domain.board.entity.BoardType;
@@ -57,6 +60,11 @@ public class BoardService {
     private final StaffInfoRepository staffInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final SchoolRepository schoolRepository;
+    // [soojin] 좋아요/북마크/댓글/첨부파일 집계용
+    private final com.example.schoolmate.domain.board.repository.BoardLikeRepository boardLikeRepository;
+    private final com.example.schoolmate.domain.board.repository.BoardBookmarkRepository boardBookmarkRepository;
+    private final com.example.schoolmate.domain.board.repository.CommentRepository commentRepository;
+    private final com.example.schoolmate.domain.board.repository.BoardAttachmentRepository boardAttachmentRepository;
 
     // [woo 03-27] 담임 학급 보유 여부 확인
     public boolean hasHomeroom(Long uid, int year) {
@@ -77,7 +85,8 @@ public class BoardService {
      * 학급 공지 목록
      */
     public Page<BoardDTO.Response> getClassNotices(Long classroomId, Pageable pageable) {
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_NOTICE, classroomId, pageable)
+        // [soojin] keyword=null, searchType=null - 학급 공지는 검색 미사용
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_NOTICE, classroomId, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -87,7 +96,8 @@ public class BoardService {
      * 학급 게시판 목록
      */
     public Page<BoardDTO.Response> getClassBoard(Long classroomId, Pageable pageable) {
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, pageable)
+        // [soojin] keyword=null, searchType=null - 검색 없이 전체 조회
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -97,7 +107,8 @@ public class BoardService {
      * [woo] 우리반 알림장 목록 — 학급 기준 조회 (학생/교사용)
      */
     public Page<BoardDTO.Response> getClassDiary(Long classroomId, Pageable pageable) {
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_DIARY, classroomId, pageable)
+        // [soojin] keyword=null, searchType=null - 알림장은 검색 미사용
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_DIARY, classroomId, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -156,12 +167,15 @@ public class BoardService {
      * [woo 03-27] 학급 게시판 — 역할별 자동 학급 조회 (교사/학생 전용)
      * 학생: 본인 학급 / 교사: 담임 학급
      */
-    public Page<BoardDTO.Response> getClassBoardAuto(CustomUserDTO userDTO, Pageable pageable) {
+    // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
+    public Page<BoardDTO.Response> getClassBoardAuto(CustomUserDTO userDTO, String keyword, String searchType, Pageable pageable) {
         // [woo 03-27] 학생 → 본인 학급
         if (isStudent(userDTO)) {
             return studentInfoRepository.findByUserUid(userDTO.getUid())
                     .filter(s -> s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null)
-                    .map(s -> getClassBoard(s.getCurrentAssignment().getClassroom().getCid(), pageable))
+                    .map(s -> boardRepository
+                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, s.getCurrentAssignment().getClassroom().getCid(), keyword, searchType, pageable)
+                            .map(BoardDTO.Response::fromEntityForList))
                     .orElse(Page.empty(pageable));
         }
 
@@ -169,11 +183,31 @@ public class BoardService {
         if (isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
             return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
-                    .map(c -> getClassBoard(c.getCid(), pageable))
+                    .map(c -> boardRepository
+                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, c.getCid(), keyword, searchType, pageable)
+                            .map(BoardDTO.Response::fromEntityForList))
                     .orElse(Page.empty(pageable));
         }
 
         return Page.empty(pageable);
+    }
+
+    // [soojin] 학급 게시판 인기글 조회 - 사이드바 인기글 카드용
+    public List<BoardDTO.Response> getPopularBoards(BoardType boardType, int limit) {
+        return boardRepository.findTopByViewCount(boardType, limit)
+                .stream()
+                .map(BoardDTO.Response::fromEntityForList)
+                .collect(Collectors.toList());
+    }
+
+    // [soojin] 학급 게시판 통계 조회 - 사이드바 통계 카드용 (전체 게시글 수, 전체 조회수, 오늘 작성 수)
+    public Map<String, Long> getBoardStats(BoardType boardType) {
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("totalCount", boardRepository.countByType(boardType));
+        stats.put("totalViewCount", boardRepository.sumViewCountByType(boardType));
+        // [soojin] 오늘 작성 수 추가 - 게시판 통계 카드 "오늘 작성" 항목
+        stats.put("todayCount", boardRepository.countTodayByType(boardType));
+        return stats;
     }
 
     /**
@@ -187,8 +221,9 @@ public class BoardService {
     /**
      * 학부모 공지 목록 (전체)
      */
-    public Page<BoardDTO.Response> getParentNotices(Pageable pageable) {
-        return boardRepository.findByType(BoardType.PARENT_NOTICE, null, pageable)
+    // [soojin] keyword 파라미터 추가 - 가정통신문 제목 검색 지원
+    public Page<BoardDTO.Response> getParentNotices(String keyword, Pageable pageable) {
+        return boardRepository.findByType(BoardType.PARENT_NOTICE, keyword, pageable)
                 .map(board -> {
                     BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
                     // [woo] 교사 확인용 읽음 수 포함
@@ -202,10 +237,11 @@ public class BoardService {
      * 학부모: 자녀 학급 + 학년 전체 + 전체 공지만 표시
      * 교사/관리자: 전체 조회
      */
-    public Page<BoardDTO.Response> getParentNoticesFiltered(CustomUserDTO userDTO, Long studentUserUid, Pageable pageable) {
+    // [soojin] keyword 파라미터 추가 - 역할별 검색 전파
+    public Page<BoardDTO.Response> getParentNoticesFiltered(CustomUserDTO userDTO, Long studentUserUid, String keyword, Pageable pageable) {
         // 비로그인 또는 교사/관리자 → 전체 조회
         if (userDTO == null || isAdmin(userDTO) || isTeacher(userDTO)) {
-            return getParentNotices(pageable);
+            return getParentNotices(keyword, pageable);
         }
 
         // [woo] 학부모 → 선택된 자녀(studentUserUid) 기준 학급+학교 필터링
@@ -236,11 +272,11 @@ public class BoardService {
                 if (targetStudent.getSchool() != null) {
                     SchoolContextHolder.setSchoolId(targetStudent.getSchool().getId());
                 }
-                return getParentNoticesByClassroom(classroom.getCid(), classroom.getGrade(), pageable);
+                return getParentNoticesByClassroom(classroom.getCid(), classroom.getGrade(), keyword, pageable);
             }
         }
 
-        return getParentNotices(pageable);
+        return getParentNotices(keyword, pageable);
     }
 
     /**
@@ -258,8 +294,9 @@ public class BoardService {
     /**
      * 학부모 공지 목록 (학급별)
      */
-    public Page<BoardDTO.Response> getParentNoticesByClassroom(Long classroomId, int grade, Pageable pageable) {
-        return boardRepository.findParentByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, pageable)
+    // [soojin] keyword 파라미터 추가 - 학부모 뷰 검색 지원
+    public Page<BoardDTO.Response> getParentNoticesByClassroom(Long classroomId, int grade, String keyword, Pageable pageable) {
+        return boardRepository.findParentByClassroom(BoardType.PARENT_NOTICE, classroomId, grade, keyword, pageable)
                 .map(board -> {
                     BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
                     dto.setReadCount(boardReadRepository.countByBoardId(board.getId()));
@@ -286,6 +323,7 @@ public class BoardService {
                             BoardType.PARENT_BOARD,
                             assignment.getClassroom().getCid(),
                             assignment.getGrade(),
+                            null, // [soojin] keyword 누락으로 인한 컴파일 오류 수정
                             pageable)
                             .map(BoardDTO.Response::fromEntityForList);
                 }
@@ -304,6 +342,7 @@ public class BoardService {
                                 BoardType.PARENT_BOARD,
                                 asgn.getClassroom().getCid(),
                                 asgn.getGrade(),
+                                null, // [soojin] keyword 누락으로 인한 컴파일 오류 수정
                                 pageable)
                                 .map(BoardDTO.Response::fromEntityForList);
                     }
@@ -327,7 +366,7 @@ public class BoardService {
      * 학부모 게시판 목록 (학급별)
      */
     public Page<BoardDTO.Response> getParentBoardByClassroom(Long classroomId, int grade, Pageable pageable) {
-        return boardRepository.findParentByClassroom(BoardType.PARENT_BOARD, classroomId, grade, pageable)
+        return boardRepository.findParentByClassroom(BoardType.PARENT_BOARD, classroomId, grade, null, pageable) // [soojin] keyword 누락으로 인한 컴파일 오류 수정
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -349,9 +388,10 @@ public class BoardService {
 
     /**
      * [woo] 게시물 상세 조회 - 읽기전용 (조회수 증가 없음, React GET용)
+     * [soojin] likeCount, commentCount, isLiked 추가 (userUid null이면 isLiked=false)
      */
     @Transactional(readOnly = true)
-    public BoardDTO.Response getBoardReadOnly(Long boardId) {
+    public BoardDTO.Response getBoardReadOnly(Long boardId, Long userUid) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다: " + boardId));
 
@@ -359,7 +399,24 @@ public class BoardService {
             throw new IllegalArgumentException("삭제된 게시물입니다.");
         }
 
-        return BoardDTO.Response.fromEntity(board);
+        BoardDTO.Response dto = BoardDTO.Response.fromEntity(board);
+        dto.setLikeCount(boardLikeRepository.countByBoard_Id(boardId));
+        dto.setCommentCount(commentRepository.countByBoard_IdAndIsDeletedFalse(boardId));
+        // [soojin] Lombok boolean 필드 'isLiked' → setter는 setLiked() (is 접두어 제거)
+        dto.setLiked(userUid != null && boardLikeRepository.existsByBoard_IdAndUser_Uid(boardId, userUid));
+        // [soojin] 북마크 여부 세팅 (userUid null이면 false)
+        // [soojin] Lombok boolean 필드 'isBookmarked' → setter는 setBookmarked() (is 접두어 제거)
+        dto.setBookmarked(userUid != null && boardBookmarkRepository.existsByBoard_IdAndUser_Uid(boardId, userUid));
+        // [soojin] 다중 첨부파일 목록 세팅
+        List<BoardDTO.Response.AttachmentInfo> attachments = boardAttachmentRepository.findByBoard_IdOrderBySortOrder(boardId)
+                .stream()
+                .map(a -> BoardDTO.Response.AttachmentInfo.builder()
+                        .id(a.getId()).originalName(a.getOriginalName())
+                        .storedName(a.getStoredName()).fileSize(a.getFileSize())
+                        .fileType(a.getFileType()).build())
+                .collect(Collectors.toList());
+        dto.setAttachments(attachments);
+        return dto;
     }
 
     /**
@@ -455,6 +512,8 @@ public class BoardService {
                 .attachmentUrl(request.getAttachmentUrl())
                 // [woo] 가정통신문 회신 필요 여부
                 .requiresConsent(request.isRequiresConsent())
+                // [soojin] 태그 (질문/모임/유머/공지, null이면 태그 없음)
+                .tag(request.getTag())
                 .build();
 
         Long schoolId = SchoolContextHolder.getSchoolId();
@@ -503,6 +562,22 @@ public class BoardService {
         Board saved = boardRepository.save(board);
         log.info("게시물 작성 완료: {} - {} by {}", saved.getBoardType(), saved.getTitle(), writer.getName());
 
+        // [soojin] 다중 첨부파일 저장 (attachmentFiles가 있으면 BoardAttachment로 저장)
+        if (request.getAttachmentFiles() != null && !request.getAttachmentFiles().isEmpty()) {
+            int order = 0;
+            for (BoardDTO.AttachmentRequest att : request.getAttachmentFiles()) {
+                boardAttachmentRepository.save(
+                    BoardAttachment.builder()
+                        .board(saved)
+                        .originalName(att.getOriginalName())
+                        .storedName(att.getStoredName())
+                        .fileSize(att.getFileSize())
+                        .fileType(att.getFileType())
+                        .sortOrder(order++)
+                        .build());
+            }
+        }
+
         // 학교 전체 공지 작성 시 해당 학교 소속 교사/학생 전원에게 알림 발송
         if (request.getBoardType() == BoardType.SCHOOL_NOTICE && schoolId != null) {
             notifySchoolMembers(writer, schoolId, saved.getTitle());
@@ -538,6 +613,8 @@ public class BoardService {
         board.changeContent(request.getContent());
         board.changeImportant(request.isImportant());
         board.setAttachmentUrl(request.getAttachmentUrl());
+        // [soojin] 태그 수정
+        board.changeTag(request.getTag());
 
         // [woo] ADMIN 또는 TEACHER도 상단 고정 변경 가능
         if (isAdmin(userDTO) || isTeacher(userDTO)) {
@@ -742,6 +819,63 @@ public class BoardService {
             default:
                 return false;
         }
+    }
+
+    // ========== [soojin] 좋아요 토글 ==========
+
+    /**
+     * [soojin] 좋아요 토글 - 이미 눌렀으면 취소, 아니면 추가
+     * 반환값: {liked: boolean, likeCount: long}
+     */
+    @Transactional
+    public Map<String, Object> toggleLike(Long boardId, Long userUid) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+        User user = userRepository.findById(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        boolean liked;
+        var existing = boardLikeRepository.findByBoard_IdAndUser_Uid(boardId, userUid);
+        if (existing.isPresent()) {
+            boardLikeRepository.delete(existing.get());
+            liked = false;
+        } else {
+            boardLikeRepository.save(
+                BoardLike.builder()
+                    .board(board).user(user).build());
+            liked = true;
+        }
+
+        long likeCount = boardLikeRepository.countByBoard_Id(boardId);
+        return Map.of("liked", liked, "likeCount", likeCount);
+    }
+
+    // ========== [soojin] 북마크 토글 ==========
+
+    /**
+     * [soojin] 북마크 토글 - 이미 북마크했으면 취소, 아니면 추가
+     * 반환값: {bookmarked: boolean}
+     */
+    @Transactional
+    public Map<String, Object> toggleBookmark(Long boardId, Long userUid) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("게시물을 찾을 수 없습니다."));
+        User user = userRepository.findById(userUid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        boolean bookmarked;
+        var existing = boardBookmarkRepository.findByBoard_IdAndUser_Uid(boardId, userUid);
+        if (existing.isPresent()) {
+            boardBookmarkRepository.delete(existing.get());
+            bookmarked = false;
+        } else {
+            boardBookmarkRepository.save(
+                BoardBookmark.builder()
+                    .board(board).user(user).build());
+            bookmarked = true;
+        }
+
+        return Map.of("bookmarked", bookmarked);
     }
 
     // ========== 헬퍼 메서드 ==========

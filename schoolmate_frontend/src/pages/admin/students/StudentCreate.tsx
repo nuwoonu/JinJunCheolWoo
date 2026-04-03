@@ -25,7 +25,6 @@ export default function StudentCreate() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
-    code: "",
     email: "",
     password: "",
     classroomId: "",
@@ -115,10 +114,6 @@ export default function StudentCreate() {
               <div className="col-md-6">
                 <label className="form-label fw-semibold">이름 <span style={{ color: "#dc2626" }}>*</span></label>
                 <input className="form-control" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="성함 입력" />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-semibold">학번</label>
-                <input className="form-control" required value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="예: 202610001" />
               </div>
               <div className="col-md-12">
                 <label className="form-label fw-semibold">이메일 (ID) <span style={{ color: "#dc2626" }}>*</span></label>

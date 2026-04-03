@@ -103,8 +103,10 @@ public class ClassDTO {
         public static DetailResponse from(Classroom classroom, int studentCount) {
             User teacher = classroom.getTeacher();
             String subject = "-";
-            if (teacher != null && teacher.getInfo(TeacherInfo.class) != null) {
-                TeacherInfo ti = teacher.getInfo(TeacherInfo.class);
+            if (teacher != null && teacher.getInfoForSchool(TeacherInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId()) != null) {
+                TeacherInfo ti = teacher.getInfoForSchool(TeacherInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
                 subject = ti.getSubject() != null ? ti.getSubject().getName() : "-"; // cheol
             }
 
@@ -163,8 +165,10 @@ public class ClassDTO {
 
         public static TeacherSelectResponse from(User user) {
             String subject = "-";
-            if (user.getInfo(TeacherInfo.class) != null) {
-                TeacherInfo ti = user.getInfo(TeacherInfo.class);
+            if (user.getInfoForSchool(TeacherInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId()) != null) {
+                TeacherInfo ti = user.getInfoForSchool(TeacherInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
                 subject = ti.getSubject() != null ? ti.getSubject().getName() : "-"; // cheol
             }
             return TeacherSelectResponse.builder()

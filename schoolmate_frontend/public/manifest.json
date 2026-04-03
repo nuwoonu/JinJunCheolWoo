@@ -1,0 +1,42 @@
+{
+  "id": "/main",
+  "name": "SchoolMate",
+  "short_name": "SchoolMate",
+  "description": "학생, 교사, 학부모를 위한 통합 학급 관리 플랫폼",
+  "start_url": "/main",
+  "display": "standalone",
+  "background_color": "#25a194",
+  "theme_color": "#25a194",
+  "lang": "ko",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/pwa-icon-512.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/pwa-icon-maskable-512.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshots/desktop.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "SchoolMate 메인 화면"
+    },
+    {
+      "src": "/images/screenshots/mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "SchoolMate 모바일 화면"
+    }
+  ]
+}

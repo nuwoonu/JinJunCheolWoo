@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/api/auth";
-import { useSchool } from "@/context/SchoolContext";
+import { useSchool } from "@/contexts/SchoolContext";
 
 interface NotificationItem {
   id: number;

@@ -8,8 +8,10 @@ import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
-import com.example.schoolmate.common.entity.user.constant.Semester;
+import com.example.schoolmate.common.entity.user.constant.TestType;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.common.repository.info.TeacherStudentRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -20,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ public class TeacherGradeService {
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final TeacherStudentRepository teacherStudentRepository;
+    private final AcademicTermRepository academicTermRepository;
 
     // [woo] 교사의 접근 가능한 학급 목록 (담임반 + 담당 학생 학급 합집합)
     public List<ClassStudentDTO> getAccessibleClassrooms(Long teacherInfoId) {
@@ -72,12 +74,12 @@ public class TeacherGradeService {
                 .collect(Collectors.toList());
     }
 
-    // [woo] 학급+과목+학기+학년도 기준 성적 목록 (학생별 testType별)
+    // [woo] 학급+과목+학기 기준 성적 목록 (학생별 testType별)
     public List<GradeResponseDTO> getGradesByClassroomAndSubject(
-            Long classroomId, Long subjectId, Semester semester, int schoolYear) {
+            Long classroomId, Long subjectId, Long termId) {
 
-        List<Grade> grades = gradeRepository.findByClassroomAndSubjectAndSemester(
-                classroomId, subjectId, semester);
+        List<Grade> grades = gradeRepository.findByClassroomAndSubjectAndTerm(
+                classroomId, subjectId, termId);
 
         return grades.stream()
                 .map(this::toResponseDTO)
@@ -94,9 +96,12 @@ public class TeacherGradeService {
         TeacherInfo teacher = teacherInfoRepository.findById(teacherInfoId)
                 .orElseThrow(() -> new IllegalArgumentException("교사 정보를 찾을 수 없습니다."));
 
-        // upsert: 동일한 학생+과목+시험종류+학기 조합 확인
-        List<Grade> existing = gradeRepository.findByStudentAndSubjectAndSemesterAndTestType(
-                dto.getStudentId(), dto.getSubjectId(), dto.getSemester(), dto.getTestType());
+        AcademicTerm academicTerm = academicTermRepository.findById(dto.getAcademicTermId())
+                .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
+
+        // [woo] upsert: 동일한 학생+과목+시험종류+학기 조합 확인
+        List<Grade> existing = gradeRepository.findByStudentAndSubjectAndTermAndTestType(
+                dto.getStudentId(), dto.getSubjectId(), dto.getAcademicTermId(), dto.getTestType());
 
         Grade grade;
         if (!existing.isEmpty()) {
@@ -107,7 +112,7 @@ public class TeacherGradeService {
                     .student(student)
                     .subject(subject)
                     .testType(dto.getTestType())
-                    .semester(dto.getSemester())
+                    .academicTerm(academicTerm)
                     .score(dto.getScore())
                     .inputTeacher(teacher)
                     .build();
@@ -149,8 +154,8 @@ public class TeacherGradeService {
                 .subjectName(grade.getSubject().getName())
                 .testType(grade.getTestType())
                 .score(grade.getScore())
-                .semester(grade.getSemester())
-                .schoolYear(sa != null ? sa.getSchoolYear() : 0)
+                .semester(grade.getSemesterNum())
+                .schoolYear(grade.getSchoolYear())
                 .inputTeacherName(grade.getInputTeacher() != null
                         ? grade.getInputTeacher().getUser().getName() : null)
                 .build();

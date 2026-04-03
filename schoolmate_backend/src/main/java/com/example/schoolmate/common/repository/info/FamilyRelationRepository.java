@@ -19,9 +19,10 @@ public interface FamilyRelationRepository extends JpaRepository<FamilyRelation, 
     @Query("SELECT fr FROM FamilyRelation fr " +
            "JOIN FETCH fr.parentInfo pi JOIN FETCH pi.user " +
            "JOIN FETCH fr.studentInfo si JOIN FETCH si.user " +
-           "JOIN si.currentAssignment ca " +
+           "JOIN si.assignments ca " +
            "JOIN ca.classroom cl " +
-           "WHERE cl.cid = :classroomId")
+           "WHERE cl.cid = :classroomId " +
+           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si)")
     List<FamilyRelation> findByStudentClassroom(@Param("classroomId") Long classroomId);
 
     // [woo] 학교 전체 학부모 관계 조회

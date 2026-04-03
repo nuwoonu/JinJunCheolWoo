@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
 const EVENT_TYPES = ["ACADEMIC", "HOLIDAY", "EXAM", "EVENT", "VACATION"];
 const TYPE_LABELS: Record<string, string> = {
@@ -57,6 +58,7 @@ const td: React.CSSProperties = { padding: "12px 16px", fontSize: 13, color: "#3
 export default function Schedule() {
   const now = new Date();
   const todayStr = toDateStr(now);
+  const { msg, error, setMsg, setError } = useAdminMsg();
 
   const [events, setEvents] = useState<any[]>([]);
   const [year, setYear] = useState(now.getFullYear());
@@ -131,17 +133,25 @@ export default function Schedule() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { ...form, targetGrade: form.targetGrade || null };
-    if (editId !== null) await admin.put(`/schedule/${editId}`, payload);
-    else await admin.post("/schedule", payload);
-    setShowModal(false);
-    load();
+    try {
+      const payload = { ...form, targetGrade: form.targetGrade || null };
+      if (editId !== null) await admin.put(`/schedule/${editId}`, payload);
+      else await admin.post("/schedule", payload);
+      setShowModal(false);
+      load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "일정 저장에 실패했습니다."));
+    }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("이 일정을 삭제하시겠습니까?")) return;
-    await admin.delete(`/schedule/${id}`);
-    load();
+    try {
+      await admin.delete(`/schedule/${id}`);
+      load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "일정 삭제에 실패했습니다."));
+    }
   };
 
   const exportCsv = () => {
@@ -170,10 +180,10 @@ export default function Schedule() {
     fd.append("file", file);
     try {
       await admin.post("/schedule/import-csv", fd);
-      alert("일정이 일괄 등록되었습니다.");
+      setMsg("일정이 일괄 등록되었습니다.");
       load();
     } catch (err: any) {
-      alert(`등록 실패: ${err.response?.data ?? err.message}`);
+      setError(apiErrMsg(err, "일정 일괄 등록에 실패했습니다."));
     } finally {
       setImporting(false);
     }
@@ -185,7 +195,7 @@ export default function Schedule() {
   const navBtnStyle: React.CSSProperties = { padding: "6px 12px", border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", fontSize: 13, color: "#374151", cursor: "pointer" };
 
   return (
-    <AdminLayout>
+    <AdminLayout msg={msg} error={error}>
       {/* 등록/수정 모달 */}
       {showModal && (
         <div

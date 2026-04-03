@@ -11,14 +11,11 @@ export default function ParentCreate() {
     email: "",
     password: "",
     phone: "",
-    code: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // code가 빈 문자열이면 null로 전송 (백엔드가 null일 때 중복 체크 생략)
-    const payload = { ...form, code: form.code || null };
-    await admin.post("/parents", payload);
+    await admin.post("/parents", form);
     navigate(ADMIN_ROUTES.PARENTS.LIST);
   };
 
@@ -59,17 +56,6 @@ export default function ParentCreate() {
                   setForm((f) => ({ ...f, name: e.target.value }))
                 }
                 placeholder="성함 입력"
-              />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">학부모 코드</label>
-              <input
-                className="form-control"
-                value={form.code}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, code: e.target.value }))
-                }
-                placeholder="예: P2024001 (선택)"
               />
             </div>
             <div className="col-md-6">

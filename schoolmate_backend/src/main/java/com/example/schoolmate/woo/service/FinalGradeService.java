@@ -17,6 +17,8 @@ import com.example.schoolmate.quiz.repository.QuizSubmissionRepository;
 import com.example.schoolmate.woo.dto.FinalGradeResponseDTO;
 import com.example.schoolmate.woo.entity.FinalGrade;
 import com.example.schoolmate.woo.entity.GradeRatio;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.woo.repository.FinalGradeRepository;
 import com.example.schoolmate.woo.repository.GradeRatioRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,7 @@ public class FinalGradeService {
     private final SubjectRepository subjectRepository;
     private final HomeworkSubmissionRepository homeworkSubmissionRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
+    private final AcademicTermRepository academicTermRepository;
 
     // [woo] FinalGrade 계산 (수동 트리거)
     @Transactional
@@ -58,11 +61,18 @@ public class FinalGradeService {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다."));
 
+        Long schoolId = classroom.getSchool().getId();
+        int semesterNum = semester.ordinal() + 1;
+        AcademicTerm academicTerm = academicTermRepository
+                .findBySchoolIdAndSchoolYearAndSemester(schoolId, schoolYear, semesterNum)
+                .orElseThrow(() -> new IllegalStateException("해당 학기 정보를 찾을 수 없습니다."));
+        Long termId = academicTerm.getId();
+
         List<StudentInfo> students = studentInfoRepository.findByCurrentClassroomId(classroomId);
 
         return students.stream().map(student -> {
-            Double midtermScore = calcExamScore(student.getId(), subjectId, semester, TestType.MIDTERMTEST);
-            Double finalExamScore = calcExamScore(student.getId(), subjectId, semester, TestType.FINALTEST);
+            Double midtermScore = calcExamScore(student.getId(), subjectId, termId, TestType.MIDTERMTEST);
+            Double finalExamScore = calcExamScore(student.getId(), subjectId, termId, TestType.FINALTEST);
             Double homeworkScore = calcHomeworkScore(student.getId(), classroomId, subjectId);
             Double quizScore = calcQuizScore(student.getId(), classroomId);
 
@@ -116,10 +126,10 @@ public class FinalGradeService {
 
     // --- 점수 계산 내부 메서드 ---
 
-    // 시험 점수: 해당 testType의 Grade → 점수 (없으면 null)
-    private Double calcExamScore(Long studentId, Long subjectId, Semester semester, TestType testType) {
-        List<Grade> grades = gradeRepository.findByStudentAndSubjectAndSemesterAndTestType(
-                studentId, subjectId, semester, testType);
+    // [woo] 시험 점수: 해당 testType의 Grade → 점수 (없으면 null)
+    private Double calcExamScore(Long studentId, Long subjectId, Long termId, TestType testType) {
+        List<Grade> grades = gradeRepository.findByStudentAndSubjectAndTermAndTestType(
+                studentId, subjectId, termId, testType);
         if (grades.isEmpty()) return null;
         return grades.stream().mapToDouble(Grade::getScore).average().orElse(0.0);
     }

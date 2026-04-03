@@ -20,6 +20,7 @@ public class PasswordVerificationService {
 
     private final EmailVerificationCodeRepository codeRepository;
     private final EmailService emailService;
+    private final EmailRateLimitService emailRateLimitService;
 
     @Value("${app.verification.code-expiry-minutes:5}")
     private int expiryMinutes;
@@ -32,11 +33,38 @@ public class PasswordVerificationService {
      */
     @Transactional
     public void sendCode(User user) {
+        emailRateLimitService.checkAndRecord(user.getEmail());
         String code = String.format("%06d", RANDOM.nextInt(1_000_000));
         EmailVerificationCode verification = EmailVerificationCode.issue(user.getUid(), code, expiryMinutes);
         codeRepository.save(verification);
         emailService.sendPasswordVerificationCode(user.getEmail(), code);
         log.info("비밀번호 변경 인증 코드 저장 완료: userId={}", user.getUid());
+    }
+
+    /**
+     * 회원 탈퇴용 인증 코드 생성 후 DB 저장(upsert) + 이메일 발송
+     */
+    @Transactional
+    public void sendWithdrawalCode(User user) {
+        emailRateLimitService.checkAndRecord(user.getEmail());
+        String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+        EmailVerificationCode verification = EmailVerificationCode.issue(user.getUid(), code, expiryMinutes);
+        codeRepository.save(verification);
+        emailService.sendWithdrawalVerificationCode(user.getEmail(), code);
+        log.info("회원 탈퇴 인증 코드 저장 완료: userId={}", user.getUid());
+    }
+
+    /**
+     * 이메일 로그인 연동용 인증 코드 생성 후 DB 저장(upsert) + 이메일 발송
+     */
+    @Transactional
+    public void sendLinkEmailCode(User user) {
+        emailRateLimitService.checkAndRecord(user.getEmail());
+        String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+        EmailVerificationCode verification = EmailVerificationCode.issue(user.getUid(), code, expiryMinutes);
+        codeRepository.save(verification);
+        emailService.sendLinkEmailVerificationCode(user.getEmail(), code);
+        log.info("이메일 로그인 연동 인증 코드 저장 완료: userId={}", user.getUid());
     }
 
     /**
