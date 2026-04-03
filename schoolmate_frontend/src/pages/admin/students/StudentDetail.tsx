@@ -1,17 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-<<<<<<< HEAD
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import admin from "@/api/adminApi";
 import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from "@/constants/statusConfig";
 import { ADMIN_ROUTES } from "@/constants/routes";
-=======
-import AdminLayout from '@/components/layout/admin/AdminLayout';
-import admin from '@/api/adminApi';
-import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
-import { ADMIN_ROUTES } from '@/constants/routes';
-import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
->>>>>>> developMerge
+import { useAdminMsg, apiErrMsg } from "@/hooks/useAdminMsg";
 
 const TH_STYLE: React.CSSProperties = {
   padding: "12px 16px",

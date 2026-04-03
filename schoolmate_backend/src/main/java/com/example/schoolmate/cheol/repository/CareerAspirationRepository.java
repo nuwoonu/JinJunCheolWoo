@@ -1,5 +1,6 @@
 package com.example.schoolmate.cheol.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,7 @@ public interface CareerAspirationRepository extends JpaRepository<CareerAspirati
     // 학생+학년+학기로 조회 (작성/수정에 필요)
     Optional<CareerAspiration> findByStudentIdAndYearAndSemester(
             Long studentId, Year year, Semester semester);
+
+    // 학생별 전체 진로희망 조회
+    List<CareerAspiration> findByStudentIdOrderByYearAscSemesterAsc(Long studentId);
 }

@@ -1,5 +1,8 @@
 package com.example.schoolmate.cheol.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,6 +86,17 @@ public class CareerAspirationService {
                                 student.getUser().getName(), dto.getYear(), dto.getSemester());
 
                 return CareerAspirationDTO.from(saved);
+        }
+
+        /**
+         * 학생별 전체 진로희망 조회 (학년 오름차순)
+         */
+        public List<CareerAspirationDTO> getAllByStudentId(Long studentId) {
+                return careerAspirationRepository
+                                .findByStudentIdOrderByYearAscSemesterAsc(studentId)
+                                .stream()
+                                .map(CareerAspirationDTO::from)
+                                .collect(Collectors.toList());
         }
 
         /**

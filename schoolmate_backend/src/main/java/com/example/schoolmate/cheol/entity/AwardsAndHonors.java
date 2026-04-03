@@ -25,21 +25,22 @@ import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 @AllArgsConstructor
 @ToString
 @Getter
-@Table
+@SuperBuilder
+@Table(name = "awards_and_honors")
 @Entity
-
 public class AwardsAndHonors extends SchoolBaseEntity {
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
     private String name; // 수상명
 
-    private AchievementsGrade achievementsGrade; // 등급
+    private AchievementsGrade achievementsGrade; // 등급 (ordinal 저장)
 
     private LocalDate day; // 수상연월일
 
-    private String AwardingOrganization; // 수상기관
+    private String awardingOrganization; // 수상기관
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_info_id")

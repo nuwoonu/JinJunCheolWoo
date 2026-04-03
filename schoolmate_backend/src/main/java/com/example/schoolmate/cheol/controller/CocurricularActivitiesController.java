@@ -27,7 +27,7 @@ public class CocurricularActivitiesController {
 
     // 학생별 전체 조회
     // GET /api/cocurricular-activities/student/{studentId}
-    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.customUserDTO.studentInfoId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or #studentId == authentication.principal.customUserDTO.studentInfoId")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<CocurricularActivitiesDTO>> getByStudent(@PathVariable Long studentId) {
         return ResponseEntity.ok(cocurricularActivitiesService.getByStudentId(studentId));
@@ -35,7 +35,7 @@ public class CocurricularActivitiesController {
 
     // 등록/수정 (학년+카테고리 기준 upsert)
     // PUT /api/cocurricular-activities/student/{studentId}
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     @PutMapping("/student/{studentId}")
     public ResponseEntity<CocurricularActivitiesDTO> save(
             @PathVariable Long studentId,

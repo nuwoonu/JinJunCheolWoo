@@ -77,13 +77,9 @@ export default function TeacherGradeClasses() {
             <iconify-icon icon="mdi:pencil-box-outline" className="text-white text-3xl" />
           </div>
           <div>
-<<<<<<< HEAD
             <h5 className="fw-bold text-white mb-4">
               성적 채점
             </h5>
-=======
-            <h5 className="fw-bold text-white mb-4">{teacherGrade ? `${teacherGrade}학년` : "—"} 성적 채점</h5>
->>>>>>> developMerge
             <p className="text-white mb-0" style={{ opacity: 0.85 }}>
               {subjectName ? `담당 과목: ${subjectName} | ` : ""}채점할 학급을 선택하세요.
             </p>
@@ -145,7 +141,6 @@ export default function TeacherGradeClasses() {
                     <p className="text-secondary-light text-sm mb-4">
                       {cls.teacherName ? `담임: ${cls.teacherName}` : "담임 미배정"}
                     </p>
-<<<<<<< HEAD
                     {cls.subjectName && (
                       <p className="fw-medium text-sm mb-12" style={{ color }}>
                         과목: {cls.subjectName}
@@ -155,9 +150,6 @@ export default function TeacherGradeClasses() {
                       className="d-flex align-items-center gap-6 fw-medium text-sm"
                       style={{ color }}
                     >
-=======
-                    <div className="d-flex align-items-center gap-6 fw-medium text-sm" style={{ color }}>
->>>>>>> developMerge
                       <iconify-icon icon="mdi:pencil-outline" />
                       채점하기
                     </div>

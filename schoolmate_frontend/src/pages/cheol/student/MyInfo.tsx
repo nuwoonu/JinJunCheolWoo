@@ -28,6 +28,18 @@ const STATUS_COLOR: Record<string, string> = {
   PENDING: "bg-neutral-100 text-secondary-light",
 };
 const GENDER_LABEL: Record<string, string> = { MALE: "남성", FEMALE: "여성" };
+const ACHIEVEMENTS_GRADE_LABEL: Record<string, string> = {
+  GOLD: "금상",
+  SILVER: "은상",
+  BRONZE: "동상",
+  HONORABLE_MENTION: "장려",
+};
+const ACHIEVEMENTS_GRADE_COLOR: Record<string, string> = {
+  GOLD: "bg-warning-100 text-warning-600",
+  SILVER: "bg-neutral-100 text-neutral-600",
+  BRONZE: "bg-danger-100 text-danger-600",
+  HONORABLE_MENTION: "bg-success-100 text-success-600",
+};
 
 // ───────────────────────────────────────────────
 // 성적 관련 레이블 / 컬러 맵  (grade.js → TSX 이관)
@@ -92,7 +104,7 @@ const TABS = [
   { key: "details", icon: "ri-group-line", label: "세부 정보" },
   { key: "attendance", icon: "ri-calendar-check-line", label: "Attendance" },
   { key: "awards", icon: "ri-trophy-line", label: "수상경력" },
-  { key: "fees", icon: "ri-money-dollar-box-line", label: "Fees" },
+  { key: "volunteer", icon: "ri-heart-line", label: "봉사활동" },
   { key: "grades", icon: "ri-file-edit-line", label: "성적" },
   { key: "behavior", icon: "ri-mental-health-line", label: "세부능력 및 특기사항" },
   { key: "cocurricular", icon: "ri-lightbulb-line", label: "창의적 체험 활동" },
@@ -603,24 +615,25 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
           <table className="table bordered-table mb-0">
             <thead>
               <tr>
-                <th className="text-center" style={{ width: 100 }}>학년</th>
-                <th className="text-center" style={{ width: 120 }}>영역</th>
+                <th className="text-center" style={{ width: 100 }}>
+                  학년
+                </th>
+                <th className="text-center" style={{ width: 120 }}>
+                  영역
+                </th>
                 <th>특기사항</th>
               </tr>
             </thead>
             <tbody>
               {grouped.map((group) => {
-                const categoryItems = CATEGORY_ORDER.map((cat) =>
-                  group.items.find((a) => a.category === cat)
-                ).filter(Boolean) as CocurricularActivity[];
+                const categoryItems = CATEGORY_ORDER.map((cat) => group.items.find((a) => a.category === cat)).filter(
+                  Boolean,
+                ) as CocurricularActivity[];
 
                 return categoryItems.map((item, idx) => (
                   <tr key={item.id}>
                     {idx === 0 && (
-                      <td
-                        className="text-center fw-bold align-middle"
-                        rowSpan={categoryItems.length}
-                      >
+                      <td className="text-center fw-bold align-middle" rowSpan={categoryItems.length}>
                         {YEAR_LABEL[group.yearKey] ?? group.yearKey}
                       </td>
                     )}
@@ -633,10 +646,7 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
                         {CATEGORY_LABEL[item.category] ?? item.category}
                       </span>
                     </td>
-                    <td
-                      className="text-secondary-light"
-                      style={{ whiteSpace: "pre-wrap", minWidth: 300 }}
-                    >
+                    <td className="text-secondary-light" style={{ whiteSpace: "pre-wrap", minWidth: 300 }}>
                       {item.specifics ?? "-"}
                     </td>
                   </tr>
@@ -736,6 +746,219 @@ function DormitoryTab({ studentInfoId }: { studentInfoId: number }) {
         </div>
       </div>
     </SectionCard>
+  );
+}
+
+// ───────────────────────────────────────────────
+// 진로희망 섹션 컴포넌트 (세부 정보 탭 내)
+// ───────────────────────────────────────────────
+interface CareerAspirationItem {
+  year: string;
+  semester: string;
+  specialtyOrInterest?: string;
+  studentDesiredJob?: string;
+  parentDesiredJob?: string;
+}
+
+const YEAR_NUM: Record<string, string> = { FIRST: "1", SECOND: "2", THIRD: "3" };
+
+function CareerAspirationSection({ studentInfoId }: { studentInfoId: number }) {
+  const [items, setItems] = useState<CareerAspirationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get(`/career-aspirations/students/${studentInfoId}`)
+      .then((res) => setItems(res.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [studentInfoId]);
+
+  // 학년별로 그룹핑 — FALL 학기 우선, 없으면 FIRST 학기
+  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
+  const grouped = YEAR_ORDER.map((yearKey) => {
+    const yearItems = items.filter((i) => i.year === yearKey);
+    const record = yearItems.find((i) => i.semester === "FALL") ?? yearItems[0] ?? null;
+    return { yearKey, record };
+  }).filter((g) => g.record !== null);
+
+  if (loading) {
+    return <div className="p-20 text-secondary-light text-sm">불러오는 중...</div>;
+  }
+
+  if (grouped.length === 0) {
+    return <div className="p-20 text-secondary-light text-sm">등록된 진로희망이 없습니다.</div>;
+  }
+
+  return (
+    <div className="table-responsive">
+      <table
+        className="table mb-0"
+        style={{ borderCollapse: "collapse", textAlign: "center", fontSize: 13 }}
+      >
+        <thead>
+          <tr>
+            <th
+              rowSpan={2}
+              className="align-middle"
+              style={{ border: "1px solid #d1d5db", background: "#f0f4ff", width: 60, padding: "8px 12px" }}
+            >
+              학 년
+            </th>
+            <th
+              rowSpan={2}
+              className="align-middle"
+              style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 16px" }}
+            >
+              특기 또는 흥미
+            </th>
+            <th
+              colSpan={2}
+              style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 12px", letterSpacing: "0.2em" }}
+            >
+              진 로 희 망
+            </th>
+          </tr>
+          <tr>
+            <th style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 16px", width: 140 }}>학생</th>
+            <th style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 16px", width: 140 }}>학부모</th>
+          </tr>
+        </thead>
+        <tbody>
+          {grouped.map(({ yearKey, record }) => (
+            <tr key={yearKey}>
+              <td style={{ border: "1px solid #d1d5db", padding: "10px 12px", fontWeight: 600 }}>
+                {YEAR_NUM[yearKey]}
+              </td>
+              <td style={{ border: "1px solid #d1d5db", padding: "10px 16px", color: "#374151" }}>
+                {record!.specialtyOrInterest ?? "-"}
+              </td>
+              <td style={{ border: "1px solid #d1d5db", padding: "10px 16px", color: "#374151" }}>
+                {record!.studentDesiredJob ?? "-"}
+              </td>
+              <td style={{ border: "1px solid #d1d5db", padding: "10px 16px", color: "#374151" }}>
+                {record!.parentDesiredJob ?? "-"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────
+// 봉사활동 탭 컴포넌트
+// ───────────────────────────────────────────────
+interface VolunteerActivity {
+  id: number;
+  year: string;
+  startDate: string;
+  endDate?: string;
+  organizer: string;
+  activityContent: string;
+  hours: number;
+  cumulativeHours: number;
+}
+
+function VolunteerActivityTab({ studentInfoId }: { studentInfoId: number }) {
+  const [activities, setActivities] = useState<VolunteerActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get(`/volunteer-activities/student/${studentInfoId}`)
+      .then((res) => setActivities(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [studentInfoId]);
+
+  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
+  const grouped = YEAR_ORDER.map((yearKey) => ({
+    yearKey,
+    items: activities.filter((a) => a.year === yearKey),
+  })).filter((g) => g.items.length > 0);
+
+  const formatDate = (date: string) => date.replace(/-/g, ".") + ".";
+  const formatPeriod = (start: string, end?: string) => {
+    if (!end || start === end) return formatDate(start);
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-48 text-secondary-light">
+        <i className="ri-loader-4-line text-3xl d-block mb-12" />
+        봉사활동 정보를 불러오는 중...
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="shadow-1 radius-12 bg-base p-40 text-center text-secondary-light">
+        <i className="ri-heart-line text-3xl mb-12 d-block" />
+        등록된 봉사활동 기록이 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <div className="shadow-1 radius-12 bg-base overflow-hidden">
+      <div className="card-header border-bottom bg-base py-16 px-24">
+        <h6 className="text-lg fw-semibold mb-0">봉사 활동 실적</h6>
+      </div>
+      <div className="card-body p-0">
+        <div className="table-responsive">
+          <table className="table bordered-table mb-0">
+            <thead>
+              <tr>
+                <th className="text-center" style={{ width: 80 }}>
+                  학년
+                </th>
+                <th className="text-center" style={{ width: 160 }}>
+                  일자 또는 기간
+                </th>
+                <th className="text-center" style={{ width: 180 }}>
+                  장소 또는 주관기관명
+                </th>
+                <th>활동내용</th>
+                <th className="text-center" style={{ width: 70 }}>
+                  시간
+                </th>
+                <th className="text-center" style={{ width: 80 }}>
+                  누계시간
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {grouped.map((group) =>
+                group.items.map((item, idx) => (
+                  <tr key={item.id}>
+                    {idx === 0 && (
+                      <td className="text-center fw-bold align-middle" rowSpan={group.items.length}>
+                        {YEAR_LABEL[group.yearKey] ?? group.yearKey}
+                      </td>
+                    )}
+                    <td className="text-center align-middle" style={{ fontSize: 13 }}>
+                      {formatPeriod(item.startDate, item.endDate)}
+                    </td>
+                    <td className="align-middle" style={{ fontSize: 13 }}>
+                      {item.organizer}
+                    </td>
+                    <td className="align-middle" style={{ fontSize: 13 }}>
+                      {item.activityContent}
+                    </td>
+                    <td className="text-center align-middle fw-medium">{item.hours}</td>
+                    <td className="text-center align-middle fw-medium">{item.cumulativeHours}</td>
+                  </tr>
+                )),
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1050,7 +1273,7 @@ export default function StudentMyInfo() {
 
               {/* 이전 학교 정보 (col-md-6) */}
               <div className="col-md-6">
-                <SectionCard title="이전 학교 정보">
+                <SectionCard title="학적 사항">
                   <div className="p-20">
                     <div className="row gy-4">
                       <div className="col-sm-12">
@@ -1066,21 +1289,10 @@ export default function StudentMyInfo() {
                 </SectionCard>
               </div>
 
-              {/* 상세주소 (col-md-6) */}
-              <div className="col-md-6">
-                <SectionCard title="상세주소">
-                  <div className="p-20">
-                    <div className="row gy-4">
-                      <div className="col-sm-12">
-                        <h6 className="text-md mb-2 fw-medium">현재 주소</h6>
-                        <span className="text-secondary-light">{student.address ?? "-"}</span>
-                      </div>
-                      <div className="col-sm-12">
-                        <h6 className="text-md mb-2 fw-medium">상세 주소</h6>
-                        <span className="text-secondary-light">{student.addressDetail ?? "-"}</span>
-                      </div>
-                    </div>
-                  </div>
+              {/* 진로희망 (col-12) */}
+              <div className="col-12">
+                <SectionCard title="진로희망">
+                  <CareerAspirationSection studentInfoId={student.id} />
                 </SectionCard>
               </div>
 
@@ -1154,7 +1366,17 @@ export default function StudentMyInfo() {
                             <td className="fw-medium">{a.name}</td>
                             <td className="text-secondary-light">{a.day?.slice(0, 10) ?? "-"}</td>
                             <td className="text-secondary-light">{a.organization ?? "-"}</td>
-                            <td className="text-secondary-light">{a.achievementsGrade ?? "-"}</td>
+                            <td>
+                              {a.achievementsGrade ? (
+                                <span
+                                  className={`badge px-10 py-4 radius-4 fw-medium text-xs ${ACHIEVEMENTS_GRADE_COLOR[a.achievementsGrade] ?? "bg-neutral-100 text-secondary-light"}`}
+                                >
+                                  {ACHIEVEMENTS_GRADE_LABEL[a.achievementsGrade] ?? a.achievementsGrade}
+                                </span>
+                              ) : (
+                                "-"
+                              )}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1179,8 +1401,11 @@ export default function StudentMyInfo() {
           {/* 기숙사 탭 */}
           {activeTab === "dormitory" && <DormitoryTab studentInfoId={student.id} />}
 
+          {/* 봉사활동 탭 */}
+          {activeTab === "volunteer" && <VolunteerActivityTab studentInfoId={student.id} />}
+
           {/* 준비 중 탭 */}
-          {["attendance", "fees", "library"].includes(activeTab) && (
+          {["attendance", "library"].includes(activeTab) && (
             <div className="shadow-1 radius-12 bg-base p-40 text-center text-secondary-light">
               <i className="ri-tools-line text-3xl mb-12 d-block" />
               준비 중입니다.

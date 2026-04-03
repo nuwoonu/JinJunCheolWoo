@@ -49,7 +49,7 @@ public class VolunteerActivityController {
 
     // 봉사활동 등록 (cumulativeHours 자동 계산)
     // POST /api/volunteer-activities
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     @PostMapping
     public ResponseEntity<VolunteerActivityResponseDTO> save(
             @RequestBody VolunteerActivityRequestDTO request) {
@@ -58,7 +58,7 @@ public class VolunteerActivityController {
 
     // 봉사활동 수정 (cumulativeHours 자동 재계산)
     // PUT /api/volunteer-activities/{id}
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<VolunteerActivityResponseDTO> update(
             @PathVariable Long id,
@@ -68,7 +68,7 @@ public class VolunteerActivityController {
 
     // 봉사활동 삭제 (삭제 후 누계 재계산)
     // DELETE /api/volunteer-activities/{id}
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         volunteerActivityService.delete(id);

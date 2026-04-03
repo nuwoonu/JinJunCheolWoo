@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 // [woo] unused: motion 제거
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -560,20 +560,7 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
                   </SNavLink>
                 </li>
-<<<<<<< HEAD
-=======
-                {/* [woo] 성적 조회 */}
-                <li>
-                  <SNavLink to="/exam">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
-                  </SNavLink>
-                </li>
->>>>>>> developMerge
-                <li>
-                  <SNavLink to="/exam/schedule">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
-                  </SNavLink>
-                </li>
+
                 <li>
                   <Link to="/student/dormitory">
                     <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
