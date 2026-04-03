@@ -1,10 +1,9 @@
 package com.example.schoolmate.cheol.entity;
 
-import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.TestType;
+import com.example.schoolmate.common.entity.user.constant.ActivityCategory;
 import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,50 +19,37 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
+// [cheol] 창의적 체험활동 - 학년별 카테고리(자율/동아리/봉사/진로)별 특기사항
 @Entity
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Table(name = "grades")
-@ToString(exclude = { "student", "subject" })
-public class Grade extends SchoolBaseEntity {
+@Table(name = "cocurricular_activities")
+public class CocurricularActivities extends SchoolBaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private TestType testType; // 시험 종류
-
-    @Enumerated(EnumType.STRING)
-    private Semester semester; // 학기
-
     @Column(nullable = false)
-    private Double score; // 점수
+    private Year year; // 학년
 
     @Enumerated(EnumType.STRING)
-    private Year year; // 학년
+    @Column(nullable = false)
+    private ActivityCategory category; // 활동 영역
+
+    @Column(columnDefinition = "TEXT")
+    private String specifics; // 특기사항
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id")
     private StudentInfo student;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subject_id")
-    private Subject subject;
-
-    public void setSubject(Subject subject) {
-        this.subject = subject;
-    }
-
-    public void setStudent(StudentInfo student) {
-        this.student = student;
-    }
-
-    public void changeScore(Double score) {
-        this.score = score;
+    public void update(String specifics) {
+        this.specifics = specifics;
     }
 }

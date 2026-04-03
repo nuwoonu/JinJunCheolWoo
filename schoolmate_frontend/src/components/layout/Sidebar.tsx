@@ -286,15 +286,14 @@ export default function Sidebar() {
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
                   </Link>
                 </li>
-                {/* [woo] 성적 조회 */}
-                <li>
-                  <Link to="/exam">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
-                  </Link>
-                </li>
                 <li>
                   <Link to="/exam/schedule">
                     <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/student/dormitory">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
                 </li>
               </ul>

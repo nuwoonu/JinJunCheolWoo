@@ -18,15 +18,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "volunteer_activities")
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "studentInfo")
@@ -62,13 +62,17 @@ public class VolunteerActivity extends SchoolBaseEntity {
     private StudentInfo studentInfo;
 
     public void update(Year year, LocalDate startDate, LocalDate endDate, String organizer,
-            String activityContent, Double hours, Double cumulativeHours) {
+            String activityContent, Double hours) {
         this.year = year;
         this.startDate = startDate;
         this.endDate = endDate;
         this.organizer = organizer;
         this.activityContent = activityContent;
         this.hours = hours;
+    }
+
+    // 누계시간은 서비스에서 자동 계산하여 설정
+    public void updateCumulativeHours(Double cumulativeHours) {
         this.cumulativeHours = cumulativeHours;
     }
 }

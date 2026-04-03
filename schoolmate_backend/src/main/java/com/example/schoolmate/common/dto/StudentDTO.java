@@ -3,10 +3,14 @@ package com.example.schoolmate.common.dto;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.example.schoolmate.cheol.entity.BehaviorRecord;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
+import com.example.schoolmate.common.entity.user.constant.Semester;
+import com.example.schoolmate.common.entity.user.constant.Year;
 import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
@@ -101,8 +105,6 @@ public class StudentDTO {
         private String name;
         private String code;
         private String statusName;
-        private String basicHabits;
-        private String specialNotes;
     }
 
     /**
@@ -183,8 +185,7 @@ public class StudentDTO {
         private String code;
         private String statusName;
         private String statusDescription;
-        private String basicHabits;
-        private String specialNotes;
+        private List<BehaviorRecordInfo> behaviorRecords = new ArrayList<>();
         private List<AssignmentInfo> assignments;
         private List<LinkedGuardian> guardians = new ArrayList<>();
         private Long roleRequestId;
@@ -199,11 +200,28 @@ public class StudentDTO {
                 this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : "";
                 this.statusDescription = info.getStatus() != null ? info.getStatus().getDescription() : "";
-                this.basicHabits = info.getBasicHabits();
-                this.specialNotes = info.getSpecialNotes();
+                this.behaviorRecords = info.getBehaviorRecords().stream()
+                        .map(BehaviorRecordInfo::new)
+                        .collect(Collectors.toList());
                 this.assignments = info.getAssignments().stream()
                         .map(AssignmentInfo::new).toList();
             }
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class BehaviorRecordInfo {
+        private Long id;
+        private Year year;
+        private Semester semester;
+        private String specialNotes;
+
+        public BehaviorRecordInfo(BehaviorRecord b) {
+            this.id = b.getId();
+            this.year = b.getYear();
+            this.semester = b.getSemester();
+            this.specialNotes = b.getSpecialNotes();
         }
     }
 

@@ -14,10 +14,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
@@ -27,7 +27,7 @@ import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 @Getter
 @Table
 @Entity
-@Builder
+
 public class AwardsAndHonors extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

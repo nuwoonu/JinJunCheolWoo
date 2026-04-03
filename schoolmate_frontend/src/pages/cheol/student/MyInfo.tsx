@@ -41,6 +41,19 @@ const SEMESTER_LABEL: Record<string, string> = {
   FIRST: "1학기",
   FALL: "2학기",
 };
+const CATEGORY_LABEL: Record<string, string> = {
+  AUTONOMOUS: "자율활동",
+  CLUB: "동아리활동",
+  VOLUNTEER: "봉사활동",
+  CAREER: "진로활동",
+};
+const CATEGORY_COLOR: Record<string, string> = {
+  AUTONOMOUS: "bg-primary-100 text-primary-600",
+  CLUB: "bg-success-100 text-success-600",
+  VOLUNTEER: "bg-warning-100 text-warning-600",
+  CAREER: "bg-info-100 text-info-600",
+};
+
 const EXAM_TYPE_LABEL: Record<string, string> = {
   MIDTERMTEST: "중간고사",
   FINALTEST: "기말고사",
@@ -81,6 +94,8 @@ const TABS = [
   { key: "awards", icon: "ri-trophy-line", label: "수상경력" },
   { key: "fees", icon: "ri-money-dollar-box-line", label: "Fees" },
   { key: "grades", icon: "ri-file-edit-line", label: "성적" },
+  { key: "behavior", icon: "ri-mental-health-line", label: "세부능력 및 특기사항" },
+  { key: "cocurricular", icon: "ri-lightbulb-line", label: "창의적 체험 활동" },
   { key: "dormitory", icon: "ri-building-4-line", label: "기숙사" },
   { key: "library", icon: "ri-book-line", label: "Library" },
 ];
@@ -118,8 +133,6 @@ interface StudentInfo {
   phone?: string;
   gender?: string;
   status?: string;
-  basicHabits?: string;
-  specialNotes?: string;
   bloodGroup?: string;
   height?: number;
   weight?: number;
@@ -411,6 +424,233 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
               );
             })
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────
+// 행동 특성 및 종합의견 탭 컴포넌트
+// ───────────────────────────────────────────────
+interface BehaviorRecord {
+  id: number;
+  year: string;
+  semester: string;
+  basicHabits?: string;
+  specialNotes?: string;
+}
+
+interface CocurricularActivity {
+  id: number;
+  year: string;
+  category: string;
+  specifics?: string;
+}
+
+function BehaviorRecordsTab({ studentInfoId }: { studentInfoId: number }) {
+  const [records, setRecords] = useState<BehaviorRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterYear, setFilterYear] = useState<string>("ALL");
+  const [filterSemester, setFilterSemester] = useState<string>("ALL");
+
+  useEffect(() => {
+    api
+      .get(`/behavior-records/student/${studentInfoId}`)
+      .then((res) => setRecords(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [studentInfoId]);
+
+  const filtered = records.filter((r) => {
+    if (filterYear !== "ALL" && r.year !== filterYear) return false;
+    if (filterSemester !== "ALL" && r.semester !== filterSemester) return false;
+    return true;
+  });
+
+  // 학년/학기 순서 정렬
+  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
+  const SEM_ORDER = ["FIRST", "FALL"];
+  const sorted = [...filtered].sort((a, b) => {
+    const yearDiff = YEAR_ORDER.indexOf(a.year) - YEAR_ORDER.indexOf(b.year);
+    if (yearDiff !== 0) return yearDiff;
+    return SEM_ORDER.indexOf(a.semester) - SEM_ORDER.indexOf(b.semester);
+  });
+
+  if (loading) {
+    return (
+      <div className="text-center py-48 text-secondary-light">
+        <i className="ri-loader-4-line text-3xl d-block mb-12" />
+        행동 특성 정보를 불러오는 중...
+      </div>
+    );
+  }
+
+  return (
+    <div className="d-flex flex-column gap-16">
+      {/* 필터 헤더 */}
+      <div className="shadow-1 radius-12 bg-base overflow-hidden">
+        <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between flex-wrap gap-12">
+          <h6 className="mb-0 fw-semibold">세부능력 및 특기사항</h6>
+          <div className="d-flex gap-12 align-items-center flex-wrap">
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 120 }}
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+            >
+              <option value="ALL">전체 학년</option>
+              <option value="FIRST">1학년</option>
+              <option value="SECOND">2학년</option>
+              <option value="THIRD">3학년</option>
+            </select>
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 120 }}
+              value={filterSemester}
+              onChange={(e) => setFilterSemester(e.target.value)}
+            >
+              <option value="ALL">전체 학기</option>
+              <option value="FIRST">1학기</option>
+              <option value="FALL">2학기</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="card-body p-0">
+          {sorted.length === 0 ? (
+            <div className="text-center py-48 text-secondary-light">
+              <i className="ri-file-search-line text-4xl d-block mb-12" />
+              등록된 특기사항 기록이 없습니다.
+            </div>
+          ) : (
+            sorted.map((r) => {
+              const yearLabel = YEAR_LABEL[r.year] ?? r.year;
+              const semLabel = SEMESTER_LABEL[r.semester] ?? r.semester;
+              return (
+                <div key={r.id} className="border-bottom">
+                  <div className="px-24 py-12 bg-neutral-50 d-flex align-items-center">
+                    <span className="fw-bold text-sm">
+                      {yearLabel} {semLabel}
+                    </span>
+                  </div>
+                  <div className="p-24 d-flex flex-column gap-16">
+                    <div>
+                      <h6 className="text-md mb-6 fw-medium">기초 생활 기록</h6>
+                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                        {r.basicHabits ?? "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <h6 className="text-md mb-6 fw-medium">특기사항</h6>
+                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                        {r.specialNotes ?? "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────
+// 창의적 체험 활동 탭 컴포넌트
+// ───────────────────────────────────────────────
+const CATEGORY_ORDER = ["AUTONOMOUS", "CLUB", "VOLUNTEER", "CAREER"];
+
+function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number }) {
+  const [activities, setActivities] = useState<CocurricularActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get(`/cocurricular-activities/student/${studentInfoId}`)
+      .then((res) => setActivities(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [studentInfoId]);
+
+  // 학년별로 그룹핑
+  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
+  const grouped = YEAR_ORDER.map((yearKey) => ({
+    yearKey,
+    items: activities.filter((a) => a.year === yearKey),
+  })).filter((g) => g.items.length > 0);
+
+  if (loading) {
+    return (
+      <div className="text-center py-48 text-secondary-light">
+        <i className="ri-loader-4-line text-3xl d-block mb-12" />
+        창의적 체험 활동 정보를 불러오는 중...
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="shadow-1 radius-12 bg-base p-40 text-center text-secondary-light">
+        <i className="ri-lightbulb-line text-3xl mb-12 d-block" />
+        등록된 창의적 체험 활동 기록이 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <div className="shadow-1 radius-12 bg-base overflow-hidden">
+      <div className="card-header border-bottom bg-base py-16 px-24">
+        <h6 className="text-lg fw-semibold mb-0">창의적 체험 활동 상황</h6>
+      </div>
+      <div className="card-body p-0">
+        <div className="table-responsive">
+          <table className="table bordered-table mb-0">
+            <thead>
+              <tr>
+                <th className="text-center" style={{ width: 100 }}>학년</th>
+                <th className="text-center" style={{ width: 120 }}>영역</th>
+                <th>특기사항</th>
+              </tr>
+            </thead>
+            <tbody>
+              {grouped.map((group) => {
+                const categoryItems = CATEGORY_ORDER.map((cat) =>
+                  group.items.find((a) => a.category === cat)
+                ).filter(Boolean) as CocurricularActivity[];
+
+                return categoryItems.map((item, idx) => (
+                  <tr key={item.id}>
+                    {idx === 0 && (
+                      <td
+                        className="text-center fw-bold align-middle"
+                        rowSpan={categoryItems.length}
+                      >
+                        {YEAR_LABEL[group.yearKey] ?? group.yearKey}
+                      </td>
+                    )}
+                    <td className="text-center align-middle">
+                      <span
+                        className={`badge px-10 py-4 radius-4 fw-medium text-xs ${
+                          CATEGORY_COLOR[item.category] ?? "bg-neutral-100 text-secondary-light"
+                        }`}
+                      >
+                        {CATEGORY_LABEL[item.category] ?? item.category}
+                      </span>
+                    </td>
+                    <td
+                      className="text-secondary-light"
+                      style={{ whiteSpace: "pre-wrap", minWidth: 300 }}
+                    >
+                      {item.specifics ?? "-"}
+                    </td>
+                  </tr>
+                ));
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -894,26 +1134,6 @@ export default function StudentMyInfo() {
                   </div>
                 </SectionCard>
               </div>
-
-              {/* 행동 특성 및 종합의견 (col-md-12) */}
-              <div className="col-md-12">
-                <SectionCard title="행동 특성 및 종합의견">
-                  <div className="p-20">
-                    <div className="mb-16">
-                      <h6 className="text-md mb-2 fw-medium">기초 생활 기록</h6>
-                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                        {student.basicHabits ?? "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <h6 className="text-md mb-2 fw-medium">특이사항</h6>
-                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                        {student.specialNotes ?? "-"}
-                      </p>
-                    </div>
-                  </div>
-                </SectionCard>
-              </div>
             </div>
           )}
 
@@ -956,6 +1176,12 @@ export default function StudentMyInfo() {
 
           {/* 성적 탭 — grade.js + Grades.tsx 통합 구현 */}
           {activeTab === "grades" && <GradesTab studentInfoId={student.id} />}
+
+          {/* 행동 특성 및 종합의견 탭 */}
+          {activeTab === "behavior" && <BehaviorRecordsTab studentInfoId={student.id} />}
+
+          {/* 창의적 체험 활동 탭 */}
+          {activeTab === "cocurricular" && <CocurricularActivitiesTab studentInfoId={student.id} />}
 
           {/* 기숙사 탭 */}
           {activeTab === "dormitory" && <DormitoryTab studentInfoId={student.id} />}

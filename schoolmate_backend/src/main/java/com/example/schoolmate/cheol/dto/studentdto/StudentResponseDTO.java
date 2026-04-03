@@ -8,13 +8,16 @@ import java.util.List;
 
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.BankAccount;
+import com.example.schoolmate.cheol.entity.BehaviorRecord;
 import com.example.schoolmate.cheol.entity.CareerAspiration;
+import com.example.schoolmate.cheol.entity.CocurricularActivities;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.cheol.entity.VolunteerActivity;
 import com.example.schoolmate.common.entity.info.FamilyRelation;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.AchievementsGrade;
+import com.example.schoolmate.common.entity.user.constant.ActivityCategory;
 import com.example.schoolmate.common.entity.user.constant.Gender;
 import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.Year;
@@ -57,11 +60,9 @@ public class StudentResponseDTO {
 
     private Gender gender;
 
-    // 기초 생활 기록
-    private String basicHabits;
-
-    // 특이사항
-    private String specialNotes;
+    // 행동 특성 및 종합의견 (학년/학기별)
+    @Builder.Default
+    private List<BehaviorRecordInfo> behaviorRecords = new ArrayList<>();
 
     private StudentStatus status;
 
@@ -98,9 +99,35 @@ public class StudentResponseDTO {
     // 납부 계좌 정보
     private BankAccountInfo bankAccount;
 
+    // 창의적 체험활동 리스트
+    @Builder.Default
+    private List<CocurricularActivityInfo> cocurricularActivities = new ArrayList<>();
+
     // 봉사활동 리스트
     @Builder.Default
     private List<VolunteerActivityInfo> volunteerActivities = new ArrayList<>();
+
+    // 행동 특성 및 종합의견 내부 클래스
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BehaviorRecordInfo {
+        private Long id;
+        private Year year;
+        private Semester semester;
+        private String specialNotes;
+
+        public static BehaviorRecordInfo from(BehaviorRecord b) {
+            return BehaviorRecordInfo.builder()
+                    .id(b.getId())
+                    .year(b.getYear())
+                    .semester(b.getSemester())
+                    .specialNotes(b.getSpecialNotes())
+                    .build();
+        }
+    }
 
     // 학부모/보호자 정보 내부 클래스
     @Getter
@@ -210,6 +237,28 @@ public class StudentResponseDTO {
         }
     }
 
+    // 창의적 체험활동 정보 내부 클래스
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CocurricularActivityInfo {
+        private Long id;
+        private Year year;
+        private ActivityCategory category;
+        private String specifics;
+
+        public static CocurricularActivityInfo from(CocurricularActivities c) {
+            return CocurricularActivityInfo.builder()
+                    .id(c.getId())
+                    .year(c.getYear())
+                    .category(c.getCategory())
+                    .specifics(c.getSpecifics())
+                    .build();
+        }
+    }
+
     // 봉사활동 정보 내부 클래스
     @Getter
     @Setter
@@ -254,9 +303,17 @@ public class StudentResponseDTO {
                 .addressDetail(student.getAddressDetail())
                 .phone(student.getPhone())
                 .gender(student.getGender())
-                .basicHabits(student.getBasicHabits())
-                .specialNotes(student.getSpecialNotes())
                 .status(student.getStatus());
+
+        // 행동 특성 및 종합의견 매핑 (학년/학기 오름차순)
+        if (student.getBehaviorRecords() != null && !student.getBehaviorRecords().isEmpty()) {
+            List<BehaviorRecordInfo> brList = student.getBehaviorRecords().stream()
+                    .sorted(Comparator.comparing(BehaviorRecord::getYear)
+                            .thenComparing(BehaviorRecord::getSemester))
+                    .map(BehaviorRecordInfo::from)
+                    .toList();
+            builder.behaviorRecords(brList);
+        }
 
         if (assignment != null && assignment.getClassroom() != null) {
             builder.year(assignment.getClassroom().getGrade())
@@ -318,6 +375,16 @@ public class StudentResponseDTO {
         // 납부 계좌 매핑
         if (student.getBankAccount() != null) {
             builder.bankAccount(BankAccountInfo.from(student.getBankAccount()));
+        }
+
+        // 창의적 체험활동 매핑 (학년 → 카테고리 오름차순 정렬)
+        if (student.getCocurricularActivities() != null && !student.getCocurricularActivities().isEmpty()) {
+            List<CocurricularActivityInfo> ccList = student.getCocurricularActivities().stream()
+                    .sorted(Comparator.comparing(CocurricularActivities::getYear)
+                            .thenComparing(CocurricularActivities::getCategory))
+                    .map(CocurricularActivityInfo::from)
+                    .toList();
+            builder.cocurricularActivities(ccList);
         }
 
         // 봉사활동 매핑 (학년 → 시작일 오름차순 정렬)

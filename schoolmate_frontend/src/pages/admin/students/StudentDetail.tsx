@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AdminLayout from '@/components/layout/admin/AdminLayout';
-import admin from '@/api/adminApi';
-import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
-import { ADMIN_ROUTES } from '@/constants/routes';
+import AdminLayout from "@/components/layout/admin/AdminLayout";
+import admin from "@/api/adminApi";
+import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from "@/constants/statusConfig";
+import { ADMIN_ROUTES } from "@/constants/routes";
 
 const TH_STYLE: React.CSSProperties = {
   padding: "12px 16px",
@@ -29,6 +29,13 @@ export default function StudentDetail() {
   const [msg, setMsg] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [behaviorForm, setBehaviorForm] = useState({
+    year: "FIRST",
+    semester: "FIRST",
+    basicHabits: "",
+    specialNotes: "",
+  });
+  const [savingBehavior, setSavingBehavior] = useState(false);
 
   const load = () => {
     setLoadError(null);
@@ -38,11 +45,7 @@ export default function StudentDetail() {
         setStudent(r.data);
         setForm(r.data);
       })
-      .catch((e) =>
-        setLoadError(
-          `[${e.response?.status ?? "ERR"}] ${e.response?.data?.message ?? e.message}`,
-        ),
-      );
+      .catch((e) => setLoadError(`[${e.response?.status ?? "ERR"}] ${e.response?.data?.message ?? e.message}`));
   };
 
   useEffect(() => {
@@ -105,6 +108,30 @@ export default function StudentDetail() {
     load();
   };
 
+  const saveBehavior = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingBehavior(true);
+    try {
+      await admin.put(`/behavior-records/student/${student.id}`, behaviorForm);
+      setMsg("행동 특성이 저장되었습니다.");
+      load();
+    } catch (err: any) {
+      setMsg(`저장 실패: ${err.response?.data ?? err.message}`);
+    } finally {
+      setSavingBehavior(false);
+    }
+  };
+
+  const handleBehaviorYearSemesterChange = (year: string, semester: string) => {
+    const existing = (student.behaviorRecords ?? []).find((r: any) => r.year === year && r.semester === semester);
+    setBehaviorForm({
+      year,
+      semester,
+      basicHabits: existing?.basicHabits ?? "",
+      specialNotes: existing?.specialNotes ?? "",
+    });
+  };
+
   if (!student)
     return (
       <AdminLayout>
@@ -147,9 +174,7 @@ export default function StudentDetail() {
                 className="rounded-circle mx-auto d-flex align-items-center justify-content-center"
                 style={{ width: 80, height: 80, background: "rgba(37,161,148,0.12)", marginBottom: 12 }}
               >
-                <span style={{ fontSize: 32, color: "#25A194", fontWeight: 700 }}>
-                  {student.name?.[0]}
-                </span>
+                <span style={{ fontSize: 32, color: "#25A194", fontWeight: 700 }}>{student.name?.[0]}</span>
               </div>
               <h5 className="fw-bold text-primary-light mb-4">{student.name}</h5>
               <p className="text-secondary-light mb-0" style={{ fontSize: 13, marginBottom: 12 }}>
@@ -172,7 +197,9 @@ export default function StudentDetail() {
               <div className="d-flex align-items-start gap-10 mb-12">
                 <i className="ri-mail-line text-neutral-400 mt-1" style={{ fontSize: 15 }} />
                 <div className="min-w-0">
-                  <p className="text-neutral-400 mb-2" style={{ fontSize: 11 }}>계정 이메일</p>
+                  <p className="text-neutral-400 mb-2" style={{ fontSize: 11 }}>
+                    계정 이메일
+                  </p>
                   <p className="text-primary-light fw-medium mb-0" style={{ fontSize: 13, wordBreak: "break-all" }}>
                     {student.email}
                   </p>
@@ -182,7 +209,9 @@ export default function StudentDetail() {
                 <div className="d-flex align-items-start gap-10">
                   <i className="ri-building-2-line text-neutral-400 mt-1" style={{ fontSize: 15 }} />
                   <div>
-                    <p className="text-neutral-400 mb-2" style={{ fontSize: 11 }}>최근 소속</p>
+                    <p className="text-neutral-400 mb-2" style={{ fontSize: 11 }}>
+                      최근 소속
+                    </p>
                     <p className="text-primary-light fw-medium mb-0" style={{ fontSize: 13 }}>
                       {(() => {
                         const a = student.assignments[student.assignments.length - 1];
@@ -203,6 +232,7 @@ export default function StudentDetail() {
                 ["basic", "기본 정보"],
                 ["history", "학적 이력"],
                 ["parent", "보호자 관리"],
+                ["behavior", "행동 특성"],
                 ["approval", "역할 승인"],
               ].map(([key, label]) => (
                 <button
@@ -233,9 +263,7 @@ export default function StudentDetail() {
                         className="form-control"
                         required
                         value={form.name ?? ""}
-                        onChange={(e) =>
-                          setForm((f: any) => ({ ...f, name: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-6">
@@ -244,15 +272,11 @@ export default function StudentDetail() {
                         className="form-control"
                         required
                         value={form.code ?? ""}
-                        onChange={(e) =>
-                          setForm((f: any) => ({ ...f, code: e.target.value }))
-                        }
+                        onChange={(e) => setForm((f: any) => ({ ...f, code: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-12">
-                      <label className="form-label fw-semibold">
-                        학적 상태
-                      </label>
+                      <label className="form-label fw-semibold">학적 상태</label>
                       <select
                         className="form-select"
                         value={form.statusName ?? ""}
@@ -264,44 +288,25 @@ export default function StudentDetail() {
                         }
                       >
                         {Object.entries(STUDENT_STATUS).map(([value, cfg]) => (
-                          <option key={value} value={value}>{cfg.label}</option>
+                          <option key={value} value={value}>
+                            {cfg.label}
+                          </option>
                         ))}
                       </select>
-                    </div>
-                    <div className="col-md-12">
-                      <label className="form-label fw-semibold">
-                        기초 생활 기록
-                      </label>
-                      <textarea
-                        className="form-control"
-                        rows={3}
-                        value={form.basicHabits ?? ""}
-                        onChange={(e) =>
-                          setForm((f: any) => ({
-                            ...f,
-                            basicHabits: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="col-md-12">
-                      <label className="form-label fw-semibold">특이사항</label>
-                      <textarea
-                        className="form-control"
-                        rows={3}
-                        value={form.specialNotes ?? ""}
-                        onChange={(e) =>
-                          setForm((f: any) => ({
-                            ...f,
-                            specialNotes: e.target.value,
-                          }))
-                        }
-                      />
                     </div>
                     <div className="col-12 text-end mt-4">
                       <button
                         type="submit"
-                        style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                        style={{
+                          padding: "9px 20px",
+                          background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+                          border: "none",
+                          borderRadius: 8,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: "#fff",
+                          cursor: "pointer",
+                        }}
                       >
                         정보 수정 저장
                       </button>
@@ -343,10 +348,7 @@ export default function StudentDetail() {
                       ))}
                       {!student.assignments?.length && (
                         <tr>
-                          <td
-                            colSpan={3}
-                            className="text-center py-4 text-muted"
-                          >
+                          <td colSpan={3} className="text-center py-4 text-muted">
                             등록된 이력이 없습니다.
                           </td>
                         </tr>
@@ -363,10 +365,7 @@ export default function StudentDetail() {
                       <i className="ri-user-heart-line text-neutral-400" style={{ fontSize: 16 }} />
                       <h6 className="fw-semibold text-primary-light mb-0">연동된 보호자 목록</h6>
                     </div>
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => setShowParentModal(true)}
-                    >
+                    <button className="btn btn-sm btn-primary" onClick={() => setShowParentModal(true)}>
                       <i className="bi bi-plus-lg" /> 보호자 추가
                     </button>
                   </div>
@@ -385,7 +384,16 @@ export default function StudentDetail() {
                           <td className="fw-bold">{g.name}</td>
                           <td>{g.phone}</td>
                           <td>
-                            <span style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: 6, padding: "2px 10px", fontSize: 12 }}>
+                            <span
+                              style={{
+                                background: "#f3f4f6",
+                                color: "#6b7280",
+                                border: "1px solid #e5e7eb",
+                                borderRadius: 6,
+                                padding: "2px 10px",
+                                fontSize: 12,
+                              }}
+                            >
                               {g.relationship}
                             </span>
                           </td>
@@ -401,10 +409,7 @@ export default function StudentDetail() {
                       ))}
                       {!student.guardians?.length && (
                         <tr>
-                          <td
-                            colSpan={4}
-                            className="text-center py-4 text-muted"
-                          >
+                          <td colSpan={4} className="text-center py-4 text-muted">
                             연동된 보호자가 없습니다.
                           </td>
                         </tr>
@@ -414,27 +419,152 @@ export default function StudentDetail() {
                 </>
               )}
 
+              {tab === "behavior" && (
+                <>
+                  <div className="d-flex align-items-center gap-8 mb-16">
+                    <i className="ri-mental-health-line text-neutral-400" style={{ fontSize: 16 }} />
+                    <h6 className="fw-semibold text-primary-light mb-0">행동 특성 및 종합의견</h6>
+                  </div>
+
+                  {/* 기존 기록 목록 */}
+                  {(student.behaviorRecords ?? []).length > 0 && (
+                    <div className="mb-20">
+                      <p className="text-secondary-light fw-medium mb-8" style={{ fontSize: 13 }}>
+                        등록된 기록
+                      </p>
+                      <div className="d-flex flex-column gap-8">
+                        {(student.behaviorRecords as any[]).map((r: any) => {
+                          const yearLabel: Record<string, string> = { FIRST: "1학년", SECOND: "2학년", THIRD: "3학년" };
+                          const semLabel: Record<string, string> = { FIRST: "1학기", FALL: "2학기" };
+                          return (
+                            <div
+                              key={r.id}
+                              className="border rounded p-12"
+                              style={{ background: "var(--neutral-50, #f9fafb)", cursor: "pointer" }}
+                              onClick={() =>
+                                setBehaviorForm({
+                                  year: r.year,
+                                  semester: r.semester,
+                                  basicHabits: r.basicHabits ?? "",
+                                  specialNotes: r.specialNotes ?? "",
+                                })
+                              }
+                            >
+                              <p className="fw-semibold mb-4" style={{ fontSize: 13 }}>
+                                {yearLabel[r.year] ?? r.year} {semLabel[r.semester] ?? r.semester}
+                              </p>
+                              <p className="text-secondary-light mb-2" style={{ fontSize: 12 }}>
+                                기초 생활: {r.basicHabits || "-"}
+                              </p>
+                              <p className="text-secondary-light mb-0" style={{ fontSize: 12 }}>
+                                특기사항: {r.specialNotes || "-"}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 등록/수정 폼 */}
+                  <form onSubmit={saveBehavior}>
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">학년</label>
+                        <select
+                          className="form-select"
+                          value={behaviorForm.year}
+                          onChange={(e) => handleBehaviorYearSemesterChange(e.target.value, behaviorForm.semester)}
+                        >
+                          <option value="FIRST">1학년</option>
+                          <option value="SECOND">2학년</option>
+                          <option value="THIRD">3학년</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">학기</label>
+                        <select
+                          className="form-select"
+                          value={behaviorForm.semester}
+                          onChange={(e) => handleBehaviorYearSemesterChange(behaviorForm.year, e.target.value)}
+                        >
+                          <option value="FIRST">1학기</option>
+                          <option value="FALL">2학기</option>
+                        </select>
+                      </div>
+                      <div className="col-md-12">
+                        <label className="form-label fw-semibold">기초 생활 기록</label>
+                        <textarea
+                          className="form-control"
+                          rows={3}
+                          value={behaviorForm.basicHabits}
+                          onChange={(e) => setBehaviorForm((f) => ({ ...f, basicHabits: e.target.value }))}
+                        />
+                      </div>
+                      <div className="col-md-12">
+                        <label className="form-label fw-semibold">특기사항</label>
+                        <textarea
+                          className="form-control"
+                          rows={3}
+                          value={behaviorForm.specialNotes}
+                          onChange={(e) => setBehaviorForm((f) => ({ ...f, specialNotes: e.target.value }))}
+                        />
+                      </div>
+                      <div className="col-12 text-end mt-4">
+                        <button
+                          type="submit"
+                          disabled={savingBehavior}
+                          style={{
+                            padding: "9px 20px",
+                            background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+                            border: "none",
+                            borderRadius: 8,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: "#fff",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {savingBehavior ? "저장 중..." : "저장"}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </>
+              )}
+
               {tab === "approval" && (
                 <div className="p-4">
                   <h6 className="fw-semibold mb-3">학생 역할 승인 상태</h6>
                   {student.roleRequestId ? (
                     <div className="border rounded p-3" style={{ background: "var(--neutral-50, #f9fafb)" }}>
                       <div className="d-flex align-items-center gap-2 mb-3">
-                        <span className={`badge ${(ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? STATUS_DEFAULT).badge}`}>
-                          {(ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? { label: student.roleRequestStatus }).label}
+                        <span
+                          className={`badge ${(ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? STATUS_DEFAULT).badge}`}
+                        >
+                          {
+                            (ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? { label: student.roleRequestStatus })
+                              .label
+                          }
                         </span>
                       </div>
                       <div className="d-flex gap-2 flex-wrap align-items-center">
-                        {student.roleRequestStatus === 'PENDING' && (
-                          <button className="btn btn-sm btn-success" onClick={approveRequest}>승인</button>
+                        {student.roleRequestStatus === "PENDING" && (
+                          <button className="btn btn-sm btn-success" onClick={approveRequest}>
+                            승인
+                          </button>
                         )}
-                        {student.roleRequestStatus === 'ACTIVE' && (
-                          <button className="btn btn-sm btn-warning" onClick={suspendRequest}>정지</button>
+                        {student.roleRequestStatus === "ACTIVE" && (
+                          <button className="btn btn-sm btn-warning" onClick={suspendRequest}>
+                            정지
+                          </button>
                         )}
-                        {student.roleRequestStatus === 'SUSPENDED' && (
-                          <button className="btn btn-sm btn-success" onClick={approveRequest}>재활성화</button>
+                        {student.roleRequestStatus === "SUSPENDED" && (
+                          <button className="btn btn-sm btn-success" onClick={approveRequest}>
+                            재활성화
+                          </button>
                         )}
-                        {student.roleRequestStatus === 'PENDING' && (
+                        {student.roleRequestStatus === "PENDING" && (
                           <>
                             <input
                               className="form-control form-control-sm"
@@ -443,7 +573,9 @@ export default function StudentDetail() {
                               value={rejectReason}
                               onChange={(e) => setRejectReason(e.target.value)}
                             />
-                            <button className="btn btn-sm btn-outline-danger" onClick={rejectRequest}>거절</button>
+                            <button className="btn btn-sm btn-outline-danger" onClick={rejectRequest}>
+                              거절
+                            </button>
                           </>
                         )}
                       </div>
@@ -489,9 +621,7 @@ export default function StudentDetail() {
                 borderBottom: "1px solid var(--border-color)",
               }}
             >
-              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
-                보호자 검색
-              </h6>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>보호자 검색</h6>
               <button
                 onClick={() => setShowParentModal(false)}
                 style={{
@@ -515,7 +645,16 @@ export default function StudentDetail() {
                   onKeyUp={(e) => e.key === "Enter" && searchParents()}
                 />
                 <button
-                  style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                  style={{
+                    padding: "9px 20px",
+                    background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "#fff",
+                    cursor: "pointer",
+                  }}
                   onClick={searchParents}
                 >
                   검색
@@ -523,11 +662,7 @@ export default function StudentDetail() {
               </div>
               <div className="mb-3">
                 <label className="form-label fw-semibold">관계</label>
-                <select
-                  className="form-select"
-                  value={relationship}
-                  onChange={(e) => setRelationship(e.target.value)}
-                >
+                <select className="form-select" value={relationship} onChange={(e) => setRelationship(e.target.value)}>
                   <option value="FATHER">부</option>
                   <option value="MOTHER">모</option>
                   <option value="GRANDFATHER">조부</option>
@@ -535,10 +670,7 @@ export default function StudentDetail() {
                   <option value="OTHER">기타</option>
                 </select>
               </div>
-              <div
-                className="list-group"
-                style={{ maxHeight: 260, overflowY: "auto" }}
-              >
+              <div className="list-group" style={{ maxHeight: 260, overflowY: "auto" }}>
                 {parentResults.map((p: any) => (
                   <button
                     key={p.id ?? p.uid}

@@ -10,13 +10,14 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.BankAccount;
 import com.example.schoolmate.cheol.entity.CareerAspiration;
+import com.example.schoolmate.cheol.entity.CocurricularActivities;
 import com.example.schoolmate.cheol.entity.Dormitory;
 import com.example.schoolmate.cheol.entity.Grade;
+import com.example.schoolmate.cheol.entity.BehaviorRecord;
 import com.example.schoolmate.cheol.entity.BookReport;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import com.example.schoolmate.cheol.entity.VolunteerActivity;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -83,13 +84,13 @@ public class StudentInfo extends SchoolMemberInfo {
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyRelation> familyRelations = new ArrayList<>();
 
-    // 기초 생활 기록
-    @Column(columnDefinition = "TEXT")
-    private String basicHabits;
+    // 행동 특성 및 종합의견 (학년/학기별)
+    @OneToMany(mappedBy = "student")
+    private List<BehaviorRecord> behaviorRecords = new ArrayList<>();
 
-    // 특이사항
-    @Column(columnDefinition = "TEXT")
-    private String specialNotes;
+    // 창의적 체험 활동 (학년/학기별)
+    @OneToMany(mappedBy = "student")
+    private List<CocurricularActivities> cocurricularActivities = new ArrayList<>();
 
     /**
      * 가장 최근 학적 이력 가져오기

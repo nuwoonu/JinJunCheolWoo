@@ -6,8 +6,10 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -127,17 +129,55 @@ public class DormitoryController {
     /**
      * cheol: 건물 추가
      * POST /api/dormitories/buildings
-     * body: { buildingName, floors, roomsPerFloor, bedsPerRoom }
+     * body: { buildingName, floors, roomsPerFloor: number[], bedsPerRoom }
      */
     @PreAuthorize("@grants.canManageDormitory()")
     @PostMapping("/buildings")
     public ResponseEntity<String> addBuilding(@RequestBody Map<String, Object> body) {
         String buildingName = (String) body.get("buildingName");
         int floors = ((Number) body.get("floors")).intValue();
-        int roomsPerFloor = ((Number) body.get("roomsPerFloor")).intValue();
+        @SuppressWarnings("unchecked")
+        List<Integer> roomsPerFloor = ((List<Number>) body.get("roomsPerFloor")).stream()
+                .map(Number::intValue).collect(java.util.stream.Collectors.toList());
         int bedsPerRoom = ((Number) body.get("bedsPerRoom")).intValue();
         dormitoryService.addBuilding(buildingName, floors, roomsPerFloor, bedsPerRoom);
         return ResponseEntity.ok("건물 추가 완료: " + buildingName);
+    }
+
+    /**
+     * cheol: 건물 수정 (이름·구조 변경)
+     * PUT /api/dormitories/buildings/{buildingName}
+     * body: { newBuildingName, floors, roomsPerFloor: number[], bedsPerRoom }
+     */
+    @PreAuthorize("@grants.canManageDormitory()")
+    @PutMapping("/buildings/{buildingName}")
+    public ResponseEntity<String> updateBuilding(
+            @PathVariable String buildingName,
+            @RequestBody Map<String, Object> body) {
+        String newBuildingName = (String) body.get("newBuildingName");
+        int floors = ((Number) body.get("floors")).intValue();
+        @SuppressWarnings("unchecked")
+        List<Integer> roomsPerFloor = ((List<Number>) body.get("roomsPerFloor")).stream()
+                .map(Number::intValue).collect(java.util.stream.Collectors.toList());
+        int bedsPerRoom = ((Number) body.get("bedsPerRoom")).intValue();
+        dormitoryService.updateBuilding(buildingName, newBuildingName, floors, roomsPerFloor, bedsPerRoom);
+        return ResponseEntity.ok("건물 수정 완료: " + newBuildingName);
+    }
+
+    /**
+     * cheol: 특정 호실 침대 수 조정
+     * PATCH /api/dormitories/rooms/beds
+     * body: { buildingName, floor, roomNumber, bedsPerRoom }
+     */
+    @PreAuthorize("@grants.canManageDormitory()")
+    @PatchMapping("/rooms/beds")
+    public ResponseEntity<String> updateRoomBeds(@RequestBody Map<String, Object> body) {
+        String buildingName = (String) body.get("buildingName");
+        int floor = ((Number) body.get("floor")).intValue();
+        String roomNumber = (String) body.get("roomNumber");
+        int bedsPerRoom = ((Number) body.get("bedsPerRoom")).intValue();
+        dormitoryService.updateRoomBeds(buildingName, floor, roomNumber, bedsPerRoom);
+        return ResponseEntity.ok("호실 침대 수 수정 완료");
     }
 
     /**

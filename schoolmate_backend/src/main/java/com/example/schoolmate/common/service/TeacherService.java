@@ -687,25 +687,29 @@ public class TeacherService {
     }
 
     /**
-     * 담당 학급 학생 성적 입력 (담임 전용)
+     * 담당 과목 성적 입력 (교과 교사용)
+     * - 담임 학급 무관, 본인 담당 과목 코드와 일치하는 경우에만 채점 허용
      */
     @Transactional
     public void inputGradeForMyClass(Long teacherId, int schoolYear, GradeInputDTO gradeDTO) {
-        log.info("담당 학급 학생 성적 입력 - 교사: {}, 학생: {}", teacherId, gradeDTO.getStudentId());
+        log.info("담당 과목 성적 입력 - 교사: {}, 학생: {}", teacherId, gradeDTO.getStudentId());
 
-        Classroom myClassroom = getMyClassroomOrThrow(teacherId, schoolYear);
+        TeacherInfo teacher = teacherInfoRepository.findById(teacherId)
+                .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다. ID: " + teacherId));
+
+        if (teacher.getSubject() == null) {
+            throw new IllegalArgumentException("담당 과목이 설정되지 않았습니다. 관리자에게 담당 과목 배정을 요청하세요.");
+        }
+
+        if (!teacher.getSubject().getCode().equals(gradeDTO.getSubjectCode())) {
+            throw new IllegalArgumentException(
+                    "본인의 담당 과목(" + teacher.getSubject().getName() + ")만 채점할 수 있습니다.");
+        }
 
         StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-        if (student.getCurrentAssignment() == null
-                || student.getCurrentAssignment().getClassroom() == null
-                || !student.getCurrentAssignment().getClassroom().getCid().equals(myClassroom.getCid())) {
-            throw new IllegalArgumentException("담당 학급 학생이 아닙니다. 본인 반 학생의 성적만 입력할 수 있습니다.");
-        }
-
-        Subject subject = findSubjectByCode(gradeDTO.getSubjectCode())
-                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
+        Subject subject = teacher.getSubject();
 
         // 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
         gradeRepository.findDuplicate(
@@ -714,7 +718,7 @@ public class TeacherService {
                 .ifPresentOrElse(
                         existing -> {
                             existing.changeScore(gradeDTO.getScore());
-                            log.info("담당 학급 성적 갱신 완료 - 학생: {}, 과목: {}, 점수: {}",
+                            log.info("성적 갱신 완료 - 학생: {}, 과목: {}, 점수: {}",
                                     student.getId(), subject.getName(), gradeDTO.getScore());
                         },
                         () -> {
@@ -726,7 +730,7 @@ public class TeacherService {
                                     .year(gradeDTO.getYear())
                                     .score(gradeDTO.getScore())
                                     .build());
-                            log.info("담당 학급 학생 성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
+                            log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
                                     student.getId(), subject.getName(), gradeDTO.getScore());
                         });
     }
