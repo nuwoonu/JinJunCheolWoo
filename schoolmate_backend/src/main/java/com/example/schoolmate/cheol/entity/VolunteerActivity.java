@@ -2,8 +2,7 @@ package com.example.schoolmate.cheol.entity;
 
 import java.time.LocalDate;
 
-import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
 import jakarta.persistence.Column;
@@ -17,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import com.example.schoolmate.common.entity.info.StudentInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,9 +36,9 @@ public class VolunteerActivity extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Year year; // 학년 (FIRST, SECOND, THIRD)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academic_term_id", nullable = false)
+    private AcademicTerm academicTerm;
 
     @Column(nullable = false)
     private LocalDate startDate; // 일자 또는 기간 (시작일)
@@ -55,15 +55,15 @@ public class VolunteerActivity extends SchoolBaseEntity {
     private Double hours; // 시간 (해당 활동의 봉사 시간)
 
     @Column(nullable = false)
-    private Double cumulativeHours; // 누계시간 (학년 기준 누적 봉사 시간)
+    private Double cumulativeHours; // 누계시간 (학기 기준 누적 봉사 시간)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_info_id")
     private StudentInfo studentInfo;
 
-    public void update(Year year, LocalDate startDate, LocalDate endDate, String organizer,
+    public void update(AcademicTerm academicTerm, LocalDate startDate, LocalDate endDate, String organizer,
             String activityContent, Double hours) {
-        this.year = year;
+        this.academicTerm = academicTerm;
         this.startDate = startDate;
         this.endDate = endDate;
         this.organizer = organizer;
@@ -74,5 +74,15 @@ public class VolunteerActivity extends SchoolBaseEntity {
     // 누계시간은 서비스에서 자동 계산하여 설정
     public void updateCumulativeHours(Double cumulativeHours) {
         this.cumulativeHours = cumulativeHours;
+    }
+
+    /** 학년도 정수값 편의 메서드 */
+    public int getSchoolYearInt() {
+        return academicTerm != null ? academicTerm.getSchoolYearInt() : 0;
+    }
+
+    /** 학기 편의 메서드 */
+    public int getSemester() {
+        return academicTerm != null ? academicTerm.getSemester() : 0;
     }
 }

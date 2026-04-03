@@ -9,19 +9,18 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.schoolmate.cheol.entity.CocurricularActivities;
 import com.example.schoolmate.common.entity.user.constant.ActivityCategory;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 // [cheol] 창의적 체험활동 Repository
 public interface CocurricularActivitiesRepository extends JpaRepository<CocurricularActivities, Long> {
 
     // 학생별 전체 조회
-    @Query("SELECT c FROM CocurricularActivities c WHERE c.student.id = :studentId ORDER BY c.year, c.category")
+    @Query("SELECT c FROM CocurricularActivities c WHERE c.student.id = :studentId ORDER BY c.academicTerm.schoolYear.year, c.academicTerm.semester, c.category")
     List<CocurricularActivities> findByStudentId(@Param("studentId") Long studentId);
 
-    // 학생 + 학년 + 카테고리 단건 조회
-    @Query("SELECT c FROM CocurricularActivities c WHERE c.student.id = :studentId AND c.year = :year AND c.category = :category")
-    Optional<CocurricularActivities> findByStudentIdAndYearAndCategory(
+    // 학생 + 학기 + 카테고리 단건 조회
+    @Query("SELECT c FROM CocurricularActivities c WHERE c.student.id = :studentId AND c.academicTerm.id = :academicTermId AND c.category = :category")
+    Optional<CocurricularActivities> findByStudentIdAndAcademicTermIdAndCategory(
             @Param("studentId") Long studentId,
-            @Param("year") Year year,
+            @Param("academicTermId") Long academicTermId,
             @Param("category") ActivityCategory category);
 }

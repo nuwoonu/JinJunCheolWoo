@@ -115,14 +115,14 @@ public class StudentResponseDTO {
     @AllArgsConstructor
     public static class BehaviorRecordInfo {
         private Long id;
-        private Year year;
-        private Semester semester;
+        private int schoolYear;
+        private int semester;
         private String specialNotes;
 
         public static BehaviorRecordInfo from(BehaviorRecord b) {
             return BehaviorRecordInfo.builder()
                     .id(b.getId())
-                    .year(b.getYear())
+                    .schoolYear(b.getSchoolYearInt())
                     .semester(b.getSemester())
                     .specialNotes(b.getSpecialNotes())
                     .build();
@@ -308,8 +308,8 @@ public class StudentResponseDTO {
         // 행동 특성 및 종합의견 매핑 (학년/학기 오름차순)
         if (student.getBehaviorRecords() != null && !student.getBehaviorRecords().isEmpty()) {
             List<BehaviorRecordInfo> brList = student.getBehaviorRecords().stream()
-                    .sorted(Comparator.comparing(BehaviorRecord::getYear)
-                            .thenComparing(BehaviorRecord::getSemester))
+                    .sorted(Comparator.comparingInt(BehaviorRecord::getSchoolYearInt)
+                            .thenComparingInt(BehaviorRecord::getSemester))
                     .map(BehaviorRecordInfo::from)
                     .toList();
             builder.behaviorRecords(brList);

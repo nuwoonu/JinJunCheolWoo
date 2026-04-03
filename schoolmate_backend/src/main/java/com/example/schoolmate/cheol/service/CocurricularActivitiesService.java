@@ -10,6 +10,8 @@ import com.example.schoolmate.cheol.dto.CocurricularActivitiesDTO;
 import com.example.schoolmate.cheol.dto.CocurricularActivitiesRequestDTO;
 import com.example.schoolmate.cheol.entity.CocurricularActivities;
 import com.example.schoolmate.cheol.repository.CocurricularActivitiesRepository;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 
@@ -25,6 +27,7 @@ public class CocurricularActivitiesService {
 
     private final CocurricularActivitiesRepository cocurricularActivitiesRepository;
     private final StudentInfoRepository studentInfoRepository;
+    private final AcademicTermRepository academicTermRepository;
 
     // 학생별 전체 조회
     public List<CocurricularActivitiesDTO> getByStudentId(Long studentId) {
@@ -43,20 +46,23 @@ public class CocurricularActivitiesService {
     // 등록 또는 수정 (학년+카테고리 기준 upsert)
     @Transactional
     public CocurricularActivitiesDTO save(Long studentId, CocurricularActivitiesRequestDTO request) {
-        log.info("창의적 체험활동 저장 - 학생 ID: {}, 학년: {}, 카테고리: {}", studentId, request.getYear(), request.getCategory());
+        log.info("창의적 체험활동 저장 - 학생 ID: {}, 학기 ID: {}, 카테고리: {}", studentId, request.getAcademicTermId(), request.getCategory());
 
         StudentInfo student = studentInfoRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다. ID: " + studentId));
 
+        AcademicTerm term = academicTermRepository.findById(request.getAcademicTermId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학기입니다. ID: " + request.getAcademicTermId()));
+
         CocurricularActivities record = cocurricularActivitiesRepository
-                .findByStudentIdAndYearAndCategory(studentId, request.getYear(), request.getCategory())
+                .findByStudentIdAndAcademicTermIdAndCategory(studentId, request.getAcademicTermId(), request.getCategory())
                 .map(existing -> {
                     existing.update(request.getSpecifics());
                     return existing;
                 })
                 .orElseGet(() -> CocurricularActivities.builder()
                         .student(student)
-                        .year(request.getYear())
+                        .academicTerm(term)
                         .category(request.getCategory())
                         .specifics(request.getSpecifics())
                         .build());
@@ -68,7 +74,8 @@ public class CocurricularActivitiesService {
         return CocurricularActivitiesDTO.builder()
                 .id(c.getId())
                 .studentId(c.getStudent() != null ? c.getStudent().getId() : null)
-                .year(c.getYear())
+                .academicTermId(c.getAcademicTerm() != null ? c.getAcademicTerm().getId() : null)
+                .termDisplayName(c.getAcademicTerm() != null ? c.getAcademicTerm().getDisplayName() : null)
                 .category(c.getCategory())
                 .specifics(c.getSpecifics())
                 .build();

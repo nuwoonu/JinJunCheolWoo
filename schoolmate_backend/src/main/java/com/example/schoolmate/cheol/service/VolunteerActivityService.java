@@ -11,6 +11,8 @@ import com.example.schoolmate.cheol.dto.volunteerActivitydto.VolunteerActivityRe
 import com.example.schoolmate.cheol.dto.volunteerActivitydto.VolunteerActivityResponseDTO;
 import com.example.schoolmate.cheol.entity.VolunteerActivity;
 import com.example.schoolmate.cheol.repository.VolunteerActivityRepository;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 
@@ -26,20 +28,21 @@ public class VolunteerActivityService {
 
     private final VolunteerActivityRepository volunteerActivityRepository;
     private final StudentInfoRepository studentInfoRepository;
+    private final AcademicTermRepository academicTermRepository;
 
     // 학생별 전체 봉사활동 조회
     public List<VolunteerActivityResponseDTO> getByStudentId(Long studentId) {
         return volunteerActivityRepository.findByStudentInfoId(studentId).stream()
-                .sorted(Comparator.comparing(VolunteerActivity::getYear)
+                .sorted(Comparator.comparing(VolunteerActivity::getSchoolYearInt)
+                        .thenComparing(VolunteerActivity::getSemester)
                         .thenComparing(VolunteerActivity::getStartDate))
                 .map(VolunteerActivityResponseDTO::from)
                 .collect(Collectors.toList());
     }
 
-    // 학생별 특정 학년 봉사활동 조회
-    public List<VolunteerActivityResponseDTO> getByStudentIdAndYear(Long studentId,
-            com.example.schoolmate.common.entity.user.constant.Year year) {
-        return volunteerActivityRepository.findByStudentInfoIdAndYear(studentId, year).stream()
+    // 학생별 특정 학기 봉사활동 조회
+    public List<VolunteerActivityResponseDTO> getByStudentIdAndAcademicTerm(Long studentId, Long academicTermId) {
+        return volunteerActivityRepository.findByStudentInfoIdAndAcademicTermId(studentId, academicTermId).stream()
                 .sorted(Comparator.comparing(VolunteerActivity::getStartDate))
                 .map(VolunteerActivityResponseDTO::from)
                 .collect(Collectors.toList());
@@ -51,9 +54,12 @@ public class VolunteerActivityService {
         StudentInfo student = studentInfoRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다. ID: " + request.getStudentId()));
 
+        AcademicTerm term = academicTermRepository.findById(request.getAcademicTermId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학기입니다. ID: " + request.getAcademicTermId()));
+
         VolunteerActivity newActivity = VolunteerActivity.builder()
                 .studentInfo(student)
-                .year(request.getYear())
+                .academicTerm(term)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .organizer(request.getOrganizer())
@@ -64,10 +70,10 @@ public class VolunteerActivityService {
 
         volunteerActivityRepository.save(newActivity);
 
-        // 해당 학년 전체 레코드 누계 재계산
-        recalculateCumulativeHours(request.getStudentId(), request.getYear());
+        // 해당 학기 전체 레코드 누계 재계산
+        recalculateCumulativeHours(request.getStudentId(), request.getAcademicTermId());
 
-        log.info("봉사활동 등록 - 학생 ID: {}, 학년: {}, 시간: {}", request.getStudentId(), request.getYear(), request.getHours());
+        log.info("봉사활동 등록 - 학생 ID: {}, 학기: {}, 시간: {}", request.getStudentId(), term.getDisplayName(), request.getHours());
         return VolunteerActivityResponseDTO.from(newActivity);
     }
 
@@ -77,16 +83,20 @@ public class VolunteerActivityService {
         VolunteerActivity activity = volunteerActivityRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 봉사활동입니다. ID: " + id));
 
-        activity.update(request.getYear(), request.getStartDate(), request.getEndDate(),
+        AcademicTerm term = academicTermRepository.findById(request.getAcademicTermId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학기입니다. ID: " + request.getAcademicTermId()));
+
+        Long oldTermId = activity.getAcademicTerm().getId();
+        activity.update(term, request.getStartDate(), request.getEndDate(),
                 request.getOrganizer(), request.getActivityContent(), request.getHours());
 
-        // 수정된 학년 기준으로 누계 재계산 (학년이 변경된 경우 이전 학년도 재계산)
-        if (!activity.getYear().equals(request.getYear())) {
-            recalculateCumulativeHours(activity.getStudentInfo().getId(), activity.getYear());
+        // 수정된 학기 기준으로 누계 재계산 (학기가 변경된 경우 이전 학기도 재계산)
+        if (!oldTermId.equals(request.getAcademicTermId())) {
+            recalculateCumulativeHours(activity.getStudentInfo().getId(), oldTermId);
         }
-        recalculateCumulativeHours(activity.getStudentInfo().getId(), request.getYear());
+        recalculateCumulativeHours(activity.getStudentInfo().getId(), request.getAcademicTermId());
 
-        log.info("봉사활동 수정 - ID: {}, 학년: {}, 시간: {}", id, request.getYear(), request.getHours());
+        log.info("봉사활동 수정 - ID: {}, 학기: {}, 시간: {}", id, term.getDisplayName(), request.getHours());
         return VolunteerActivityResponseDTO.from(activity);
     }
 
@@ -97,22 +107,21 @@ public class VolunteerActivityService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 봉사활동입니다. ID: " + id));
 
         Long studentId = activity.getStudentInfo().getId();
-        com.example.schoolmate.common.entity.user.constant.Year year = activity.getYear();
+        Long academicTermId = activity.getAcademicTerm().getId();
 
         volunteerActivityRepository.delete(activity);
-        recalculateCumulativeHours(studentId, year);
+        recalculateCumulativeHours(studentId, academicTermId);
 
         log.info("봉사활동 삭제 - ID: {}", id);
     }
 
     /**
-     * 동일 학생 + 학년의 모든 봉사활동을 startDate 오름차순으로 정렬 후
+     * 동일 학생 + 학기의 모든 봉사활동을 startDate 오름차순으로 정렬 후
      * cumulativeHours를 순차 누계하여 저장
      */
-    private void recalculateCumulativeHours(Long studentId,
-            com.example.schoolmate.common.entity.user.constant.Year year) {
+    private void recalculateCumulativeHours(Long studentId, Long academicTermId) {
         List<VolunteerActivity> activities = volunteerActivityRepository
-                .findByStudentInfoIdAndYear(studentId, year).stream()
+                .findByStudentInfoIdAndAcademicTermId(studentId, academicTermId).stream()
                 .sorted(Comparator.comparing(VolunteerActivity::getStartDate))
                 .collect(Collectors.toList());
 

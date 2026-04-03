@@ -11,9 +11,9 @@ import com.example.schoolmate.cheol.dto.careeraspirationdto.ParentCareerDTO;
 import com.example.schoolmate.cheol.dto.careeraspirationdto.StudentCareerDTO;
 import com.example.schoolmate.cheol.entity.CareerAspiration;
 import com.example.schoolmate.cheol.repository.CareerAspirationRepository;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,7 @@ public class CareerAspirationService {
 
         private final CareerAspirationRepository careerAspirationRepository;
         private final StudentInfoRepository studentInfoRepository;
+        private final AcademicTermRepository academicTermRepository;
 
         /**
          * 학생이 진로희망 작성/수정
@@ -37,13 +38,14 @@ public class CareerAspirationService {
                 StudentInfo student = studentInfoRepository.findById(dto.getStudentId())
                                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-                // 해당 학년/학기 레코드 조회 또는 생성
+                AcademicTerm term = academicTermRepository.findById(dto.getAcademicTermId())
+                                .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
+
                 CareerAspiration aspiration = careerAspirationRepository
-                                .findByStudentIdAndYearAndSemester(dto.getStudentId(), dto.getYear(), dto.getSemester())
+                                .findByStudentIdAndAcademicTermId(dto.getStudentId(), dto.getAcademicTermId())
                                 .orElseGet(() -> CareerAspiration.builder()
                                                 .student(student)
-                                                .year(dto.getYear())
-                                                .semester(dto.getSemester())
+                                                .academicTerm(term)
                                                 .build());
 
                 // 학생 정보 업데이트
@@ -52,8 +54,8 @@ public class CareerAspirationService {
                 // 저장
                 CareerAspiration saved = careerAspirationRepository.save(aspiration);
 
-                log.info("학생 진로희망 저장: {} - {}학년 {}학기",
-                                student.getUser().getName(), dto.getYear(), dto.getSemester());
+                log.info("학생 진로희망 저장: {} - {}",
+                                student.getUser().getName(), term.getDisplayName());
 
                 return CareerAspirationDTO.from(saved);
         }
@@ -67,13 +69,14 @@ public class CareerAspirationService {
                 StudentInfo student = studentInfoRepository.findById(dto.getStudentId())
                                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-                // 해당 학년/학기 레코드 조회 또는 생성
+                AcademicTerm term = academicTermRepository.findById(dto.getAcademicTermId())
+                                .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
+
                 CareerAspiration aspiration = careerAspirationRepository
-                                .findByStudentIdAndYearAndSemester(dto.getStudentId(), dto.getYear(), dto.getSemester())
+                                .findByStudentIdAndAcademicTermId(dto.getStudentId(), dto.getAcademicTermId())
                                 .orElseGet(() -> CareerAspiration.builder()
                                                 .student(student)
-                                                .year(dto.getYear())
-                                                .semester(dto.getSemester())
+                                                .academicTerm(term)
                                                 .build());
 
                 // 학부모 정보 업데이트
@@ -82,8 +85,8 @@ public class CareerAspirationService {
                 // 저장
                 CareerAspiration saved = careerAspirationRepository.save(aspiration);
 
-                log.info("학부모 진로희망 저장: 자녀({}) - {}학년 {}학기",
-                                student.getUser().getName(), dto.getYear(), dto.getSemester());
+                log.info("학부모 진로희망 저장: 자녀({}) - {}",
+                                student.getUser().getName(), term.getDisplayName());
 
                 return CareerAspirationDTO.from(saved);
         }
@@ -93,7 +96,7 @@ public class CareerAspirationService {
          */
         public List<CareerAspirationDTO> getAllByStudentId(Long studentId) {
                 return careerAspirationRepository
-                                .findByStudentIdOrderByYearAscSemesterAsc(studentId)
+                                .findByStudentIdOrderByAcademicTerm_SchoolYear_YearAscAcademicTerm_SemesterAsc(studentId)
                                 .stream()
                                 .map(CareerAspirationDTO::from)
                                 .collect(Collectors.toList());
@@ -102,9 +105,9 @@ public class CareerAspirationService {
         /**
          * 특정 학년/학기 진로희망 조회 (화면 렌더링용)
          */
-        public CareerAspirationDTO getCareerAspiration(Long studentId, Year year, Semester semester) {
+        public CareerAspirationDTO getCareerAspiration(Long studentId, Long academicTermId) {
                 CareerAspiration aspiration = careerAspirationRepository
-                                .findByStudentIdAndYearAndSemester(studentId, year, semester)
+                                .findByStudentIdAndAcademicTermId(studentId, academicTermId)
                                 .orElse(null);
 
                 return aspiration != null ? CareerAspirationDTO.from(aspiration) : null;

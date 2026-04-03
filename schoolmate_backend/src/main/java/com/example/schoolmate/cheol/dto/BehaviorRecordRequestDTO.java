@@ -1,8 +1,5 @@
 package com.example.schoolmate.cheol.dto;
 
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BehaviorRecordRequestDTO {
-    private Year year;
-    private Semester semester;
+    private int schoolYear;
+    private int semester;
     private String specialNotes;
 }

@@ -9,9 +9,9 @@ import com.example.schoolmate.cheol.dto.bookreportdto.BookReportRequestDTO;
 import com.example.schoolmate.cheol.dto.bookreportdto.BookReportResponseDTO;
 import com.example.schoolmate.cheol.entity.BookReport;
 import com.example.schoolmate.cheol.repository.BookReportRepository;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ public class BookReportService {
 
     private final BookReportRepository bookReportRepository;
     private final StudentInfoRepository studentInfoRepository;
+    private final AcademicTermRepository academicTermRepository;
 
     // 독서록 작성
     @Transactional
@@ -34,9 +35,11 @@ public class BookReportService {
         StudentInfo student = studentInfoRepository.findById(studentInfoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다. ID: " + studentInfoId));
 
+        AcademicTerm term = academicTermRepository.findById(dto.getAcademicTermId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학기입니다. ID: " + dto.getAcademicTermId()));
+
         BookReport bookReport = BookReport.builder()
-                .year(dto.getYear())
-                .semester(dto.getSemester())
+                .academicTerm(term)
                 .content(dto.getContent())
                 .studentInfo(student)
                 .build();
@@ -59,7 +62,10 @@ public class BookReportService {
             throw new IllegalArgumentException("본인의 독서록만 수정할 수 있습니다.");
         }
 
-        bookReport.update(dto.getYear(), dto.getSemester(), dto.getContent());
+        AcademicTerm term = academicTermRepository.findById(dto.getAcademicTermId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학기입니다. ID: " + dto.getAcademicTermId()));
+
+        bookReport.update(term, dto.getContent());
         log.info("독서록 수정 완료 - id: {}", bookReportId);
         return BookReportResponseDTO.from(bookReport);
     }
@@ -87,11 +93,10 @@ public class BookReportService {
                 .stream().map(BookReportResponseDTO::from).toList();
     }
 
-    // 학년 + 학기별 독서록 조회
-    public List<BookReportResponseDTO> getByStudentAndYearAndSemester(
-            Long studentInfoId, Year year, Semester semester) {
-        log.info("독서록 목록 조회 - studentInfoId: {}, year: {}, semester: {}", studentInfoId, year, semester);
-        return bookReportRepository.findByStudentInfoIdAndYearAndSemester(studentInfoId, year, semester)
+    // 학기별 독서록 조회
+    public List<BookReportResponseDTO> getByStudentAndAcademicTerm(Long studentInfoId, Long academicTermId) {
+        log.info("독서록 목록 조회 - studentInfoId: {}, academicTermId: {}", studentInfoId, academicTermId);
+        return bookReportRepository.findByStudentInfoIdAndAcademicTermId(studentInfoId, academicTermId)
                 .stream().map(BookReportResponseDTO::from).toList();
     }
 

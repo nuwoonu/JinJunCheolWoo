@@ -1,8 +1,7 @@
 package com.example.schoolmate.cheol.entity;
 
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.ActivityCategory;
-import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
 import jakarta.persistence.Column;
@@ -17,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import com.example.schoolmate.common.entity.user.constant.ActivityCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -34,9 +34,9 @@ public class CocurricularActivities extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Year year; // 학년
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academic_term_id", nullable = false)
+    private AcademicTerm academicTerm;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -51,5 +51,15 @@ public class CocurricularActivities extends SchoolBaseEntity {
 
     public void update(String specifics) {
         this.specifics = specifics;
+    }
+
+    /** 학년도 정수값 편의 메서드 */
+    public int getSchoolYearInt() {
+        return academicTerm != null ? academicTerm.getSchoolYearInt() : 0;
+    }
+
+    /** 학기 편의 메서드 */
+    public int getSemester() {
+        return academicTerm != null ? academicTerm.getSemester() : 0;
     }
 }

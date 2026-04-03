@@ -1,14 +1,11 @@
 package com.example.schoolmate.cheol.entity;
 
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,13 +32,9 @@ public class BookReport extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Year year; // 학년 (FIRST, SECOND, THIRD)
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Semester semester; // 학기 (FIRST, FALL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academic_term_id")
+    private AcademicTerm academicTerm;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content; // 독서 감상문 내용
@@ -50,9 +43,18 @@ public class BookReport extends SchoolBaseEntity {
     @JoinColumn(name = "student_info_id", nullable = false)
     private StudentInfo studentInfo;
 
-    public void update(Year year, Semester semester, String content) {
-        this.year = year;
-        this.semester = semester;
+    public void update(AcademicTerm academicTerm, String content) {
+        this.academicTerm = academicTerm;
         this.content = content;
+    }
+
+    /** 학년도 정수값 편의 메서드 */
+    public int getSchoolYearInt() {
+        return academicTerm != null ? academicTerm.getSchoolYearInt() : 0;
+    }
+
+    /** 학기 편의 메서드 */
+    public int getSemester() {
+        return academicTerm != null ? academicTerm.getSemester() : 0;
     }
 }
