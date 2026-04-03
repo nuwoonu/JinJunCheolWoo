@@ -37,7 +37,8 @@ public class AdminNoticeApiController {
     @GetMapping("/{id}")
     public ResponseEntity<BoardDTO.Response> detail(@PathVariable Long id) {
         boardService.incrementViewCount(id);
-        return ResponseEntity.ok(boardService.getBoardReadOnly(id));
+        // [soojin] 관리자 공지 상세에 좋아요 기능 없음 → userUid null 전달
+        return ResponseEntity.ok(boardService.getBoardReadOnly(id, null));
     }
 
     @PostMapping

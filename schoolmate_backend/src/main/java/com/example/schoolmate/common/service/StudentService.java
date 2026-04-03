@@ -242,8 +242,6 @@ public class StudentService {
             if (request.getStatusName() != null) {
                 info.setStatus(StudentStatus.valueOf(request.getStatusName()));
             }
-            info.setBasicHabits(request.getBasicHabits());
-            info.setSpecialNotes(request.getSpecialNotes());
         }
     }
 

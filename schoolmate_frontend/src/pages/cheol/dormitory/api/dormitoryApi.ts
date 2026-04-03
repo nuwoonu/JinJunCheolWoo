@@ -1,11 +1,29 @@
-import api from "@/api/auth";
+import axios from "axios";
+import { auth } from "@/shared/auth";
 import type { BuildingSummary, DormitoryDTO, StudentSummary } from "../app/types/dormitory";
+
+// JWT + X-School-Id(어드민 컨텍스트) 헤더를 자동 첨부하는 기숙사 전용 axios 인스턴스
+const dormApi = axios.create({ baseURL: "/api", withCredentials: true });
+dormApi.interceptors.request.use((config) => {
+  const token = auth.getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  try {
+    const raw = localStorage.getItem("admin_selected_school");
+    if (raw) {
+      const school = JSON.parse(raw) as { id?: number };
+      if (school?.id) config.headers["X-School-Id"] = String(school.id);
+    }
+  } catch {
+    /* 무시 */
+  }
+  return config;
+});
 
 // cheol: 기숙사 API 호출 함수 모음
 
 // 전체 건물 목록 + 통계
 export async function fetchBuildings(): Promise<BuildingSummary[]> {
-  const res = await api.get("/dormitories/buildings");
+  const res = await dormApi.get("/dormitories/buildings");
   return res.data;
 }
 
@@ -14,7 +32,7 @@ export async function fetchBuildings(): Promise<BuildingSummary[]> {
 export async function fetchBuildingRooms(
   building: string
 ): Promise<Record<string, Record<string, DormitoryDTO[]>>> {
-  const res = await api.get(`/dormitories/buildings/${encodeURIComponent(building)}`);
+  const res = await dormApi.get(`/dormitories/buildings/${encodeURIComponent(building)}`);
   return res.data;
 }
 
@@ -24,7 +42,7 @@ export async function fetchRoomDetails(
   floor: number,
   roomNumber: string
 ): Promise<DormitoryDTO[]> {
-  const res = await api.get("/dormitories/rooms", {
+  const res = await dormApi.get("/dormitories/rooms", {
     params: { building, floor, roomNumber },
   });
   return res.data;
@@ -38,7 +56,7 @@ export async function assignStudent(
   roomNumber: string,
   bedNumber: string
 ): Promise<DormitoryDTO> {
-  const res = await api.post("/dormitories/assign", {
+  const res = await dormApi.post("/dormitories/assign", {
     studentId,
     building,
     floor,
@@ -50,33 +68,64 @@ export async function assignStudent(
 
 // 배정 해제
 export async function unassignStudent(studentId: number): Promise<void> {
-  await api.delete(`/dormitories/students/${studentId}`);
+  await dormApi.delete(`/dormitories/students/${studentId}`);
 }
 
-// 건물 추가
+// 건물 추가 (층별 호실 수를 배열로 전달)
 export async function addBuilding(
   buildingName: string,
   floors: number,
-  roomsPerFloor: number,
+  roomsPerFloor: number[],
   bedsPerRoom: number
 ): Promise<void> {
-  await api.post("/dormitories/buildings", { buildingName, floors, roomsPerFloor, bedsPerRoom });
+  await dormApi.post("/dormitories/buildings", { buildingName, floors, roomsPerFloor, bedsPerRoom });
+}
+
+// 기숙사 초기 데이터 생성
+export async function initializeDormitories(): Promise<void> {
+  await dormApi.post("/dormitories/initialize");
 }
 
 // 건물 삭제
 export async function deleteBuilding(buildingName: string): Promise<void> {
-  await api.delete(`/dormitories/buildings/${encodeURIComponent(buildingName)}`);
+  await dormApi.delete(`/dormitories/buildings/${encodeURIComponent(buildingName)}`);
+}
+
+// 건물 수정 (층별 호실 수를 배열로 전달)
+export async function updateBuilding(
+  buildingName: string,
+  newBuildingName: string,
+  floors: number,
+  roomsPerFloor: number[],
+  bedsPerRoom: number
+): Promise<void> {
+  await dormApi.put(`/dormitories/buildings/${encodeURIComponent(buildingName)}`, {
+    newBuildingName,
+    floors,
+    roomsPerFloor,
+    bedsPerRoom,
+  });
+}
+
+// 특정 호실 침대 수 수정
+export async function updateRoomBeds(
+  buildingName: string,
+  floor: number,
+  roomNumber: string,
+  bedsPerRoom: number
+): Promise<void> {
+  await dormApi.patch(`/dormitories/rooms/beds`, { buildingName, floor, roomNumber, bedsPerRoom });
 }
 
 // cheol: 학생 이름으로 해당 학생이 배정된 건물명 목록 검색
 export async function searchBuildingsByStudent(name: string): Promise<string[]> {
-  const res = await api.get("/dormitories/search", { params: { name } });
+  const res = await dormApi.get("/dormitories/search", { params: { name } });
   return res.data ?? [];
 }
 
 // 전체 학생 목록 (배정 시 선택용)
 export async function fetchAllStudents(): Promise<StudentSummary[]> {
-  const res = await api.get("/students");
+  const res = await dormApi.get("/students");
   return (res.data ?? []).map((s: any) => ({
     id: s.id,
     name: s.userName ?? s.name,

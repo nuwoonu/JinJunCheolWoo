@@ -1,4 +1,4 @@
-package com.example.schoolmate.cheol.dto;
+package com.example.schoolmate.cheol.dto.dormitorydto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

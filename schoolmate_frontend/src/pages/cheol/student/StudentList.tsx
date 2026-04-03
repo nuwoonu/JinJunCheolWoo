@@ -143,9 +143,7 @@ export default function StudentList() {
         };
         setTeacherInfo(info);
         if (info.teacherInfoId && info.subjectCode) {
-          return api.get(
-            `/teacher/grades/subject/${encodeURIComponent(info.subjectCode)}?teacherId=${info.teacherInfoId}`,
-          );
+          return api.get(`/grades/subject/${encodeURIComponent(info.subjectCode)}`);
         }
       })
       .then((res) => {
@@ -167,7 +165,7 @@ export default function StudentList() {
     setStudentGrades([]);
     setGradesLoading(true);
     api
-      .get(`/teacher/grades/student/${s.id}`)
+      .get(`/grades/student/${s.id}`)
       .then((res) => setStudentGrades(res.data ?? []))
       .catch(() => setStudentGrades([]))
       .finally(() => setGradesLoading(false));
@@ -208,14 +206,17 @@ export default function StudentList() {
     setSubmitting(true);
     setSubmitResult(null);
     try {
-      await api.post(`/teacher/grades?teacherId=${teacherInfo.teacherInfoId}`, {
-        studentId: gradingStudent.id,
-        subjectCode: teacherInfo.subjectCode,
-        testType: gradeForm.testType,
-        semester: gradeForm.semester,
-        year: gradeForm.year,
-        score: scoreNum,
-      });
+      await api.post(
+        `/teacher/class/${teacherInfo.teacherInfoId}/students/grade?year=${new Date().getFullYear()}`,
+        {
+          studentId: gradingStudent.id,
+          subjectCode: teacherInfo.subjectCode,
+          testType: gradeForm.testType,
+          semester: gradeForm.semester,
+          year: gradeForm.year,
+          score: scoreNum,
+        },
+      );
       setSubmitResult({ ok: true, msg: "채점이 완료되었습니다." });
       setScoreMap((prev) => ({ ...prev, [gradingStudent.id]: scoreNum }));
     } catch (e: any) {
@@ -228,9 +229,9 @@ export default function StudentList() {
     }
   };
 
-  // [cheol] 성적 과목별 그룹화 (성적 확인 모달용)
+  // [cheol] 성적 시험유형별 그룹화 (성적 확인 모달용)
   const groupedGrades = studentGrades.reduce<Record<string, GradeRecord[]>>((acc, g) => {
-    const key = g.subjectName ?? g.subjectCode ?? "기타";
+    const key = EXAM_TYPE_LABEL[g.examType] ?? g.examType;
     if (!acc[key]) acc[key] = [];
     acc[key].push(g);
     return acc;
@@ -422,22 +423,25 @@ export default function StudentList() {
                   </div>
                 ) : (
                   // [cheol] 과목별 그룹 출력
-                  Object.entries(groupedGrades).map(([subjectName, grades]) => {
+                  Object.entries(groupedGrades).map(([examTypeLabel, grades]) => {
+                    const examType = grades[0]?.examType;
                     const avg = grades.filter((g) => g.score != null).length > 0
                       ? (grades.filter((g) => g.score != null).reduce((s, g) => s + (g.score ?? 0), 0) / grades.filter((g) => g.score != null).length).toFixed(1)
                       : "-";
                     return (
-                      <div key={subjectName} className="mb-20">
-                        <div className="d-flex justify-content-between align-items-center px-4 py-8 mb-8"
+                      <div key={examTypeLabel} className="mb-20">
+                        <div className="d-flex justify-content-between align-items-center py-8 mb-8"
                              style={{ borderLeft: "4px solid #3b82f6", paddingLeft: 12 }}>
-                          <span className="fw-bold text-sm">{subjectName}</span>
+                          <span className={`badge px-10 py-4 radius-4 fw-bold text-sm ${EXAM_TYPE_COLOR[examType] ?? "bg-neutral-100 text-secondary-light"}`}>
+                            {examTypeLabel}
+                          </span>
                           <span className="text-xs text-secondary-light">평균: <strong>{avg}</strong>점</span>
                         </div>
                         <div className="table-responsive">
                           <table className="table bordered-table mb-0 text-sm">
                             <thead>
                               <tr>
-                                <th>시험 유형</th>
+                                <th>과목</th>
                                 <th>학년</th>
                                 <th>학기</th>
                                 <th className="text-center">점수</th>
@@ -446,11 +450,7 @@ export default function StudentList() {
                             <tbody>
                               {grades.map((g) => (
                                 <tr key={g.id}>
-                                  <td>
-                                    <span className={`badge px-8 py-4 radius-4 fw-medium text-xs ${EXAM_TYPE_COLOR[g.examType] ?? "bg-neutral-100 text-secondary-light"}`}>
-                                      {EXAM_TYPE_LABEL[g.examType] ?? g.examType}
-                                    </span>
-                                  </td>
+                                  <td className="fw-medium">{g.subjectName ?? g.subjectCode ?? "-"}</td>
                                   <td className="text-secondary-light">{YEAR_LABEL[g.year] ?? g.year}</td>
                                   <td className="text-secondary-light">{SEMESTER_LABEL[g.semester] ?? g.semester}</td>
                                   <td className="text-center">

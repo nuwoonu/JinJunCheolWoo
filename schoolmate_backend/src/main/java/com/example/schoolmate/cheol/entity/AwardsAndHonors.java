@@ -14,10 +14,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
@@ -25,21 +25,22 @@ import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 @AllArgsConstructor
 @ToString
 @Getter
-@Table
+@SuperBuilder
+@Table(name = "awards_and_honors")
 @Entity
-@Builder
 public class AwardsAndHonors extends SchoolBaseEntity {
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
     private String name; // 수상명
 
-    private AchievementsGrade achievementsGrade; // 등급
+    private AchievementsGrade achievementsGrade; // 등급 (ordinal 저장)
 
     private LocalDate day; // 수상연월일
 
-    private String AwardingOrganization; // 수상기관
+    private String awardingOrganization; // 수상기관
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_info_id")

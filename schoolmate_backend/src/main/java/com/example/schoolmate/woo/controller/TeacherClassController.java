@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +23,10 @@ import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.domain.term.entity.CourseSection;
 import com.example.schoolmate.domain.term.service.AcademicTermService;
+import com.example.schoolmate.domain.term.service.CourseSectionService;
+import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.common.service.TeacherService;
@@ -60,6 +64,36 @@ public class TeacherClassController {
     private final TeacherService teacherService;
     private final ClassroomRepository classroomRepository;
     private final AcademicTermService academicTermService;
+    private final CourseSectionService courseSectionService;
+
+    // ==================================================================================
+    // ========== [cheol] 분반 배정 학급 목록 조회 ==========
+    // ==================================================================================
+
+    /**
+     * [cheol] 로그인 교사의 현재 학기 분반 배정 학급 목록 (성적 채점 진입용)
+     *
+     * GET /api/teacher/class/my-sections
+     */
+    @GetMapping("/my-sections")
+    public ResponseEntity<List<Map<String, Object>>> getMySections(
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        List<CourseSection> sections = courseSectionService.getMyCurrentSections(
+                authUser.getCustomUserDTO().getUid());
+        List<Map<String, Object>> result = sections.stream()
+                .map(s -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("cid", s.getClassroom().getCid());
+                    m.put("grade", s.getClassroom().getGrade());
+                    m.put("classNum", s.getClassroom().getClassNum());
+                    m.put("teacherName", s.getClassroom().getTeacher() != null
+                            ? s.getClassroom().getTeacher().getName() : null);
+                    m.put("subjectName", s.getSubject().getName());
+                    return m;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
 
     // ==================================================================================
     // ========== [cheol] 학년별 학급 목록 조회 ==========

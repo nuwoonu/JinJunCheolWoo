@@ -3,20 +3,30 @@ package com.example.schoolmate.common.entity.info;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
+import com.example.schoolmate.cheol.entity.BankAccount;
+import com.example.schoolmate.cheol.entity.CareerAspiration;
+import com.example.schoolmate.cheol.entity.CocurricularActivities;
 import com.example.schoolmate.cheol.entity.DormitoryAssignment;
 import com.example.schoolmate.cheol.entity.Grade;
+import com.example.schoolmate.cheol.entity.BehaviorRecord;
+import com.example.schoolmate.cheol.entity.BookReport;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
+import com.example.schoolmate.cheol.entity.VolunteerActivity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -78,9 +88,42 @@ public class StudentInfo extends SchoolMemberInfo {
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamilyRelation> familyRelations = new ArrayList<>();
 
+    // 행동 특성 및 종합의견 (학년/학기별)
+    @OneToMany(mappedBy = "student")
+    private List<BehaviorRecord> behaviorRecords = new ArrayList<>();
+
+    // 창의적 체험 활동 (학년/학기별)
+    @OneToMany(mappedBy = "student")
+    private List<CocurricularActivities> cocurricularActivities = new ArrayList<>();
+
+    /**
+     * 가장 최근 학적 이력 가져오기
+     */
+    public Optional<StudentAssignment> getLatestAssignment() {
+        return assignments.stream()
+                .max(Comparator.comparingInt(StudentAssignment::getSchoolYearInt));
+    }
+
     // 의료기록
     @OneToMany(mappedBy = "studentInfo")
     private List<MedicalDetails> medicalDetails = new ArrayList<>();
+
+    // 진로희망
+    @OneToMany(mappedBy = "student")
+    private List<CareerAspiration> careerAspirations = new ArrayList<>();
+
+    // 납부 계좌 (학부모가 등록한 계좌)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bank_account_id", nullable = true)
+    private BankAccount bankAccount;
+
+    // 봉사활동
+    @OneToMany(mappedBy = "studentInfo")
+    private List<VolunteerActivity> volunteerActivities = new ArrayList<>();
+
+    // 독서록
+    @OneToMany(mappedBy = "studentInfo")
+    private List<BookReport> bookReports = new ArrayList<>();
 
     // 수상이력
     @OneToMany(mappedBy = "studentInfo")
@@ -124,7 +167,7 @@ public class StudentInfo extends SchoolMemberInfo {
 
     public DormitoryAssignment getCurrentDormitoryAssignment() {
         return dormitoryAssignments.stream()
-                .filter(da -> da.getAcademicTerm() != null 
+                .filter(da -> da.getAcademicTerm() != null
                         && da.getAcademicTerm().getStatus() == AcademicTermStatus.ACTIVE)
                 .findFirst()
                 .orElse(null);

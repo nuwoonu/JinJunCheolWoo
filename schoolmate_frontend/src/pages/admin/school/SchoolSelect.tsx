@@ -7,24 +7,34 @@ import { useSchool, type SelectedSchool } from "@/contexts/SchoolContext";
 import AdminTopBar from "@/components/layout/admin/AdminTopBar";
 import { useSchoolSearch, type SchoolSummary } from "@/hooks/useSchoolSearch";
 
-function useTheme() {
-  const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
-  useEffect(() => {
-    const onStorage = () => setIsDark(localStorage.getItem("theme") === "dark");
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-  return { isDark };
-}
-
 // [joon] 관리 학교 선택 — 사이드바 없는 독립 페이지
 
 const SCHOOL_KINDS = ["", "초등학교", "중학교", "고등학교", "특수학교", "각종학교"];
 
+// [soojin] ServiceNoticeList 스타일로 통일
+const th: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+
+const td: React.CSSProperties = {
+  padding: "14px 16px",
+  fontSize: 13,
+  color: "#374151",
+  borderBottom: "1px solid #f3f4f6",
+  verticalAlign: "middle",
+  whiteSpace: "nowrap",
+};
+
 export default function SchoolSelect() {
   const navigate = useNavigate();
   const { setSelectedSchool } = useSchool();
-  const theme = useTheme();
 
   const {
     name,
@@ -39,6 +49,7 @@ export default function SchoolSelect() {
     searched,
     fetchSchools,
     handleSearch,
+    reset,
   } = useSchoolSearch((params) => api.get("/schools", { params }));
 
   const [syncRunning, setSyncRunning] = useState(false);
@@ -89,324 +100,218 @@ export default function SchoolSelect() {
   };
 
   return (
-    <div style={{ minHeight: "100dvh" }}>
-      {/* 표준 관리자 상단 바 */}
+    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
       {/* [soojin] 사이드바 없는 페이지이므로 좌측 상단 로고 표시 */}
       <AdminTopBar position="sticky" sectionBadge="학교 선택" showLogo />
 
-      {/* 본문 */}
-      {/* [soojin] scale 제거 — 검색 결과 표시 시 화면이 축소되는 문제 수정 */}
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <main
-          style={{
-            width: "100%",
-            maxWidth: 820,
-            padding: "40px 24px",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* 타이틀 */}
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #25A194, #1a7a6e)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 16px",
-              }}
-            >
-              <i className="bi bi-building-fill text-white fs-4"></i>
-            </div>
-            <h3
-              style={{
-                fontSize: 24,
-                fontWeight: 700,
-                color: theme.isDark ? "#f3f4f6" : "#1a1a1a",
-                marginBottom: 8,
-              }}
-            >
-              관리 학교 선택
-            </h3>
-            <p
-              style={{
-                color: theme.isDark ? "#9ca3af" : "#6b7280",
-                fontSize: 17,
-                margin: "0 0 16px",
-              }}
-            >
-              관리할 학교를 검색하여 선택해 주세요.
-            </p>
-            {/* NEIS 동기화 버튼 */}
-            <button
-              type="button"
-              className="btn btn-sm"
-              onClick={handleSync}
-              disabled={syncRunning}
-              style={{
-                border: `1px solid ${theme.isDark ? "#444" : "#ced4da"}`,
-                background: theme.isDark ? "#2d2d2d" : "#f9fafb",
-                color: theme.isDark ? "#d1d5db" : "#374151",
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 500,
-                padding: "6px 14px",
-              }}
-            >
-              <i className={`ri-refresh-line me-1${syncRunning ? " spin" : ""}`} />
-              {syncRunning ? "동기화 진행 중..." : "학교 DB 동기화 (NEIS)"}
-            </button>
-          </div>
-
-          {/* 검색 폼 */}
-          <div
+      <main style={{ maxWidth: 960, margin: "0 auto", padding: "40px 24px" }}>
+        {/* [soojin] 제목 + 검색 후 건수 인라인 표시 — ServiceNoticeList 스타일로 통일 */}
+        <div style={{ marginBottom: 50, textAlign: "center" }}>
+          <h3
             style={{
-              background: theme.isDark ? "#1e1e1e" : "#fff",
-              borderRadius: 16,
-              boxShadow: theme.isDark ? "0 4px 6px rgba(0,0,0,0.3)" : "0 1px 4px rgba(0,0,0,0.08)",
-              padding: "24px 28px",
-              marginBottom: 24,
-              transition: "background 0.3s",
+              fontWeight: 650,
+              color: "#111827",
+              marginBottom: 4,
+              display: "flex",
+              alignItems: "baseline",
+              gap: 8,
+              justifyContent: "center",
             }}
           >
-            <form onSubmit={handleSearch}>
-              <div className="row g-3 align-items-end">
-                <div className="col-md-6">
-                  <label
-                    className="form-label fw-semibold mb-1"
-                    style={{
-                      fontSize: 13,
-                      color: theme.isDark ? "#d1d5db" : "#374151",
-                    }}
-                  >
-                    학교명
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="예) 서울중학교"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    style={{
-                      borderRadius: 10,
-                      background: theme.isDark ? "#2d2d2d" : "#fff",
-                      color: theme.isDark ? "#f3f4f6" : "#1a1a1a",
-                      border: theme.isDark ? "1px solid #444" : "1px solid #ced4da",
-                    }}
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label
-                    className="form-label fw-semibold mb-1"
-                    style={{
-                      fontSize: 13,
-                      color: theme.isDark ? "#d1d5db" : "#374151",
-                    }}
-                  >
-                    학교 종류
-                  </label>
-                  <select
-                    className="form-select"
-                    value={schoolKind}
-                    onChange={(e) => setSchoolKind(e.target.value)}
-                    style={{
-                      borderRadius: 10,
-                      background: theme.isDark ? "#2d2d2d" : "#fff",
-                      color: theme.isDark ? "#f3f4f6" : "#1a1a1a",
-                      border: theme.isDark ? "1px solid #444" : "1px solid #ced4da",
-                    }}
-                  >
-                    {SCHOOL_KINDS.map((k) => (
-                      <option key={k} value={k}>
-                        {k || "전체"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-3">
-                  <button
-                    type="submit"
-                    className="btn w-100"
-                    disabled={loading}
-                    style={{
-                      borderRadius: 10,
-                      background: "linear-gradient(135deg, #25A194, #1a7a6e)",
-                      color: "#fff",
-                      fontWeight: 600,
-                      border: "none",
-                    }}
-                  >
-                    {loading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-1" />
-                        검색 중
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-search me-1"></i>검색
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
+            관리 학교 선택
+            {searched && (
+              <span style={{ fontSize: 15, fontWeight: 400, color: "#6b7280" }}>
+                총 {totalElements.toLocaleString()}개
+              </span>
+            )}
+          </h3>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>관리할 학교를 검색하여 선택해 주세요.</p>
+        </div>
 
-          {/* 검색 결과 */}
-          {searched && (
-            <div
-              style={{
-                background: theme.isDark ? "#1e1e1e" : "#fff",
-                borderRadius: 16,
-                boxShadow: theme.isDark ? "0 4px 6px rgba(0,0,0,0.3)" : "0 1px 4px rgba(0,0,0,0.08)",
-                overflow: "hidden",
-                transition: "background 0.3s",
-              }}
-            >
-              <div
+        {/* [soojin] 컨트롤 바: 검색/초기화(좌) + NEIS 동기화(우) — ServiceNoticeList 컨트롤 바 스타일 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <form onSubmit={handleSearch} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <select
+                value={schoolKind}
+                onChange={(e) => setSchoolKind(e.target.value)}
                 style={{
-                  padding: "16px 24px",
-                  borderBottom: `1px solid ${theme.isDark ? "#333" : "#f3f4f6"}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  padding: "5px 28px 5px 8px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  background: "#fff",
+                  color: "#374151",
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                  cursor: "pointer",
                 }}
               >
-                <span
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: theme.isDark ? "#f3f4f6" : "#1a1a1a",
-                  }}
-                >
-                  검색 결과
-                </span>
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: theme.isDark ? "#9ca3af" : "#6b7280",
-                  }}
-                >
-                  총 {totalElements.toLocaleString()}개
-                </span>
-              </div>
+                {SCHOOL_KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {k || "전체"}
+                  </option>
+                ))}
+              </select>
+              <i
+                className="bi bi-chevron-down"
+                style={{
+                  position: "absolute",
+                  right: "8px",
+                  color: "#9ca3af",
+                  fontSize: "12px",
+                  pointerEvents: "none",
+                }}
+              />
+            </div>
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <i
+                className="bi bi-search"
+                style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }}
+              />
+              <input
+                type="text"
+                placeholder="학교명 검색"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{
+                  padding: "5px 8px 5px 28px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  minWidth: 200,
+                  background: "#fff",
+                }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                padding: "5px 12px",
+                background: "#25A194",
+                border: "none",
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#fff",
+                cursor: loading ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {loading ? "검색 중..." : "검색"}
+            </button>
+            <button
+              type="button"
+              onClick={reset}
+              style={{
+                padding: "5px 10px",
+                background: "#fff",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                cursor: "pointer",
+                color: "#374151",
+                whiteSpace: "nowrap",
+              }}
+            >
+              초기화
+            </button>
+          </form>
+          <button
+            type="button"
+            onClick={handleSync}
+            disabled={syncRunning}
+            style={{
+              padding: "5px 12px",
+              background: "#fff",
+              border: "1px solid #d1d5db",
+              borderRadius: 6,
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#374151",
+              cursor: syncRunning ? "not-allowed" : "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <i className={`ri-refresh-line me-1${syncRunning ? " spin" : ""}`} />
+            {syncRunning ? "동기화 진행 중..." : "학교 DB 동기화 (NEIS)"}
+          </button>
+        </div>
 
-              {schools.length === 0 ? (
-                <div
-                  style={{
-                    padding: "48px 24px",
-                    textAlign: "center",
-                    color: theme.isDark ? "#6b7280" : "#9ca3af",
-                  }}
-                >
-                  <i
-                    className="bi bi-building"
-                    style={{
-                      fontSize: 40,
-                      display: "block",
-                      marginBottom: 12,
-                      opacity: 0.3,
-                    }}
-                  ></i>
-                  검색 결과가 없습니다.
-                </div>
-              ) : (
-                <div className="table-responsive">
-                  <table
-                    className={`table table-hover mb-0 ${theme.isDark ? "table-dark" : ""}`}
-                    style={{ fontSize: 14, background: "transparent" }}
-                  >
-                    <thead style={{ background: theme.isDark ? "#2d2d2d" : "#f9fafb" }}>
+        {searched ? (
+          <>
+            {/* [soojin] 결과 테이블 카드 — ServiceNoticeList 카드 스타일 */}
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                  <colgroup>
+                    <col />
+                    <col style={{ width: 90 }} />
+                    <col style={{ width: 160 }} />
+                    <col style={{ width: 220 }} />
+                    <col style={{ width: 80 }} />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th style={th}>학교명</th>
+                      <th style={{ ...th, textAlign: "center" }}>종류</th>
+                      <th style={th}>관할 교육청</th>
+                      <th style={th}>주소</th>
+                      <th style={{ ...th, textAlign: "center" }}>선택</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
                       <tr>
-                        <th
+                        <td
+                          colSpan={5}
                           style={{
-                            padding: "12px 20px",
-                            fontWeight: 600,
-                            color: theme.isDark ? "#d1d5db" : "#374151",
-                            borderBottom: `1px solid ${theme.isDark ? "#444" : "#f3f4f6"}`,
-                            background: "transparent",
-                          }}
-                        >
-                          학교명
-                        </th>
-                        <th
-                          style={{
-                            padding: "12px 16px",
-                            fontWeight: 600,
-                            color: theme.isDark ? "#d1d5db" : "#374151",
-                            width: 100,
-                            borderBottom: `1px solid ${theme.isDark ? "#444" : "#f3f4f6"}`,
-                            background: "transparent",
-                          }}
-                        >
-                          종류
-                        </th>
-                        <th
-                          style={{
-                            padding: "12px 16px",
-                            fontWeight: 600,
-                            color: theme.isDark ? "#d1d5db" : "#374151",
-                            width: 170,
-                            borderBottom: `1px solid ${theme.isDark ? "#444" : "#f3f4f6"}`,
-                            background: "transparent",
-                          }}
-                        >
-                          관할 교육청
-                        </th>
-                        <th
-                          style={{
-                            padding: "12px 16px",
-                            fontWeight: 600,
-                            color: theme.isDark ? "#d1d5db" : "#374151",
-                            borderBottom: `1px solid ${theme.isDark ? "#444" : "#f3f4f6"}`,
-                            background: "transparent",
-                          }}
-                        >
-                          주소
-                        </th>
-                        <th
-                          style={{
-                            padding: "12px 16px",
-                            fontWeight: 600,
-                            color: theme.isDark ? "#d1d5db" : "#374151",
-                            width: 90,
+                            ...td,
                             textAlign: "center",
-                            borderBottom: `1px solid ${theme.isDark ? "#444" : "#f3f4f6"}`,
-                            background: "transparent",
+                            color: "#9ca3af",
+                            padding: "48px 16px",
+                            whiteSpace: "normal",
                           }}
                         >
-                          선택
-                        </th>
+                          불러오는 중...
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {schools.map((school) => (
+                    ) : schools.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          style={{
+                            ...td,
+                            textAlign: "center",
+                            color: "#9ca3af",
+                            padding: "48px 16px",
+                            whiteSpace: "normal",
+                          }}
+                        >
+                          검색 결과가 없습니다.
+                        </td>
+                      </tr>
+                    ) : (
+                      schools.map((school) => (
                         <tr key={school.id}>
-                          <td
-                            style={{
-                              padding: "12px 20px",
-                              fontWeight: 500,
-                              color: theme.isDark ? "#f3f4f6" : "#1a1a1a",
-                              borderColor: theme.isDark ? "#333" : "#f3f4f6",
-                              background: "transparent",
-                            }}
-                          >
+                          <td style={{ ...td, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis" }}>
                             {school.name}
                           </td>
-                          <td
-                            style={{
-                              padding: "12px 16px",
-                              borderColor: theme.isDark ? "#333" : "#f3f4f6",
-                              background: "transparent",
-                            }}
-                          >
+                          <td style={{ ...td, textAlign: "center" }}>
                             <span
                               style={{
-                                background: theme.isDark ? "#374151" : "#f3f4f6",
-                                color: theme.isDark ? "#e5e7eb" : "#374151",
+                                background: "#f3f4f6",
+                                color: "#374151",
                                 borderRadius: 6,
                                 padding: "2px 8px",
                                 fontSize: 12,
@@ -416,162 +321,131 @@ export default function SchoolSelect() {
                               {school.schoolKind ?? "-"}
                             </span>
                           </td>
-                          <td
-                            style={{
-                              padding: "12px 16px",
-                              color: theme.isDark ? "#9ca3af" : "#6b7280",
-                              fontSize: 13,
-                              borderColor: theme.isDark ? "#333" : "#f3f4f6",
-                              background: "transparent",
-                            }}
-                          >
+                          <td style={{ ...td, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis" }}>
                             {school.officeOfEducation ?? "-"}
                           </td>
-                          <td
-                            style={{
-                              padding: "12px 16px",
-                              color: theme.isDark ? "#9ca3af" : "#6b7280",
-                              fontSize: 13,
-                              maxWidth: 220,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              borderColor: theme.isDark ? "#333" : "#f3f4f6",
-                              background: "transparent",
-                            }}
-                          >
+                          <td style={{ ...td, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis" }}>
                             {school.address ?? "-"}
                           </td>
-                          <td
-                            style={{
-                              padding: "12px 16px",
-                              textAlign: "center",
-                              borderColor: theme.isDark ? "#333" : "#f3f4f6",
-                              background: "transparent",
-                            }}
-                          >
+                          <td style={{ ...td, textAlign: "center" }}>
                             <button
                               onClick={() => handleSelect(school)}
                               style={{
-                                background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+                                padding: "4px 14px",
+                                background: "#25A194",
                                 color: "#fff",
                                 border: "none",
-                                borderRadius: 8,
-                                padding: "5px 14px",
+                                borderRadius: 6,
                                 fontSize: 13,
                                 fontWeight: 600,
                                 cursor: "pointer",
-                                transition: "opacity 0.2s",
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
                             >
                               선택
                             </button>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-              {/* 페이지네이션 */}
-              {totalPages > 1 && (
-                <div
+            {/* [soojin] 페이지네이션 카드 밖, 우측 정렬, 정사각형 버튼 — ServiceNoticeList 스타일 */}
+            {totalPages > 1 && (
+              <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 0", gap: 4 }}>
+                <button
+                  onClick={() => fetchSchools(page - 1)}
+                  disabled={page === 0}
                   style={{
-                    padding: "14px 24px",
-                    borderTop: `1px solid ${theme.isDark ? "#333" : "#f3f4f6"}`,
-                    display: "flex",
+                    width: 28,
+                    height: 28,
+                    padding: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
                     justifyContent: "center",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 6,
+                    background: "#fff",
+                    cursor: page === 0 ? "not-allowed" : "pointer",
+                    color: page === 0 ? "#d1d5db" : "#374151",
+                    fontSize: 12,
                   }}
                 >
-                  <nav>
-                    <ul className={`pagination pagination-sm mb-0 ${theme.isDark ? "pagination-dark" : ""}`}>
-                      <li className={`page-item${page === 0 ? " disabled" : ""}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => fetchSchools(page - 1)}
-                          style={{
-                            background: theme.isDark ? "#2d2d2d" : undefined,
-                            borderColor: theme.isDark ? "#444" : undefined,
-                            color: theme.isDark ? "#d1d5db" : undefined,
-                          }}
-                        >
-                          &laquo;
-                        </button>
-                      </li>
-                      {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
-                        const start = Math.max(0, Math.min(page - 4, totalPages - 10));
-                        const p = start + i;
-                        return (
-                          <li key={p} className={`page-item${p === page ? " active" : ""}`}>
-                            <button
-                              className="page-link"
-                              onClick={() => fetchSchools(p)}
-                              style={{
-                                background: p === page ? "#25A194" : theme.isDark ? "#2d2d2d" : undefined,
-                                borderColor: theme.isDark && p !== page ? "#444" : undefined,
-                                color: p === page ? "#fff" : theme.isDark ? "#d1d5db" : undefined,
-                              }}
-                            >
-                              {p + 1}
-                            </button>
-                          </li>
-                        );
-                      })}
-                      <li className={`page-item${page >= totalPages - 1 ? " disabled" : ""}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => fetchSchools(page + 1)}
-                          style={{
-                            background: theme.isDark ? "#2d2d2d" : undefined,
-                            borderColor: theme.isDark ? "#444" : undefined,
-                            color: theme.isDark ? "#d1d5db" : undefined,
-                          }}
-                        >
-                          &raquo;
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 미검색 안내 */}
-          {!searched && (
-            <div
-              style={{
-                background: theme.isDark ? "#1e1e1e" : "#fff",
-                borderRadius: 16,
-                boxShadow: theme.isDark ? "0 4px 6px rgba(0,0,0,0.3)" : "0 1px 4px rgba(0,0,0,0.08)",
-                padding: "48px 24px",
-                textAlign: "center",
-                color: theme.isDark ? "#6b7280" : "#9ca3af",
-                transition: "background 0.3s",
-              }}
-            >
-              <i
-                className="bi bi-search"
-                style={{
-                  fontSize: 40,
-                  display: "block",
-                  marginBottom: 12,
-                  opacity: 0.3,
-                }}
-              ></i>
-              <p style={{ margin: 0, fontSize: 14 }}>학교명을 입력하고 검색하세요.</p>
-              <p style={{ margin: "6px 0 0", fontSize: 13 }}>
-                학교 DB가 비어있다면 위의{" "}
-                <strong style={{ color: theme.isDark ? "#d1d5db" : "#374151" }}>학교 DB 동기화 (NEIS)</strong> 버튼을
-                먼저 실행해 주세요.
-              </p>
-            </div>
-          )}
-        </main>
-      </div>
+                  ‹
+                </button>
+                {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+                  const start = Math.max(0, Math.min(page - 4, totalPages - 10));
+                  const p = start + i;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => fetchSchools(p)}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        padding: 0,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: `1px solid ${p === page ? "#25A194" : "#e5e7eb"}`,
+                        borderRadius: 6,
+                        background: p === page ? "#25A194" : "#fff",
+                        color: p === page ? "#fff" : "#374151",
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: p === page ? 600 : 400,
+                      }}
+                    >
+                      {p + 1}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => fetchSchools(page + 1)}
+                  disabled={page >= totalPages - 1}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    padding: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 6,
+                    background: "#fff",
+                    cursor: page >= totalPages - 1 ? "not-allowed" : "pointer",
+                    color: page >= totalPages - 1 ? "#d1d5db" : "#374151",
+                    fontSize: 12,
+                  }}
+                >
+                  ›
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          /* [soojin] 미검색 안내 — 카드 스타일 통일 */
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              border: "1px solid #e5e7eb",
+              padding: "48px 24px",
+              textAlign: "center",
+              color: "#9ca3af",
+            }}
+          >
+            <i className="bi bi-search" style={{ fontSize: 40, display: "block", marginBottom: 12, opacity: 0.3 }}></i>
+            <p style={{ margin: 0, fontSize: 14 }}>학교명을 입력하고 검색하세요.</p>
+            <p style={{ margin: "6px 0 0", fontSize: 13, color: "#6b7280" }}>
+              학교 DB가 비어있다면 우측의 <strong style={{ color: "#374151" }}>학교 DB 동기화 (NEIS)</strong> 버튼을
+              먼저 실행해 주세요.
+            </p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

@@ -67,6 +67,7 @@ export default function ParentAttendance() {
   const [activeChildIdx, setActiveChildIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [recordsLoading, setRecordsLoading] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
   // [woo] 오른쪽 패널 날짜 범위
   const startDate = new Date(recordsYear, recordsMonth - 1, 1).toISOString().slice(0, 10);
@@ -125,11 +126,13 @@ export default function ParentAttendance() {
   // [woo] 자녀 탭 전환
   const handleTabChange = (idx: number) => {
     setActiveChildIdx(idx);
+    setFilterStatus(null);
     if (summaries[idx]) fetchRecords(summaries[idx], startDate, endDate);
   };
 
   // [soojin] 오른쪽 기록 월 네비게이션
   const shiftMonth = (delta: number) => {
+    setFilterStatus(null);
     setRecordsMonth((m) => {
       const next = m + delta;
       if (next < 1) {
@@ -178,9 +181,47 @@ export default function ParentAttendance() {
   const statsPresent = statsChild?.statusCounts["PRESENT"] ?? 0;
   const statsRate = statsTotalDays > 0 ? Math.round((statsPresent / statsTotalDays) * 100) : 0;
 
+  const filteredRecords = filterStatus ? records.filter((r) => r.status === filterStatus) : records;
+
   return (
     <DashboardLayout>
-      {/* 브레드크럼 */}
+      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <div>
+          <h6 className="fw-semibold mb-0">자녀 출결 관리</h6>
+        </div>
+      </div>
+
+      {/* [woo] 출결 안내 배너 - 가정통신문 안내 배너 동일 스타일 */}
+      <div
+        style={{
+          background: "#f0faf8",
+          border: "1px solid #c8ede8",
+          borderRadius: 8,
+          padding: "10px 16px",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <i className="ri-information-line" style={{ fontSize: 15, color: "#25a194" }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#1a2e2c", whiteSpace: "nowrap" }}>출결 안내</span>
+        </div>
+        <div style={{ width: 1, height: 14, background: "#c8ede8", flexShrink: 0 }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+          {ATTENDANCE_GUIDE.map((text, i) => (
+            <span
+              key={i}
+              style={{ fontSize: 12, color: "#374151", display: "flex", alignItems: "center", gap: 4 }}
+            >
+              <i className="ri-checkbox-circle-line" style={{ fontSize: 12, color: "#25a194", flexShrink: 0 }} />
+              {text}
+            </span>
+          ))}
+        </div>
+      </div>
 
       {loading ? (
         <div className="text-center py-24 text-secondary-light">불러오는 중...</div>
@@ -210,45 +251,6 @@ export default function ParentAttendance() {
             </div>
           )}
 
-          {/* [woo] 출결 안내 배너 - 가정통신문 안내 배너 동일 스타일 */}
-          <div
-            style={{
-              background: "#f0faf8",
-              border: "1px solid #c8ede8",
-              borderRadius: 8,
-              padding: "10px 16px",
-              marginBottom: 16,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-              <i className="ri-information-line" style={{ fontSize: 15, color: "#25a194" }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1a2e2c", whiteSpace: "nowrap" }}>출결 안내</span>
-            </div>
-            <div style={{ width: 1, height: 14, background: "#c8ede8", flexShrink: 0 }} />
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 20px", flex: 1 }}>
-              {ATTENDANCE_GUIDE.map((text, i) => (
-                <span
-                  key={i}
-                  style={{
-                    fontSize: 12,
-                    color: "#374151",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  <i className="ri-checkbox-circle-line" style={{ fontSize: 12, color: "#25a194", flexShrink: 0 }} />
-                  {text}
-                </span>
-              ))}
-            </div>
-          </div>
-
           {/* [soojin] 좌우 2패널 레이아웃 - StudentAttendance 동일 구조 */}
           <div style={{ height: "calc(100vh - 4.5rem - 180px)" }}>
             <div className="row g-4" style={{ height: "100%", alignItems: "stretch" }}>
@@ -260,7 +262,7 @@ export default function ParentAttendance() {
                 >
                   {/* [woo] 자녀 정보 + 출석률 헤더 */}
                   <div style={{ padding: "20px 20px 0" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
                       <div
                         style={{
                           width: 44,
@@ -435,33 +437,27 @@ export default function ParentAttendance() {
                       flexShrink: 0,
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "space-between",
-                      flexWrap: "wrap",
-                      gap: 8,
+                      position: "relative",
                     }}
                   >
                     <span style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>상세 출결 내역</span>
 
-                    {/* [soojin] 월 네비게이션 */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <button
-                        type="button"
+                    {/* [soojin] 월 네비게이션 - 중앙 배치, 아이콘만 */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        position: "absolute",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                      }}
+                    >
+                      <i
+                        className="ri-arrow-left-s-line"
+                        style={{ fontSize: 18, color: "#374151", cursor: "pointer" }}
                         onClick={() => shiftMonth(-1)}
-                        style={{
-                          width: 28,
-                          height: 28,
-                          border: "1px solid #d1d5db",
-                          borderRadius: 6,
-                          background: "#fff",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#374151",
-                        }}
-                      >
-                        <i className="ri-arrow-left-s-line" style={{ fontSize: 16 }} />
-                      </button>
+                      />
                       <span
                         style={{
                           fontSize: 13,
@@ -471,28 +467,56 @@ export default function ParentAttendance() {
                           textAlign: "center",
                         }}
                       >
-                        {recordsYear}.{String(recordsMonth).padStart(2, "0")} 기간
+                        {recordsYear}.{String(recordsMonth).padStart(2, "0")}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => shiftMonth(1)}
-                        disabled={isRecordsFuture}
+                      <i
+                        className="ri-arrow-right-s-line"
                         style={{
-                          width: 28,
-                          height: 28,
-                          border: "1px solid #d1d5db",
-                          borderRadius: 6,
-                          background: isRecordsFuture ? "#f9fafb" : "#fff",
+                          fontSize: 18,
                           cursor: isRecordsFuture ? "default" : "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
                           color: isRecordsFuture ? "#d1d5db" : "#374151",
                         }}
-                      >
-                        <i className="ri-arrow-right-s-line" style={{ fontSize: 16 }} />
-                      </button>
+                        onClick={() => {
+                          if (!isRecordsFuture) shiftMonth(1);
+                        }}
+                      />
                     </div>
+                  </div>
+
+                  {/* 상태 필터 탭 */}
+                  <div
+                    style={{
+                      padding: "8px 16px",
+                      borderBottom: "1px solid #e5e7eb",
+                      display: "flex",
+                      gap: 6,
+                      flexShrink: 0,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {([null, "PRESENT", "ABSENT", "LATE", "EARLY_LEAVE", "SICK"] as const).map((status) => {
+                      const label = status === null ? "전체" : STATUS_LABELS[status];
+                      const isActive = filterStatus === status;
+                      return (
+                        <button
+                          key={status ?? "all"}
+                          type="button"
+                          onClick={() => setFilterStatus(status)}
+                          style={{
+                            padding: "4px 12px",
+                            fontSize: 12,
+                            borderRadius: 6,
+                            border: isActive ? "none" : "1px solid #e5e7eb",
+                            background: isActive ? "#25a194" : "#fff",
+                            color: isActive ? "#fff" : "#374151",
+                            cursor: "pointer",
+                            fontWeight: isActive ? 600 : 400,
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* [woo] 출결 기록 테이블 - StudentAttendance 인라인 스타일 동일 */}
@@ -536,17 +560,17 @@ export default function ParentAttendance() {
                               불러오는 중...
                             </td>
                           </tr>
-                        ) : records.length === 0 ? (
+                        ) : filteredRecords.length === 0 ? (
                           <tr>
                             <td
                               colSpan={5}
                               style={{ padding: "24px 16px", textAlign: "center", fontSize: 13, color: "#9ca3af" }}
                             >
-                              이 달의 출결 기록이 없습니다.
+                              {filterStatus ? "해당 상태의 출결 기록이 없습니다." : "이 달의 출결 기록이 없습니다."}
                             </td>
                           </tr>
                         ) : (
-                          records.map((r) => {
+                          filteredRecords.map((r) => {
                             const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
                             const day = dayNames[new Date(r.attendanceDate).getDay()];
                             const isIssue = r.status === "ABSENT" || r.status === "SICK";

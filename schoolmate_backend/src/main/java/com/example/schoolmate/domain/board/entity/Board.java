@@ -89,6 +89,10 @@ public class Board extends SchoolBaseEntity {
     @Column(nullable = false)
     private boolean requiresConsent = false;
 
+    // [soojin] 게시글 태그 - 학급 게시판 분류용 (질문/모임/유머/공지, null이면 태그 없음)
+    @Column(name = "tag", length = 20)
+    private String tag;
+
     // 삭제 여부 (soft delete)
     @Builder.Default
     @Column(nullable = false)
@@ -121,5 +125,10 @@ public class Board extends SchoolBaseEntity {
 
     public void changeImportant(boolean isImportant) {
         this.isImportant = isImportant;
+    }
+
+    // [soojin] 태그 변경
+    public void changeTag(String tag) {
+        this.tag = tag;
     }
 }
