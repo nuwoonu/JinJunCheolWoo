@@ -22,8 +22,8 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.config.school.SchoolQueryFilter;
+import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -131,7 +131,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .selectFrom(s)
                 .join(s.assignments, assign)
                 .where(assign.attendanceNum.eq(attendanceNum)
-                        .and(isMaxSchoolYear(s, assign)))
+                        .and(isCurrentSchoolYear(assign)))
                 .fetchOne();
         return Optional.ofNullable(result);
     }
@@ -170,7 +170,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .selectFrom(s)
                 .join(s.assignments, assign)
                 .where(assign.classroom.eq(classroom)
-                        .and(isMaxSchoolYear(s, assign)))
+                        .and(isCurrentSchoolYear(assign)))
                 .fetch();
     }
 
@@ -184,7 +184,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .join(s.assignments, assign)
                 .join(assign.classroom, c)
                 .where(c.grade.eq(grade)
-                        .and(isMaxSchoolYear(s, assign)))
+                        .and(isCurrentSchoolYear(assign)))
                 .fetch();
     }
 
@@ -198,7 +198,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .join(s.assignments, assign)
                 .join(assign.classroom, c)
                 .where(c.classNum.eq(classNum)
-                        .and(isMaxSchoolYear(s, assign)))
+                        .and(isCurrentSchoolYear(assign)))
                 .fetch();
     }
 
@@ -212,7 +212,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .join(s.assignments, assign)
                 .join(assign.classroom, c)
                 .where(c.grade.eq(grade).and(c.classNum.eq(classNum))
-                        .and(isMaxSchoolYear(s, assign)))
+                        .and(isCurrentSchoolYear(assign)))
                 .fetch();
     }
 
@@ -226,7 +226,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .join(s.assignments, assign)
                 .join(assign.classroom, c)
                 .where(c.cid.eq(classroomId)
-                        .and(isMaxSchoolYear(s, assign)))
+                        .and(isCurrentSchoolYear(assign)))
                 .fetch();
     }
 
@@ -240,7 +240,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .selectFrom(s)
                 .join(s.assignments, assign)
                 .join(assign.classroom, c)
-                .where(c.year.eq(year).and(c.grade.eq(grade)).and(c.classNum.eq(classNum)))
+                .where(c.schoolYear.year.eq(year).and(c.grade.eq(grade)).and(c.classNum.eq(classNum)))
                 .fetch();
     }
 
@@ -273,7 +273,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .join(info).on(info.user.eq(user))
                 .join(info.assignments, assign)
                 .join(assign.classroom, classroom)
-                .where(classroom.year.eq(year)
+                .where(classroom.schoolYear.year.eq(year)
                         .and(classroom.grade.eq(grade))
                         .and(classroom.classNum.eq(classNum)),
                         schoolFilter(info))
@@ -293,7 +293,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                         info.status.eq(StudentStatus.ENROLLED),
                         schoolFilter(info),
                         query.selectOne().from(assign)
-                                .where(assign.studentInfo.eq(info).and(assign.schoolYear.eq(year)))
+                                .where(assign.studentInfo.eq(info).and(assign.schoolYear.year.eq(year)))
                                 .notExists())
                 .fetch();
 
@@ -312,7 +312,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .from(info)
                 .join(info.assignments, assign)
                 .join(assign.classroom, classroom)
-                .where(classroom.year.eq(year)
+                .where(classroom.schoolYear.year.eq(year)
                         .and(classroom.grade.eq(grade))
                         .and(classroom.classNum.eq(classNum)),
                         schoolFilter(info))
@@ -338,7 +338,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         Integer max = query.select(assign.attendanceNum.max())
                 .from(assign)
                 .join(assign.classroom, classroom)
-                .where(classroom.year.eq(year)
+                .where(classroom.schoolYear.year.eq(year)
                         .and(classroom.grade.eq(grade))
                         .and(classroom.classNum.eq(classNum)))
                 .fetchOne();
@@ -347,13 +347,9 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
 
     // ── 공통 필터 ─────────────────────────────────────────────────────────────────
 
-    // 가장 최근 학년도(schoolYear)의 배정 이력인지 확인하는 서브쿼리 필터
-    private BooleanExpression isMaxSchoolYear(QStudentInfo student, QStudentAssignment assign) {
-        QStudentAssignment sub = new QStudentAssignment("subAssign");
-        return assign.schoolYear.eq(
-                JPAExpressions.select(sub.schoolYear.max())
-                        .from(sub)
-                        .where(sub.studentInfo.eq(student)));
+    // 현재 학년도(status=CURRENT)의 배정 이력인지 확인하는 필터
+    private BooleanExpression isCurrentSchoolYear(QStudentAssignment assign) {
+        return assign.schoolYear.status.eq(SchoolYearStatus.CURRENT);
     }
 
     private BooleanExpression schoolFilter(QStudentInfo info) {

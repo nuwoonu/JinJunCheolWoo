@@ -42,6 +42,9 @@ import com.example.schoolmate.common.repository.info.parent.ParentInfoRepository
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.term.entity.SchoolYear;
+import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
+import com.example.schoolmate.domain.term.repository.SchoolYearRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -68,6 +71,7 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRequestRepository roleRequestRepository;
     private final CodeSequenceService codeSequenceService;
+    private final SchoolYearRepository schoolYearRepository;
 
     /**
      * 1. 학생 목록 조회 (마스터 목록)
@@ -169,7 +173,7 @@ public class StudentService {
 
                         StudentAssignment assignment = new StudentAssignment();
                         assignment.setStudentInfo(info);
-                        assignment.setSchoolYear(classroom.getYear());
+                        assignment.setSchoolYear(classroom.getSchoolYear());
                         assignment.setClassroom(classroom);
                         assignment.setAttendanceNum(nextNum);
 
@@ -177,11 +181,11 @@ public class StudentService {
                     });
         } else if (request.getYear() != null && request.getGrade() != null && request.getClassNum() != null) {
             // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
-            classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(
+            classroomRepository.findBySchoolIdAndSchoolYear_YearAndGradeAndClassNum(
                     schoolId, request.getYear(), request.getGrade(), request.getClassNum())
                     .ifPresent(classroom -> {
                         StudentAssignment assignment = new StudentAssignment();
-                        assignment.setSchoolYear(request.getYear());
+                        assignment.setSchoolYear(classroom.getSchoolYear());
                         assignment.setClassroom(classroom);
                         assignment.setAttendanceNum(request.getAttendanceNum());
                         assignment.setStudentInfo(info);
@@ -255,7 +259,7 @@ public class StudentService {
         }
 
         StudentAssignment assignment = info.getAssignments().stream()
-                .filter(a -> a.getSchoolYear() == request.getSchoolYear())
+                .filter(a -> a.getSchoolYear() != null && a.getSchoolYear().getYear() == request.getSchoolYear())
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("수정할 배정 정보를 찾을 수 없습니다."));
 
@@ -328,7 +332,7 @@ public class StudentService {
         }
 
         // 해당 학년도의 이력만 제거
-        info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
+        info.getAssignments().removeIf(a -> a.getSchoolYear() != null && a.getSchoolYear().getYear() == schoolYear);
 
         return user.getUid();
     }
@@ -432,9 +436,10 @@ public class StudentService {
                             () -> new IllegalArgumentException("학급을 찾을 수 없습니다. ID: " + createDTO.getClassroomId()));
         } else {
             // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
-            int year = java.time.LocalDate.now().getYear();
+            SchoolYear currentSchoolYear = schoolYearRepository.findBySchoolIdAndStatus(schoolId, SchoolYearStatus.CURRENT)
+                    .orElseThrow(() -> new IllegalArgumentException("현재 활성화된 학년도가 없습니다."));
             classroom = classroomRepository
-                    .findBySchoolIdAndYearAndGradeAndClassNum(schoolId, year, createDTO.getGrade(), createDTO.getClassNum())
+                    .findBySchoolIdAndSchoolYear_YearAndGradeAndClassNum(schoolId, currentSchoolYear.getYear(), createDTO.getGrade(), createDTO.getClassNum())
                     .orElseThrow(() -> new IllegalArgumentException(
                             createDTO.getGrade() + "학년 " + createDTO.getClassNum() + "반 학급을 찾을 수 없습니다."));
         }
@@ -466,7 +471,7 @@ public class StudentService {
         // 학급 배정 생성
         StudentAssignment assignment = new StudentAssignment();
         assignment.setStudentInfo(student);
-        assignment.setSchoolYear(classroom.getYear());
+        assignment.setSchoolYear(classroom.getSchoolYear());
         assignment.setClassroom(classroom);
         assignment.setAttendanceNum(createDTO.getStudentNumber());
         student.getAssignments().add(assignment);
@@ -598,8 +603,9 @@ public class StudentService {
      */
     @Transactional(readOnly = true)
     public java.util.Optional<Classroom> findHomeroomClassroom(Long teacherUid) {
-        int year = java.time.LocalDate.now().getYear();
-        return classroomRepository.findByTeacherUidAndYear(teacherUid, year);
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        return schoolYearRepository.findBySchoolIdAndStatus(schoolId, SchoolYearStatus.CURRENT)
+                .flatMap(sy -> classroomRepository.findByTeacherUidAndSchoolYear_Year(teacherUid, sy.getYear()));
     }
 
     // 승철님 작업물

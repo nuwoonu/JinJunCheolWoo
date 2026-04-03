@@ -21,31 +21,29 @@ public interface TeacherStudentRepository extends JpaRepository<TeacherStudent, 
         /**
          * 특정 교사의 특정 학년도 담당 학생 목록 조회
          */
-        List<TeacherStudent> findByTeacherInfoIdAndSchoolYear(Long teacherInfoId, int schoolYear);
+        List<TeacherStudent> findByTeacherInfoIdAndSchoolYear_Year(Long teacherInfoId, int year);
 
         /**
          * 특정 교사의 특정 학년도 + 역할별 담당 학생 목록 조회
          */
-        List<TeacherStudent> findByTeacherInfoIdAndSchoolYearAndRole(Long teacherInfoId, int schoolYear,
-                        TeacherRole role);
+        List<TeacherStudent> findByTeacherInfoIdAndSchoolYear_YearAndRole(Long teacherInfoId, int year, TeacherRole role);
 
         /**
          * 특정 학생의 특정 학년도 담당 교사 목록 조회
          */
-        List<TeacherStudent> findByStudentInfoIdAndSchoolYear(Long studentInfoId, int schoolYear);
+        List<TeacherStudent> findByStudentInfoIdAndSchoolYear_Year(Long studentInfoId, int year);
 
         /**
          * 특정 학생의 특정 학년도 담임교사 조회
          */
-        Optional<TeacherStudent> findByStudentInfoIdAndSchoolYearAndRole(Long studentInfoId, int schoolYear,
-                        TeacherRole role);
+        Optional<TeacherStudent> findByStudentInfoIdAndSchoolYear_YearAndRole(Long studentInfoId, int year, TeacherRole role);
 
         /**
          * 특정 교사-학생-학년도-역할 조합 존재 여부 확인
          * (중복 배정 방지용)
          */
-        boolean existsByTeacherInfoIdAndStudentInfoIdAndSchoolYearAndRole(
-                        Long teacherInfoId, Long studentInfoId, int schoolYear, TeacherRole role);
+        boolean existsByTeacherInfoIdAndStudentInfoIdAndSchoolYear_YearAndRole(
+                        Long teacherInfoId, Long studentInfoId, int year, TeacherRole role);
 
         /**
          * 특정 교사의 담당 학생 목록 조회 (학생 정보와 유저 정보 함께 로딩)
@@ -55,10 +53,10 @@ public interface TeacherStudentRepository extends JpaRepository<TeacherStudent, 
                         "JOIN FETCH ts.studentInfo si " +
                         "JOIN FETCH si.user " +
                         "WHERE ts.teacherInfo.id = :teacherInfoId " +
-                        "AND ts.schoolYear = :schoolYear")
+                        "AND ts.schoolYear.year = :year")
         List<TeacherStudent> findWithStudentByTeacherAndYear(
                         @Param("teacherInfoId") Long teacherInfoId,
-                        @Param("schoolYear") int schoolYear);
+                        @Param("year") int year);
 
         /**
          * 특정 학생의 담당 교사 목록 조회 (교사 정보와 유저 정보 함께 로딩)
@@ -67,10 +65,10 @@ public interface TeacherStudentRepository extends JpaRepository<TeacherStudent, 
                         "JOIN FETCH ts.teacherInfo ti " +
                         "JOIN FETCH ti.user " +
                         "WHERE ts.studentInfo.id = :studentInfoId " +
-                        "AND ts.schoolYear = :schoolYear")
+                        "AND ts.schoolYear.year = :year")
         List<TeacherStudent> findWithTeacherByStudentAndYear(
                         @Param("studentInfoId") Long studentInfoId,
-                        @Param("schoolYear") int schoolYear);
+                        @Param("year") int year);
 
         /**
          * 특정 학년/반의 모든 교사-학생 관계 조회
@@ -79,17 +77,16 @@ public interface TeacherStudentRepository extends JpaRepository<TeacherStudent, 
         @Query("SELECT ts FROM TeacherStudent ts " +
                         "JOIN FETCH ts.studentInfo si " +
                         "JOIN si.assignments sa " +
-                        "WHERE sa.schoolYear = :schoolYear " +
+                        "WHERE sa.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT " +
                         "AND sa.classroom.grade = :grade " +
                         "AND sa.classroom.classNum = :classNum")
         List<TeacherStudent> findByClassInfo(
-                        @Param("schoolYear") int schoolYear,
                         @Param("grade") int grade,
                         @Param("classNum") int classNum);
 
         /**
          * 특정 교사-학생 관계 삭제
          */
-        void deleteByTeacherInfoIdAndStudentInfoIdAndSchoolYearAndRole(
-                        Long teacherInfoId, Long studentInfoId, int schoolYear, TeacherRole role);
+        void deleteByTeacherInfoIdAndStudentInfoIdAndSchoolYear_YearAndRole(
+                        Long teacherInfoId, Long studentInfoId, int year, TeacherRole role);
 }

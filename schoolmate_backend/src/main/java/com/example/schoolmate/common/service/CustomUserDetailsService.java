@@ -79,7 +79,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
                         StudentAssignment assignment = studentInfo.getCurrentAssignment();
                         if (assignment != null) {
-                                dto.setSchoolYear(assignment.getSchoolYear());
+                                dto.setSchoolYear(assignment.getSchoolYearInt());
                                 dto.setGrade(assignment.getGrade());
                                 dto.setClassNum(assignment.getClassNum());
                                 dto.setStudentNum(assignment.getAttendanceNum());

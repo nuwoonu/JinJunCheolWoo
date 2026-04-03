@@ -4,6 +4,7 @@ import com.example.schoolmate.common.entity.constant.ClassroomStatus;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+import com.example.schoolmate.domain.term.entity.SchoolYear;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,14 +27,13 @@ import lombok.ToString;
 
 /**
  * 학급(반) 정보 엔티티
- * 
+ *
  * 특정 학년도의 학급 구성 정보를 관리합니다.
- * - 학년도, 학년, 반 번호, 담임 교사 및 소속 학생들
+ * - 학년도(SchoolYear FK), 학년, 반 번호, 담임 교사 및 소속 학생들
  */
 @Entity
 @Table(name = "classroom", uniqueConstraints = {
-        // 같은 학교 내에서 같은 연도, 학년, 반이 중복되면 안됨
-        @UniqueConstraint(name = "uk_classroom_school_year_grade_classnum", columnNames = { "school_id", "year", "grade", "class_num" })
+        @UniqueConstraint(name = "uk_classroom_school_year_grade_classnum", columnNames = { "school_year_id", "grade", "class_num" })
 })
 @Getter
 @Setter
@@ -46,7 +46,11 @@ public class Classroom extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cid;
 
-    private int year; // 학년도 (2025, 2026...)
+    /** 학년도 FK */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_year_id")
+    private SchoolYear schoolYear;
+
     private int grade; // 학년 (1~6)
     private int classNum; // 반 번호
 
@@ -72,13 +76,13 @@ public class Classroom extends SchoolBaseEntity {
 
     // ========== 편의 메서드 ==========
 
-    // 학급명 (ex: "2025학년도 3학년 2반")
-    public String getClassName() {
-        return year + "학년도 " + grade + "학년 " + classNum + "반";
+    /** 학년도 정수값 (하위 호환용) */
+    public int getYear() {
+        return schoolYear != null ? schoolYear.getYear() : 0;
     }
 
-    // 학생 수는 이제 별도 쿼리로 조회해야 함 (StudentAssignment 기준)
-    // public int getStudentCount() {
-    // return students != null ? students.size() : 0;
-    // }
+    // 학급명 (ex: "2025학년도 3학년 2반")
+    public String getClassName() {
+        return getYear() + "학년도 " + grade + "학년 " + classNum + "반";
+    }
 }

@@ -3,7 +3,7 @@ package com.example.schoolmate.cheol.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.user.constant.RoomType;
 
 import jakarta.persistence.Column;
@@ -23,14 +23,14 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "dormitories", uniqueConstraints = @UniqueConstraint(columnNames = { "building", "floor", "room_number",
+@Table(name = "dormitories", uniqueConstraints = @UniqueConstraint(name = "uk_dormitory_school", columnNames = { "school_id", "building", "floor", "room_number",
         "bed_number" }))
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "dormitoryAssignments")
-public class Dormitory extends BaseEntity {
+public class Dormitory extends SchoolBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -6,6 +6,8 @@ import java.util.List;
 
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
+import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
+import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.DormitoryAssignment;
 import com.example.schoolmate.cheol.entity.Grade;
@@ -41,10 +43,12 @@ import lombok.ToString;
 @ToString(exclude = { "assignments", "familyRelations" })
 public class StudentInfo extends SchoolMemberInfo {
 
-    // 동적 프로퍼티: 리스트에서 가장 최근의 배정 이력을 가져옵니다.
+    // 동적 프로퍼티: 현재 학년도(CURRENT) 배정 이력을 가져옵니다.
     public StudentAssignment getCurrentAssignment() {
         return assignments.stream()
-                .max(Comparator.comparingInt(StudentAssignment::getSchoolYear))
+                .filter(a -> a.getSchoolYear() != null
+                        && a.getSchoolYear().getStatus() == SchoolYearStatus.CURRENT)
+                .findFirst()
                 .orElse(null);
     }
 
@@ -120,8 +124,9 @@ public class StudentInfo extends SchoolMemberInfo {
 
     public DormitoryAssignment getCurrentDormitoryAssignment() {
         return dormitoryAssignments.stream()
-                .max(Comparator.comparing(da ->
-                        da.getAcademicTerm().getSchoolYear() * 10 + da.getAcademicTerm().getSemester()))
+                .filter(da -> da.getAcademicTerm() != null 
+                        && da.getAcademicTerm().getStatus() == AcademicTermStatus.ACTIVE)
+                .findFirst()
                 .orElse(null);
     }
 }

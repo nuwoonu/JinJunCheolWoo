@@ -31,14 +31,18 @@ import com.example.schoolmate.common.repository.info.student.StudentInfoReposito
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.common.util.LogHelper;
+import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.term.entity.SchoolYear;
+import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
+import com.example.schoolmate.domain.term.repository.SchoolYearRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 /**
  * 관리자 학급 관리 서비스
- * 
+ *
  * 학급 엔티티에 대한 비즈니스 로직을 수행합니다.
  * - 학급 생성 시 중복 체크, 학생 배정/제외 로직
  * - 학급 상태 변경 및 변경 이력(History) 기록
@@ -54,6 +58,7 @@ public class ClassroomService {
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final SchoolRepository schoolRepository;
+    private final SchoolYearRepository schoolYearRepository;
 
     @Transactional(readOnly = true)
     public Page<ClassDTO.DetailResponse> getClassList(ClassDTO.SearchCondition cond, Pageable pageable) {
@@ -69,9 +74,6 @@ public class ClassroomService {
         Classroom classroom = classroomRepository.findById(cid)
                 .orElseThrow(() -> new IllegalArgumentException("학급 정보를 찾을 수 없습니다."));
 
-        // 해당 학급(학년도, 학년, 반)에 배정된 학생 조회
-        // StudentAssignmentRepository 등을 통해 조회하거나 UserRepositoryCustom 사용
-        // 여기서는 로직 설명을 위해 의사 코드로 작성 (실제 구현 시 Repository 메서드 필요)
         List<User> students = studentInfoRepository.findStudentsByAssignment(
                 classroom.getYear(), classroom.getGrade(), classroom.getClassNum());
 
@@ -80,21 +82,20 @@ public class ClassroomService {
         List<ClassDTO.StudentSummary> studentSummaries = students.stream().map(u -> {
             StudentInfo info = u.getInfo(StudentInfo.class);
             StudentAssignment assign = info.getAssignments().stream()
-                    .filter(a -> a.getSchoolYear() == classroom.getYear())
+                    .filter(a -> a.getSchoolYear() != null && a.getSchoolYear().equals(classroom.getSchoolYear()))
                     .findFirst().orElse(null);
 
             return new ClassDTO.StudentSummary(
                     u.getUid(),
                     u.getName(),
                     info.getCode(),
-                    assign != null ? assign.getAttendanceNum() : null, // Entity -> DTO 매핑
-                    "-", // 성별 정보 없음
+                    assign != null ? assign.getAttendanceNum() : null,
+                    "-",
                     info.getStatus().getDescription());
         }).collect(Collectors.toList());
 
         response.setStudents(studentSummaries);
 
-        // 이력 조회
         response.setHistories(LogHelper.getClassroomHistory(cid).stream().map(ClassDTO.HistoryResponse::from).toList());
 
         return response;
@@ -135,7 +136,6 @@ public class ClassroomService {
                 .map(c -> c.getTeacher().getUid())
                 .collect(Collectors.toSet());
 
-        // 3. 미배정 교사만 필터링
         return allTeachers.stream()
                 .filter(t -> !assignedTeacherUids.contains(t.getUid()))
                 .map(ClassDTO.TeacherSelectResponse::from)
@@ -144,13 +144,11 @@ public class ClassroomService {
 
     @Transactional(readOnly = true)
     public List<ClassDTO.StudentSummary> getUnassignedStudents(int year, String keyword) {
-        // 모든 사용자 조회 후 학생인 경우만 필터링 (Repository 메서드가 없으므로 인메모리 필터링 사용)
         List<User> allUsers = userRepository.findAll();
 
         return allUsers.stream()
-                .filter(u -> u.getInfo(StudentInfo.class) != null) // 학생 정보가 있는 유저만
+                .filter(u -> u.getInfo(StudentInfo.class) != null)
                 .filter(u -> {
-                    // 키워드 검색 (이름 또는 학번)
                     if (keyword == null || keyword.isBlank())
                         return true;
                     String k = keyword.trim();
@@ -158,10 +156,9 @@ public class ClassroomService {
                     return u.getName().contains(k) || (info.getCode() != null && info.getCode().contains(k));
                 })
                 .filter(u -> {
-                    // 해당 학년도에 배정된 기록이 없는지 확인
                     StudentInfo info = u.getInfo(StudentInfo.class);
                     return info.getAssignments().stream()
-                            .noneMatch(a -> a.getSchoolYear() == year);
+                            .noneMatch(a -> a.getSchoolYear() != null && a.getSchoolYear().getYear() == year);
                 })
                 .map(u -> {
                     StudentInfo info = u.getInfo(StudentInfo.class);
@@ -173,23 +170,19 @@ public class ClassroomService {
 
     @Transactional(readOnly = true)
     public List<ClassDTO.TeacherSelectResponse> getAvailableTeachers(int year, Long currentCid) {
-        // 1. 전체 재직 교사 조회
         TeacherDTO.TeacherSearchCondition cond = new TeacherDTO.TeacherSearchCondition();
         cond.setStatus("EMPLOYED");
         List<User> allTeachers = teacherInfoRepository.search(cond, Pageable.unpaged()).getContent();
 
-        // 2. 해당 학년도에 이미 배정된 교사 조회
         ClassDTO.SearchCondition classCond = new ClassDTO.SearchCondition();
         classCond.setYear(year);
         List<Classroom> classesInYear = classroomRepository.search(classCond, Pageable.unpaged()).getContent();
 
-        // 3. 다른 학급에 배정된 교사 UID 수집 (현재 학급 제외)
         Set<Long> assignedTeacherUids = classesInYear.stream()
                 .filter(c -> c.getTeacher() != null && !c.getCid().equals(currentCid))
                 .map(c -> c.getTeacher().getUid())
                 .collect(Collectors.toSet());
 
-        // 4. 필터링 (미배정 교사 + 현재 학급 담임)
         return allTeachers.stream()
                 .filter(t -> !assignedTeacherUids.contains(t.getUid()))
                 .map(ClassDTO.TeacherSelectResponse::from)
@@ -199,26 +192,29 @@ public class ClassroomService {
     public Long createClass(ClassDTO.CreateRequest request) {
         log.info("[AdminClassService] createClass 호출됨");
 
-        // 학교 소속 설정 (X-School-Id 헤더 기반)
         Long schoolId = SchoolContextHolder.getSchoolId();
 
         // 중복 확인 (같은 학교 내에서만 체크)
         boolean exists = schoolId != null
-                ? classroomRepository.existsByYearAndGradeAndClassNumAndSchool_Id(
+                ? classroomRepository.existsBySchoolYear_YearAndGradeAndClassNumAndSchool_Id(
                         request.getYear(), request.getGrade(), request.getClassNum(), schoolId)
-                : classroomRepository.existsByYearAndGradeAndClassNum(
+                : classroomRepository.existsBySchoolYear_YearAndGradeAndClassNum(
                         request.getYear(), request.getGrade(), request.getClassNum());
         if (exists) {
             throw new IllegalArgumentException("이미 존재하는 학급입니다.");
         }
 
         Classroom classroom = new Classroom();
-        classroom.setYear(request.getYear());
         classroom.setGrade(request.getGrade());
         classroom.setClassNum(request.getClassNum());
 
         if (schoolId != null) {
-            schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
+            School school = schoolRepository.findById(schoolId).orElse(null);
+            if (school != null) {
+                classroom.setSchool(school);
+                SchoolYear schoolYear = findOrCreateSchoolYear(schoolId, request.getYear(), school);
+                classroom.setSchoolYear(schoolYear);
+            }
         }
 
         if (request.getTeacherUid() != null) {
@@ -229,12 +225,10 @@ public class ClassroomService {
 
         Long cid = classroomRepository.save(classroom).getCid();
 
-        // 1. 수동 선택 학생 배정
         if (request.getStudentUids() != null && !request.getStudentUids().isEmpty()) {
             addStudents(cid, request.getStudentUids());
         }
 
-        // 2. 랜덤 학생 배정
         if (request.getRandomCount() != null && request.getRandomCount() > 0) {
             addRandomStudents(cid, request.getRandomCount());
         }
@@ -254,9 +248,9 @@ public class ClassroomService {
             if (classroom.getGrade() != request.getGrade() || classroom.getClassNum() != request.getClassNum()) {
                 Long schoolId = classroom.getSchool() != null ? classroom.getSchool().getId() : null;
                 boolean exists = schoolId != null
-                        ? classroomRepository.existsByYearAndGradeAndClassNumAndSchool_Id(
+                        ? classroomRepository.existsBySchoolYear_YearAndGradeAndClassNumAndSchool_Id(
                                 classroom.getYear(), request.getGrade(), request.getClassNum(), schoolId)
-                        : classroomRepository.existsByYearAndGradeAndClassNum(
+                        : classroomRepository.existsBySchoolYear_YearAndGradeAndClassNum(
                                 classroom.getYear(), request.getGrade(), request.getClassNum());
                 if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 학급(학년/반)입니다.");
@@ -290,7 +284,6 @@ public class ClassroomService {
 
         List<User> users = userRepository.findAllById(studentUids);
 
-        // 현재 학급의 가장 마지막 번호 조회 (자동 번호 부여용)
         int maxNum = studentInfoRepository.findMaxAttendanceNum(classroom.getYear(), classroom.getGrade(),
                 classroom.getClassNum());
         int nextNum = maxNum + 1;
@@ -298,24 +291,20 @@ public class ClassroomService {
         for (User user : users) {
             StudentInfo info = user.getInfo(StudentInfo.class);
 
-            // 이미 해당 학년도에 배정된 정보가 있는지 확인
             StudentAssignment assignment = info.getAssignments().stream()
-                    .filter(a -> a.getSchoolYear() == classroom.getYear())
+                    .filter(a -> a.getSchoolYear() != null && a.getSchoolYear().equals(classroom.getSchoolYear()))
                     .findFirst().orElse(null);
 
             if (assignment != null) {
-                // 이미 배정된 경우: 전반(Transfer) 처리 또는 예외 발생
                 if (assignment.getClassroom().getCid().equals(classroom.getCid())) {
-                    // 이미 같은 반인 경우 번호 유지 (중복 추가 방지)
                     continue;
                 }
                 assignment.setClassroom(classroom);
-                assignment.setAttendanceNum(nextNum++); // 전반 시 새 번호 부여
+                assignment.setAttendanceNum(nextNum++);
             } else {
-                // 신규 배정
                 StudentAssignment newAssignment = new StudentAssignment();
                 newAssignment.setStudentInfo(info);
-                newAssignment.setSchoolYear(classroom.getYear());
+                newAssignment.setSchoolYear(classroom.getSchoolYear());
                 newAssignment.setClassroom(classroom);
                 newAssignment.setAttendanceNum(nextNum++);
                 info.getAssignments().add(newAssignment);
@@ -365,7 +354,6 @@ public class ClassroomService {
 
         StudentInfo info = user.getInfo(StudentInfo.class);
 
-        // 해당 학년도의 배정 정보 삭제
         info.getAssignments().removeIf(a -> a.getClassroom().getCid().equals(classroom.getCid()));
 
         logChange(cid, "REMOVE_STUDENT", "학생 제외: " + user.getName());
@@ -379,7 +367,6 @@ public class ClassroomService {
 
         for (User user : users) {
             StudentInfo info = user.getInfo(StudentInfo.class);
-            // 해당 학년도의 배정 정보 삭제
             info.getAssignments().removeIf(a -> a.getClassroom().getCid().equals(classroom.getCid()));
         }
 
@@ -400,11 +387,9 @@ public class ClassroomService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 학급에 학생이 배정되어 있지 않습니다."));
 
-        // 1. 새 학급에서의 번호 먼저 계산 (이동 전 상태에서 조회해야 정확함)
         int nextNum = studentInfoRepository.findMaxAttendanceNum(targetClassroom.getYear(), targetClassroom.getGrade(),
                 targetClassroom.getClassNum()) + 1;
 
-        // 2. 학급 및 번호 변경
         assignment.setClassroom(targetClassroom);
         assignment.setAttendanceNum(nextNum);
 
@@ -435,22 +420,24 @@ public class ClassroomService {
             Long schoolId = SchoolContextHolder.getSchoolId();
 
             for (ClassDTO.CsvImportRequest req : beans) {
-                // 1. 학급 조회 또는 생성 (학교 ID 기반으로 스쿨-스코프 조회)
                 Classroom classroom = (schoolId != null)
-                        ? classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(
+                        ? classroomRepository.findBySchoolIdAndSchoolYear_YearAndGradeAndClassNum(
                                 schoolId, req.getYear(), req.getGrade(), req.getClassNum()).orElse(null)
-                        : classroomRepository.findByYearAndGradeAndClassNum(
+                        : classroomRepository.findBySchoolYear_YearAndGradeAndClassNum(
                                 req.getYear(), req.getGrade(), req.getClassNum()).orElse(null);
 
                 if (classroom == null) {
                     classroom = new Classroom();
-                    classroom.setYear(req.getYear());
                     classroom.setGrade(req.getGrade());
                     classroom.setClassNum(req.getClassNum());
 
-                    // school context 설정 (createClass()와 동일하게)
                     if (schoolId != null) {
-                        schoolRepository.findById(schoolId).ifPresent(classroom::setSchool);
+                        School school = schoolRepository.findById(schoolId).orElse(null);
+                        if (school != null) {
+                            classroom.setSchool(school);
+                            SchoolYear schoolYear = findOrCreateSchoolYear(schoolId, req.getYear(), school);
+                            classroom.setSchoolYear(schoolYear);
+                        }
                     }
 
                     classroom = classroomRepository.save(classroom);
@@ -458,7 +445,6 @@ public class ClassroomService {
                 }
                 successClassCount++;
 
-                // 2. 담임 교사 배정
                 if (req.getTeacherCode() != null && !req.getTeacherCode().isBlank()) {
                     User teacher = teacherInfoRepository.findTeacherByCode(req.getTeacherCode()).orElse(null);
                     if (teacher != null) {
@@ -468,7 +454,6 @@ public class ClassroomService {
                     }
                 }
 
-                // 3. 학생 배정
                 if (req.getStudentCodes() != null && !req.getStudentCodes().isBlank()) {
                     String[] codes = req.getStudentCodes().split(",");
                     for (String code : codes) {
@@ -509,7 +494,6 @@ public class ClassroomService {
         StringBuilder sb = new StringBuilder();
         sb.append("번호,이름,학번,상태\n");
 
-        // 번호순 정렬 (번호가 없으면 이름순)
         List<ClassDTO.StudentSummary> sortedStudents = detail.getStudents().stream()
                 .sorted((s1, s2) -> {
                     if (s1.getAttendanceNum() != null && s2.getAttendanceNum() != null) {
@@ -532,12 +516,10 @@ public class ClassroomService {
         Classroom classroom = classroomRepository.findById(cid)
                 .orElseThrow(() -> new IllegalArgumentException("학급 정보를 찾을 수 없습니다."));
 
-        // 1. 교사 배정 확인
         if (classroom.getTeacher() != null) {
             throw new IllegalStateException("담임 교사가 배정된 학급은 삭제할 수 없습니다. 먼저 교사 배정을 해제하세요.");
         }
 
-        // 2. 학생 배정 확인
         long studentCount = studentInfoRepository.countByClassroom(classroom.getYear(), classroom.getGrade(),
                 classroom.getClassNum());
         if (studentCount > 0) {
@@ -551,7 +533,7 @@ public class ClassroomService {
     @Transactional(readOnly = true)
     public List<ClassDTO.DetailResponse> getClassList() {
         return classroomRepository.findAll().stream()
-                .map(c -> ClassDTO.DetailResponse.from(c, 0)) // 학생 수는 목록에서 0으로 처리하거나 별도 조회
+                .map(c -> ClassDTO.DetailResponse.from(c, 0))
                 .collect(Collectors.toList());
     }
 
@@ -577,5 +559,18 @@ public class ClassroomService {
         } else {
             classroom.setTeacher(null);
         }
+    }
+
+    // ── 내부 유틸 ────────────────────────────────────────────────────────────
+
+    /** 학교별 학년도 엔티티 조회 또는 생성 (PAST 상태로 생성 - 현재 학년도 전환은 AcademicTermService가 담당) */
+    private SchoolYear findOrCreateSchoolYear(Long schoolId, int year, School school) {
+        return schoolYearRepository.findBySchoolIdAndYear(schoolId, year)
+                .orElseGet(() -> {
+                    SchoolYearStatus status = (java.time.LocalDate.now().getYear() == year) ? SchoolYearStatus.CURRENT : SchoolYearStatus.PAST;
+                    SchoolYear sy = new SchoolYear(year, status);
+                    sy.setSchool(school);
+                    return schoolYearRepository.save(sy);
+                });
     }
 }

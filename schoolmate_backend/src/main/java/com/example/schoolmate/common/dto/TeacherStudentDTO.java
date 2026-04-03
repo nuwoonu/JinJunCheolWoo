@@ -87,7 +87,7 @@ public class TeacherStudentDTO {
 
         public AssignedStudentResponse(TeacherStudent ts) {
             this.relationId = ts.getId();
-            this.schoolYear = ts.getSchoolYear();
+            this.schoolYear = ts.getSchoolYearInt();
             this.roleName = ts.getRole().name();
             this.roleDesc = ts.getRole().getDescription();
             this.subjectName = ts.getSubjectName();
@@ -135,7 +135,7 @@ public class TeacherStudentDTO {
 
         public AssignedTeacherResponse(TeacherStudent ts) {
             this.relationId = ts.getId();
-            this.schoolYear = ts.getSchoolYear();
+            this.schoolYear = ts.getSchoolYearInt();
             this.roleName = ts.getRole().name();
             this.roleDesc = ts.getRole().getDescription();
             this.subjectName = ts.getSubjectName();

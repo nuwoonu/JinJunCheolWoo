@@ -22,7 +22,7 @@ public interface FamilyRelationRepository extends JpaRepository<FamilyRelation, 
            "JOIN si.assignments ca " +
            "JOIN ca.classroom cl " +
            "WHERE cl.cid = :classroomId " +
-           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si)")
+           "AND ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT")
     List<FamilyRelation> findByStudentClassroom(@Param("classroomId") Long classroomId);
 
     // [woo] 학교 전체 학부모 관계 조회

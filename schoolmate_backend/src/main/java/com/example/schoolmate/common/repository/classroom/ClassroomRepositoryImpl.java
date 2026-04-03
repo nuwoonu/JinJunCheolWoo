@@ -34,7 +34,7 @@ public class ClassroomRepositoryImpl implements ClassroomRepositoryCustom {
                 .selectFrom(classroom)
                 .leftJoin(classroom.teacher, teacher).fetchJoin()
                 .where(filter, schoolFilter)
-                .orderBy(classroom.year.desc(), classroom.grade.asc(), classroom.classNum.asc());
+                .orderBy(classroom.schoolYear.year.desc(), classroom.grade.asc(), classroom.classNum.asc());
 
         if (pageable.isPaged()) {
             contentQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
@@ -54,7 +54,7 @@ public class ClassroomRepositoryImpl implements ClassroomRepositoryCustom {
         QClassroom classroom = QClassroom.classroom;
         BooleanExpression expr = null;
         if (year != null)
-            expr = classroom.year.eq(year);
+            expr = classroom.schoolYear.year.eq(year);
         if (grade != null)
             expr = (expr == null) ? classroom.grade.eq(grade) : expr.and(classroom.grade.eq(grade));
         if (status != null && !status.isEmpty())

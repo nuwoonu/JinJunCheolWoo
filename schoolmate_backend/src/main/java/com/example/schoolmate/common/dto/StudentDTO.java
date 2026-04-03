@@ -148,7 +148,7 @@ public class StudentDTO {
                 this.schoolName = info.getSchool() != null ? info.getSchool().getName() : null;
                 if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getClassroom() != null) {
                     StudentAssignment a = info.getCurrentAssignment();
-                    this.latestClass = a.getSchoolYear() + "년 " + a.getGrade() + "학년 " + a.getClassNum() + "반";
+                    this.latestClass = a.getSchoolYearInt() + "년 " + a.getGrade() + "학년 " + a.getClassNum() + "반";
                 } else {
                     this.latestClass = "-";
                 }
@@ -218,7 +218,7 @@ public class StudentDTO {
 
         public AssignmentInfo(StudentAssignment a) {
             this.id = a.getId();
-            this.schoolYear = a.getSchoolYear();
+            this.schoolYear = a.getSchoolYearInt();
             this.grade = a.getGrade();
             this.classNum = a.getClassNum();
             this.attendanceNum = a.getAttendanceNum();

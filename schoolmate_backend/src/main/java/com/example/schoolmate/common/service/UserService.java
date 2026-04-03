@@ -20,6 +20,8 @@ import com.example.schoolmate.common.repository.ProfileRepository;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
+import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
+import com.example.schoolmate.domain.term.repository.SchoolYearRepository;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.common.util.NotificationHelper;
@@ -57,6 +59,7 @@ public class UserService {
     private final ClassroomRepository classroomRepository;
     private final SchoolRepository schoolRepository;
     private final CodeSequenceService codeSequenceService;
+    private final SchoolYearRepository schoolYearRepository;
 
     /**
      * 이메일 회원가입
@@ -160,19 +163,20 @@ public class UserService {
             info.setPhone(dto.getPhoneNumber());
             // 학급 배정 (이메일 가입 시 학년·반 정보가 있을 때만)
             if (dto.getGrade() != null && dto.getClassNum() != null) {
-                int currentYear = LocalDate.now().getYear();
                 Long ctxSchoolId = SchoolContextHolder.getSchoolId();
-                classroomRepository
-                        .findBySchoolIdAndYearAndGradeAndClassNum(ctxSchoolId, currentYear, dto.getGrade(), dto.getClassNum())
-                        .ifPresent(classroom -> {
-                            StudentAssignment assignment = StudentAssignment.builder()
-                                    .studentInfo(info)
-                                    .schoolYear(currentYear)
-                                    .classroom(classroom)
-                                    .attendanceNum(dto.getStudentNum())
-                                    .build();
-                            info.getAssignments().add(assignment);
-                        });
+                schoolYearRepository.findBySchoolIdAndStatus(ctxSchoolId, SchoolYearStatus.CURRENT).ifPresent(currentSchoolYear -> {
+                    classroomRepository
+                            .findBySchoolIdAndSchoolYear_YearAndGradeAndClassNum(ctxSchoolId, currentSchoolYear.getYear(), dto.getGrade(), dto.getClassNum())
+                            .ifPresent(classroom -> {
+                                StudentAssignment assignment = StudentAssignment.builder()
+                                        .studentInfo(info)
+                                        .schoolYear(currentSchoolYear)
+                                        .classroom(classroom)
+                                        .attendanceNum(dto.getStudentNum())
+                                        .build();
+                                info.getAssignments().add(assignment);
+                            });
+                });
             }
         }
 
@@ -425,7 +429,7 @@ public class UserService {
                 builder.grade(assignment.getGrade())
                         .classNum(assignment.getClassNum())
                         .studentNum(assignment.getAttendanceNum())
-                        .schoolYear(assignment.getSchoolYear());
+                        .schoolYear(assignment.getSchoolYearInt());
             }
         }
 

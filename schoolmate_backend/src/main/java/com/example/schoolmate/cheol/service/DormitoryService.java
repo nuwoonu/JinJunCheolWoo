@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +22,8 @@ import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
 import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
+import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.school.entity.School;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -37,17 +38,15 @@ public class DormitoryService {
     private final DormitoryAssignmentRepository dormitoryAssignmentRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final AcademicTermRepository academicTermRepository;
+    private final SchoolRepository schoolRepository;
 
     /**
-     * cheol: 앱 시작 시 DB가 비어있으면 자동 초기화
+     * 초기 데이터 수동 생성 (전역 자동 생성을 막고 관리자 호출용으로 대체)
      */
-    @PostConstruct
     @Transactional
     public void initIfEmpty() {
-        if (dormitoryRepository.count() == 0) {
-            initializeDormitories();
-            log.info("기숙사 초기 데이터 자동 생성 완료");
-        }
+        initializeDormitories();
+        log.info("현재 학교 기숙사 초기 데이터 자동 생성 완료");
     }
 
     /**
@@ -55,6 +54,14 @@ public class DormitoryService {
      */
     @Transactional
     public void initializeDormitories() {
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId == null) {
+            throw new IllegalStateException("학교 정보를 확인할 수 없습니다.");
+        }
+
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new IllegalStateException("학교 정보를 찾을 수 없습니다."));
+
         List<Dormitory> dormitories = new ArrayList<>();
 
         String[] buildings = { "1동", "2동", "3동" };
@@ -67,15 +74,15 @@ public class DormitoryService {
                 String r03 = String.format("%d03", floor);
                 String r04 = String.format("%d04", floor);
 
-                dormitories.add(createDormitoryBed(building, floor, r01, "A", RoomType.DOUBLE));
-                dormitories.add(createDormitoryBed(building, floor, r01, "B", RoomType.DOUBLE));
-                dormitories.add(createDormitoryBed(building, floor, r02, "1", RoomType.QUADRUPLE));
-                dormitories.add(createDormitoryBed(building, floor, r02, "2", RoomType.QUADRUPLE));
-                dormitories.add(createDormitoryBed(building, floor, r02, "3", RoomType.QUADRUPLE));
-                dormitories.add(createDormitoryBed(building, floor, r02, "4", RoomType.QUADRUPLE));
-                dormitories.add(createDormitoryBed(building, floor, r03, "1", RoomType.SINGLE));
-                dormitories.add(createDormitoryBed(building, floor, r04, "A", RoomType.DOUBLE));
-                dormitories.add(createDormitoryBed(building, floor, r04, "B", RoomType.DOUBLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r01, "A", RoomType.DOUBLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r01, "B", RoomType.DOUBLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r02, "1", RoomType.QUADRUPLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r02, "2", RoomType.QUADRUPLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r02, "3", RoomType.QUADRUPLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r02, "4", RoomType.QUADRUPLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r03, "1", RoomType.SINGLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r04, "A", RoomType.DOUBLE));
+                dormitories.add(createDormitoryBed(school, building, floor, r04, "B", RoomType.DOUBLE));
             }
         }
 
@@ -83,15 +90,17 @@ public class DormitoryService {
         log.info("기숙사 초기 데이터 생성 완료: {} 개 침대", dormitories.size());
     }
 
-    private Dormitory createDormitoryBed(String building, int floor, String roomNumber, String bedNumber,
+    private Dormitory createDormitoryBed(School school, String building, int floor, String roomNumber, String bedNumber,
             RoomType roomType) {
-        return Dormitory.builder()
+        Dormitory dormitory = Dormitory.builder()
                 .building(building)
                 .floor(floor)
                 .roomNumber(roomNumber)
                 .bedNumber(bedNumber)
                 .roomType(roomType)
                 .build();
+        dormitory.setSchool(school);
+        return dormitory;
     }
 
     /**
@@ -99,7 +108,14 @@ public class DormitoryService {
      */
     @Transactional
     public void addBuilding(String buildingName, int floors, int roomsPerFloor, int bedsPerRoom) {
-        if (dormitoryRepository.findBuildingSummaries().stream()
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        if (schoolId == null) {
+            throw new IllegalStateException("학교 정보를 확인할 수 없습니다.");
+        }
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new IllegalStateException("학교 정보를 찾을 수 없습니다."));
+
+        if (dormitoryRepository.findBuildingSummaries(schoolId).stream()
                 .anyMatch(row -> buildingName.equals(row[0]))) {
             throw new IllegalArgumentException("이미 존재하는 건물명입니다: " + buildingName);
         }
@@ -110,7 +126,7 @@ public class DormitoryService {
             for (int r = 1; r <= roomsPerFloor; r++) {
                 String roomNumber = String.format("%d%02d", floor, r);
                 for (int b = 1; b <= bedsPerRoom; b++) {
-                    beds.add(createDormitoryBed(buildingName, floor, roomNumber, String.valueOf(b), roomType));
+                    beds.add(createDormitoryBed(school, buildingName, floor, roomNumber, String.valueOf(b), roomType));
                 }
             }
         }
@@ -123,7 +139,7 @@ public class DormitoryService {
      */
     @Transactional
     public void deleteBuilding(String buildingName) {
-        List<Dormitory> beds = dormitoryRepository.findByBuildingWithStudents(buildingName);
+        List<Dormitory> beds = dormitoryRepository.findByBuildingWithStudents(SchoolContextHolder.getSchoolId(), buildingName);
         if (beds.isEmpty()) {
             throw new IllegalArgumentException("존재하지 않는 건물입니다: " + buildingName);
         }
@@ -138,7 +154,7 @@ public class DormitoryService {
      * 전체 건물 목록 및 통계 조회
      */
     public List<Map<String, Object>> getAllBuildings() {
-        List<Object[]> rows = dormitoryRepository.findBuildingSummaries();
+        List<Object[]> rows = dormitoryRepository.findBuildingSummaries(SchoolContextHolder.getSchoolId());
         List<Map<String, Object>> result = new ArrayList<>();
         for (Object[] row : rows) {
             Map<String, Object> map = new LinkedHashMap<>();
@@ -155,7 +171,7 @@ public class DormitoryService {
      * 특정 건물의 모든 방 조회
      */
     public Map<Integer, Map<String, List<DormitoryDTO>>> getBuildingRooms(String building) {
-        List<Dormitory> dormitories = dormitoryRepository.findByBuildingWithStudents(building);
+        List<Dormitory> dormitories = dormitoryRepository.findByBuildingWithStudents(SchoolContextHolder.getSchoolId(), building);
 
         return dormitories.stream()
                 .collect(Collectors.groupingBy(
@@ -168,13 +184,13 @@ public class DormitoryService {
     }
 
     public List<DormitoryDTO> getEmptyBeds() {
-        return dormitoryRepository.findEmptyBeds().stream()
+        return dormitoryRepository.findEmptyBeds(SchoolContextHolder.getSchoolId()).stream()
                 .map(DormitoryDTO::from)
                 .collect(Collectors.toList());
     }
 
     public List<DormitoryDTO> getEmptyBedsByBuilding(String building) {
-        return dormitoryRepository.findEmptyBedsByBuilding(building).stream()
+        return dormitoryRepository.findEmptyBedsByBuilding(SchoolContextHolder.getSchoolId(), building).stream()
                 .map(DormitoryDTO::from)
                 .collect(Collectors.toList());
     }
@@ -188,6 +204,7 @@ public class DormitoryService {
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
         Dormitory dormitory = dormitoryRepository.findByLocation(
+                SchoolContextHolder.getSchoolId(),
                 assignDTO.getBuilding(),
                 assignDTO.getFloor(),
                 assignDTO.getRoomNumber(),
@@ -236,6 +253,7 @@ public class DormitoryService {
                 .map(da -> {
                     Dormitory myBed = da.getDormitory();
                     List<Dormitory> roomBeds = dormitoryRepository.findByRoomWithStudents(
+                            SchoolContextHolder.getSchoolId(),
                             myBed.getBuilding(), myBed.getFloor(), myBed.getRoomNumber());
                     List<String> allStudentNames = roomBeds.stream()
                             .flatMap(bed -> bed.getDormitoryAssignments().stream())
@@ -283,14 +301,14 @@ public class DormitoryService {
      */
     public List<String> getBuildingsByStudentName(String name) {
         if (name == null || name.trim().isEmpty()) return List.of();
-        return dormitoryRepository.findBuildingsByStudentName(name.trim());
+        return dormitoryRepository.findBuildingsByStudentName(SchoolContextHolder.getSchoolId(), name.trim());
     }
 
     /**
      * 특정 호실의 모든 침대 및 배정 현황 조회
      */
     public List<DormitoryDTO> getRoomDetails(String building, Integer floor, String roomNumber) {
-        return dormitoryRepository.findByRoom(building, floor, roomNumber).stream()
+        return dormitoryRepository.findByRoom(SchoolContextHolder.getSchoolId(), building, floor, roomNumber).stream()
                 .map(DormitoryDTO::from)
                 .collect(Collectors.toList());
     }

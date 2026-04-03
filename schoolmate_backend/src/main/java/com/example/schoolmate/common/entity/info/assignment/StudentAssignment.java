@@ -2,6 +2,7 @@ package com.example.schoolmate.common.entity.info.assignment;
 
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.domain.term.entity.SchoolYear;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -29,7 +30,10 @@ public class StudentAssignment extends SchoolBaseEntity {
     @JoinColumn(name = "student_info_id")
     private StudentInfo studentInfo;
 
-    private int schoolYear; // 학년도 (예: 2025, 2026)
+    /** 학년도 FK */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_year_id")
+    private SchoolYear schoolYear;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classroom_id")
@@ -46,11 +50,16 @@ public class StudentAssignment extends SchoolBaseEntity {
     private String specialNotes;
 
     @Builder
-    public StudentAssignment(StudentInfo studentInfo, int schoolYear, Classroom classroom, Integer attendanceNum) {
+    public StudentAssignment(StudentInfo studentInfo, SchoolYear schoolYear, Classroom classroom, Integer attendanceNum) {
         this.studentInfo = studentInfo;
         this.schoolYear = schoolYear;
         this.classroom = classroom;
         this.attendanceNum = attendanceNum;
+    }
+
+    /** 학년도 정수값 편의 메서드 */
+    public int getSchoolYearInt() {
+        return schoolYear != null ? schoolYear.getYear() : 0;
     }
 
     public Integer getGrade() {

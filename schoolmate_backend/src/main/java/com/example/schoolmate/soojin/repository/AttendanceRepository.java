@@ -17,7 +17,7 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT " +
             "LEFT JOIN ca.classroom " +
             "WHERE sa.attendanceDate = :date " +
             "AND si.school.id = :schoolId " +
@@ -30,7 +30,7 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT " +
             "LEFT JOIN ca.classroom c " +
             "WHERE sa.attendanceDate = :date " +
             "AND si.school.id = :schoolId " +
@@ -45,7 +45,7 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT " +
             "LEFT JOIN ca.classroom c " +
             "WHERE sa.attendanceDate = :date " +
             "AND si.school.id = :schoolId " +
@@ -93,7 +93,7 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT " +
             "LEFT JOIN ca.classroom " +
             "WHERE sa.studentInfo.id IN :studentInfoIds " +
             "AND sa.attendanceDate = :date " +

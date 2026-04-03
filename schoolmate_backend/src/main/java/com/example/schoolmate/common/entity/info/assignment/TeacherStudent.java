@@ -4,6 +4,7 @@ import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.constant.TeacherRole;
+import com.example.schoolmate.domain.term.entity.SchoolYear;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,7 +39,7 @@ import lombok.Setter;
     name = "teacher_student",
     uniqueConstraints = {
         // 같은 학년도에 동일한 교사-학생-역할 조합이 중복되지 않도록 제약
-        @UniqueConstraint(columnNames = {"teacher_info_id", "student_info_id", "school_year", "role"})
+        @UniqueConstraint(columnNames = {"teacher_info_id", "student_info_id", "school_year_id", "role"})
     }
 )
 @Getter
@@ -60,9 +61,10 @@ public class TeacherStudent extends SchoolBaseEntity {
     @JoinColumn(name = "student_info_id", nullable = false)
     private StudentInfo studentInfo;
 
-    // 학년도 (예: 2025, 2026)
-    // 매년 담임이 바뀌므로 학년도 기준으로 관계를 구분함
-    private int schoolYear;
+    /** 학년도 FK */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_year_id", nullable = false)
+    private SchoolYear schoolYear;
 
     // 교사의 역할 (담임, 교과담당 등)
     @Enumerated(EnumType.STRING)
@@ -74,11 +76,16 @@ public class TeacherStudent extends SchoolBaseEntity {
 
     @Builder
     public TeacherStudent(TeacherInfo teacherInfo, StudentInfo studentInfo,
-                          int schoolYear, TeacherRole role, String subjectName) {
+                          SchoolYear schoolYear, TeacherRole role, String subjectName) {
         this.teacherInfo = teacherInfo;
         this.studentInfo = studentInfo;
         this.schoolYear = schoolYear;
         this.role = role;
         this.subjectName = subjectName;
+    }
+
+    /** 학년도 정수값 편의 메서드 */
+    public int getSchoolYearInt() {
+        return schoolYear != null ? schoolYear.getYear() : 0;
     }
 }

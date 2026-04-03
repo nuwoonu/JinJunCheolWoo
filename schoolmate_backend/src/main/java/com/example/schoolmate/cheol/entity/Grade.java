@@ -66,7 +66,7 @@ public class Grade extends SchoolBaseEntity {
 
     // 하위 호환 편의 메서드
     public int getSchoolYear() {
-        return academicTerm != null ? academicTerm.getSchoolYear() : 0;
+        return academicTerm != null ? academicTerm.getSchoolYearInt() : 0;
     }
 
     public int getSemesterNum() {

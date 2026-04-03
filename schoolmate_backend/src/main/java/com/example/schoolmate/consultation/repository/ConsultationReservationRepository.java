@@ -18,7 +18,7 @@ public interface ConsultationReservationRepository extends JpaRepository<Consult
            "JOIN si.assignments ca " +
            "JOIN ca.classroom c " +
            "WHERE c.teacher.uid = :teacherUid AND r.date BETWEEN :startDate AND :endDate " +
-           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si)")
+           "AND ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT")
     List<ConsultationReservation> findByTeacherUidAndDateBetween(
             @Param("teacherUid") Long teacherUid,
             @Param("startDate") LocalDate startDate,
@@ -30,9 +30,6 @@ public interface ConsultationReservationRepository extends JpaRepository<Consult
     // 작성자(학부모) uid로 본인 예약 조회
     List<ConsultationReservation> findByWriter_UidOrderByDateDescStartTimeDesc(Long uid);
 
-    // [미사용] 특정 자녀(studentInfo PK) 상담 조회 - 서비스에서 studentUserUid 기반 메서드로 대체됨
-    // List<ConsultationReservation> findByStudentInfo_IdOrderByDateDescStartTimeDesc(Long studentInfoId);
-
     // 특정 자녀(student user uid) 상담 조회
     List<ConsultationReservation> findByStudentInfo_User_UidOrderByDateDescStartTimeDesc(Long studentUserUid);
 
@@ -42,7 +39,7 @@ public interface ConsultationReservationRepository extends JpaRepository<Consult
            "JOIN si.assignments ca " +
            "JOIN ca.classroom c " +
            "WHERE c.cid = :classroomId AND r.date BETWEEN :startDate AND :endDate " +
-           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si)")
+           "AND ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT")
     List<ConsultationReservation> findByClassroomIdAndDateBetween(
             @Param("classroomId") Long classroomId,
             @Param("startDate") LocalDate startDate,
@@ -54,7 +51,7 @@ public interface ConsultationReservationRepository extends JpaRepository<Consult
            "JOIN si.assignments ca " +
            "JOIN ca.classroom c " +
            "WHERE c.teacher.uid = :teacherUid " +
-           "AND ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+           "AND ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT " +
            "ORDER BY r.date DESC, r.startTime DESC")
     List<ConsultationReservation> findByTeacherUidOrderByDateDescStartTimeDesc(@Param("teacherUid") Long teacherUid);
 

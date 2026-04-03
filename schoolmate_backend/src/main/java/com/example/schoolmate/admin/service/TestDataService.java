@@ -25,6 +25,9 @@ import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
 import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
+import com.example.schoolmate.domain.term.entity.SchoolYear;
+import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
+import com.example.schoolmate.domain.term.repository.SchoolYearRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -66,6 +69,7 @@ public class TestDataService {
     private final CodeSequenceService codeSequenceService;
     private final PasswordEncoder passwordEncoder;
     private final SystemSettingsRepository systemSettingsRepository;
+    private final SchoolYearRepository schoolYearRepository;
 
     // ── 랜덤 데이터 풀 ────────────────────────────────────────────────────────
 
@@ -152,14 +156,27 @@ public class TestDataService {
 
         summary.put("schools", List.of(elemSchool.getName(), midSchool.getName()));
 
+        SchoolYear elemSy = schoolYearRepository.findBySchoolIdAndYear(elemSchool.getId(), year)
+                .orElseGet(() -> {
+                    SchoolYear sy = new SchoolYear(year, SchoolYearStatus.CURRENT);
+                    sy.setSchool(elemSchool);
+                    return schoolYearRepository.save(sy);
+                });
+        SchoolYear midSy = schoolYearRepository.findBySchoolIdAndYear(midSchool.getId(), year)
+                .orElseGet(() -> {
+                    SchoolYear sy = new SchoolYear(year, SchoolYearStatus.CURRENT);
+                    sy.setSchool(midSchool);
+                    return schoolYearRepository.save(sy);
+                });
+
         // 학기 생성
-        seedTerm(elemSchool, year);
-        seedTerm(midSchool,  year);
+        seedTerm(elemSchool, year, elemSy);
+        seedTerm(midSchool,  year, midSy);
         summary.put("terms", year + "학년도 1학기 (3/1 ~ 다음해 2/28)");
 
         // 학급 생성 (초: 3학년까지 각 3반 + 나머지 1반 총 10개 / 중: 3학년 각 3반 + 1반 총 10개)
-        List<Classroom> elemClasses = seedClassrooms(elemSchool, year, new int[][]{{1,3},{2,3},{3,4}});
-        List<Classroom> midClasses  = seedClassrooms(midSchool,  year, new int[][]{{1,3},{2,3},{3,4}});
+        List<Classroom> elemClasses = seedClassrooms(elemSchool, elemSy, new int[][]{{1,3},{2,3},{3,4}});
+        List<Classroom> midClasses  = seedClassrooms(midSchool,  midSy, new int[][]{{1,3},{2,3},{3,4}});
         summary.put("classrooms", Map.of(
             elemSchool.getName(), elemClasses.size(),
             midSchool.getName(),  midClasses.size()
@@ -174,8 +191,8 @@ public class TestDataService {
         List<StaffInfo> midStaffs  = seedStaffs(midSchool,  5);
 
         // 학생 생성 (20명)
-        List<StudentInfo> elemStudents = seedStudents(elemSchool, elemClasses, 20, year);
-        List<StudentInfo> midStudents  = seedStudents(midSchool,  midClasses,  20, year);
+        List<StudentInfo> elemStudents = seedStudents(elemSchool, elemClasses, 20, elemSy);
+        List<StudentInfo> midStudents  = seedStudents(midSchool,  midClasses,  20, midSy);
 
         summary.put("teachers",  Map.of(elemSchool.getName(), elemTeachers.size(), midSchool.getName(), midTeachers.size()));
         summary.put("staffs",    Map.of(elemSchool.getName(), elemStaffs.size(),   midSchool.getName(), midStaffs.size()));
@@ -211,13 +228,13 @@ public class TestDataService {
         });
     }
 
-    private void seedTerm(School school, int year) {
+    private void seedTerm(School school, int year, SchoolYear sy) {
         // 이미 해당 학교의 ACTIVE 학기가 있으면 스킵
         if (academicTermRepository.findBySchoolIdAndStatus(school.getId(), AcademicTermStatus.ACTIVE).isPresent()) {
             return;
         }
         AcademicTerm term = AcademicTerm.builder()
-                .schoolYear(year)
+                .schoolYear(sy)
                 .semester(1)
                 .startDate(LocalDate.of(year, 3, 1))
                 .endDate(LocalDate.of(year + 1, 2, 28))
@@ -230,18 +247,18 @@ public class TestDataService {
     /**
      * @param gradeConfig int[학년][반수] 배열 — e.g. {{1,3},{2,3},{3,4}}
      */
-    private List<Classroom> seedClassrooms(School school, int year, int[][] gradeConfig) {
+    private List<Classroom> seedClassrooms(School school, SchoolYear sy, int[][] gradeConfig) {
         List<Classroom> result = new ArrayList<>();
         for (int[] gc : gradeConfig) {
             int grade = gc[0], count = gc[1];
             for (int cn = 1; cn <= count; cn++) {
-                if (classroomRepository.existsByYearAndGradeAndClassNumAndSchool_Id(year, grade, cn, school.getId())) {
-                    classroomRepository.findBySchoolIdAndYearAndGradeAndClassNum(school.getId(), year, grade, cn)
+                if (classroomRepository.existsBySchoolYear_YearAndGradeAndClassNumAndSchool_Id(sy.getYear(), grade, cn, school.getId())) {
+                    classroomRepository.findBySchoolIdAndSchoolYear_YearAndGradeAndClassNum(school.getId(), sy.getYear(), grade, cn)
                             .ifPresent(result::add);
                     continue;
                 }
                 Classroom c = Classroom.builder()
-                        .year(year)
+                        .schoolYear(sy)
                         .grade(grade)
                         .classNum(cn)
                         .status(ClassroomStatus.ACTIVE)
@@ -356,7 +373,7 @@ public class TestDataService {
         return result;
     }
 
-    private List<StudentInfo> seedStudents(School school, List<Classroom> classrooms, int count, int year) {
+    private List<StudentInfo> seedStudents(School school, List<Classroom> classrooms, int count, SchoolYear sy) {
         List<StudentInfo> result = new ArrayList<>();
         // 학급에 순서대로 배분
         int classIdx = 0;
@@ -397,7 +414,7 @@ public class TestDataService {
 
                 StudentAssignment assignment = new StudentAssignment();
                 assignment.setStudentInfo(info);
-                assignment.setSchoolYear(year);
+                assignment.setSchoolYear(sy);
                 assignment.setClassroom(c);
                 assignment.setAttendanceNum(num);
                 assignment.setBasicHabits("성실하고 예의 바름");
