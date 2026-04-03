@@ -67,12 +67,11 @@ interface TimetableItem {
   subject: string;
 }
 
-// [cheol] 학급 알림장 (고정 데이터)
-const CLASS_DIARY = [
-  { text: "내일 수학 퀴즈 있습니다", date: "2026-01-26" },
-  { text: "체육복 준비해오세요", date: "2026-01-25" },
-  { text: "과학 실험 준비물 확인", date: "2026-01-24" },
-];
+interface DiaryItem {
+  id: number;
+  title: string;
+  createDate: string;
+}
 
 export default function StudentDashboard() {
   const [data, setData] = useState<DashboardData>({});
@@ -82,24 +81,29 @@ export default function StudentDashboard() {
   // [woo] 출결 현황
   const [attendance, setAttendance] = useState<AttendanceSummary>({});
   const [meal, setMeal] = useState<MealInfo | null>(null);
+  const [diary, setDiary] = useState<DiaryItem[]>([]);
 
   useEffect(() => {
     api
       .get("/dashboard/student")
       .then((res) => {
         setData(res.data);
-        // [woo] 학생 정보 로드 후 NEIS 시간표 조회
         const s = res.data?.student;
+
+        // NEIS 시간표 조회
         if (s?.year && s?.classNum) {
-          fetch(`/api/calendar/timetable?grade=${s.year}&classNum=${s.classNum}`)
-            .then((r) => (r.ok ? r.json() : []))
-            .then((data) => {
-              setTimetable(data);
-              setTimetableLoading(false);
-            })
+          api.get(`/calendar/timetable?grade=${s.year}&classNum=${s.classNum}`)
+            .then((r) => { setTimetable(r.data ?? []); setTimetableLoading(false); })
             .catch(() => setTimetableLoading(false));
         } else {
           setTimetableLoading(false);
+        }
+
+        // 학급 알림장 조회 (classroomId 기반)
+        if (s?.classroomId) {
+          api.get(`/board/class-diary/${s.classroomId}?page=0&size=5`)
+            .then((r) => setDiary(r.data?.content ?? []))
+            .catch(() => {});
         }
       })
       .catch(() => setTimetableLoading(false));
@@ -115,11 +119,10 @@ export default function StudentDashboard() {
 
     // [woo] 오늘의 학사일정 (NEIS) - 이번달 일정에서 오늘 날짜만 필터
     const now = new Date();
-    fetch(`/api/calendar/events?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: CalendarEvent[]) => {
+    api.get(`/calendar/events?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
+      .then((r) => {
         const todayStr = now.toISOString().slice(0, 10);
-        setTodayEvents(data.filter((e) => e.startDate === todayStr));
+        setTodayEvents((r.data as CalendarEvent[]).filter((e) => e.startDate === todayStr));
       })
       .catch(() => {});
   }, []);
@@ -327,18 +330,22 @@ export default function StudentDashboard() {
                   <i className="ri-notification-3-line text-warning-main me-2" />
                   학급 알림장
                 </h6>
-                {CLASS_DIARY.map((item, i) => (
-                  <div
-                    key={i}
-                    className={`d-flex align-items-center justify-content-between py-12${i < CLASS_DIARY.length - 1 ? " border-bottom" : ""}`}
-                  >
-                    <div className="d-flex align-items-center gap-12">
-                      <i className="ri-notification-line text-secondary-light" />
-                      <span className="text-sm">{item.text}</span>
+                {diary.length > 0 ? (
+                  diary.map((item, i) => (
+                    <div
+                      key={item.id}
+                      className={`d-flex align-items-center justify-content-between py-12${i < diary.length - 1 ? " border-bottom" : ""}`}
+                    >
+                      <div className="d-flex align-items-center gap-12">
+                        <i className="ri-notification-line text-secondary-light" />
+                        <span className="text-sm">{item.title}</span>
+                      </div>
+                      <span className="text-xs text-secondary-light">{item.createDate?.slice(0, 10)}</span>
                     </div>
-                    <span className="text-xs text-secondary-light">{item.date}</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-center text-secondary-light text-sm py-20">등록된 알림장이 없습니다.</div>
+                )}
               </div>
             </div>
           </div>

@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfileModal } from '@/contexts/ProfileModalContext'
+import { getRoleContexts } from '@/api/auth'
+import type { RoleContext } from '@/api/auth'
 
 const menuItemStyle: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 8,
@@ -20,6 +22,7 @@ export default function ProfileDropdown() {
 
   const isHub = pathname === '/hub'
   const ref = useRef<HTMLDivElement>(null)
+  const [allContexts, setAllContexts] = useState<RoleContext[]>([])
 
   const roleRequests = user?.roleRequests ?? []
   const isSuperAdmin = user?.grants?.some(g => g.grantedRole === 'SUPER_ADMIN') ?? false
@@ -27,6 +30,22 @@ export default function ProfileDropdown() {
   const showHubButton =
     roleRequests.length + (isSuperAdmin ? 1 : 0) >= 2 ||
     roleRequests.some(r => r.status !== 'ACTIVE')
+
+  // 역할 추가 가능 여부 판단
+  useEffect(() => {
+    getRoleContexts().then(setAllContexts).catch(() => setAllContexts([]))
+  }, [])
+
+  const canAddRole = (['STUDENT', 'TEACHER', 'PARENT'] as const).some((role) => {
+    const hasPending = roleRequests.some(rr => rr.role === role && rr.status === 'PENDING')
+    if (hasPending) return false
+    if (role === 'PARENT') {
+      return !roleRequests.some(rr => rr.role === 'PARENT' && rr.status === 'ACTIVE')
+    }
+    const roleCtxs = allContexts.filter(c => c.roleType === role)
+    if (roleCtxs.length === 0) return true
+    return roleCtxs.every(c => c.status === 'TRANSFERRED')
+  })
 
   useEffect(() => {
     if (!open) return
@@ -94,7 +113,7 @@ export default function ProfileDropdown() {
             <i className="ri-user-settings-line" style={{ fontSize: 15 }} />
             프로필 보기
           </button>
-          {!isHub && (
+          {!isHub && canAddRole && (
             <button
               onClick={() => { setOpen(false); navigate('/select-info?source=profile') }}
               style={menuItemStyle}

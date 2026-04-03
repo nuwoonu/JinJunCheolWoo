@@ -3,7 +3,6 @@ package com.example.schoolmate.cheol.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.user.constant.RoomType;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 
@@ -32,7 +31,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "students")
+@ToString(exclude = "dormitoryAssignments")
 public class Dormitory extends SchoolBaseEntity {
 
     @Id
@@ -55,19 +54,19 @@ public class Dormitory extends SchoolBaseEntity {
     @Column(nullable = false)
     private RoomType roomType; // 방 타입 (1인실, 2인실, 4인실)
 
-    // 이 침대를 사용하는 학생들 (양방향 관계)
+    // 이 침대의 배정 이력 (양방향 관계)
     @OneToMany(mappedBy = "dormitory")
     @Builder.Default
-    private List<StudentInfo> students = new ArrayList<>();
+    private List<DormitoryAssignment> dormitoryAssignments = new ArrayList<>();
 
-    // 침대가 비어있는지 확인
+    // 침대가 비어있는지 확인 (전체 이력 기준 - 서비스에서 학기 필터링 권장)
     public boolean isEmpty() {
-        return students == null || students.isEmpty();
+        return dormitoryAssignments == null || dormitoryAssignments.isEmpty();
     }
 
-    // 침대에 배정된 학생 수
+    // 침대에 배정된 수
     public int getOccupiedCount() {
-        return students != null ? students.size() : 0;
+        return dormitoryAssignments != null ? dormitoryAssignments.size() : 0;
     }
 
     // 전체 주소 반환

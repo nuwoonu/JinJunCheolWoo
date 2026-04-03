@@ -17,14 +17,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.schoolmate.cheol.dto.SubjectDTO;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
-import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.soojin.entity.constant.DayOfWeek;
 import com.example.schoolmate.woo.dto.TeacherScheduleDTO;
 import com.example.schoolmate.common.service.TeacherScheduleService;
+import com.example.schoolmate.common.service.SubjectService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -41,7 +42,9 @@ public class TeacherScheduleRestController {
 
     private final TeacherScheduleService scheduleService;
     private final TeacherInfoRepository teacherInfoRepository;
-    private final UserRepository userRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
+    private final SubjectService subjectService;
+    
 
     /**
      * 전체 일정 조회 (React 시간표 초기 로딩용)
@@ -129,6 +132,15 @@ public class TeacherScheduleRestController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * [woo] 학교 등록 과목 목록 — 일정 추가 모달 과목명 드롭다운용
+     * GET /api/teacher/schedule/subjects
+     */
+    @GetMapping("/subjects")
+    public ResponseEntity<List<SubjectDTO.Response>> getSubjects() {
+        return ResponseEntity.ok(subjectService.getAllSubjects());
+    }
+
     // ── 공통 헬퍼 ──────────────────────────────────────────────────────────
 
     private Long getTeacherId(Authentication authentication) {
@@ -156,8 +168,8 @@ public class TeacherScheduleRestController {
                     : attrs.containsKey("sub") ? (String) attrs.get("sub") : null;
 
             if (provider != null && providerId != null) {
-                return userRepository.findByProviderAndProviderId(provider, providerId)
-                        .map(User::getUid)
+                return socialAccountRepository.findByProviderAndProviderId(provider, providerId)
+                        .map(sa -> sa.getUser().getUid())
                         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
             }
         }

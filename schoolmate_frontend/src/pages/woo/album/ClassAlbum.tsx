@@ -185,31 +185,31 @@ export default function ClassAlbum() {
 
   return (
     <DashboardLayout>
-      {/* 헤더 */}
-      <div className="d-flex align-items-center justify-content-between mb-24">
-        <div>
-          <h5 className="fw-bold mb-4">학급 앨범</h5>
-          <p className="text-secondary-light text-sm mb-0">우리 반의 소중한 순간들을 모아보세요.</p>
-        </div>
-        {canUpload && (
-          <button
-            type="button"
-            className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <i className="ri-upload-2-line" />
-            사진 추가
-          </button>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-        />
+      {/* 제목 */}
+      <div style={{ marginBottom: 16, flexShrink: 0 }}>
+        <h5
+          style={{
+            fontWeight: 700,
+            color: "#111827",
+            marginBottom: 4,
+            display: "flex",
+            alignItems: "baseline",
+            gap: 8,
+          }}
+        >
+          학급 앨범
+          <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {groups.length}건</span>
+        </h5>
+        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>우리 반의 소중한 순간들을 모아보세요.</p>
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
 
       {/* [woo] 업로드 패널 — 여러 장 큐 */}
       {showUploadPanel && uploadQueue.length > 0 && (
@@ -220,7 +220,20 @@ export default function ClassAlbum() {
               <div className="d-flex gap-8">
                 <button
                   type="button"
-                  className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
+                  style={{
+                    padding: "5px 12px",
+                    background: "#25A194",
+                    border: "none",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    whiteSpace: "nowrap",
+                  }}
                   onClick={handleUpload}
                   disabled={uploading}
                 >
@@ -229,7 +242,16 @@ export default function ClassAlbum() {
                 </button>
                 <button
                   type="button"
-                  className="btn btn-outline-neutral-300 radius-8"
+                  style={{
+                    padding: "5px 10px",
+                    background: "#fff",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    color: "#374151",
+                    whiteSpace: "nowrap",
+                  }}
                   onClick={() => {
                     uploadQueue.forEach((item) => URL.revokeObjectURL(item.previewUrl));
                     setUploadQueue([]);
@@ -297,30 +319,64 @@ export default function ClassAlbum() {
         </div>
       )}
 
-      {/* [woo] 검색 바 — 검색 타입 선택 + 입력 + 검색 버튼 */}
-      {!loading && groups.length > 0 && (
-        <div className="d-flex align-items-center gap-8 mb-16">
-          <select
-            className="form-select form-select-sm"
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value as "all" | "title" | "author")}
-            style={{ width: 130, flexShrink: 0 }}
-          >
-            <option value="all">제목+작성자</option>
-            <option value="title">제목</option>
-            <option value="author">작성자</option>
-          </select>
-          <form
-            className="d-flex align-items-center gap-8"
-            style={{ flex: 1, maxWidth: 360 }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              setSearchQuery(searchInput);
-            }}
-          >
+      {/* [woo] 컨트롤 바: 검색(좌) + 사진 추가(우) */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+          gap: 12,
+          flexWrap: "wrap",
+          flexShrink: 0,
+        }}
+      >
+        <form
+          style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearchQuery(searchInput);
+          }}
+        >
+          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+            <select
+              style={{
+                padding: "5px 24px 5px 8px",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                background: "#fff",
+                appearance: "none",
+                WebkitAppearance: "none",
+                cursor: "pointer",
+              }}
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value as "all" | "title" | "author")}
+            >
+              <option value="all">전체</option>
+              <option value="title">제목</option>
+              <option value="author">작성자</option>
+            </select>
+            <i
+              className="ri-arrow-down-s-line"
+              style={{ position: "absolute", right: 4, pointerEvents: "none", fontSize: 16, color: "#6b7280" }}
+            />
+          </div>
+          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+            <i
+              className="bi bi-search"
+              style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
+            />
             <input
               type="text"
-              className="form-control form-control-sm"
+              style={{
+                padding: "5px 8px 5px 28px",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                fontSize: 13,
+                minWidth: 180,
+                background: "#fff",
+              }}
               placeholder={
                 searchType === "title"
                   ? "제목으로 검색"
@@ -331,35 +387,74 @@ export default function ClassAlbum() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
-            <button
-              type="submit"
-              className="btn btn-primary-600 d-flex align-items-center justify-content-center"
-              style={{ flexShrink: 0, padding: "0 14px", height: 40 }}
-            >
-              <i className="ri-search-line" />
-            </button>
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchInput("");
-                  setSearchQuery("");
-                }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#9ca3af",
-                  fontSize: 16,
-                  flexShrink: 0,
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </form>
-        </div>
-      )}
+          </div>
+          <button
+            type="submit"
+            style={{
+              padding: "5px 12px",
+              background: "#25A194",
+              border: "none",
+              borderRadius: 6,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#fff",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            검색
+          </button>
+          <button
+            type="button"
+            style={{
+              padding: "5px 10px",
+              background: "#fff",
+              border: "1px solid #d1d5db",
+              borderRadius: 6,
+              fontSize: 13,
+              cursor: "pointer",
+              color: "#374151",
+              whiteSpace: "nowrap",
+            }}
+            onClick={() => {
+              setSearchInput("");
+              setSearchQuery("");
+              setSearchType("all");
+            }}
+          >
+            초기화
+          </button>
+          {searchQuery && (
+            <span style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
+              <span style={{ fontWeight: 600, color: "#111827" }}>{filteredGroups.length}건</span> / 전체{" "}
+              {groups.length}건
+            </span>
+          )}
+        </form>
+        {canUpload && (
+          <button
+            type="button"
+            style={{
+              padding: "5px 12px",
+              background: "#25A194",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#fff",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <i className="ri-upload-2-line" />
+            사진 추가
+          </button>
+        )}
+      </div>
 
       {/* [woo] 게시글 목록 — 그리드 카드 형태 (사진 + 제목 + 날짜) */}
       {loading ? (
@@ -377,94 +472,51 @@ export default function ClassAlbum() {
           {filteredGroups.map((group) => {
             const caption = group.photos.find((p) => p.caption)?.caption || `${group.uploaderName}의 사진`;
             return (
-              <div
-                key={group.groupId}
-                className="card radius-12"
-                style={{ overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.2s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.12)")}
-                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "")}
-              >
-                {/* [woo] 썸네일 */}
+              <div key={group.groupId}>
                 <div
-                  onClick={() => openLightbox(group, 0)}
-                  style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "#f3f4f6" }}
+                  className="card radius-12"
+                  style={{ overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.12)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "")}
                 >
-                  <img
-                    src={group.photos[0].imageUrl}
-                    alt={caption}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                      transition: "transform 0.2s",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  />
-                  {group.photos.length > 1 && (
-                    <div
+                  {/* [woo] 썸네일 */}
+                  <div
+                    onClick={() => openLightbox(group, 0)}
+                    style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "#f3f4f6" }}
+                  >
+                    <img
+                      src={group.photos[0].imageUrl}
+                      alt={caption}
                       style={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        background: "rgba(0,0,0,0.55)",
-                        color: "#fff",
-                        fontSize: 11,
-                        borderRadius: 12,
-                        padding: "2px 8px",
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                        transition: "transform 0.2s",
                       }}
-                    >
-                      +{group.photos.length - 1}
-                    </div>
-                  )}
-                  {/* [woo] 수정/삭제 메뉴 */}
-                  {canUpload && (
-                    <div style={{ position: "absolute", top: 8, left: 8 }}>
-                      <div className="d-flex gap-4">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            startEdit(group);
-                          }}
-                          style={{
-                            background: "rgba(0,0,0,0.5)",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "#fff",
-                            fontSize: 12,
-                            borderRadius: 6,
-                            padding: "3px 8px",
-                          }}
-                        >
-                          <i className="ri-edit-line" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteGroup(group);
-                          }}
-                          style={{
-                            background: "rgba(0,0,0,0.5)",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "#ff6b6b",
-                            fontSize: 12,
-                            borderRadius: 6,
-                            padding: "3px 8px",
-                          }}
-                        >
-                          <i className="ri-delete-bin-line" />
-                        </button>
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                    />
+                    {group.photos.length > 1 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          background: "rgba(0,0,0,0.55)",
+                          color: "#fff",
+                          fontSize: 11,
+                          borderRadius: 12,
+                          padding: "2px 8px",
+                        }}
+                      >
+                        +{group.photos.length - 1}
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                {/* [woo] 제목 + 날짜 */}
-                <div className="px-12 py-10" onClick={() => openLightbox(group, 0)}>
+                  {/* [woo] 제목 + 날짜 */}
+                  <div className="px-12 py-10" onClick={() => openLightbox(group, 0)}>
                   {editingGroupId === group.groupId ? (
                     <div onClick={(e) => e.stopPropagation()}>
                       {group.photos.map((p, i) => (
@@ -487,16 +539,31 @@ export default function ClassAlbum() {
                         <button
                           type="button"
                           onClick={() => saveEdit(group)}
-                          className="btn btn-sm btn-primary-600"
-                          style={{ fontSize: 11, padding: "3px 10px" }}
+                          style={{
+                            padding: "3px 10px",
+                            background: "#25A194",
+                            border: "none",
+                            borderRadius: 6,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            color: "#fff",
+                            cursor: "pointer",
+                          }}
                         >
                           저장
                         </button>
                         <button
                           type="button"
                           onClick={cancelEdit}
-                          className="btn btn-sm btn-outline-neutral-500"
-                          style={{ fontSize: 11, padding: "3px 10px" }}
+                          style={{
+                            padding: "3px 10px",
+                            background: "#fff",
+                            border: "1px solid #d1d5db",
+                            borderRadius: 6,
+                            fontSize: 11,
+                            cursor: "pointer",
+                            color: "#374151",
+                          }}
                         >
                           취소
                         </button>
@@ -517,7 +584,48 @@ export default function ClassAlbum() {
                       <p className="text-xs text-secondary-light mb-0">{formatDate(group.createDate)}</p>
                     </>
                   )}
+                  </div>
                 </div>
+                {canUpload && editingGroupId !== group.groupId && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 6 }}>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(group)}
+                      style={{
+                        padding: "4px 10px",
+                        background: "#fff",
+                        border: "1px solid #d1d5db",
+                        borderRadius: 6,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        color: "#374151",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <i className="ri-edit-line" /> 수정
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteGroup(group)}
+                      style={{
+                        padding: "4px 10px",
+                        background: "#fff",
+                        border: "1px solid #fca5a5",
+                        borderRadius: 6,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        color: "#dc2626",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <i className="ri-delete-bin-line" /> 삭제
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

@@ -1,102 +1,105 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ReactQuill, QUILL_MODULES_TEXT, QUILL_FORMATS_TEXT, isQuillEmpty } from '@/shared/quillConfig'
-import 'react-quill-new/dist/quill.snow.css'
-import api from '@/api/auth'
-import { useAuth } from '@/contexts/AuthContext'
-import DashboardLayout from '@/components/layout/DashboardLayout'
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ReactQuill, QUILL_MODULES_TEXT, QUILL_FORMATS_TEXT, isQuillEmpty } from "@/shared/quillConfig";
+import "react-quill-new/dist/quill.snow.css";
+import api from "@/api/auth";
+import { useAuth } from "@/contexts/AuthContext";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 // [woo] /board/school-notice/:id - 학교 공지 상세 (Thymeleaf school-notice/detail.html 마이그레이션)
 
 interface Board {
-  id: number
-  title: string
-  content: string
-  writerName: string
-  viewCount: number
-  pinned: boolean
-  createDate: string
+  id: number;
+  title: string;
+  content: string;
+  writerName: string;
+  viewCount: number;
+  pinned: boolean;
+  createDate: string;
 }
 
 export default function SchoolNoticeDetail() {
-  const { id } = useParams<{ id: string }>()
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const [board, setBoard] = useState<Board | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [board, setBoard] = useState<Board | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // [woo] 수정 모달 상태
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editForm, setEditForm] = useState({ title: '', content: '' })
-  const [saving, setSaving] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({ title: "", content: "" });
+  const [saving, setSaving] = useState(false);
 
-  const isAdmin = user?.role === 'ADMIN'
+  const isAdmin = user?.role === "ADMIN";
   // [woo] StrictMode 이중 실행 방지 - 조회수 POST를 최초 1회만 호출
-  const viewedRef = useRef(false)
+  const viewedRef = useRef(false);
 
   useEffect(() => {
-    if (!id) return
-    api.get(`/board/${id}`)
-      .then(res => {
-        setBoard(res.data)
-        setEditForm({ title: res.data.title, content: res.data.content })
+    if (!id) return;
+    api
+      .get(`/board/${id}`)
+      .then((res) => {
+        setBoard(res.data);
+        setEditForm({ title: res.data.title, content: res.data.content });
         if (!viewedRef.current) {
-          viewedRef.current = true
-          api.post(`/board/${id}/view`).catch(() => {})
+          viewedRef.current = true;
+          api.post(`/board/${id}/view`).catch(() => {});
         }
       })
-      .catch(() => navigate('/board/school-notice'))
-      .finally(() => setLoading(false))
-  }, [id])
+      .catch(() => navigate("/board/school-notice"))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   // [woo] 모달 열릴 때 배경 스크롤 방지
   useEffect(() => {
-    document.body.style.overflow = showEditModal ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [showEditModal])
+    document.body.style.overflow = showEditModal ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showEditModal]);
 
   const handleEdit = async () => {
     if (!editForm.title.trim() || isQuillEmpty(editForm.content)) {
-      alert('제목과 내용을 입력해주세요.')
-      return
+      alert("제목과 내용을 입력해주세요.");
+      return;
     }
-    setSaving(true)
+    setSaving(true);
     try {
       await api.put(`/board/${id}`, {
-        boardType: 'SCHOOL_NOTICE',
+        boardType: "SCHOOL_NOTICE",
         title: editForm.title,
         content: editForm.content,
-      })
-      setShowEditModal(false)
+      });
+      setShowEditModal(false);
       // 수정 후 다시 불러오기
-      const res = await api.get(`/board/${id}`)
-      setBoard(res.data)
+      const res = await api.get(`/board/${id}`);
+      setBoard(res.data);
     } catch {
-      alert('수정에 실패했습니다.')
+      alert("수정에 실패했습니다.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!confirm('정말 삭제하시겠습니까?')) return
+    if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      await api.delete(`/board/${id}`)
-      navigate('/board/school-notice')
+      await api.delete(`/board/${id}`);
+      navigate("/board/school-notice");
     } catch {
-      alert('삭제에 실패했습니다.')
+      alert("삭제에 실패했습니다.");
     }
-  }
+  };
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
       </DashboardLayout>
-    )
+    );
   }
 
-  if (!board) return null
+  if (!board) return null;
 
   return (
     <DashboardLayout>
@@ -106,31 +109,13 @@ export default function SchoolNoticeDetail() {
           <h6 className="fw-semibold mb-0">게시판</h6>
           <p className="text-neutral-600 mt-4 mb-0">학교 공지</p>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
-              홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">게시판</li>
-          <li>-</li>
-          <li className="fw-medium">
-            <Link to="/board/school-notice" className="hover-text-primary">학교 공지</Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">상세보기</li>
-        </ul>
       </div>
 
       <div className="card radius-12">
         <div className="card-header py-16 px-24 border-bottom">
           <div className="d-flex justify-content-between align-items-start">
             <div>
-              {board.pinned && (
-                <span className="badge bg-danger-100 text-danger-600 mb-8 d-inline-block">공지</span>
-              )}
+              {board.pinned && <span className="badge bg-danger-100 text-danger-600 mb-8 d-inline-block">공지</span>}
               <h5 className="mb-8">{board.title}</h5>
               <div className="d-flex gap-16 text-secondary-light text-sm">
                 <span>
@@ -139,7 +124,7 @@ export default function SchoolNoticeDetail() {
                 </span>
                 <span>
                   <iconify-icon icon="mdi:calendar" className="me-4" />
-                  {board.createDate?.slice(0, 16).replace('T', ' ')}
+                  {board.createDate?.slice(0, 16).replace("T", " ")}
                 </span>
                 <span>
                   <iconify-icon icon="mdi:eye" className="me-4" />
@@ -158,11 +143,7 @@ export default function SchoolNoticeDetail() {
                   <iconify-icon icon="mdi:pencil" className="me-4" />
                   수정
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-danger radius-8"
-                  onClick={handleDelete}
-                >
+                <button type="button" className="btn btn-outline-danger radius-8" onClick={handleDelete}>
                   <iconify-icon icon="mdi:delete" className="me-4" />
                   삭제
                 </button>
@@ -179,9 +160,7 @@ export default function SchoolNoticeDetail() {
               dangerouslySetInnerHTML={{ __html: board.content }}
             />
           ) : (
-            <div style={{ minHeight: 300, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-              {board.content}
-            </div>
+            <div style={{ minHeight: 300, whiteSpace: "pre-wrap", lineHeight: 1.8 }}>{board.content}</div>
           )}
         </div>
         <div className="card-footer py-16 px-24 border-top">
@@ -194,7 +173,7 @@ export default function SchoolNoticeDetail() {
 
       {/* [woo] 수정 모달 - React state 제어 */}
       {showEditModal && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content radius-12">
               <div className="modal-header border-bottom py-16 px-24">
@@ -208,7 +187,7 @@ export default function SchoolNoticeDetail() {
                     type="text"
                     className="form-control"
                     value={editForm.title}
-                    onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
+                    onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
                   />
                 </div>
                 {/* [woo] WYSIWYG 에디터 적용 */}
@@ -218,7 +197,7 @@ export default function SchoolNoticeDetail() {
                     <ReactQuill
                       theme="snow"
                       value={editForm.content}
-                      onChange={(val: string) => setEditForm(f => ({ ...f, content: val }))}
+                      onChange={(val: string) => setEditForm((f) => ({ ...f, content: val }))}
                       modules={QUILL_MODULES_TEXT}
                       formats={QUILL_FORMATS_TEXT}
                       placeholder="내용을 입력하세요"
@@ -228,11 +207,15 @@ export default function SchoolNoticeDetail() {
                 </div>
               </div>
               <div className="modal-footer border-top py-16 px-24 gap-8">
-                <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setShowEditModal(false)}>
+                <button
+                  type="button"
+                  className="btn btn-outline-neutral-300 radius-8"
+                  onClick={() => setShowEditModal(false)}
+                >
                   취소
                 </button>
                 <button type="button" className="btn btn-primary-600 radius-8" onClick={handleEdit} disabled={saving}>
-                  {saving ? '저장 중...' : '저장'}
+                  {saving ? "저장 중..." : "저장"}
                 </button>
               </div>
             </div>
@@ -240,5 +223,5 @@ export default function SchoolNoticeDetail() {
         </div>
       )}
     </DashboardLayout>
-  )
+  );
 }

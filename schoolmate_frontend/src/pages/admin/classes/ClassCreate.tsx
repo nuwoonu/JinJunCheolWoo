@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
 export default function ClassCreate() {
   const navigate = useNavigate();
+  const { error, setError } = useAdminMsg();
   const [form, setForm] = useState({
     year: new Date().getFullYear(),
     grade: "1",
@@ -23,12 +25,16 @@ export default function ClassCreate() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await admin.post("/classes", form);
-    navigate(ADMIN_ROUTES.CLASSES.LIST);
+    try {
+      await admin.post("/classes", form);
+      navigate(ADMIN_ROUTES.CLASSES.LIST);
+    } catch (err: any) {
+      setError(apiErrMsg(err, "학급 생성에 실패했습니다."));
+    }
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout error={error}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
         <button
           type="button"

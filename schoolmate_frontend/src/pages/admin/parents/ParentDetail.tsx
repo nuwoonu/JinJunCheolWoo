@@ -4,6 +4,7 @@ import ParentAdminLayout from '@/components/layout/admin/ParentAdminLayout';
 import admin from '@/api/adminApi';
 import { ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
+import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
 const thStyle: React.CSSProperties = {
   padding: "12px 16px",
@@ -28,6 +29,7 @@ export default function ParentDetail() {
   const [rejectReason, setRejectReason] = useState("");
   const [activeTab, setActiveTab] = useState("info");
   const [saving, setSaving] = useState(false);
+  const { msg, error, setMsg, setError } = useAdminMsg();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -60,8 +62,10 @@ export default function ParentDetail() {
     setSaving(true);
     try {
       await admin.put(`/parents/${id}`, form);
-      alert("저장되었습니다.");
+      setMsg("저장되었습니다.");
       load();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "저장에 실패했습니다."));
     } finally {
       setSaving(false);
     }
@@ -127,7 +131,7 @@ export default function ParentDetail() {
   const children: any[] = parent.children ?? [];
 
   return (
-    <ParentAdminLayout>
+    <ParentAdminLayout msg={msg} error={error}>
       {showModal && (
         <div
           style={{

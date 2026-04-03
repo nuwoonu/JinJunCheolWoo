@@ -67,6 +67,7 @@ public class StudentService {
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRequestRepository roleRequestRepository;
+    private final CodeSequenceService codeSequenceService;
 
     /**
      * 1. 학생 목록 조회 (마스터 목록)
@@ -133,10 +134,6 @@ public class StudentService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
-        // 학번 중복 체크 (학교 범위 내)
-        if (request.getCode() != null && codeExistsForStudent(request.getCode())) {
-            throw new IllegalArgumentException("이미 존재하는 학번입니다: " + request.getCode());
-        }
 
         // 1. 유저 및 권한 설정
         User user = User.builder()
@@ -147,15 +144,15 @@ public class StudentService {
                 .build();
 
         // 2. 학생 상세 정보 설정
+        Long schoolId = SchoolContextHolder.getSchoolId();
         StudentInfo info = new StudentInfo();
-        info.setCode(request.getCode());
+        info.setCode(codeSequenceService.issue(schoolId, "S"));
         info.setStatus(StudentStatus.ENROLLED);
         info.setPrimary(true);
         info.setUser(user);
         user.getInfos().add(info);
 
         // 학교 소속 설정 (X-School-Id 헤더 기반)
-        Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
@@ -177,7 +174,6 @@ public class StudentService {
                         assignment.setAttendanceNum(nextNum);
 
                         info.getAssignments().add(assignment);
-                        info.setCurrentAssignment(assignment);
                     });
         } else if (request.getYear() != null && request.getGrade() != null && request.getClassNum() != null) {
             // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
@@ -190,7 +186,6 @@ public class StudentService {
                         assignment.setAttendanceNum(request.getAttendanceNum());
                         assignment.setStudentInfo(info);
                         info.getAssignments().add(assignment);
-                        info.setCurrentAssignment(assignment);
                     });
         }
 
@@ -228,10 +223,18 @@ public class StudentService {
 
         user.setName(request.getName());
 
-        StudentInfo info = user.getInfo(StudentInfo.class);
+        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (info != null) {
-            // 학번 변경 시 중복 체크 로직이 필요할 수 있음
-            info.setCode(request.getCode());
+            if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
+                Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
+                boolean exists = (targetSchoolId != null)
+                        ? studentInfoRepository.existsByCodeAndSchoolId(request.getCode(), targetSchoolId)
+                        : studentInfoRepository.existsByCode(request.getCode());
+                if (exists) {
+                    throw new IllegalArgumentException("이미 존재하는 학번입니다: " + request.getCode());
+                }
+                info.setCode(request.getCode());
+            }
             if (request.getStatusName() != null) {
                 info.setStatus(StudentStatus.valueOf(request.getStatusName()));
             }
@@ -244,7 +247,7 @@ public class StudentService {
     public Long updateAssignment(StudentDTO.AssignmentRequest request) {
         User user = userRepository.findById(request.getUid())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo info = user.getInfo(StudentInfo.class);
+        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (info == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + request.getUid());
         }
@@ -279,7 +282,6 @@ public class StudentService {
         List<String> errors = new ArrayList<>();
         List<StudentDTO.CsvImportRequest> validRows = new ArrayList<>();
         Set<String> seenEmails = new HashSet<>();
-        Set<String> seenCodes = new HashSet<>();
 
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             log.info("CSV 파일 읽기 시작: {}", file.getOriginalFilename());
@@ -303,12 +305,7 @@ public class StudentService {
                     errors.add(rowLabel + ": 이미 존재하는 이메일입니다.");
                     continue;
                 }
-                if (csvReq.getCode() != null && (studentInfoRepository.existsByCode(csvReq.getCode()) || seenCodes.contains(csvReq.getCode()))) {
-                    errors.add(rowLabel + ": 이미 존재하는 학번입니다.");
-                    continue;
-                }
                 seenEmails.add(csvReq.getEmail());
-                if (csvReq.getCode() != null) seenCodes.add(csvReq.getCode());
                 validRows.add(csvReq);
             }
 
@@ -323,17 +320,13 @@ public class StudentService {
     public Long deleteAssignment(Long uid, int schoolYear) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo info = user.getInfo(StudentInfo.class);
+        StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (info == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
 
         // 해당 학년도의 이력만 제거
         info.getAssignments().removeIf(a -> a.getSchoolYear() == schoolYear);
-
-        if (info.getCurrentAssignment() != null && info.getCurrentAssignment().getSchoolYear() == schoolYear) {
-            info.setCurrentAssignment(info.getLatestAssignment().orElse(null));
-        }
 
         return user.getUid();
     }
@@ -345,7 +338,7 @@ public class StudentService {
         StudentStatus status = StudentStatus.valueOf(statusName);
         List<User> users = userRepository.findAllById(uids);
         for (User user : users) {
-            StudentInfo info = user.getInfo(StudentInfo.class);
+            StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
             if (info != null) {
                 info.setStatus(status);
             }
@@ -358,7 +351,7 @@ public class StudentService {
     public void addGuardian(Long uid, Long parentId, FamilyRelationship relationship) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        StudentInfo studentInfo = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (studentInfo == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
@@ -384,7 +377,7 @@ public class StudentService {
     public void removeGuardian(Long uid, Long parentId) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        StudentInfo studentInfo = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (studentInfo == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
@@ -401,7 +394,7 @@ public class StudentService {
     public void updateGuardianRelationship(Long uid, Long parentId, FamilyRelationship relationship) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-        StudentInfo studentInfo = user.getInfo(StudentInfo.class);
+        StudentInfo studentInfo = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
         if (studentInfo == null) {
             throw new IllegalArgumentException("학생 정보가 없습니다. UID: " + uid);
         }
@@ -428,6 +421,7 @@ public class StudentService {
             throw new IllegalArgumentException("이미 존재하는 학번입니다: " + createDTO.getStudentNumber());
         }
 
+        Long schoolId = SchoolContextHolder.getSchoolId();
         // Classroom 조회 (classroomId 우선, 없으면 grade+classNum으로 조회)
         Classroom classroom;
         if (createDTO.getClassroomId() != null) {
@@ -437,7 +431,6 @@ public class StudentService {
         } else {
             // [woo 03/25] 학교별 학급 조회 (다중학교 대응)
             int year = java.time.LocalDate.now().getYear();
-            Long schoolId = SchoolContextHolder.getSchoolId();
             classroom = classroomRepository
                     .findBySchoolIdAndYearAndGradeAndClassNum(schoolId, year, createDTO.getGrade(), createDTO.getClassNum())
                     .orElseThrow(() -> new IllegalArgumentException(
@@ -457,13 +450,9 @@ public class StudentService {
                 .roles(new HashSet<>(Set.of(UserRole.STUDENT)))
                 .build();
 
-        // 학생 코드 자동 생성 (년도+학년+반+번호, 예: 2026010105)
-        String code = String.format("%d%02d%02d%02d",
-                classroom.getYear(), classroom.getGrade(), classroom.getClassNum(), createDTO.getStudentNumber());
-
         // StudentInfo 생성 및 User 연동
         StudentInfo student = new StudentInfo();
-        student.setCode(code);
+        student.setCode(codeSequenceService.issue(schoolId, "S"));
         student.setStatus(StudentStatus.ENROLLED);
         student.setPrimary(true);
         student.setBirthDate(createDTO.getBirthDate());
@@ -479,7 +468,6 @@ public class StudentService {
         assignment.setClassroom(classroom);
         assignment.setAttendanceNum(createDTO.getStudentNumber());
         student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
 
         userRepository.save(user);
         return convertToResponseDTO(student);
@@ -610,13 +598,6 @@ public class StudentService {
     public java.util.Optional<Classroom> findHomeroomClassroom(Long teacherUid) {
         int year = java.time.LocalDate.now().getYear();
         return classroomRepository.findByTeacherUidAndYear(teacherUid, year);
-    }
-
-    /** 학번 중복 체크 — 학교 범위 내에서만 체크 (TeacherService.codeExistsForTeacher와 동일 패턴) */
-    private boolean codeExistsForStudent(String code) {
-        // existsByCode 구현체(QueryDSL)가 내부적으로 SchoolContextHolder 기반 schoolFilter를 적용하므로
-        // 별도 schoolId 파라미터 없이 학교 범위 중복 체크가 가능
-        return studentInfoRepository.existsByCode(code);
     }
 
     // 승철님 작업물

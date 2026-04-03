@@ -17,8 +17,8 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN FETCH si.currentAssignment ca " +
-            "LEFT JOIN FETCH ca.classroom " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN ca.classroom " +
             "WHERE sa.attendanceDate = :date " +
             "AND si.school.id = :schoolId " +
             "ORDER BY ca.classroom.grade, ca.classroom.classNum, ca.attendanceNum")
@@ -30,8 +30,8 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN FETCH si.currentAssignment ca " +
-            "LEFT JOIN FETCH ca.classroom c " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN ca.classroom c " +
             "WHERE sa.attendanceDate = :date " +
             "AND si.school.id = :schoolId " +
             "AND c.grade = :grade " +
@@ -45,8 +45,8 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN FETCH si.currentAssignment ca " +
-            "LEFT JOIN FETCH ca.classroom c " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN ca.classroom c " +
             "WHERE sa.attendanceDate = :date " +
             "AND si.school.id = :schoolId " +
             "AND c.grade = :grade " +
@@ -80,12 +80,21 @@ public interface AttendanceRepository extends JpaRepository<StudentAttendance, L
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
+    // [soojin] 담임 반 학급 기간별 출결 조회 (월별 출석률 계산용)
+    @Query("SELECT sa FROM StudentAttendance sa " +
+            "WHERE sa.studentInfo.id IN :studentInfoIds " +
+            "AND sa.attendanceDate BETWEEN :startDate AND :endDate")
+    List<StudentAttendance> findByStudentInfoIdsAndDateRange(
+            @Param("studentInfoIds") Set<Long> studentInfoIds,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
     // [woo] 여러 학생의 특정 날짜 출결 조회 (담임 반 학생 출결 - school 무관)
     @Query("SELECT sa FROM StudentAttendance sa " +
             "JOIN FETCH sa.studentInfo si " +
             "JOIN FETCH si.user " +
-            "LEFT JOIN FETCH si.currentAssignment ca " +
-            "LEFT JOIN FETCH ca.classroom " +
+            "LEFT JOIN si.assignments ca ON ca.schoolYear = (SELECT MAX(a.schoolYear) FROM StudentAssignment a WHERE a.studentInfo = si) " +
+            "LEFT JOIN ca.classroom " +
             "WHERE sa.studentInfo.id IN :studentInfoIds " +
             "AND sa.attendanceDate = :date " +
             "ORDER BY ca.classroom.grade, ca.classroom.classNum, ca.attendanceNum")

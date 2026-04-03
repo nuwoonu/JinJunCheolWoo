@@ -22,10 +22,9 @@ import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
-import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
 import com.example.schoolmate.dto.AuthUserDTO;
 import com.example.schoolmate.common.service.TeacherService;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
@@ -47,7 +46,7 @@ public class TeacherMyClassRestController {
     private final TeacherService teacherService;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StudentInfoRepository studentInfoRepository;
-    private final UserRepository userRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
 
     /**
      * 담당 학급 및 학생 목록 조회 (React /teacher/myclass, /teacher/myclass/students)
@@ -96,13 +95,29 @@ public class TeacherMyClassRestController {
         // [joon] PENDING과 같은 기존 상태를 RoleRequest 엔티티로 변경하여 해당 함수 수정
         List<StudentInfo> unassignedStudents = studentInfoRepository.findUnassignedBySchoolId(schoolId);
 
+        // [soojin] 승인대기 학생 카드에 학부모 성함, 신청일 추가 표시
         List<Map<String, Object>> result = unassignedStudents.stream()
-                .map(s -> Map.<String, Object>of(
-                        "studentInfoId", s.getId(),
-                        "name", s.getUser() != null ? s.getUser().getName() : "이름없음",
-                        "email", s.getUser() != null && s.getUser().getEmail() != null ? s.getUser().getEmail() : "-",
-                        "phone", s.getPhone() != null ? s.getPhone() : "-",
-                        "status", s.getStatus().getDescription()))
+                .map(s -> {
+                    String parentName = s.getFamilyRelations().stream()
+                            .filter(fr -> fr.isRepresentative() && fr.getParentInfo() != null)
+                            .findFirst()
+                            .or(() -> s.getFamilyRelations().stream()
+                                    .filter(fr -> fr.getParentInfo() != null)
+                                    .findFirst())
+                            .map(fr -> fr.getParentInfo().getParentName())
+                            .orElse("-");
+                    String createdAt = s.getCreateDate() != null ? s.getCreateDate().toString() : "-";
+
+                    java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+                    map.put("studentInfoId", s.getId());
+                    map.put("name", s.getUser() != null ? s.getUser().getName() : "이름없음");
+                    map.put("email", s.getUser() != null && s.getUser().getEmail() != null ? s.getUser().getEmail() : "-");
+                    map.put("phone", s.getPhone() != null ? s.getPhone() : "-");
+                    map.put("status", s.getStatus().getDescription());
+                    map.put("parentName", parentName);
+                    map.put("createdAt", createdAt);
+                    return map;
+                })
                 .collect(Collectors.toList());
 
         log.info("[woo] 미배정 학생 조회 - schoolId: {}, count: {}", schoolId, result.size());
@@ -167,7 +182,6 @@ public class TeacherMyClassRestController {
                     .build();
             assignment.setSchool(student.getSchool());
 
-            student.setCurrentAssignment(assignment);
             student.getAssignments().add(assignment);
             studentInfoRepository.save(student);
 
@@ -263,8 +277,8 @@ public class TeacherMyClassRestController {
                     : attrs.containsKey("sub") ? (String) attrs.get("sub") : null;
 
             if (provider != null && providerId != null) {
-                return userRepository.findByProviderAndProviderId(provider, providerId)
-                        .map(User::getUid)
+                return socialAccountRepository.findByProviderAndProviderId(provider, providerId)
+                        .map(sa -> sa.getUser().getUid())
                         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
             }
         }

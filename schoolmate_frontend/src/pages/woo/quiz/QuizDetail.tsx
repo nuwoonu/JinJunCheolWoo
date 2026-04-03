@@ -1,166 +1,169 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
-import api from '../../../api/auth'
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import { useEffect, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import api from "../../../api/auth";
+import { useAuth } from "../../../contexts/AuthContext";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 // [woo] 퀴즈 상세 페이지
 // - 교사: 문제 확인 + 학생별 응시 결과
 // - 학생: 퀴즈 풀기 + 결과 확인
 
 interface QuizOption {
-  id: number
-  optionText: string
-  optionOrder: number
-  isCorrect: boolean | null
+  id: number;
+  optionText: string;
+  optionOrder: number;
+  isCorrect: boolean | null;
 }
 
 interface QuizQuestion {
-  id: number
-  questionText: string
-  questionOrder: number
-  points: number
-  questionType: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER'
-  correctAnswer: string | null
-  options: QuizOption[]
+  id: number;
+  questionText: string;
+  questionOrder: number;
+  points: number;
+  questionType: "MULTIPLE_CHOICE" | "SHORT_ANSWER";
+  correctAnswer: string | null;
+  options: QuizOption[];
 }
 
 interface QuizAnswer {
-  questionId: number
-  questionText: string
-  selectedOptionId: number | null
-  answerText: string | null
-  isCorrect: boolean
-  earnedPoints: number
+  questionId: number;
+  questionText: string;
+  selectedOptionId: number | null;
+  answerText: string | null;
+  isCorrect: boolean;
+  earnedPoints: number;
 }
 
 interface QuizSubmission {
-  id: number
-  studentInfoId: number
-  studentName: string
-  studentNumber: string
-  score: number
-  totalPoints: number
-  attemptNumber: number
-  submittedAt: string
-  answers: QuizAnswer[] | null
+  id: number;
+  studentInfoId: number;
+  studentName: string;
+  studentNumber: string;
+  score: number;
+  totalPoints: number;
+  attemptNumber: number;
+  submittedAt: string;
+  answers: QuizAnswer[] | null;
 }
 
 interface QuizDetailData {
-  id: number
-  title: string
-  description: string | null
-  week: number | null
-  teacherName: string
-  teacherUserId: number
-  classroomName: string
-  classroomId: number
-  status: 'OPEN' | 'CLOSED'
-  dueDate: string
-  totalPoints: number
-  maxAttempts: number | null
-  showAnswer: boolean
-  createDate: string
-  questions: QuizQuestion[]
-  submissions: QuizSubmission[] | null
-  mySubmissions: QuizSubmission[] | null
+  id: number;
+  title: string;
+  description: string | null;
+  week: number | null;
+  teacherName: string;
+  teacherUserId: number;
+  classroomName: string;
+  classroomId: number;
+  status: "OPEN" | "CLOSED";
+  dueDate: string;
+  totalPoints: number;
+  maxAttempts: number | null;
+  showAnswer: boolean;
+  createDate: string;
+  questions: QuizQuestion[];
+  submissions: QuizSubmission[] | null;
+  mySubmissions: QuizSubmission[] | null;
 }
 
 export default function QuizDetail() {
-  const { id } = useParams<{ id: string }>()
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const role = user?.role ?? ''
-  const isTeacher = role === 'TEACHER' || role === 'ADMIN'
-  const isStudent = role === 'STUDENT'
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const role = user?.role ?? "";
+  const isTeacher = role === "TEACHER" || role === "ADMIN";
+  const isStudent = role === "STUDENT";
 
-  const [quiz, setQuiz] = useState<QuizDetailData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [quiz, setQuiz] = useState<QuizDetailData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // [woo] 학생: 답안 입력 상태
-  const [answers, setAnswers] = useState<Record<number, { selectedOptionId?: number; answerText?: string }>>({})
-  const [submitting, setSubmitting] = useState(false)
+  const [answers, setAnswers] = useState<Record<number, { selectedOptionId?: number; answerText?: string }>>({});
+  const [submitting, setSubmitting] = useState(false);
   // [woo] 학생: 제출 완료 후 결과 표시
-  const [result, setResult] = useState<QuizSubmission | null>(null)
+  const [result, setResult] = useState<QuizSubmission | null>(null);
   // [woo] 학생: 퀴즈 풀기 모드
-  const [takingQuiz, setTakingQuiz] = useState(false)
+  const [takingQuiz, setTakingQuiz] = useState(false);
 
   const fetchQuiz = () => {
-    setLoading(true)
-    api.get(`/quiz/${id}`)
-      .then(res => setQuiz(res.data))
-      .catch(() => alert('퀴즈를 불러올 수 없습니다.'))
-      .finally(() => setLoading(false))
-  }
+    setLoading(true);
+    api
+      .get(`/quiz/${id}`)
+      .then((res) => setQuiz(res.data))
+      .catch(() => alert("퀴즈를 불러올 수 없습니다."))
+      .finally(() => setLoading(false));
+  };
 
-  useEffect(() => { fetchQuiz() }, [id])
+  useEffect(() => {
+    fetchQuiz();
+  }, [id]);
 
   // [woo] 학생 답안 선택
   const selectOption = (questionId: number, optionId: number) => {
-    setAnswers(prev => ({ ...prev, [questionId]: { selectedOptionId: optionId } }))
-  }
+    setAnswers((prev) => ({ ...prev, [questionId]: { selectedOptionId: optionId } }));
+  };
 
   const setAnswerText = (questionId: number, text: string) => {
-    setAnswers(prev => ({ ...prev, [questionId]: { answerText: text } }))
-  }
+    setAnswers((prev) => ({ ...prev, [questionId]: { answerText: text } }));
+  };
 
   // [woo] 퀴즈 제출
   const handleSubmit = async () => {
-    if (!quiz) return
-    const unanswered = quiz.questions.filter(q => !answers[q.id])
+    if (!quiz) return;
+    const unanswered = quiz.questions.filter((q) => !answers[q.id]);
     if (unanswered.length > 0) {
-      if (!confirm(`${unanswered.length}문제가 미답입니다. 제출하시겠습니까?`)) return
+      if (!confirm(`${unanswered.length}문제가 미답입니다. 제출하시겠습니까?`)) return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     try {
       const res = await api.post(`/quiz/${id}/submit`, {
-        answers: quiz.questions.map(q => ({
+        answers: quiz.questions.map((q) => ({
           questionId: q.id,
           selectedOptionId: answers[q.id]?.selectedOptionId ?? null,
           answerText: answers[q.id]?.answerText ?? null,
         })),
-      })
-      setResult(res.data)
-      setTakingQuiz(false)
-      fetchQuiz()
+      });
+      setResult(res.data);
+      setTakingQuiz(false);
+      fetchQuiz();
     } catch (err: any) {
-      alert(err.response?.data || '제출에 실패했습니다.')
+      alert(err.response?.data || "제출에 실패했습니다.");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   // [woo] 퀴즈 삭제
   const handleDelete = async () => {
-    if (!confirm('정말 삭제하시겠습니까?')) return
+    if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      await api.delete(`/quiz/${id}`)
-      alert('삭제되었습니다.')
-      navigate('/homework?tab=quiz')
+      await api.delete(`/quiz/${id}`);
+      alert("삭제되었습니다.");
+      navigate("/homework?tab=quiz");
     } catch {
-      alert('삭제에 실패했습니다.')
+      alert("삭제에 실패했습니다.");
     }
-  }
+  };
 
   // [woo] 퀴즈 상태 변경
   const handleStatusChange = async (newStatus: string) => {
-    const labels: Record<string, string> = { OPEN: '진행중', CLOSED: '마감' }
-    if (!confirm(`상태를 "${labels[newStatus]}"(으)로 변경하시겠습니까?`)) return
+    const labels: Record<string, string> = { OPEN: "진행중", CLOSED: "마감" };
+    if (!confirm(`상태를 "${labels[newStatus]}"(으)로 변경하시겠습니까?`)) return;
     try {
-      await api.post(`/quiz/${id}/status?status=${newStatus}`)
-      fetchQuiz()
+      await api.post(`/quiz/${id}/status?status=${newStatus}`);
+      fetchQuiz();
     } catch {
-      alert('상태 변경에 실패했습니다.')
+      alert("상태 변경에 실패했습니다.");
     }
-  }
+  };
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className="text-center py-40 text-secondary-light">불러오는 중...</div>
       </DashboardLayout>
-    )
+    );
   }
 
   if (!quiz) {
@@ -168,11 +171,13 @@ export default function QuizDetail() {
       <DashboardLayout>
         <div className="text-center py-40 text-secondary-light">퀴즈를 찾을 수 없습니다.</div>
       </DashboardLayout>
-    )
+    );
   }
 
-  const canTakeQuiz = isStudent && quiz.status === 'OPEN'
-    && (quiz.maxAttempts == null || (quiz.mySubmissions?.length ?? 0) < quiz.maxAttempts)
+  const canTakeQuiz =
+    isStudent &&
+    quiz.status === "OPEN" &&
+    (quiz.maxAttempts == null || (quiz.mySubmissions?.length ?? 0) < quiz.maxAttempts);
 
   return (
     <DashboardLayout>
@@ -182,20 +187,6 @@ export default function QuizDetail() {
           <h6 className="fw-semibold mb-0">퀴즈</h6>
           <p className="text-neutral-600 mt-4 mb-0">퀴즈 상세</p>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
-              홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">
-            <Link to="/homework?tab=quiz" className="hover-text-primary">퀴즈</Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">상세</li>
-        </ul>
       </div>
 
       {/* 퀴즈 정보 카드 */}
@@ -207,21 +198,30 @@ export default function QuizDetail() {
               <span>{quiz.teacherName}</span>
               <span>|</span>
               <span>{quiz.classroomName}</span>
-              {quiz.week && <><span>|</span><span>{quiz.week}주차</span></>}
+              {quiz.week && (
+                <>
+                  <span>|</span>
+                  <span>{quiz.week}주차</span>
+                </>
+              )}
               <span>|</span>
-              <span>{quiz.questions.length}문제 / {quiz.totalPoints}점</span>
+              <span>
+                {quiz.questions.length}문제 / {quiz.totalPoints}점
+              </span>
             </div>
           </div>
           <div className="d-flex align-items-center gap-8">
-            <span className={`badge ${quiz.status === 'OPEN' ? 'bg-success-100 text-success-600' : 'bg-danger-100 text-danger-600'}`}>
-              {quiz.status === 'OPEN' ? '진행중' : '마감'}
+            <span
+              className={`badge ${quiz.status === "OPEN" ? "bg-success-100 text-success-600" : "bg-danger-100 text-danger-600"}`}
+            >
+              {quiz.status === "OPEN" ? "진행중" : "마감"}
             </span>
             <span className="text-sm text-secondary-light">마감: {quiz.dueDate?.slice(0, 10)}</span>
           </div>
         </div>
         {quiz.description && (
           <div className="card-body p-24">
-            <div style={{ whiteSpace: 'pre-wrap' }}>{quiz.description}</div>
+            <div style={{ whiteSpace: "pre-wrap" }}>{quiz.description}</div>
           </div>
         )}
 
@@ -229,10 +229,12 @@ export default function QuizDetail() {
         {isTeacher && (
           <div className="card-footer px-24 py-16 border-top d-flex align-items-center gap-8">
             <span className="text-sm fw-semibold me-4">상태 변경:</span>
-            {([
-              { value: 'OPEN', label: '진행중', activeBtn: 'btn-success-600', outlineBtn: 'btn-outline-success-600' },
-              { value: 'CLOSED', label: '마감', activeBtn: 'btn-danger-600', outlineBtn: 'btn-outline-danger-600' },
-            ] as const).map(s => (
+            {(
+              [
+                { value: "OPEN", label: "진행중", activeBtn: "btn-success-600", outlineBtn: "btn-outline-success-600" },
+                { value: "CLOSED", label: "마감", activeBtn: "btn-danger-600", outlineBtn: "btn-outline-danger-600" },
+              ] as const
+            ).map((s) => (
               <button
                 key={s.value}
                 className={`btn btn-sm radius-8 ${quiz.status === s.value ? s.activeBtn : s.outlineBtn}`}
@@ -250,7 +252,9 @@ export default function QuizDetail() {
               >
                 수정
               </button>
-              <button className="btn btn-outline-danger-600 btn-sm radius-8" onClick={handleDelete}>삭제</button>
+              <button className="btn btn-outline-danger-600 btn-sm radius-8" onClick={handleDelete}>
+                삭제
+              </button>
             </div>
           </div>
         )}
@@ -268,11 +272,13 @@ export default function QuizDetail() {
           {quiz.showAnswer && result.answers && (
             <div className="card-body p-24">
               {result.answers.map((a, i) => (
-                <div key={i} className={`p-16 mb-12 radius-8 ${a.isCorrect ? 'bg-success-50' : 'bg-danger-50'}`}>
+                <div key={i} className={`p-16 mb-12 radius-8 ${a.isCorrect ? "bg-success-50" : "bg-danger-50"}`}>
                   <div className="d-flex align-items-center gap-8 mb-4">
                     <span className="fw-semibold text-sm">문제 {i + 1}</span>
-                    <span className={`badge ${a.isCorrect ? 'bg-success-100 text-success-600' : 'bg-danger-100 text-danger-600'}`}>
-                      {a.isCorrect ? '정답' : '오답'}
+                    <span
+                      className={`badge ${a.isCorrect ? "bg-success-100 text-success-600" : "bg-danger-100 text-danger-600"}`}
+                    >
+                      {a.isCorrect ? "정답" : "오답"}
                     </span>
                     <span className="text-sm text-secondary-light">{a.earnedPoints}점</span>
                   </div>
@@ -301,11 +307,13 @@ export default function QuizDetail() {
                   </tr>
                 </thead>
                 <tbody>
-                  {quiz.mySubmissions.map(sub => (
+                  {quiz.mySubmissions.map((sub) => (
                     <tr key={sub.id}>
                       <td>{sub.attemptNumber}회</td>
-                      <td className="fw-bold text-primary-600">{sub.score}/{sub.totalPoints}</td>
-                      <td className="text-secondary-light">{sub.submittedAt?.slice(0, 16).replace('T', ' ')}</td>
+                      <td className="fw-bold text-primary-600">
+                        {sub.score}/{sub.totalPoints}
+                      </td>
+                      <td className="text-secondary-light">{sub.submittedAt?.slice(0, 16).replace("T", " ")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -316,15 +324,15 @@ export default function QuizDetail() {
           {/* [woo] 정답공개 활성화 시 최근 응시 회차의 정답/오답 상세 표시 */}
           {quiz.showAnswer && quiz.mySubmissions[0]?.answers && (
             <div className="card-body border-top p-24">
-              <p className="fw-semibold text-sm mb-16">
-                {quiz.mySubmissions[0].attemptNumber}회차 답안 확인
-              </p>
+              <p className="fw-semibold text-sm mb-16">{quiz.mySubmissions[0].attemptNumber}회차 답안 확인</p>
               {quiz.mySubmissions[0].answers.map((a, i) => (
-                <div key={i} className={`p-16 mb-12 radius-8 ${a.isCorrect ? 'bg-success-50' : 'bg-danger-50'}`}>
+                <div key={i} className={`p-16 mb-12 radius-8 ${a.isCorrect ? "bg-success-50" : "bg-danger-50"}`}>
                   <div className="d-flex align-items-center gap-8 mb-4">
                     <span className="fw-semibold text-sm">문제 {i + 1}</span>
-                    <span className={`badge ${a.isCorrect ? 'bg-success-100 text-success-600' : 'bg-danger-100 text-danger-600'}`}>
-                      {a.isCorrect ? '정답' : '오답'}
+                    <span
+                      className={`badge ${a.isCorrect ? "bg-success-100 text-success-600" : "bg-danger-100 text-danger-600"}`}
+                    >
+                      {a.isCorrect ? "정답" : "오답"}
                     </span>
                     <span className="text-sm text-secondary-light">{a.earnedPoints}점</span>
                   </div>
@@ -341,7 +349,11 @@ export default function QuizDetail() {
         <div className="text-center mb-24">
           <button
             className="btn btn-primary-600 radius-8 px-32 py-12"
-            onClick={() => { setTakingQuiz(true); setAnswers({}); setResult(null) }}
+            onClick={() => {
+              setTakingQuiz(true);
+              setAnswers({});
+              setResult(null);
+            }}
           >
             <iconify-icon icon="mdi:play" className="me-8" />
             퀴즈 풀기
@@ -356,7 +368,7 @@ export default function QuizDetail() {
 
       {isStudent && !canTakeQuiz && !takingQuiz && !result && (
         <div className="text-center mb-24 text-secondary-light">
-          {quiz.status === 'CLOSED' ? '마감된 퀴즈입니다.' : '최대 응시 횟수를 초과했습니다.'}
+          {quiz.status === "CLOSED" ? "마감된 퀴즈입니다." : "최대 응시 횟수를 초과했습니다."}
         </div>
       )}
 
@@ -368,26 +380,30 @@ export default function QuizDetail() {
               <div className="card-header py-12 px-24 border-bottom d-flex justify-content-between align-items-center">
                 <div className="d-flex align-items-center gap-8">
                   <span className="fw-semibold text-sm">문제 {q.questionOrder}</span>
-                  <span className={`badge ${q.questionType === 'MULTIPLE_CHOICE' ? 'bg-primary-100 text-primary-600' : 'bg-warning-100 text-warning-600'}`}>
-                    {q.questionType === 'MULTIPLE_CHOICE' ? '객관식' : '단답형'}
+                  <span
+                    className={`badge ${q.questionType === "MULTIPLE_CHOICE" ? "bg-primary-100 text-primary-600" : "bg-warning-100 text-warning-600"}`}
+                  >
+                    {q.questionType === "MULTIPLE_CHOICE" ? "객관식" : "단답형"}
                   </span>
                 </div>
                 <span className="text-sm text-secondary-light">배점 {q.points}점</span>
               </div>
               <div className="card-body p-24">
-                <p className="fw-medium mb-16" style={{ whiteSpace: 'pre-wrap' }}>{q.questionText}</p>
+                <p className="fw-medium mb-16" style={{ whiteSpace: "pre-wrap" }}>
+                  {q.questionText}
+                </p>
 
-                {q.questionType === 'MULTIPLE_CHOICE' ? (
+                {q.questionType === "MULTIPLE_CHOICE" ? (
                   <div>
-                    {q.options.map(o => (
+                    {q.options.map((o) => (
                       <div
                         key={o.id}
                         className={`d-flex align-items-center gap-12 p-12 mb-8 radius-8 border cursor-pointer ${
                           answers[q.id]?.selectedOptionId === o.id
-                            ? 'border-primary-600 bg-primary-50'
-                            : 'border-neutral-200 hover-bg-neutral-50'
+                            ? "border-primary-600 bg-primary-50"
+                            : "border-neutral-200 hover-bg-neutral-50"
                         }`}
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: "pointer" }}
                         onClick={() => selectOption(q.id, o.id)}
                       >
                         <input
@@ -397,7 +413,9 @@ export default function QuizDetail() {
                           onChange={() => selectOption(q.id, o.id)}
                           className="form-check-input"
                         />
-                        <span className="text-sm">{o.optionOrder}. {o.optionText}</span>
+                        <span className="text-sm">
+                          {o.optionOrder}. {o.optionText}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -406,8 +424,8 @@ export default function QuizDetail() {
                     type="text"
                     className="form-control radius-8"
                     placeholder="답을 입력하세요"
-                    value={answers[q.id]?.answerText ?? ''}
-                    onChange={e => setAnswerText(q.id, e.target.value)}
+                    value={answers[q.id]?.answerText ?? ""}
+                    onChange={(e) => setAnswerText(q.id, e.target.value)}
                   />
                 )}
               </div>
@@ -415,18 +433,11 @@ export default function QuizDetail() {
           ))}
 
           <div className="d-flex justify-content-between mb-24">
-            <button
-              className="btn btn-outline-neutral-300 radius-8"
-              onClick={() => setTakingQuiz(false)}
-            >
+            <button className="btn btn-outline-neutral-300 radius-8" onClick={() => setTakingQuiz(false)}>
               취소
             </button>
-            <button
-              className="btn btn-primary-600 radius-8 px-32"
-              onClick={handleSubmit}
-              disabled={submitting}
-            >
-              {submitting ? '제출 중...' : '제출하기'}
+            <button className="btn btn-primary-600 radius-8 px-32" onClick={handleSubmit} disabled={submitting}>
+              {submitting ? "제출 중..." : "제출하기"}
             </button>
           </div>
         </div>
@@ -443,19 +454,23 @@ export default function QuizDetail() {
               <div key={q.id} className="p-16 mb-12 radius-8 bg-neutral-50">
                 <div className="d-flex align-items-center gap-8 mb-8">
                   <span className="fw-semibold">문제 {q.questionOrder}</span>
-                  <span className={`badge ${q.questionType === 'MULTIPLE_CHOICE' ? 'bg-primary-100 text-primary-600' : 'bg-warning-100 text-warning-600'}`}>
-                    {q.questionType === 'MULTIPLE_CHOICE' ? '객관식' : '단답형'}
+                  <span
+                    className={`badge ${q.questionType === "MULTIPLE_CHOICE" ? "bg-primary-100 text-primary-600" : "bg-warning-100 text-warning-600"}`}
+                  >
+                    {q.questionType === "MULTIPLE_CHOICE" ? "객관식" : "단답형"}
                   </span>
                   <span className="text-sm text-secondary-light">({q.points}점)</span>
                 </div>
-                <p className="mb-8" style={{ whiteSpace: 'pre-wrap' }}>{q.questionText}</p>
+                <p className="mb-8" style={{ whiteSpace: "pre-wrap" }}>
+                  {q.questionText}
+                </p>
 
-                {q.questionType === 'MULTIPLE_CHOICE' ? (
+                {q.questionType === "MULTIPLE_CHOICE" ? (
                   <div className="ms-16">
-                    {q.options.map(o => (
-                      <div key={o.id} className={`text-sm mb-4 ${o.isCorrect ? 'fw-bold text-success-600' : ''}`}>
+                    {q.options.map((o) => (
+                      <div key={o.id} className={`text-sm mb-4 ${o.isCorrect ? "fw-bold text-success-600" : ""}`}>
                         {o.optionOrder}. {o.optionText}
-                        {o.isCorrect && ' ✓ 정답'}
+                        {o.isCorrect && " ✓ 정답"}
                       </div>
                     ))}
                   </div>
@@ -491,16 +506,20 @@ export default function QuizDetail() {
                 <tbody>
                   {quiz.submissions.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-24 text-secondary-light">응시한 학생이 없습니다.</td>
+                      <td colSpan={5} className="text-center py-24 text-secondary-light">
+                        응시한 학생이 없습니다.
+                      </td>
                     </tr>
                   ) : (
-                    quiz.submissions.map(sub => (
+                    quiz.submissions.map((sub) => (
                       <tr key={sub.id}>
                         <td>{sub.studentNumber}</td>
                         <td>{sub.studentName}</td>
                         <td>{sub.attemptNumber}회</td>
-                        <td className="fw-bold text-primary-600">{sub.score}/{sub.totalPoints}</td>
-                        <td className="text-secondary-light">{sub.submittedAt?.slice(0, 16).replace('T', ' ')}</td>
+                        <td className="fw-bold text-primary-600">
+                          {sub.score}/{sub.totalPoints}
+                        </td>
+                        <td className="text-secondary-light">{sub.submittedAt?.slice(0, 16).replace("T", " ")}</td>
                       </tr>
                     ))
                   )}
@@ -511,5 +530,5 @@ export default function QuizDetail() {
         </div>
       )}
     </DashboardLayout>
-  )
+  );
 }

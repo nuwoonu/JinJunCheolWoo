@@ -19,7 +19,6 @@ export default function StaffCreate() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    code: "",
     password: "",
     department: "",
     jobTitle: "",
@@ -86,16 +85,6 @@ export default function StaffCreate() {
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   placeholder="example@school.com"
-                />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-bold">사번</label>
-                <input
-                  className="form-control"
-                  required
-                  value={form.code}
-                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                  placeholder="ST20240203"
                 />
               </div>
               <div className="col-md-12">

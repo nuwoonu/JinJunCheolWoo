@@ -359,13 +359,8 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
                           <th>과목명</th>
                           <th>과목코드</th>
                           <th>시험 유형</th>
-                          {/* grade.js 테이블 컬럼: 만점 / 최저 */}
-                          <th className="text-center">만점</th>
-                          <th className="text-center">최저</th>
                           <th className="text-center">점수</th>
-                          {/* grade.js calculateGrade 결과 */}
                           <th className="text-center">등급</th>
-                          {/* grade.js getResult 결과 */}
                           <th className="text-center">결과</th>
                         </tr>
                       </thead>
@@ -383,8 +378,6 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
                                 {EXAM_TYPE_LABEL[g.examType] ?? g.examType}
                               </span>
                             </td>
-                            <td className="text-center text-secondary-light">100</td>
-                            <td className="text-center text-secondary-light">40</td>
                             <td className="text-center">
                               {g.score != null ? (
                                 <span

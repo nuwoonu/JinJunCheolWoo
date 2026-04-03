@@ -56,7 +56,6 @@ public class StudentDTO {
         private String name;
         private String email;
         private String password;
-        private String code;
 
         // 초기 배정 정보
         private Integer year;
@@ -72,7 +71,6 @@ public class StudentDTO {
             this.name = csv.getName();
             this.email = csv.getEmail();
             this.password = csv.getPassword();
-            this.code = csv.getCode();
             this.year = csv.getYear();
             this.grade = csv.getGrade();
             this.classNum = csv.getClassNum();
@@ -144,7 +142,8 @@ public class StudentDTO {
             this.uid = user.getUid();
             this.name = user.getName();
             this.email = user.getEmail();
-            StudentInfo info = user.getInfo(StudentInfo.class);
+            StudentInfo info = user.getInfoForSchool(StudentInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
             if (info != null) {
                 this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : null;
@@ -195,7 +194,8 @@ public class StudentDTO {
             this.uid = user.getUid();
             this.name = user.getName();
             this.email = user.getEmail();
-            StudentInfo info = user.getInfo(StudentInfo.class);
+            StudentInfo info = user.getInfoForSchool(StudentInfo.class,
+                    com.example.schoolmate.config.school.SchoolContextHolder.getSchoolId());
             if (info != null) {
                 this.code = info.getCode();
                 this.statusName = info.getStatus() != null ? info.getStatus().name() : "";
@@ -280,9 +280,6 @@ public class StudentDTO {
 
         @CsvBindByName(column = "비밀번호")
         private String password;
-
-        @CsvBindByName(column = "학번")
-        private String code;
 
         @CsvBindByName(column = "학년도")
         private Integer year;

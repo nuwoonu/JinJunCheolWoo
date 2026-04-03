@@ -50,6 +50,7 @@ import com.example.schoolmate.common.repository.notice.NotificationRepository;
 import com.example.schoolmate.common.util.NotificationHelper;
 import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
 import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.woo.dto.teacherdto.TeacherResponseDTO;
@@ -81,6 +82,8 @@ public class TeacherService {
     private final SchoolRepository schoolRepository;
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
+    private final CodeSequenceService codeSequenceService;
+    private final AcademicTermRepository academicTermRepository;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========
@@ -136,9 +139,6 @@ public class TeacherService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
-        if (request.getCode() != null && codeExistsForTeacher(request.getCode())) {
-            throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
-        }
 
         User user = User.builder()
                 .name(request.getName())
@@ -147,8 +147,9 @@ public class TeacherService {
                 .roles(new HashSet<>(Set.of(UserRole.TEACHER)))
                 .build();
 
+        Long schoolId = SchoolContextHolder.getSchoolId();
         TeacherInfo info = new TeacherInfo();
-        info.setCode(request.getCode());
+        info.setCode(codeSequenceService.issue(schoolId, "T"));
         info.setPrimary(true);
         // cheol
         if (request.getSubject() != null && !request.getSubject().isBlank()) {
@@ -162,7 +163,6 @@ public class TeacherService {
         info.setUser(user);
 
         // 학교 소속 설정 (X-School-Id 헤더 기반)
-        Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId != null) {
             schoolRepository.findById(schoolId).ifPresent(info::setSchool);
         }
@@ -196,27 +196,33 @@ public class TeacherService {
 
         user.setName(request.getName());
 
-        TeacherInfo info = user.getInfo(TeacherInfo.class);
-        if (info != null && request.getStatusName() != null) {
+        TeacherInfo info = user.getInfoForSchool(TeacherInfo.class, SchoolContextHolder.getSchoolId());
+        if (info != null) {
             if (request.getCode() != null && !request.getCode().equals(info.getCode())) {
-                if (codeExistsForTeacher(request.getCode())) {
+                Long targetSchoolId = info.getSchool() != null ? info.getSchool().getId() : null;
+                boolean exists = (targetSchoolId != null)
+                        ? teacherInfoRepository.existsByCodeAndSchoolId(request.getCode(), targetSchoolId)
+                        : teacherInfoRepository.existsByCode(request.getCode());
+                if (exists) {
                     throw new IllegalArgumentException("이미 존재하는 사번입니다: " + request.getCode());
                 }
                 info.setCode(request.getCode());
             }
-            TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
-            // cheol
-            Subject subject = null;
-            if (request.getSubject() != null && !request.getSubject().isBlank()) {
-                subject = findSubjectByCode(request.getSubject())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
-            }
-            info.update(subject, request.getDepartment(), request.getPosition(), newStatus);
+            if (request.getStatusName() != null) {
+                TeacherStatus newStatus = TeacherStatus.valueOf(request.getStatusName());
+                // cheol
+                Subject subject = null;
+                if (request.getSubject() != null && !request.getSubject().isBlank()) {
+                    subject = findSubjectByCode(request.getSubject())
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + request.getSubject()));
+                }
+                info.update(subject, request.getDepartment(), request.getPosition(), newStatus);
 
-            NotificationHelper.send(
-                    user,
-                    "교사 상태 변경 알림",
-                    "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다.");
+                NotificationHelper.send(
+                        user,
+                        "교사 상태 변경 알림",
+                        "귀하의 교사 상태가 '" + newStatus.getDescription() + "'(으)로 변경되었습니다.");
+            }
         }
     }
 
@@ -228,7 +234,6 @@ public class TeacherService {
         List<String> errors = new ArrayList<>();
         List<TeacherDTO.CsvImportRequest> validRows = new ArrayList<>();
         Set<String> seenEmails = new HashSet<>();
-        Set<String> seenCodes = new HashSet<>();
 
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             log.info("CSV 파일 읽기 시작: {}", file.getOriginalFilename());
@@ -252,17 +257,12 @@ public class TeacherService {
                     errors.add(rowLabel + ": 이미 존재하는 이메일입니다.");
                     continue;
                 }
-                if (csvReq.getCode() != null && (codeExistsForTeacher(csvReq.getCode()) || seenCodes.contains(csvReq.getCode()))) {
-                    errors.add(rowLabel + ": 이미 존재하는 사번입니다.");
-                    continue;
-                }
                 if (csvReq.getSubject() != null && !csvReq.getSubject().isBlank()
                         && findSubjectByCode(csvReq.getSubject()).isEmpty()) {
                     log.warn("존재하지 않는 과목 코드, 담당과목 null로 등록: {}", csvReq.getSubject());
                     csvReq.setSubject(null);
                 }
                 seenEmails.add(csvReq.getEmail());
-                if (csvReq.getCode() != null) seenCodes.add(csvReq.getCode());
                 validRows.add(csvReq);
             }
 
@@ -283,7 +283,7 @@ public class TeacherService {
         TeacherStatus status = TeacherStatus.valueOf(statusName);
         List<User> users = userRepository.findAllById(uids);
         for (User user : users) {
-            TeacherInfo info = user.getInfo(TeacherInfo.class);
+            TeacherInfo info = user.getInfoForSchool(TeacherInfo.class, SchoolContextHolder.getSchoolId());
             if (info != null) {
                 info.setStatus(status);
                 NotificationHelper.send(
@@ -387,7 +387,6 @@ public class TeacherService {
         assignment.setClassroom(classroom);
         assignment.setStudentInfo(student);
         student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
@@ -511,10 +510,10 @@ public class TeacherService {
         StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
-        // 동일 조건(학생/과목/시험종류/학기/학년) 성적이 이미 있으면 점수만 덮어씀 (upsert)
+        // 동일 조건(학생/과목/시험종류/학기) 성적이 이미 있으면 점수만 덮어씀 (upsert)
         gradeRepository.findDuplicate(
                 student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+                gradeDTO.getTestType(), gradeDTO.getAcademicTermId())
                 .ifPresentOrElse(
                         existing -> {
                             existing.changeScore(gradeDTO.getScore());
@@ -522,12 +521,14 @@ public class TeacherService {
                                     student.getId(), subject.getName(), gradeDTO.getScore());
                         },
                         () -> {
+                            com.example.schoolmate.domain.term.entity.AcademicTerm term =
+                                    academicTermRepository.findById(gradeDTO.getAcademicTermId())
+                                            .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
                             gradeRepository.save(Grade.builder()
                                     .student(student)
                                     .subject(subject)
                                     .testType(gradeDTO.getTestType())
-                                    .semester(gradeDTO.getSemester())
-                                    .year(gradeDTO.getYear())
+                                    .academicTerm(term)
                                     .score(gradeDTO.getScore())
                                     .build());
                             log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
@@ -612,7 +613,6 @@ public class TeacherService {
         assignment.setClassroom(myClassroom);
         assignment.setStudentInfo(student);
         student.getAssignments().add(assignment);
-        student.setCurrentAssignment(assignment);
         student.setBirthDate(createDTO.getBirthDate());
         student.setAddress(createDTO.getAddress());
         student.setPhone(createDTO.getPhone());
@@ -714,7 +714,7 @@ public class TeacherService {
         // 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
         gradeRepository.findDuplicate(
                 student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getSemester(), gradeDTO.getYear())
+                gradeDTO.getTestType(), gradeDTO.getAcademicTermId())
                 .ifPresentOrElse(
                         existing -> {
                             existing.changeScore(gradeDTO.getScore());
@@ -722,12 +722,14 @@ public class TeacherService {
                                     student.getId(), subject.getName(), gradeDTO.getScore());
                         },
                         () -> {
+                            com.example.schoolmate.domain.term.entity.AcademicTerm term =
+                                    academicTermRepository.findById(gradeDTO.getAcademicTermId())
+                                            .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
                             gradeRepository.save(Grade.builder()
                                     .student(student)
                                     .subject(subject)
                                     .testType(gradeDTO.getTestType())
-                                    .semester(gradeDTO.getSemester())
-                                    .year(gradeDTO.getYear())
+                                    .academicTerm(term)
                                     .score(gradeDTO.getScore())
                                     .build());
                             log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
@@ -763,15 +765,29 @@ public class TeacherService {
         List<StudentInfo> students = studentInfoRepository.findByClassroomCid(classroom.getCid());
 
         List<ClassStudentDTO.StudentSimpleDTO> studentDTOs = students.stream()
-                .map(s -> ClassStudentDTO.StudentSimpleDTO.builder()
-                        .studentId(s.getId())
-                        .name(s.getUser() != null ? s.getUser().getName() : "이름없음")
-                        .studentNumber(s.getCurrentAssignment() != null
-                                ? s.getCurrentAssignment().getAttendanceNum()
-                                : null)
-                        .phone(s.getPhone())
-                        .email(s.getUser() != null ? s.getUser().getEmail() : null)
-                        .build())
+                .map(s -> {
+                    // [soojin] 학생 관리 페이지 - 성별, 생년월일, 학부모 성함 추가
+                    String parentName = s.getFamilyRelations().stream()
+                            .filter(fr -> fr.isRepresentative() && fr.getParentInfo() != null)
+                            .findFirst()
+                            .or(() -> s.getFamilyRelations().stream()
+                                    .filter(fr -> fr.getParentInfo() != null)
+                                    .findFirst())
+                            .map(fr -> fr.getParentInfo().getParentName())
+                            .orElse(null);
+                    return ClassStudentDTO.StudentSimpleDTO.builder()
+                            .studentId(s.getId())
+                            .name(s.getUser() != null ? s.getUser().getName() : "이름없음")
+                            .studentNumber(s.getCurrentAssignment() != null
+                                    ? s.getCurrentAssignment().getAttendanceNum()
+                                    : null)
+                            .phone(s.getPhone())
+                            .email(s.getUser() != null ? s.getUser().getEmail() : null)
+                            .gender(s.getGender() != null ? s.getGender().name() : null)
+                            .birthDate(s.getBirthDate())
+                            .parentName(parentName)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         // [woo] 담임 이름: homeroomTeacher(TeacherInfo) 우선, 없으면 teacher(User) fallback
@@ -811,24 +827,20 @@ public class TeacherService {
                 : subjectRepository.findAll().stream().filter(s -> s.getCode().equals(code)).findFirst();
     }
 
-    /** 학교 범위 내 교사 사번 중복 여부 확인 (schoolId가 없으면 전역 체크) */
-    private boolean codeExistsForTeacher(String code) {
-        Long schoolId = SchoolContextHolder.getSchoolId();
-        return (schoolId != null)
-                ? teacherInfoRepository.existsByCodeAndSchoolId(code, schoolId)
-                : teacherInfoRepository.existsByCode(code);
-    }
-
     private GradeDTO entityToDto(Grade grade) {
-        return GradeDTO.builder()
+        GradeDTO.GradeDTOBuilder builder = GradeDTO.builder()
                 .id(grade.getId())
                 .studentId(grade.getStudent() != null ? grade.getStudent().getId() : null)
                 .subjectName(grade.getSubject() != null ? grade.getSubject().getName() : null)
                 .subjectCode(grade.getSubject() != null ? grade.getSubject().getCode() : null)
                 .examType(grade.getTestType())
-                .score(grade.getScore())
-                .semester(grade.getSemester())
-                .year(grade.getYear())
-                .build();
+                .score(grade.getScore());
+        if (grade.getAcademicTerm() != null) {
+            builder.academicTermId(grade.getAcademicTerm().getId())
+                    .schoolYear(grade.getAcademicTerm().getSchoolYear())
+                    .semester(grade.getAcademicTerm().getSemester())
+                    .termDisplayName(grade.getAcademicTerm().getDisplayName());
+        }
+        return builder.build();
     }
 }

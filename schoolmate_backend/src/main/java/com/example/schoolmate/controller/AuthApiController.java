@@ -1,5 +1,6 @@
 package com.example.schoolmate.controller;
 
+import com.example.schoolmate.common.entity.SystemSettings;
 import com.example.schoolmate.common.entity.info.SchoolMemberInfo;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
@@ -10,8 +11,12 @@ import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.common.repository.RoleRequestRepository;
+import com.example.schoolmate.common.repository.RegistrationEmailCodeRepository;
 import com.example.schoolmate.common.repository.SchoolAdminGrantRepository;
+import com.example.schoolmate.common.repository.SystemSettingsRepository;
 import com.example.schoolmate.common.repository.UserRepository;
+import com.example.schoolmate.common.repository.UserSocialAccountRepository;
+import com.example.schoolmate.common.service.RegistrationVerificationService;
 import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
 import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
 import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
@@ -67,9 +72,12 @@ public class AuthApiController {
     private final RoleRequestRepository roleRequestRepository;
     private final SchoolRepository schoolRepository;
     private final com.example.schoolmate.common.repository.ProfileRepository profileRepository;
+    private final UserSocialAccountRepository socialAccountRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final TeacherInfoRepository teacherInfoRepository;
     private final StaffInfoRepository staffInfoRepository;
+    private final SystemSettingsRepository systemSettingsRepository;
+    private final RegistrationVerificationService registrationVerificationService;
 
     /**
      * 이메일 회원가입 → 가입 완료 즉시 JWT 발급 (React 프론트엔드용)
@@ -88,6 +96,14 @@ public class AuthApiController {
         }
 
         try {
+            // 이메일 인증 활성화 여부 확인
+            boolean verificationEnabled = systemSettingsRepository.findById(1L)
+                    .map(SystemSettings::isEmailVerificationEnabled)
+                    .orElse(true);
+            if (verificationEnabled) {
+                registrationVerificationService.checkAndConsume(email);
+            }
+
             UserRole role = UserRole.valueOf(roleStr.toUpperCase());
             Long schoolId = null;
             if (schoolIdStr != null && !schoolIdStr.isBlank()) {
@@ -117,6 +133,57 @@ public class AuthApiController {
         } catch (Exception e) {
             log.error("회원가입 처리 중 오류", e);
             return ResponseEntity.status(500).body(Map.of("message", "회원가입 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 회원가입 흐름 공개 설정 조회 (이메일 인증 필요 여부 등)
+     */
+    @GetMapping("/settings")
+    public ResponseEntity<?> getPublicSettings() {
+        boolean emailVerificationEnabled = systemSettingsRepository.findById(1L)
+                .map(SystemSettings::isEmailVerificationEnabled)
+                .orElse(true);
+        return ResponseEntity.ok(Map.of("emailVerificationEnabled", emailVerificationEnabled));
+    }
+
+    /**
+     * 회원가입 이메일 인증 코드 발송 (미인증 접근)
+     */
+    @PostMapping("/register/email/send-code")
+    public ResponseEntity<?> sendRegistrationEmailCode(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "이메일을 입력해주세요."));
+        }
+        try {
+            registrationVerificationService.sendCode(email);
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(429).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("회원가입 인증 코드 발송 오류", e);
+            return ResponseEntity.internalServerError().body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));
+        }
+    }
+
+    /**
+     * 회원가입 이메일 인증 코드 확인 (미인증 접근)
+     */
+    @PostMapping("/register/email/verify")
+    public ResponseEntity<?> verifyRegistrationEmailCode(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String code = body.get("code");
+        if (email == null || code == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "이메일과 인증 코드를 입력해주세요."));
+        }
+        try {
+            registrationVerificationService.verifyCode(email, code);
+            return ResponseEntity.ok(Map.of("message", "이메일 인증이 완료되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
@@ -248,8 +315,13 @@ public class AuthApiController {
         // hasAdminAccess: grants가 하나라도 있으면 어드민 페이지 접근 가능
         boolean hasAdminAccess = !grants.isEmpty();
 
-        // provider (소셜 로그인 구분: null=이메일, "google", "kakao")
-        String provider = dbUser != null ? dbUser.getProvider() : null;
+        // 연동된 소셜 계정 목록 및 비밀번호 설정 여부
+        List<String> providers = dbUser != null
+                ? socialAccountRepository.findByUser(dbUser).stream()
+                        .map(sa -> sa.getProvider())
+                        .collect(Collectors.toList())
+                : List.of();
+        boolean hasPassword = dbUser != null && dbUser.hasPassword();
 
         // 프로필 이미지 URL
         String profileImageUrl = null;
@@ -270,7 +342,8 @@ public class AuthApiController {
         response.put("hasAdminAccess", hasAdminAccess);
         response.put("grants", grants);
         response.put("roleRequests", roleRequests);
-        response.put("provider", provider);
+        response.put("providers", providers);
+        response.put("hasPassword", hasPassword);
         response.put("profileImageUrl", profileImageUrl);
 
         return ResponseEntity.ok(response);
@@ -348,14 +421,16 @@ public class AuthApiController {
         }
 
         User user = userOpt.get();
-        if (user.getProvider() != null) {
+        if (!user.hasPassword()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("message", "소셜 로그인 계정은 비밀번호 찾기를 이용할 수 없습니다."));
+                    .body(Map.of("message", "비밀번호가 설정되지 않은 계정입니다. 비밀번호 찾기를 이용할 수 없습니다."));
         }
 
         try {
             passwordVerificationService.sendCode(user);
             return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(429).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("message", "인증 코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요."));

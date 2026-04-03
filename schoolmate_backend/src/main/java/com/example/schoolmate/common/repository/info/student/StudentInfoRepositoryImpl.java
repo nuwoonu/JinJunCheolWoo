@@ -23,6 +23,7 @@ import com.example.schoolmate.common.entity.user.constant.RoleRequestStatus;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
 import com.example.schoolmate.config.school.SchoolQueryFilter;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -46,8 +47,6 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
 
         JPAQuery<User> contentQuery = query.selectFrom(user)
                 .leftJoin(info).on(info.user.eq(user))
-                .leftJoin(info.currentAssignment, QStudentAssignment.studentAssignment)
-                .leftJoin(QStudentAssignment.studentAssignment.classroom, QClassroom.classroom)
                 .leftJoin(roleRequest).on(roleRequest.user.eq(user).and(roleRequest.role.eq(UserRole.STUDENT))) // [soojin] roleRequest 조인
                 .where(
                         user.roles.contains(UserRole.STUDENT),
@@ -62,8 +61,8 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         if (cond.getRoleRequestStatus() != null) {
             contentQuery.orderBy(roleRequest.createDate.desc());
         } else {
-            contentQuery.distinct();
-            contentQuery.orderBy(user.uid.desc());
+            contentQuery.groupBy(user.uid);
+            contentQuery.orderBy(info.code.max().desc());
         }
 
         if (pageable.isPaged()) {
@@ -130,8 +129,9 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
         StudentInfo result = query
                 .selectFrom(s)
-                .join(s.currentAssignment, assign)
-                .where(assign.attendanceNum.eq(attendanceNum))
+                .join(s.assignments, assign)
+                .where(assign.attendanceNum.eq(attendanceNum)
+                        .and(isMaxSchoolYear(s, assign)))
                 .fetchOne();
         return Optional.ofNullable(result);
     }
@@ -168,8 +168,9 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QStudentAssignment assign = QStudentAssignment.studentAssignment;
         return query
                 .selectFrom(s)
-                .join(s.currentAssignment, assign)
-                .where(assign.classroom.eq(classroom))
+                .join(s.assignments, assign)
+                .where(assign.classroom.eq(classroom)
+                        .and(isMaxSchoolYear(s, assign)))
                 .fetch();
     }
 
@@ -180,9 +181,10 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QClassroom c = QClassroom.classroom;
         return query
                 .selectFrom(s)
-                .join(s.currentAssignment, assign)
+                .join(s.assignments, assign)
                 .join(assign.classroom, c)
-                .where(c.grade.eq(grade))
+                .where(c.grade.eq(grade)
+                        .and(isMaxSchoolYear(s, assign)))
                 .fetch();
     }
 
@@ -193,9 +195,10 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QClassroom c = QClassroom.classroom;
         return query
                 .selectFrom(s)
-                .join(s.currentAssignment, assign)
+                .join(s.assignments, assign)
                 .join(assign.classroom, c)
-                .where(c.classNum.eq(classNum))
+                .where(c.classNum.eq(classNum)
+                        .and(isMaxSchoolYear(s, assign)))
                 .fetch();
     }
 
@@ -206,9 +209,10 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QClassroom c = QClassroom.classroom;
         return query
                 .selectFrom(s)
-                .join(s.currentAssignment, assign)
+                .join(s.assignments, assign)
                 .join(assign.classroom, c)
-                .where(c.grade.eq(grade).and(c.classNum.eq(classNum)))
+                .where(c.grade.eq(grade).and(c.classNum.eq(classNum))
+                        .and(isMaxSchoolYear(s, assign)))
                 .fetch();
     }
 
@@ -219,9 +223,10 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QClassroom c = QClassroom.classroom;
         return query
                 .selectFrom(s)
-                .join(s.currentAssignment, assign)
+                .join(s.assignments, assign)
                 .join(assign.classroom, c)
-                .where(c.cid.eq(classroomId))
+                .where(c.cid.eq(classroomId)
+                        .and(isMaxSchoolYear(s, assign)))
                 .fetch();
     }
 
@@ -233,7 +238,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
         QClassroom c = QClassroom.classroom;
         return query
                 .selectFrom(s)
-                .join(s.currentAssignment, assign)
+                .join(s.assignments, assign)
                 .join(assign.classroom, c)
                 .where(c.year.eq(year).and(c.grade.eq(grade)).and(c.classNum.eq(classNum)))
                 .fetch();
@@ -249,7 +254,7 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
                 .selectFrom(s)
                 .join(s.user, u).fetchJoin()
                 .where(s.school.id.eq(schoolId)
-                        .and(s.currentAssignment.isNull()))
+                        .and(s.assignments.isEmpty()))
                 .orderBy(s.id.desc())
                 .fetch();
     }
@@ -341,6 +346,15 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     }
 
     // ── 공통 필터 ─────────────────────────────────────────────────────────────────
+
+    // 가장 최근 학년도(schoolYear)의 배정 이력인지 확인하는 서브쿼리 필터
+    private BooleanExpression isMaxSchoolYear(QStudentInfo student, QStudentAssignment assign) {
+        QStudentAssignment sub = new QStudentAssignment("subAssign");
+        return assign.schoolYear.eq(
+                JPAExpressions.select(sub.schoolYear.max())
+                        .from(sub)
+                        .where(sub.studentInfo.eq(student)));
+    }
 
     private BooleanExpression schoolFilter(QStudentInfo info) {
         return SchoolQueryFilter.schoolIdEq(info.school.id);

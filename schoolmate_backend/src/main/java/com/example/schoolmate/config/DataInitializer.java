@@ -8,8 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.schoolmate.common.entity.SystemSettings;
 import com.example.schoolmate.common.entity.user.User;
 import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.common.repository.SystemSettingsRepository;
 import com.example.schoolmate.common.repository.UserRepository;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.school.service.NeisService;
@@ -26,11 +28,13 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final SchoolRepository schoolRepository;
     private final NeisService neisService;
+    private final SystemSettingsRepository systemSettingsRepository;
 
     @Override
     public void run(String... args) throws Exception {
         createAdminAccountIfNotExists();
         syncSchoolDataIfEmpty();
+        initSystemSettingsIfNotExists();
     }
 
     @Transactional
@@ -49,6 +53,14 @@ public class DataInitializer implements CommandLineRunner {
 
         userRepository.save(adminUser);
         log.info("초기 관리자 계정이 자동 생성되었습니다. ID: {}", adminEmail);
+    }
+
+    @Transactional
+    public void initSystemSettingsIfNotExists() {
+        if (!systemSettingsRepository.existsById(1L)) {
+            systemSettingsRepository.save(new SystemSettings());
+            log.info("SystemSettings 초기값 생성 완료 (emailVerificationEnabled=true)");
+        }
     }
 
     public void syncSchoolDataIfEmpty() {

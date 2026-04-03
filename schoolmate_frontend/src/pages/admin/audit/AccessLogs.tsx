@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 
@@ -20,7 +20,7 @@ const typeLabel = (t: string) => ACCESS_TYPES.find((o) => o.value === t)?.label 
 
 const th: React.CSSProperties = {
   padding: "12px 16px",
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: 600,
   color: "#6b7280",
   background: "#f9fafb",
@@ -40,6 +40,9 @@ const td: React.CSSProperties = {
 
 export default function AccessLogs() {
   const [page, setPage] = useState<any>(null);
+  // [soojin] 전체 건수 표시용 - 초기 로드 시 한 번만 세팅
+  const [totalAll, setTotalAll] = useState<number | null>(null);
+  const isInitialLoad = useRef(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [type, setType] = useState("");
@@ -56,6 +59,11 @@ export default function AccessLogs() {
     admin.get("/audit/access", { params }).then((r) => {
       setPage(r.data);
       setCurrentPage(p);
+      // [soojin] 초기 로드 시에만 totalAll 세팅
+      if (isInitialLoad.current) {
+        setTotalAll(r.data.totalElements);
+        isInitialLoad.current = false;
+      }
     });
   };
 
@@ -85,107 +93,162 @@ export default function AccessLogs() {
 
   const list: any[] = page?.content ?? [];
 
+  // [soojin] select 커스텀 화살표 공통 스타일
+  const selectStyle: React.CSSProperties = {
+    padding: "5px 24px 5px 8px",
+    border: "1px solid #d1d5db",
+    borderRadius: 6,
+    fontSize: 13,
+    background: "#fff",
+    appearance: "none",
+    WebkitAppearance: "none",
+    cursor: "pointer",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    padding: "5px 8px",
+    border: "1px solid #d1d5db",
+    borderRadius: 6,
+    fontSize: 13,
+    background: "#fff",
+  };
+
   return (
     <AdminLayout>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>시스템 접속 기록</h5>
+      {/* [soojin] 페이지네이션으로 행 수 제한 - 고정 높이 없이 자연 높이 사용 */}
+      <div>
+        {/* [soojin] 제목 + 전체 건수 인라인 표시 */}
+        <div style={{ marginBottom: 16 }}>
+          <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4, display: "flex", alignItems: "baseline", gap: 8 }}>
+            접근 로그
+            <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalAll ?? 0}건</span>
+          </h6>
           <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>사용자 로그인/로그아웃 기록을 조회합니다.</p>
         </div>
-        <button
-          onClick={downloadCsv}
-          disabled={downloading}
-          style={{ padding: "8px 16px", background: "#fff", border: "1px solid #22c55e", borderRadius: 8, fontSize: 13, fontWeight: 500, color: "#16a34a", cursor: downloading ? "default" : "pointer", whiteSpace: "nowrap" }}
-        >
-          {downloading ? "다운로드 중..." : "CSV 내보내기"}
-        </button>
-      </div>
 
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 16, marginBottom: 16 }}>
-        <form onSubmit={search}>
-          <div className="row g-2 align-items-end">
-            <div className="col-md-3">
-              <label style={{ display: "block", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>사용자명 검색</label>
-              <input className="form-control form-control-sm" placeholder="사용자명..." value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+        {/* [soojin] 컨트롤 바: 필터(좌) + CSV 버튼(우), 필터 카드 제거하고 인라인으로 */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
+          <form style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }} onSubmit={search}>
+            {/* 사용자명 검색 input */}
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <i className="bi bi-search" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
+              <input
+                style={{ ...inputStyle, padding: "5px 8px 5px 28px", minWidth: 150 }}
+                placeholder="사용자명 검색"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
             </div>
-            <div className="col-md-2">
-              <label style={{ display: "block", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>유형</label>
-              <select className="form-select form-select-sm" value={type} onChange={(e) => setType(e.target.value)}>
+            {/* 유형 select */}
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <select style={selectStyle} value={type} onChange={(e) => setType(e.target.value)}>
                 {ACCESS_TYPES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
+              <i className="ri-arrow-down-s-line" style={{ position: "absolute", right: "4px", pointerEvents: "none", fontSize: "16px", color: "#6b7280" }} />
             </div>
-            <div className="col-md-2">
-              <label style={{ display: "block", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>시작일</label>
-              <input type="date" className="form-control form-control-sm" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-            </div>
-            <div className="col-md-2">
-              <label style={{ display: "block", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>종료일</label>
-              <input type="date" className="form-control form-control-sm" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            </div>
-            <div className="col-md-auto">
-              <div style={{ display: "flex", gap: 6 }}>
-                <button type="submit" style={{ padding: "6px 14px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 500, color: "#fff", cursor: "pointer" }}>검색</button>
-                <button
-                  type="button"
-                  onClick={() => { setKeyword(""); setType(""); setStartDate(""); setEndDate(""); setTimeout(() => load(0), 0); }}
-                  style={{ padding: "6px 14px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: "#374151", cursor: "pointer" }}
-                >
-                  초기화
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-          <colgroup>
-            <col style={{ width: 160 }} />
-            <col style={{ width: 180 }} />
-            <col style={{ width: 120 }} />
-            <col style={{ width: 140 }} />
-            <col />
-          </colgroup>
-          <thead>
-            <tr>
-              <th style={th}>일시</th>
-              <th style={th}>사용자</th>
-              <th style={{ ...th, textAlign: "center" }}>유형</th>
-              <th style={th}>IP 주소</th>
-              <th style={th}>브라우저 정보</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.map((log: any) => (
-              <tr key={log.id}>
-                <td style={{ ...td, color: "#6b7280" }}>{log.createDate?.replace("T", " ").substring(0, 19)}</td>
-                <td style={{ ...td, fontWeight: 500 }}>{log.actorName}</td>
-                <td style={{ ...td, textAlign: "center" }}>
-                  <span style={typeStyle(log.accessType)}>{typeLabel(log.accessType)}</span>
-                </td>
-                <td style={{ ...td, color: "#6b7280" }}>{log.ipAddress}</td>
-                <td style={{ ...td, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis" }} title={log.userAgent}>{log.userAgent}</td>
-              </tr>
-            ))}
-            {list.length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "40px 0", whiteSpace: "normal" }}>접속 기록이 없습니다.</td>
-              </tr>
+            {/* [soojin] 날짜 input에 시작일/종료일 라벨 표시 */}
+            <span style={{ fontSize: 12, color: "#6b7280", whiteSpace: "nowrap" }}>시작일</span>
+            <input type="date" style={inputStyle} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <span style={{ fontSize: 12, color: "#6b7280", whiteSpace: "nowrap" }}>종료일</span>
+            <input type="date" style={inputStyle} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            <button
+              type="submit"
+              style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              검색
+            </button>
+            <button
+              type="button"
+              onClick={() => { setKeyword(""); setType(""); setStartDate(""); setEndDate(""); setTimeout(() => load(0), 0); }}
+              style={{ padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, cursor: "pointer", color: "#374151", whiteSpace: "nowrap" }}
+            >
+              초기화
+            </button>
+            {/* [soojin] 검색 중일 때만 필터 결과 건수 표시 */}
+            {(keyword || type || startDate || endDate) && page && (
+              <span style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
+                <span style={{ fontWeight: 600, color: "#111827" }}>{page.totalElements}건</span> / 전체 {totalAll ?? 0}건
+              </span>
             )}
-          </tbody>
-        </table>
+          </form>
+          <button
+            onClick={downloadCsv}
+            disabled={downloading}
+            style={{ padding: "5px 10px", background: "#fff", border: "1px solid #25A194", borderRadius: 8, fontSize: 13, fontWeight: 500, color: "#25A194", cursor: downloading ? "default" : "pointer", whiteSpace: "nowrap" }}
+          >
+            <i className="ri-file-excel-2-line" style={{ marginRight: 4, fontSize: "14px" }} />
+            {downloading ? "다운로드 중..." : "CSV 내보내기"}
+          </button>
+        </div>
 
-        {page && page.totalPages > 1 && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "16px 0", borderTop: "1px solid #f3f4f6", gap: 6 }}>
-            <div style={{ display: "flex", gap: 4 }}>
-              <button onClick={() => load(currentPage - 1)} disabled={page.first} style={{ padding: "6px 12px", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", color: page.first ? "#d1d5db" : "#374151", cursor: page.first ? "default" : "pointer", fontSize: 13 }}>‹</button>
-              {Array.from({ length: page.totalPages }, (_, i) => (
-                <button key={i} onClick={() => load(i)} style={{ padding: "6px 12px", border: "1px solid", borderColor: i === currentPage ? "#25A194" : "#e5e7eb", borderRadius: 6, background: i === currentPage ? "#25A194" : "#fff", color: i === currentPage ? "#fff" : "#374151", cursor: "pointer", fontSize: 13, fontWeight: i === currentPage ? 600 : 400, minWidth: 36 }}>{i + 1}</button>
-              ))}
-              <button onClick={() => load(currentPage + 1)} disabled={page.last} style={{ padding: "6px 12px", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", color: page.last ? "#d1d5db" : "#374151", cursor: page.last ? "default" : "pointer", fontSize: 13 }}>›</button>
-            </div>
-            <div style={{ fontSize: 12, color: "#9ca3af" }}>총 {page.totalElements}건</div>
+        {/* [soojin] 카드: 자연 높이, 가로 스크롤만 허용 */}
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+              <colgroup>
+                <col style={{ width: 160 }} />
+                <col style={{ width: 180 }} />
+                <col style={{ width: 120 }} />
+                <col style={{ width: 140 }} />
+                <col />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th style={th}>일시</th>
+                  <th style={th}>사용자</th>
+                  <th style={{ ...th, textAlign: "center" }}>유형</th>
+                  <th style={th}>IP 주소</th>
+                  <th style={th}>브라우저 정보</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((log: any) => (
+                  <tr key={log.id}>
+                    <td style={{ ...td, color: "#6b7280" }}>{log.createDate?.replace("T", " ").substring(0, 19)}</td>
+                    <td style={{ ...td, fontWeight: 500 }}>{log.actorName}</td>
+                    <td style={{ ...td, textAlign: "center" }}>
+                      <span style={typeStyle(log.accessType)}>{typeLabel(log.accessType)}</span>
+                    </td>
+                    <td style={{ ...td, color: "#6b7280" }}>{log.ipAddress}</td>
+                    <td style={{ ...td, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis" }} title={log.userAgent}>{log.userAgent}</td>
+                  </tr>
+                ))}
+                {list.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ ...td, textAlign: "center", color: "#9ca3af", padding: "48px 16px", whiteSpace: "normal" }}>접속 기록이 없습니다.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* [soojin] 페이지네이션 카드 밖, 우측 정렬, 정사각형 버튼 */}
+        {page && page.totalPages >= 1 && (
+          <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 0", gap: 4 }}>
+            <button
+              onClick={() => load(currentPage - 1)}
+              disabled={page.first}
+              style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", cursor: page.first ? "not-allowed" : "pointer", color: page.first ? "#d1d5db" : "#374151", fontSize: 12 }}
+            >
+              ‹
+            </button>
+            {Array.from({ length: page.totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => load(i)}
+                style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: `1px solid ${i === currentPage ? "#25A194" : "#e5e7eb"}`, borderRadius: 6, background: i === currentPage ? "#25A194" : "#fff", color: i === currentPage ? "#fff" : "#374151", cursor: "pointer", fontSize: 12, fontWeight: i === currentPage ? 600 : 400 }}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => load(currentPage + 1)}
+              disabled={page.last}
+              style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", cursor: page.last ? "not-allowed" : "pointer", color: page.last ? "#d1d5db" : "#374151", fontSize: 12 }}
+            >
+              ›
+            </button>
           </div>
         )}
       </div>

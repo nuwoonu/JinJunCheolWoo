@@ -2,9 +2,8 @@ package com.example.schoolmate.cheol.entity;
 
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
 import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.user.constant.Semester;
 import com.example.schoolmate.common.entity.user.constant.TestType;
-import com.example.schoolmate.common.entity.user.constant.Year;
+import com.example.schoolmate.domain.term.entity.AcademicTerm;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,7 +28,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @Table(name = "grades")
-@ToString(exclude = { "student", "subject" })
+@ToString(exclude = { "student", "subject", "academicTerm" })
 public class Grade extends SchoolBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,14 +37,12 @@ public class Grade extends SchoolBaseEntity {
     @Enumerated(EnumType.STRING)
     private TestType testType; // 시험 종류
 
-    @Enumerated(EnumType.STRING)
-    private Semester semester; // 학기
-
     @Column(nullable = false)
     private Double score; // 점수
 
-    @Enumerated(EnumType.STRING)
-    private Year year; // 학년
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academic_term_id")
+    private AcademicTerm academicTerm; // 학기 정보 (학년도 + 학기)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id")
@@ -65,5 +62,14 @@ public class Grade extends SchoolBaseEntity {
 
     public void changeScore(Double score) {
         this.score = score;
+    }
+
+    // 하위 호환 편의 메서드
+    public int getSchoolYear() {
+        return academicTerm != null ? academicTerm.getSchoolYear() : 0;
+    }
+
+    public int getSemesterNum() {
+        return academicTerm != null ? academicTerm.getSemester() : 0;
     }
 }

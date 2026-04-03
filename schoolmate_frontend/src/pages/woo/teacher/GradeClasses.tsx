@@ -62,30 +62,28 @@ export default function TeacherGradeClasses() {
             <span className="text-neutral-600"> / 학급 선택</span>
           </div>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">성적 채점</li>
-          <li>-</li>
-          <li className="fw-medium">학급 선택</li>
-        </ul>
       </div>
 
       {/* 안내 헤더 */}
-      <div className="card radius-12 mb-24 border-0" style={{ background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)" }}>
+      <div
+        className="card radius-12 mb-24 border-0"
+        style={{ background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)" }}
+      >
         <div className="card-body p-24 d-flex align-items-center gap-16">
-          <div className="w-56-px h-56-px rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-               style={{ background: "rgba(255,255,255,0.2)" }}>
+          <div
+            className="w-56-px h-56-px rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.2)" }}
+          >
             <iconify-icon icon="mdi:pencil-box-outline" className="text-white text-3xl" />
           </div>
           <div>
+<<<<<<< HEAD
             <h5 className="fw-bold text-white mb-4">
               성적 채점
             </h5>
+=======
+            <h5 className="fw-bold text-white mb-4">{teacherGrade ? `${teacherGrade}학년` : "—"} 성적 채점</h5>
+>>>>>>> developMerge
             <p className="text-white mb-0" style={{ opacity: 0.85 }}>
               {subjectName ? `담당 과목: ${subjectName} | ` : ""}채점할 학급을 선택하세요.
             </p>
@@ -147,6 +145,7 @@ export default function TeacherGradeClasses() {
                     <p className="text-secondary-light text-sm mb-4">
                       {cls.teacherName ? `담임: ${cls.teacherName}` : "담임 미배정"}
                     </p>
+<<<<<<< HEAD
                     {cls.subjectName && (
                       <p className="fw-medium text-sm mb-12" style={{ color }}>
                         과목: {cls.subjectName}
@@ -156,6 +155,9 @@ export default function TeacherGradeClasses() {
                       className="d-flex align-items-center gap-6 fw-medium text-sm"
                       style={{ color }}
                     >
+=======
+                    <div className="d-flex align-items-center gap-6 fw-medium text-sm" style={{ color }}>
+>>>>>>> developMerge
                       <iconify-icon icon="mdi:pencil-outline" />
                       채점하기
                     </div>

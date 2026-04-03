@@ -12,6 +12,7 @@ import com.example.schoolmate.cheol.entity.BankAccount;
 import com.example.schoolmate.cheol.entity.CareerAspiration;
 import com.example.schoolmate.cheol.entity.CocurricularActivities;
 import com.example.schoolmate.cheol.entity.Dormitory;
+import com.example.schoolmate.cheol.entity.DormitoryAssignment;
 import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.BehaviorRecord;
 import com.example.schoolmate.cheol.entity.BookReport;
@@ -24,11 +25,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
@@ -51,16 +50,19 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = { "assignments", "familyRelations", "currentAssignment" })
+@ToString(exclude = { "assignments", "familyRelations" })
 public class StudentInfo extends SchoolMemberInfo {
-    // FK 제약조건 없음: StudentAssignment.student_info_id ↔
-    // student_info.current_assignment_id 순환 참조 방지
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "current_assignment_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private StudentAssignment currentAssignment;
+
+    // 동적 프로퍼티: 리스트에서 가장 최근의 배정 이력을 가져옵니다.
+    public StudentAssignment getCurrentAssignment() {
+        return assignments.stream()
+                .max(Comparator.comparingInt(StudentAssignment::getSchoolYear))
+                .orElse(null);
+    }
 
     // 전체 학번 생성 메서드 (표시용)
     public String getFullStudentNumber() {
+        StudentAssignment currentAssignment = getCurrentAssignment();
         if (currentAssignment == null || currentAssignment.getClassroom() == null) {
             return "-";
         }
@@ -129,35 +131,42 @@ public class StudentInfo extends SchoolMemberInfo {
     @OneToMany(mappedBy = "student")
     private List<Grade> grades = new ArrayList<>();
 
-    // 기숙사
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dormitory_id", nullable = true)
-    private Dormitory dormitory; // null 허용 (기숙사 미배정 학생 존재)
+    // 학기별 기숙사 배정 이력
+    @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DormitoryAssignment> dormitoryAssignments = new ArrayList<>();
 
-    // 기숙사 배정
-    public void assignDormitory(Dormitory dormitory) {
-        // 기존 기숙사에서 제거
-        if (this.dormitory != null) {
-            this.dormitory.getStudents().remove(this);
-        }
-        this.dormitory = dormitory;
+    // ── 편의 메서드: basicHabits, specialNotes (현재 학년도 기준) ──
 
-        // 새 기숙사에 추가
-        if (dormitory != null && !dormitory.getStudents().contains(this)) {
-            dormitory.getStudents().add(this);
+    public String getBasicHabits() {
+        StudentAssignment current = getCurrentAssignment();
+        return current != null ? current.getBasicHabits() : null;
+    }
+
+    public void setBasicHabits(String basicHabits) {
+        StudentAssignment current = getCurrentAssignment();
+        if (current != null) {
+            current.setBasicHabits(basicHabits);
         }
     }
 
-    // 기숙사 배정 해제
-    public void removeDormitory() {
-        if (this.dormitory != null) {
-            this.dormitory.getStudents().remove(this);
-            this.dormitory = null;
+    public String getSpecialNotes() {
+        StudentAssignment current = getCurrentAssignment();
+        return current != null ? current.getSpecialNotes() : null;
+    }
+
+    public void setSpecialNotes(String specialNotes) {
+        StudentAssignment current = getCurrentAssignment();
+        if (current != null) {
+            current.setSpecialNotes(specialNotes);
         }
     }
 
-    // 기숙사 배정 여부 확인
-    public boolean hasDormitory() {
-        return this.dormitory != null;
+    // ── 편의 메서드: 기숙사 (현재 학기 기준) ──
+
+    public DormitoryAssignment getCurrentDormitoryAssignment() {
+        return dormitoryAssignments.stream()
+                .max(Comparator.comparing(
+                        da -> da.getAcademicTerm().getSchoolYear() * 10 + da.getAcademicTerm().getSemester()))
+                .orElse(null);
     }
 }

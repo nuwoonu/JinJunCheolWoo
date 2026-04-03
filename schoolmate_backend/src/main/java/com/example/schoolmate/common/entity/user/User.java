@@ -39,7 +39,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "infos")
+@ToString(exclude = {"infos", "socialAccounts"})
 public class User extends BaseEntity {
 
     @Id
@@ -52,19 +52,25 @@ public class User extends BaseEntity {
     private String password;
     private String name;
 
-    // OAuth2 소셜 로그인 필드 추가 (01/29[woo])
-    private String provider; // 소셜 로그인 제공자 (kakao, google 등)
-    private String providerId; // 소셜 로그인 제공자의 고유 ID
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "uid"))
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Set<UserRole> roles = new HashSet<>();
 
-    // 새로운 핵심: 신분 정보 리스트 (1:N)
+    // 신분 정보 리스트 (1:N)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<BaseInfo> infos = new ArrayList<>();
+
+    // 소셜 계정 연동 목록 (1:N)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<UserSocialAccount> socialAccounts = new ArrayList<>();
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
 
     // --- Role 관련 편의 메서드 ---
     public void addRole(UserRole role) {
@@ -88,14 +94,12 @@ public class User extends BaseEntity {
 
     /**
      * 상세 정보(Info)를 추가하며 연관 관계를 설정합니다.
-     * 권한(Role)은 비즈니스 로직에 따라 별도로 관리(addRole/removeRole)해야 합니다.
      */
     public void addInfo(BaseInfo info) {
         if (info == null)
             return;
-
         this.infos.add(info);
-        info.setUser(this); // 양방향 연관관계 설정
+        info.setUser(this);
     }
 
     public <T extends BaseInfo> T getInfo(Class<T> clazz) {
@@ -108,7 +112,6 @@ public class User extends BaseEntity {
 
     /**
      * 해당 타입의 primary 인스턴스를 반환합니다.
-     * primary=true 인 것이 없으면 첫 번째 인스턴스를 반환합니다(하위 호환).
      */
     public <T extends SchoolMemberInfo> T getPrimaryInfo(Class<T> clazz) {
         List<T> matched = infos.stream()
@@ -121,6 +124,29 @@ public class User extends BaseEntity {
                 .orElse(matched.isEmpty() ? null : matched.get(0));
     }
 
+    /**
+     * 특정 학교에 소속된 info를 반환합니다.
+     * schoolId가 null이면 primary info로 폴백합니다.
+     */
+    public <T extends SchoolMemberInfo> T getInfoForSchool(Class<T> clazz, Long schoolId) {
+        if (schoolId == null) {
+            return getPrimaryInfo(clazz);
+        }
+        return infos.stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .filter(info -> info.getSchool() != null && schoolId.equals(info.getSchool().getId()))
+                .findFirst()
+                .orElse(getPrimaryInfo(clazz));
+    }
+
+    // --- 소셜 계정 관련 편의 메서드 ---
+
+    /** 비밀번호가 설정되어 있는지 (이메일 로그인 가능 여부) */
+    public boolean hasPassword() {
+        return this.password != null && !this.password.isEmpty();
+    }
+
     // --- 정보 변경 메서드 ---
     public void changePassword(String newPassword) {
         this.password = newPassword;
@@ -128,5 +154,9 @@ public class User extends BaseEntity {
 
     public void changeName(String newName) {
         this.name = newName;
+    }
+
+    public void withdraw() {
+        this.deleted = true;
     }
 }

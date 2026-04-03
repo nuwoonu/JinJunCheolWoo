@@ -54,8 +54,8 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
         if (cond.getRoleRequestStatus() != null) {
             contentQuery.orderBy(roleRequest.createDate.desc());
         } else {
-            contentQuery.distinct();
-            contentQuery.orderBy(user.uid.desc());
+            contentQuery.groupBy(user.uid);
+            contentQuery.orderBy(info.code.max().desc());
         }
 
         if (pageable.isPaged()) {

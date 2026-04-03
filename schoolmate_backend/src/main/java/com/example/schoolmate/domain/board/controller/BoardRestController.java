@@ -153,16 +153,75 @@ public class BoardRestController {
 
     /**
      * [woo 03-27] 학급 게시판 — 역할별 자동 학급 조회 (교사/학생 전용)
-     * GET /api/board/class-board?page=0&size=10
+     * GET /api/board/class-board?page=0&size=10&keyword=검색어&sortBy=createDate
      */
+    // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
+    // [soojin] sortBy 파라미터 추가 - createDate(최신순) / viewCount(조회순·인기순) 동적 정렬 지원
     @GetMapping("/class-board")
     public ResponseEntity<Map<String, Object>> getClassBoardAuto(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "ALL") String searchType,
+            @RequestParam(defaultValue = "createDate") String sortBy,
             @AuthenticationPrincipal AuthUserDTO authUser) {
+
+        Sort sort = "viewCount".equals(sortBy)
+                ? Sort.by("viewCount").descending()
+                : Sort.by("createDate").descending();
 
         Page<BoardDTO.Response> result = boardService.getClassBoardAuto(
                 authUser.getCustomUserDTO(),
+                keyword,
+                searchType,
+                PageRequest.of(page, size, sort));
+        return ResponseEntity.ok(Map.of(
+                "content", result.getContent(),
+                "totalElements", result.getTotalElements(),
+                "totalPages", result.getTotalPages(),
+                "currentPage", result.getNumber()));
+    }
+
+    /**
+     * [soojin] 게시판 인기글 — 조회수 기준 상위 N개 (사이드바 인기글 카드용)
+     * GET /api/board/popular?boardType=CLASS_BOARD&limit=5
+     */
+    @GetMapping("/popular")
+    public ResponseEntity<?> getPopularBoards(
+            @RequestParam String boardType,
+            @RequestParam(defaultValue = "5") int limit) {
+        try {
+            BoardType type = BoardType.valueOf(boardType);
+            return ResponseEntity.ok(boardService.getPopularBoards(type, limit));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("올바르지 않은 게시판 타입입니다: " + boardType);
+        }
+    }
+
+    /**
+     * [soojin] 게시판 통계 — 전체 게시글 수 + 전체 조회수 합계 (사이드바 통계 카드용)
+     * GET /api/board/stats?boardType=CLASS_BOARD
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<?> getBoardStats(@RequestParam String boardType) {
+        try {
+            BoardType type = BoardType.valueOf(boardType);
+            return ResponseEntity.ok(boardService.getBoardStats(type));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("올바르지 않은 게시판 타입입니다: " + boardType);
+        }
+    }
+
+    /**
+     * [woo] 교직원 게시판 목록
+     * GET /api/board/teacher-board?page=0&size=10
+     */
+    @GetMapping("/teacher-board")
+    public ResponseEntity<Map<String, Object>> getTeacherBoard(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<BoardDTO.Response> result = boardService.getTeacherBoard(
                 PageRequest.of(page, size, Sort.by("createDate").descending()));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
@@ -173,12 +232,46 @@ public class BoardRestController {
 
     /**
      * [woo] 게시물 상세 조회 - 읽기전용 (조회수 증가 없음)
+     * [soojin] likeCount, commentCount, isLiked 포함 반환
      * GET /api/board/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<BoardDTO.Response> getBoard(@PathVariable Long id) {
-        BoardDTO.Response board = boardService.getBoardReadOnly(id);
+    public ResponseEntity<BoardDTO.Response> getBoard(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        Long userUid = authUser != null ? authUser.getCustomUserDTO().getUid() : null;
+        BoardDTO.Response board = boardService.getBoardReadOnly(id, userUid);
         return ResponseEntity.ok(board);
+    }
+
+    /**
+     * [soojin] 좋아요 토글 - POST /api/board/{id}/like
+     * 반환: { "liked": boolean, "likeCount": long }
+     */
+    @PostMapping("/{id}/like")
+    public ResponseEntity<?> toggleLike(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        try {
+            return ResponseEntity.ok(boardService.toggleLike(id, authUser.getCustomUserDTO().getUid()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * [soojin] 북마크 토글 - POST /api/board/{id}/bookmark
+     * 반환: { "bookmarked": boolean }
+     */
+    @PostMapping("/{id}/bookmark")
+    public ResponseEntity<?> toggleBookmark(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        try {
+            return ResponseEntity.ok(boardService.toggleBookmark(id, authUser.getCustomUserDTO().getUid()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     /**
@@ -194,18 +287,21 @@ public class BoardRestController {
     /**
      * [woo] 학부모 공지(가정통신문) 목록 - 역할별 필터링
      * 교사: 전체 조회 / 학부모: 선택된 자녀 학급 기준 필터링
-     * GET /api/board/parent-notice?page=0&size=10&studentUserUid=123
+     * GET /api/board/parent-notice?page=0&size=10&studentUserUid=123&keyword=검색어
      */
     @GetMapping("/parent-notice")
     public ResponseEntity<Map<String, Object>> getParentNotices(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long studentUserUid,
+            // [soojin] keyword 파라미터 추가 - 가정통신문 제목 검색 지원
+            @RequestParam(required = false) String keyword,
             @AuthenticationPrincipal AuthUserDTO authUser) {
 
         Page<BoardDTO.Response> result = boardService.getParentNoticesFiltered(
                 authUser != null ? authUser.getCustomUserDTO() : null,
                 studentUserUid,
+                keyword,
                 PageRequest.of(page, size));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),

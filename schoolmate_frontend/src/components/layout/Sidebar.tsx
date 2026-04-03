@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 // [woo] unused: motion 제거
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -7,17 +7,73 @@ import { ADMIN_ROUTES } from "@/constants/routes";
 import api from "@/api/auth";
 
 // [woo] 사이드바 서브메뉴 열림 상태 관리
-// CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전 + 배경색
+// CSS: .open → 서브메뉴 display:block, .dropdown-open → 화살표 회전
+// [soojin] 현재 경로 기반으로 해당 드롭다운 자동 열림
 function useSubmenu() {
-  const [open, setOpen] = useState<Record<string, boolean>>({});
-  // [woo] 아코디언: 다른 메뉴 열 때 이전 메뉴 자동 닫힘
-  const toggle = (key: string) => setOpen((prev) => ({ [key]: !prev[key] }));
+  const location = useLocation();
+
+  function initOpen(p: string): Record<string, boolean> {
+    const r: Record<string, boolean> = {};
+    if (p.startsWith("/teacher/myclass")) r.myclass = true;
+    if (p.startsWith("/student/list") || p.startsWith("/student/myinfo")) r.student = true;
+    // [soojin] 자녀 현황: /parent/children 제거 (헤더 탭으로 이동 예정)
+    if (p.startsWith("/attendance/parent") || p.startsWith("/parent/grades") || p.startsWith("/parent/homework"))
+      r.parent = true;
+    if (p.startsWith("/teacher/list")) r.teacher = true;
+    if (p.startsWith("/board/parent-notice") || p.startsWith("/board/parent") || p.startsWith("/teacher/parent"))
+      r.parentList = true;
+    if (p.startsWith("/board/school-notice")) {
+      r.notice = true;
+      r.parentNotice = true;
+    }
+    if (p.startsWith("/board/class-board") || p.startsWith("/board/teacher")) r.board = true;
+    if (p.startsWith("/homework") || p.startsWith("/quiz")) r.homework = true;
+    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes")) r.exam = true;
+    if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.attendance = true;
+    // [soojin] 학교 소식: gallery 제거, 가정통신문 추가
+    if (p.startsWith("/school/schedule") || p.startsWith("/board/parent-notice")) r.parentNotice = true;
+    // [soojin] 학급 소식 드롭다운 키
+    if (p.startsWith("/parent/class/notice") || p.startsWith("/class/album")) r.classNews = true;
+    // [soojin] TEACHER 전용 드롭다운 키
+    if (p.startsWith("/teacher/schedule")) r.teacherSchedule = true;
+    if (p.startsWith("/homework") || p.startsWith("/quiz")) r.teacherHomework = true;
+    if (p.startsWith("/homework")) r.teacherHomeworkAssign = true;
+    if (p.startsWith("/quiz")) r.teacherHomeworkQuiz = true;
+    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes")) r.teacherExam = true;
+    if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.teacherAttendance = true;
+    if (p.startsWith("/board/school-notice") || p.startsWith("/school/schedule")) r.teacherNotice = true;
+    if (p.startsWith("/teacher/list") || p.startsWith("/board/teacher")) r.teacherStaff = true;
+    if (p.startsWith("/consultation")) {
+      r.consultation = true;
+      r.parentList = true;
+    }
+    return r;
+  }
+
+  const [open, setOpen] = useState<Record<string, boolean>>(() => initOpen(location.pathname));
+
+  useEffect(() => {
+    setOpen(initOpen(location.pathname));
+  }, [location.pathname]);
+
+  // [soojin] nested=true 시 기존 상태 유지 - 중첩 드롭다운 토글 시 부모가 닫히지 않도록
+  const toggle = (key: string, nested?: boolean) =>
+    setOpen((prev) => (nested ? { ...prev, [key]: !prev[key] } : { [key]: !prev[key] }));
   return { open, toggle };
 }
 
 // [woo] 열린 상태일 때 'open dropdown-open' 두 클래스 모두 붙여야 CSS가 작동함
 function dc(isOpen: boolean) {
   return `dropdown${isOpen ? " open dropdown-open" : ""}`;
+}
+
+// [soojin] 현재 페이지 링크만 primary 색상으로 표시, 나머지는 기본 색 유지
+function SNavLink({ to, children }: { to: string; children: React.ReactNode }) {
+  return (
+    <NavLink to={to} end style={({ isActive }) => (isActive ? { color: "#25A194" } : {})}>
+      {children}
+    </NavLink>
+  );
 }
 
 // [soojin] 학생 대시보드 사이드바 프로필 패널용 학생 정보 타입
@@ -68,8 +124,10 @@ export default function Sidebar() {
   const [, setStudentInfo] = useState<StudentProfile | null>(null);
   const [, setProfileImageUrl] = useState<string | null>(null);
   const [attendanceCounts, setAttendanceCounts] = useState<Record<string, number>>({});
-  // [woo] 교사일 때 소속 학교 이름
+  // [woo] 교사/학생 소속 학교 이름
   const [schoolName, setSchoolName] = useState<string | null>(null);
+  // [soojin] 담임 학급 배정 여부 - null: 로딩 중, false: 미배정, true: 배정됨
+  const [hasClassroom, setHasClassroom] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (role === "STUDENT" && user?.authenticated) {
@@ -78,6 +136,7 @@ export default function Sidebar() {
         .then((res) => {
           setStudentInfo(res.data?.student ?? null);
           setProfileImageUrl(res.data?.profileImageUrl ?? null);
+          setSchoolName(res.data?.student?.schoolName ?? null);
         })
         .catch(() => {});
 
@@ -96,8 +155,12 @@ export default function Sidebar() {
         .get("/dashboard/teacher")
         .then((res) => {
           setSchoolName(res.data?.schoolName ?? null);
+          // [soojin] classInfo 존재 여부로 담임 학급 배정 확인 - 미배정 시 classInfo: null
+          setHasClassroom(!!res.data?.classInfo);
         })
-        .catch(() => {});
+        .catch(() => {
+          setHasClassroom(false);
+        });
     }
   }, [role, user?.authenticated]);
 
@@ -202,63 +265,274 @@ export default function Sidebar() {
 
       <div className="sidebar-menu-area" style={{ flex: 1, height: 0, minHeight: 0 }}>
         <ul className="sidebar-menu" id="sidebar-menu">
-          {/* [woo] 홈 - 역할별 대시보드로 이동 (a href로 강제 이동) */}
-          {user?.authenticated &&
-            (() => {
-              const dashboardPath =
-                role === "STUDENT"
-                  ? "/student/dashboard"
-                  : role === "TEACHER"
-                    ? "/teacher/dashboard"
-                    : role === "PARENT"
-                      ? "/parent/dashboard"
-                      : "/main";
-              return (
-                <li>
-                  <a href={dashboardPath}>
-                    <i className="ri-home-4-line" />
-                    <span>홈</span>
+          {/* [soojin] TEACHER 전용 사이드바 - 기존 산발적 섹션을 순서대로 통합 */}
+          {has("TEACHER") && (
+            <>
+              {/* 수업 관리 */}
+              <li className={dc(open.teacherSchedule)}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherSchedule");
+                  }}
+                >
+                  <i className="ri-calendar-schedule-line" />
+                  <span>수업 관리</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <SNavLink to="/teacher/schedule">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 수업 일정
+                    </SNavLink>
+                  </li>
+                </ul>
+              </li>
+
+              {/* 학급 관리 - 담임만 */}
+              {hasClassroom && (
+                <li className={dc(open.myclass)}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggle("myclass");
+                    }}
+                  >
+                    <i className="ri-team-line" />
+                    <span>학급 관리</span>
                   </a>
+                  <ul className="sidebar-submenu">
+                    {/* [soojin] 학급 현황 + 학생 관리 페이지 통합 → 학급 현황 메뉴 제거 */}
+                    <li>
+                      <SNavLink to="/teacher/myclass/students">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
+                      </SNavLink>
+                    </li>
+                    <li>
+                      <SNavLink to="/teacher/myclass/notice">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 우리 반 알림장
+                      </SNavLink>
+                    </li>
+                    <li>
+                      <SNavLink to="/class/album">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학급 앨범
+                      </SNavLink>
+                    </li>
+                    <li>
+                      <SNavLink to="/board/class-board">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학급 게시판
+                      </SNavLink>
+                    </li>
+                  </ul>
                 </li>
-              );
-            })()}
+              )}
 
-          {/* 나의 학급 - TEACHER */}
-          {has("TEACHER") && (
-            <li className={dc(open.myclass)}>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggle("myclass");
-                }}
-              >
-                <i className="ri-team-line" />
-                <span>나의 학급</span>
-              </a>
-              <ul className="sidebar-submenu">
-                <li>
-                  <Link to="/teacher/myclass">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 현황
-                  </Link>
+              {/* 학부모 - 담임만 */}
+              {hasClassroom && (
+                <li className={dc(open.parentList)}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggle("parentList");
+                    }}
+                  >
+                    <i className="ri-user-heart-line" />
+                    <span>학부모</span>
+                  </a>
+                  <ul className="sidebar-submenu">
+                    <li>
+                      <SNavLink to="/teacher/parent/list">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학부모 목록
+                      </SNavLink>
+                    </li>
+                    <li>
+                      <SNavLink to="/consultation">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학부모 상담
+                      </SNavLink>
+                    </li>
+                    <li>
+                      <SNavLink to="/board/parent-notice">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 가정통신문
+                      </SNavLink>
+                    </li>
+                    <li>
+                      <SNavLink to="/board/parent">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학부모 게시판
+                      </SNavLink>
+                    </li>
+                  </ul>
                 </li>
-                <li>
-                  <Link to="/teacher/myclass/students">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
-                  </Link>
-                </li>
-              </ul>
-            </li>
-          )}
+              )}
 
-          {/* 수업 일정 - TEACHER */}
-          {has("TEACHER") && (
-            <li>
-              <Link to="/teacher/schedule">
-                <i className="ri-calendar-schedule-line" />
-                <span>나의 수업 일정</span>
-              </Link>
-            </li>
+              {/* 과제/퀴즈 - 2단계 드롭다운 */}
+              <li className={dc(open.teacherHomework)}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherHomework");
+                  }}
+                >
+                  <i className="ri-draft-line" />
+                  <span>과제/퀴즈</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li className={dc(open.teacherHomeworkAssign)}>
+                    {/* [soojin] nested=true - 클릭 시 부모(과제/퀴즈) 드롭다운 유지 */}
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggle("teacherHomeworkAssign", true);
+                      }}
+                    >
+                      <i className="ri-circle-fill circle-icon w-auto" /> 과제 관리
+                    </a>
+                    <ul className="sidebar-submenu">
+                      <li>
+                        <SNavLink to="/homework/create">과제 출제</SNavLink>
+                      </li>
+                      <li>
+                        <SNavLink to="/homework">과제 목록</SNavLink>
+                      </li>
+                    </ul>
+                  </li>
+                  <li className={dc(open.teacherHomeworkQuiz)}>
+                    {/* [soojin] nested=true - 클릭 시 부모(과제/퀴즈) 드롭다운 유지 */}
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggle("teacherHomeworkQuiz", true);
+                      }}
+                    >
+                      <i className="ri-circle-fill circle-icon w-auto" /> 퀴즈 관리
+                    </a>
+                    <ul className="sidebar-submenu">
+                      <li>
+                        <SNavLink to="/quiz/create">퀴즈 출제</SNavLink>
+                      </li>
+                      <li>
+                        <SNavLink to="/quiz">퀴즈 목록</SNavLink>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+
+              {/* 평가 */}
+              <li className={dc(open.teacherExam)}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherExam");
+                  }}
+                >
+                  <i className="ri-survey-line" />
+                  <span>평가</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <SNavLink to="/teacher/grade-classes">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 채점
+                    </SNavLink>
+                  </li>
+                  <li>
+                    <SNavLink to="/student/list?mode=view">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                    </SNavLink>
+                  </li>
+                  <li>
+                    <SNavLink to="/exam/schedule">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
+                    </SNavLink>
+                  </li>
+                </ul>
+              </li>
+
+              {/* 출결 */}
+              <li className={dc(open.teacherAttendance)}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherAttendance");
+                  }}
+                >
+                  <i className="ri-calendar-check-line" />
+                  <span>출결</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  {hasClassroom && (
+                    <li>
+                      <SNavLink to="/attendance/student">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 학생 출결
+                      </SNavLink>
+                    </li>
+                  )}
+                  <li>
+                    <SNavLink to="/attendance/teacher">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 교사 출결
+                    </SNavLink>
+                  </li>
+                </ul>
+              </li>
+
+              {/* 공지사항 */}
+              <li className={dc(open.teacherNotice)}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherNotice");
+                  }}
+                >
+                  <i className="ri-megaphone-line" />
+                  <span>공지사항</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <SNavLink to="/board/school-notice">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학교 공지
+                    </SNavLink>
+                  </li>
+                  <li>
+                    <SNavLink to="/school/schedule">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학교 일정
+                    </SNavLink>
+                  </li>
+                </ul>
+              </li>
+
+              {/* 교직원 */}
+              <li className={dc(open.teacherStaff)}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("teacherStaff");
+                  }}
+                >
+                  <i className="ri-user-follow-line" />
+                  <span>교직원</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <SNavLink to="/teacher/list">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 교직원 목록
+                    </SNavLink>
+                  </li>
+                  <li>
+                    <SNavLink to="/board/teacher">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 교직원 게시판
+                    </SNavLink>
+                  </li>
+                </ul>
+              </li>
+            </>
           )}
 
           {/* 학생 - STUDENT (TEACHER는 나의 학급에 학생 리스트 포함) */}
@@ -276,20 +550,29 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/student/list">
+                  <SNavLink to="/student/list">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 리스트
-                  </Link>
+                  </SNavLink>
                 </li>
                 {/* [cheol] 학생 본인 정보 페이지 */}
                 <li>
-                  <Link to="/student/myinfo">
+                  <SNavLink to="/student/myinfo">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생세부사항
-                  </Link>
+                  </SNavLink>
                 </li>
+<<<<<<< HEAD
+=======
+                {/* [woo] 성적 조회 */}
                 <li>
-                  <Link to="/exam/schedule">
+                  <SNavLink to="/exam">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                  </SNavLink>
+                </li>
+>>>>>>> developMerge
+                <li>
+                  <SNavLink to="/exam/schedule">
                     <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
                   <Link to="/student/dormitory">
@@ -300,7 +583,8 @@ export default function Sidebar() {
             </li>
           )}
 
-          {/* 자녀 관리 - PARENT */}
+          {/* 자녀 현황 - PARENT */}
+          {/* [soojin] "나의 자녀" → "자녀 현황", 자녀 현황 서브 항목 제거 (헤더 대시보드 탭으로 이동 예정) */}
           {has("PARENT") && (
             <li className={dc(open.parent)}>
               <a
@@ -311,100 +595,30 @@ export default function Sidebar() {
                 }}
               >
                 <i className="ri-id-card-line" />
-                <span>나의 자녀</span>
+                <span>자녀 현황</span>
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/parent/children/status">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 자녀 현황
-                  </Link>
-                </li>
-                {/* [woo] 학부모 출결 조회 페이지 연결 */}
-                <li>
-                  <Link to="/attendance/parent">
+                  <SNavLink to="/attendance/parent">
                     <i className="ri-circle-fill circle-icon w-auto" /> 출결 현황
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to="/parent/grades">
+                  <SNavLink to="/parent/grades">
                     <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
-                  </Link>
+                  </SNavLink>
                 </li>
-                {/* [woo] 학부모 자녀 과제 조회 */}
                 <li>
-                  <Link to="/parent/homework">
+                  <SNavLink to="/parent/homework">
                     <i className="ri-circle-fill circle-icon w-auto" /> 과제 현황
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
           )}
 
-          {/* 선생님 - TEACHER */}
-          {has("TEACHER") && (
-            <li className={dc(open.teacher)}>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggle("teacher");
-                }}
-              >
-                <i className="ri-user-follow-line" />
-                <span>교직원</span>
-              </a>
-              <ul className="sidebar-submenu">
-                <li>
-                  <Link to="/teacher/list">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 교직원 목록
-                  </Link>
-                </li>
-              </ul>
-            </li>
-          )}
-
-          {/* 학부모 목록 - TEACHER, ADMIN */}
-          {has("TEACHER", "ADMIN") && (
-            <li className={dc(open.parentList)}>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggle("parentList");
-                }}
-              >
-                <i className="ri-user-heart-line" />
-                <span>학부모</span>
-              </a>
-              <ul className="sidebar-submenu">
-                <li>
-                  <Link to="/board/parent-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 가정통신문
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/board/parent">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 게시판
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/teacher/parent/list">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학부모 목록
-                  </Link>
-                </li>
-                {has("TEACHER") && (
-                  <li>
-                    <Link to="/consultation">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 학부모 상담
-                    </Link>
-                  </li>
-                )}
-              </ul>
-            </li>
-          )}
-
-          {/* 공지사항 - TEACHER, ADMIN, STUDENT */}
-          {has("TEACHER", "ADMIN", "STUDENT") && (
+          {/* 공지사항 - ADMIN, STUDENT (TEACHER는 별도 블록) */}
+          {has("ADMIN", "STUDENT") && (
             <li className={dc(open.notice)}>
               <a
                 href="#"
@@ -418,16 +632,24 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/board/school-notice">
+                  <SNavLink to="/board/school-notice">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학교 공지
-                  </Link>
+                  </SNavLink>
                 </li>
+                {/* [soojin] 담임/미담임 교사 모두 학사일정 표시 */}
+                {has("TEACHER", "ADMIN", "STUDENT") && (
+                  <li>
+                    <SNavLink to="/school/schedule">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학교 일정
+                    </SNavLink>
+                  </li>
+                )}
               </ul>
             </li>
           )}
 
-          {/* 게시판 - STUDENT, TEACHER, ADMIN */}
-          {has("STUDENT", "TEACHER", "ADMIN") && (
+          {/* 게시판 - STUDENT, ADMIN (TEACHER는 별도 블록) */}
+          {has("STUDENT", "ADMIN") && (
             <li className={dc(open.board)}>
               <a
                 href="#"
@@ -440,17 +662,16 @@ export default function Sidebar() {
                 <span>게시판</span>
               </a>
               <ul className="sidebar-submenu">
-                {/* [woo 03-27] 학급 게시판 */}
                 <li>
-                  <Link to="/board/class-board">
+                  <SNavLink to="/board/class-board">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학급 게시판
-                  </Link>
+                  </SNavLink>
                 </li>
-                {has("TEACHER", "ADMIN") && (
+                {has("ADMIN") && (
                   <li>
-                    <Link to="/board/teacher">
+                    <SNavLink to="/board/teacher">
                       <i className="ri-circle-fill circle-icon w-auto" /> 교직원 게시판
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
               </ul>
@@ -460,10 +681,10 @@ export default function Sidebar() {
           {/* [joon] ADMIN 전용 관리 메뉴 */}
           {has("ADMIN") && (
             <li>
-              <Link to={ADMIN_ROUTES.DASHBOARD}>
+              <SNavLink to={ADMIN_ROUTES.DASHBOARD}>
                 <i className="ri-layout-grid-line" />
                 <span>관리자 대시보드</span>
-              </Link>
+              </SNavLink>
             </li>
           )}
           {has("ADMIN") && (
@@ -480,24 +701,24 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to={ADMIN_ROUTES.STUDENTS.LIST}>
+                  <SNavLink to={ADMIN_ROUTES.STUDENTS.LIST}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.TEACHERS.LIST}>
+                  <SNavLink to={ADMIN_ROUTES.TEACHERS.LIST}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 교사 관리
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.PARENTS.LIST}>
+                  <SNavLink to={ADMIN_ROUTES.PARENTS.LIST}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 학부모 관리
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.STAFFS.LIST}>
+                  <SNavLink to={ADMIN_ROUTES.STAFFS.LIST}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 교직원 관리
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
@@ -516,24 +737,24 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to={ADMIN_ROUTES.CLASSES.LIST}>
+                  <SNavLink to={ADMIN_ROUTES.CLASSES.LIST}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 학급 목록
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.CLASSES.CREATE}>
+                  <SNavLink to={ADMIN_ROUTES.CLASSES.CREATE}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 학급 생성
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
           )}
           {has("ADMIN") && (
             <li>
-              <Link to={ADMIN_ROUTES.NOTICES.LIST}>
+              <SNavLink to={ADMIN_ROUTES.NOTICES.LIST}>
                 <i className="ri-megaphone-line" />
                 <span>공지사항 관리</span>
-              </Link>
+              </SNavLink>
             </li>
           )}
           {has("ADMIN") && (
@@ -550,14 +771,14 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to={ADMIN_ROUTES.FACILITIES}>
+                  <SNavLink to={ADMIN_ROUTES.FACILITIES}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 시설 관리
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.ASSETS}>
+                  <SNavLink to={ADMIN_ROUTES.ASSETS}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 기자재 관리
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
@@ -576,26 +797,26 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to={ADMIN_ROUTES.MASTER.SCHEDULE}>
+                  <SNavLink to={ADMIN_ROUTES.MASTER.SCHEDULE}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 학사 일정
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.MASTER.SUBJECTS}>
+                  <SNavLink to={ADMIN_ROUTES.MASTER.SUBJECTS}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 교과목
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to={ADMIN_ROUTES.MASTER.SETTINGS}>
+                  <SNavLink to={ADMIN_ROUTES.MASTER.SETTINGS}>
                     <i className="ri-circle-fill circle-icon w-auto" /> 시스템 설정
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
           )}
 
-          {/* [woo] 과제/퀴즈 - STUDENT, TEACHER, ADMIN */}
-          {has("STUDENT", "TEACHER", "ADMIN") && (
+          {/* 과제/퀴즈 - STUDENT, ADMIN (TEACHER는 별도 블록) */}
+          {has("STUDENT", "ADMIN") && (
             <li className={dc(open.homework)}>
               <a
                 href="#"
@@ -608,37 +829,36 @@ export default function Sidebar() {
                 <span>과제 / 퀴즈</span>
               </a>
               <ul className="sidebar-submenu">
-                {/* [woo] 과제 출제 - 교사/관리자만 표시 */}
-                {has("TEACHER", "ADMIN") && (
+                {has("ADMIN") && (
                   <li>
-                    <Link to="/homework/create">
+                    <SNavLink to="/homework/create">
                       <i className="ri-circle-fill circle-icon w-auto" /> 과제 출제
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
                 <li>
-                  <Link to="/homework">
+                  <SNavLink to="/homework">
                     <i className="ri-circle-fill circle-icon w-auto" /> 과제 목록
-                  </Link>
+                  </SNavLink>
                 </li>
-                {has("TEACHER", "ADMIN") && (
+                {has("ADMIN") && (
                   <li>
-                    <Link to="/quiz/create">
+                    <SNavLink to="/quiz/create">
                       <i className="ri-circle-fill circle-icon w-auto" /> 퀴즈 출제
-                    </Link>
+                    </SNavLink>
                   </li>
                 )}
                 <li>
-                  <Link to="/homework?tab=quiz">
+                  <SNavLink to="/quiz">
                     <i className="ri-circle-fill circle-icon w-auto" /> 퀴즈 목록
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
           )}
 
-          {/* [cheol] 시험/성적 - STUDENT, TEACHER, ADMIN */}
-          {has("STUDENT", "TEACHER", "ADMIN") && (
+          {/* 시험/성적 - STUDENT, ADMIN (TEACHER는 별도 블록) */}
+          {has("STUDENT", "ADMIN") && (
             <li className={dc(open.exam)}>
               <a
                 href="#"
@@ -651,40 +871,22 @@ export default function Sidebar() {
                 <span>시험/성적</span>
               </a>
               <ul className="sidebar-submenu">
-                {/* [cheol] 성적/시험 관련 React 페이지 */}
-                {has("TEACHER") && (
-                  <li>
-                    {/* [cheol] 교사: 학급 선택 페이지 → 학생리스트 순서로 이동 */}
-                    <Link to="/teacher/grade-classes">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 채점
-                    </Link>
-                  </li>
-                )}
                 <li>
-                  <Link to="/exam/schedule">
+                  <SNavLink to="/exam/schedule">
                     <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
-                  </Link>
+                  </SNavLink>
                 </li>
-                {has("TEACHER") ? (
-                  <li>
-                    {/* [cheol] 교사: 자기 반 학생 성적 확인 모드 */}
-                    <Link to="/student/list?mode=view">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
-                    </Link>
-                  </li>
-                ) : (
-                  <li>
-                    <Link to="/exam/result">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 결과
-                    </Link>
-                  </li>
-                )}
+                <li>
+                  <SNavLink to="/exam/result">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                  </SNavLink>
+                </li>
               </ul>
             </li>
           )}
 
-          {/* 출결 관리 - TEACHER, ADMIN */}
-          {has("TEACHER", "ADMIN") && (
+          {/* 출결 관리 - ADMIN (TEACHER는 별도 블록) */}
+          {has("ADMIN") && (
             <li className={dc(open.attendance)}>
               <a
                 href="#"
@@ -698,21 +900,22 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/attendance/student">
+                  <SNavLink to="/attendance/student">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학생 출결
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to="/attendance/teacher">
+                  <SNavLink to="/attendance/teacher">
                     <i className="ri-circle-fill circle-icon w-auto" /> 교사 출결
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
             </li>
           )}
 
-          {/* [soojin] 학부모 공지사항 - PARENT, ADMIN */}
-          {has("PARENT", "ADMIN") && (
+          {/* 학교 소식 - PARENT */}
+          {/* [soojin] "공지사항" → "학교 소식", 학교 갤러리 제거, 순서 변경 */}
+          {has("PARENT") && (
             <li className={dc(open.parentNotice)}>
               <a
                 href="#"
@@ -722,34 +925,58 @@ export default function Sidebar() {
                 }}
               >
                 <i className="ri-megaphone-line" />
-                <span>공지사항</span>
+                <span>학교 소식</span>
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/board/parent-notice">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 가정통신문
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/board/school-notice">
+                  <SNavLink to="/board/school-notice">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학교 공지
-                  </Link>
+                  </SNavLink>
                 </li>
                 <li>
-                  <Link to="/school/gallery">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 학교 갤러리
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/school/schedule">
+                  <SNavLink to="/school/schedule">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학교 일정
-                  </Link>
+                  </SNavLink>
+                </li>
+                <li>
+                  <SNavLink to="/board/parent-notice">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 가정통신문
+                  </SNavLink>
                 </li>
               </ul>
             </li>
           )}
 
-          {/* [soojin] 상담 - PARENT */}
+          {/* 학급 소식 - PARENT */}
+          {/* [soojin] 신규 섹션: 학급 알림장 + 학급 앨범 */}
+          {has("PARENT") && (
+            <li className={dc(open.classNews)}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggle("classNews");
+                }}
+              >
+                <i className="ri-article-line" />
+                <span>학급 소식</span>
+              </a>
+              <ul className="sidebar-submenu">
+                <li>
+                  <SNavLink to="/parent/class/notice">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 알림장
+                  </SNavLink>
+                </li>
+                <li>
+                  <SNavLink to="/class/album">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 학급 앨범
+                  </SNavLink>
+                </li>
+              </ul>
+            </li>
+          )}
+
+          {/* 상담 - PARENT */}
           {has("PARENT") && (
             <li className={dc(open.consultation)}>
               <a
@@ -764,28 +991,18 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <Link to="/consultation/reservation">
+                  <SNavLink to="/consultation/reservation">
                     <i className="ri-circle-fill circle-icon w-auto" /> 상담 신청
-                  </Link>
+                  </SNavLink>
                 </li>
               </ul>
-            </li>
-          )}
-
-          {/* [woo] 학급 앨범 - PARENT */}
-          {has("PARENT") && (
-            <li>
-              <Link to="/class/album">
-                <i className="ri-image-2-line" />
-                <span>학급 앨범</span>
-              </Link>
             </li>
           )}
         </ul>
       </div>
 
-      {/* [woo] 교사 사이드바 하단 - 소속 학교 표시 */}
-      {has("TEACHER") && schoolName && !isCollapsed && (
+      {/* 교사/학생 사이드바 하단 - 소속 학교 표시 */}
+      {has("TEACHER", "STUDENT") && schoolName && !isCollapsed && (
         <div className="border-top border-neutral-200 px-16 py-12">
           <div
             className="text-secondary-light d-flex align-items-center gap-6"
@@ -800,20 +1017,6 @@ export default function Sidebar() {
             <i className="ri-building-line text-primary-600" style={{ fontSize: 14, flexShrink: 0 }} />
             {schoolName}
           </div>
-        </div>
-      )}
-
-      {/* 로그아웃 - 학생 대시보드에서만 사이드바 맨 하단에 표시 */}
-      {isStudentDashboard && !isCollapsed && (
-        <div className="px-16 pb-16">
-          <button
-            type="button"
-            className="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-6"
-            onClick={signOut}
-          >
-            <i className="ri-shut-down-line" />
-            <span>로그아웃</span>
-          </button>
         </div>
       )}
     </aside>
