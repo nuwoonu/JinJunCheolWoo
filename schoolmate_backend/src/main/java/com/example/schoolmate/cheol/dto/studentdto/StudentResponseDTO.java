@@ -19,8 +19,6 @@ import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.common.entity.user.constant.AchievementsGrade;
 import com.example.schoolmate.common.entity.user.constant.ActivityCategory;
 import com.example.schoolmate.common.entity.user.constant.Gender;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -191,8 +189,8 @@ public class StudentResponseDTO {
     @AllArgsConstructor
     public static class CareerAspirationInfo {
         private Long id;
-        private Year year;
-        private Semester semester;
+        private int schoolYear;
+        private int semester;
         private String specialtyOrInterest;
         private String studentDesiredJob;
         private String parentDesiredJob;
@@ -202,7 +200,7 @@ public class StudentResponseDTO {
         public static CareerAspirationInfo from(CareerAspiration ca) {
             return CareerAspirationInfo.builder()
                     .id(ca.getId())
-                    .year(ca.getYear())
+                    .schoolYear(ca.getSchoolYearInt())
                     .semester(ca.getSemester())
                     .specialtyOrInterest(ca.getSpecialtyOrInterest())
                     .studentDesiredJob(ca.getStudentDesiredJob())
@@ -245,14 +243,16 @@ public class StudentResponseDTO {
     @AllArgsConstructor
     public static class CocurricularActivityInfo {
         private Long id;
-        private Year year;
+        private int schoolYear;
+        private int semester;
         private ActivityCategory category;
         private String specifics;
 
         public static CocurricularActivityInfo from(CocurricularActivities c) {
             return CocurricularActivityInfo.builder()
                     .id(c.getId())
-                    .year(c.getYear())
+                    .schoolYear(c.getSchoolYearInt())
+                    .semester(c.getSemester())
                     .category(c.getCategory())
                     .specifics(c.getSpecifics())
                     .build();
@@ -267,7 +267,8 @@ public class StudentResponseDTO {
     @AllArgsConstructor
     public static class VolunteerActivityInfo {
         private Long id;
-        private Year year;
+        private int schoolYear;
+        private int semester;
         private LocalDate startDate;
         private LocalDate endDate;
         private String organizer;
@@ -278,7 +279,8 @@ public class StudentResponseDTO {
         public static VolunteerActivityInfo from(VolunteerActivity va) {
             return VolunteerActivityInfo.builder()
                     .id(va.getId())
-                    .year(va.getYear())
+                    .schoolYear(va.getSchoolYearInt())
+                    .semester(va.getSemester())
                     .startDate(va.getStartDate())
                     .endDate(va.getEndDate())
                     .organizer(va.getOrganizer())
@@ -365,8 +367,8 @@ public class StudentResponseDTO {
         // 진로희망 매핑 (학년/학기 오름차순 정렬)
         if (student.getCareerAspirations() != null && !student.getCareerAspirations().isEmpty()) {
             List<CareerAspirationInfo> caList = student.getCareerAspirations().stream()
-                    .sorted(Comparator.comparing(CareerAspiration::getYear)
-                            .thenComparing(CareerAspiration::getSemester))
+                    .sorted(Comparator.comparingInt(CareerAspiration::getSchoolYearInt)
+                            .thenComparingInt(CareerAspiration::getSemester))
                     .map(CareerAspirationInfo::from)
                     .toList();
             builder.careerAspirations(caList);
@@ -380,7 +382,7 @@ public class StudentResponseDTO {
         // 창의적 체험활동 매핑 (학년 → 카테고리 오름차순 정렬)
         if (student.getCocurricularActivities() != null && !student.getCocurricularActivities().isEmpty()) {
             List<CocurricularActivityInfo> ccList = student.getCocurricularActivities().stream()
-                    .sorted(Comparator.comparing(CocurricularActivities::getYear)
+                    .sorted(Comparator.comparingInt(CocurricularActivities::getSchoolYearInt)
                             .thenComparing(CocurricularActivities::getCategory))
                     .map(CocurricularActivityInfo::from)
                     .toList();
@@ -390,7 +392,7 @@ public class StudentResponseDTO {
         // 봉사활동 매핑 (학년 → 시작일 오름차순 정렬)
         if (student.getVolunteerActivities() != null && !student.getVolunteerActivities().isEmpty()) {
             List<VolunteerActivityInfo> vaList = student.getVolunteerActivities().stream()
-                    .sorted(Comparator.comparing(VolunteerActivity::getYear)
+                    .sorted(Comparator.comparingInt(VolunteerActivity::getSchoolYearInt)
                             .thenComparing(VolunteerActivity::getStartDate))
                     .map(VolunteerActivityInfo::from)
                     .toList();

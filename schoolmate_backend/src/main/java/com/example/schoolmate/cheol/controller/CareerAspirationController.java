@@ -15,8 +15,6 @@ import com.example.schoolmate.cheol.dto.careeraspirationdto.CareerAspirationDTO;
 import com.example.schoolmate.cheol.dto.careeraspirationdto.ParentCareerDTO;
 import com.example.schoolmate.cheol.dto.careeraspirationdto.StudentCareerDTO;
 import com.example.schoolmate.cheol.service.CareerAspirationService;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,17 +59,16 @@ public class CareerAspirationController {
     }
 
     /**
-     * 특정 학년/학기 진로희망 조회 (화면 렌더링용)
+     * 특정 학기 진로희망 조회 (화면 렌더링용)
      * GET
-     * /api/career-aspirations/students/{studentId}/year/{year}/semester/{semester}
+     * /api/career-aspirations/students/{studentId}/term/{academicTermId}
      */
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or #studentId == authentication.principal.customUserDTO.studentInfoId")
-    @GetMapping("/students/{studentId}/year/{year}/semester/{semester}")
+    @GetMapping("/students/{studentId}/term/{academicTermId}")
     public ResponseEntity<CareerAspirationDTO> getCareerAspiration(
             @PathVariable Long studentId,
-            @PathVariable Year year,
-            @PathVariable Semester semester) {
-        CareerAspirationDTO dto = careerAspirationService.getCareerAspiration(studentId, year, semester);
+            @PathVariable Long academicTermId) {
+        CareerAspirationDTO dto = careerAspirationService.getCareerAspiration(studentId, academicTermId);
 
         if (dto == null) {
             return ResponseEntity.notFound().build();

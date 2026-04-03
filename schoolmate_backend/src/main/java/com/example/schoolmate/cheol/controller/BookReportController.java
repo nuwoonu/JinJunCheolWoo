@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.schoolmate.cheol.dto.bookreportdto.BookReportRequestDTO;
 import com.example.schoolmate.cheol.dto.bookreportdto.BookReportResponseDTO;
 import com.example.schoolmate.cheol.service.BookReportService;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -71,15 +69,14 @@ public class BookReportController {
         return ResponseEntity.ok(bookReportService.getByStudent(studentInfoId));
     }
 
-    // 학년 + 학기별 독서록 조회
-    // GET /api/book-reports/student/{studentInfoId}/search?year=FIRST&semester=FIRST
+    // 학기별 독서록 조회
+    // GET /api/book-reports/student/{studentInfoId}/search?academicTermId=1
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER') or hasRole('ADMIN')")
     @GetMapping("/student/{studentInfoId}/search")
-    public ResponseEntity<List<BookReportResponseDTO>> getByYearAndSemester(
+    public ResponseEntity<List<BookReportResponseDTO>> getByAcademicTerm(
             @PathVariable Long studentInfoId,
-            @RequestParam Year year,
-            @RequestParam Semester semester) {
-        return ResponseEntity.ok(bookReportService.getByStudentAndYearAndSemester(studentInfoId, year, semester));
+            @RequestParam Long academicTermId) {
+        return ResponseEntity.ok(bookReportService.getByStudentAndAcademicTerm(studentInfoId, academicTermId));
     }
 
     // 단건 조회

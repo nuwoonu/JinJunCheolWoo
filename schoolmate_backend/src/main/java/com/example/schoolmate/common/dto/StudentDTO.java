@@ -9,8 +9,6 @@ import com.example.schoolmate.cheol.entity.BehaviorRecord;
 import com.example.schoolmate.common.entity.info.StudentInfo;
 import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 import com.opencsv.bean.CsvBindByName;
 
 import lombok.AllArgsConstructor;
@@ -213,13 +211,13 @@ public class StudentDTO {
     @NoArgsConstructor
     public static class BehaviorRecordInfo {
         private Long id;
-        private Year year;
-        private Semester semester;
+        private int schoolYear;
+        private int semester;
         private String specialNotes;
 
         public BehaviorRecordInfo(BehaviorRecord b) {
             this.id = b.getId();
-            this.year = b.getYear();
+            this.schoolYear = b.getSchoolYearInt();
             this.semester = b.getSemester();
             this.specialNotes = b.getSpecialNotes();
         }

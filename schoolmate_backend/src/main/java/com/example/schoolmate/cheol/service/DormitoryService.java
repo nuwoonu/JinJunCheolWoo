@@ -125,12 +125,17 @@ public class DormitoryService {
     // ── 건물 관리 ───────────────────────────────────────────────────────────────
 
     /**
-     * 건물 추가 (학교별 분리)
+     * 건물 추가 (학교별 분리, 층별 호실 수 지정)
+     * @param roomsPerFloor 층별 호실 수 리스트 (index 0 = 1층, index 1 = 2층, ...)
      */
     @Transactional
-    public void addBuilding(String buildingName, int floors, int roomsPerFloor, int bedsPerRoom) {
+    public void addBuilding(String buildingName, int floors, List<Integer> roomsPerFloor, int bedsPerRoom) {
         School school = getRequiredSchool();
         Long schoolId = school.getId();
+
+        if (roomsPerFloor.size() != floors) {
+            throw new IllegalArgumentException("층 수와 층별 호실 수 리스트의 크기가 일치하지 않습니다.");
+        }
 
         if (dormitoryRepository.findBuildingSummaries(schoolId).stream()
                 .anyMatch(row -> buildingName.equals(row[0]))) {
@@ -142,7 +147,8 @@ public class DormitoryService {
         List<Dormitory> beds = new ArrayList<>();
 
         for (int floor = 1; floor <= floors; floor++) {
-            for (int r = 1; r <= roomsPerFloor; r++) {
+            int rooms = roomsPerFloor.get(floor - 1);
+            for (int r = 1; r <= rooms; r++) {
                 String roomNumber = String.format("%d%02d", floor, r);
                 for (int b = 1; b <= bedsPerRoom; b++) {
                     beds.add(createDormitoryBed(school, buildingName, floor, roomNumber, String.valueOf(b), roomType));
@@ -151,17 +157,22 @@ public class DormitoryService {
         }
 
         dormitoryRepository.saveAll(beds);
-        log.info("건물 추가 완료: schoolId={}, {} ({}층, 층당 {}호, 침대 {}개)", schoolId, buildingName, floors, roomsPerFloor, beds.size());
+        log.info("건물 추가 완료: schoolId={}, {} ({}층, 층별 호실 수: {}, 침대 {}개)", schoolId, buildingName, floors, roomsPerFloor, beds.size());
     }
 
     /**
      * 건물 수정 — 이름 변경 + 층별 호실 구조 조정 (학교별 분리)
+     * @param roomsPerFloor 층별 호실 수 리스트 (index 0 = 1층, index 1 = 2층, ...)
      */
     @Transactional
     public void updateBuilding(String buildingName, String newBuildingName, int floors,
-            int roomsPerFloor, int bedsPerRoom) {
+            List<Integer> roomsPerFloor, int bedsPerRoom) {
         School school = getRequiredSchool();
         Long schoolId = school.getId();
+
+        if (roomsPerFloor.size() != floors) {
+            throw new IllegalArgumentException("층 수와 층별 호실 수 리스트의 크기가 일치하지 않습니다.");
+        }
 
         List<Dormitory> allBeds = dormitoryRepository.findByBuildingWithStudents(schoolId, buildingName);
         if (allBeds.isEmpty()) {
@@ -194,23 +205,24 @@ public class DormitoryService {
         }
 
         for (int floor = 1; floor <= floors; floor++) {
+            int targetRooms = roomsPerFloor.get(floor - 1);
             List<Dormitory> floorBeds = dormitoryRepository
                     .findBySchool_IdAndBuildingAndFloorOrderByRoomNumberAscBedNumberAsc(schoolId, buildingName, floor);
             List<String> currentRoomNums = floorBeds.stream()
                     .map(Dormitory::getRoomNumber).distinct().sorted().collect(Collectors.toList());
             int currentRooms = currentRoomNums.size();
 
-            if (roomsPerFloor > currentRooms) {
+            if (targetRooms > currentRooms) {
                 List<Dormitory> newBeds = new ArrayList<>();
-                for (int r = currentRooms + 1; r <= roomsPerFloor; r++) {
+                for (int r = currentRooms + 1; r <= targetRooms; r++) {
                     String roomNumber = String.format("%d%02d", floor, r);
                     for (int b = 1; b <= bedsPerRoom; b++) {
                         newBeds.add(createDormitoryBed(school, buildingName, floor, roomNumber, String.valueOf(b), roomType));
                     }
                 }
                 dormitoryRepository.saveAll(newBeds);
-            } else if (roomsPerFloor < currentRooms) {
-                for (int r = currentRooms - 1; r >= roomsPerFloor; r--) {
+            } else if (targetRooms < currentRooms) {
+                for (int r = currentRooms - 1; r >= targetRooms; r--) {
                     String roomNumber = currentRoomNums.get(r);
                     List<Dormitory> roomBeds = floorBeds.stream()
                             .filter(d -> d.getRoomNumber().equals(roomNumber)).collect(Collectors.toList());
@@ -221,7 +233,7 @@ public class DormitoryService {
                 }
             }
         }
-        log.info("건물 수정 완료: schoolId={}, {} → {} ({}층)", schoolId, buildingName, newBuildingName, floors);
+        log.info("건물 수정 완료: schoolId={}, {} → {} ({}층, 층별 호실 수: {})", schoolId, buildingName, newBuildingName, floors, roomsPerFloor);
     }
 
     /**

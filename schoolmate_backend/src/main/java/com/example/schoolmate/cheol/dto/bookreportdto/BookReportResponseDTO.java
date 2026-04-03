@@ -3,8 +3,6 @@ package com.example.schoolmate.cheol.dto.bookreportdto;
 import java.time.LocalDateTime;
 
 import com.example.schoolmate.cheol.entity.BookReport;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,8 +17,8 @@ public class BookReportResponseDTO {
 
     private Long id;
     private Long studentInfoId;
-    private Year year;
-    private Semester semester;
+    private int schoolYear;
+    private int semester;
     private String content;
     private LocalDateTime createDate;
     private LocalDateTime updateDate;
@@ -29,7 +27,7 @@ public class BookReportResponseDTO {
         return BookReportResponseDTO.builder()
                 .id(bookReport.getId())
                 .studentInfoId(bookReport.getStudentInfo().getId())
-                .year(bookReport.getYear())
+                .schoolYear(bookReport.getSchoolYearInt())
                 .semester(bookReport.getSemester())
                 .content(bookReport.getContent())
                 .createDate(bookReport.getCreateDate())

@@ -2,8 +2,6 @@ package com.example.schoolmate.cheol.dto.volunteerActivitydto;
 
 import java.time.LocalDate;
 
-import com.example.schoolmate.common.entity.user.constant.Year;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VolunteerActivityRequestDTO {
     private Long studentId;
-    private Year year;
+    private Long academicTermId;
     private LocalDate startDate;
     private LocalDate endDate;
     private String organizer;

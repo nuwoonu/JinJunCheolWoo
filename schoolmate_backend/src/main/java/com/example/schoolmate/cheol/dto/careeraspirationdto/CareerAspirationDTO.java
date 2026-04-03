@@ -1,8 +1,6 @@
 package com.example.schoolmate.cheol.dto.careeraspirationdto;
 
 import com.example.schoolmate.cheol.entity.CareerAspiration;
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,8 +18,8 @@ public class CareerAspirationDTO {
     private Long id;
     private Long studentId;
     private String studentName;
-    private Year year;
-    private Semester semester;
+    private int schoolYear;
+    private int semester;
 
     // 특기 또는 흥미
     private String specialtyOrInterest;
@@ -42,7 +40,7 @@ public class CareerAspirationDTO {
                 .studentName(aspiration.getStudent().getUser() != null
                         ? aspiration.getStudent().getUser().getName()
                         : null)
-                .year(aspiration.getYear())
+                .schoolYear(aspiration.getSchoolYearInt())
                 .semester(aspiration.getSemester())
                 .specialtyOrInterest(aspiration.getSpecialtyOrInterest())
                 .studentDesiredJob(aspiration.getStudentDesiredJob())

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.schoolmate.cheol.dto.volunteerActivitydto.VolunteerActivityRequestDTO;
 import com.example.schoolmate.cheol.dto.volunteerActivitydto.VolunteerActivityResponseDTO;
 import com.example.schoolmate.cheol.service.VolunteerActivityService;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,14 +36,14 @@ public class VolunteerActivityController {
         return ResponseEntity.ok(volunteerActivityService.getByStudentId(studentId));
     }
 
-    // 학생별 특정 학년 봉사활동 조회
-    // GET /api/volunteer-activities/student/{studentId}/year/{year}
+    // 학생별 특정 학기 봉사활동 조회
+    // GET /api/volunteer-activities/student/{studentId}/term/{academicTermId}
     @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.customUserDTO.studentInfoId")
-    @GetMapping("/student/{studentId}/year/{year}")
-    public ResponseEntity<List<VolunteerActivityResponseDTO>> getByStudentAndYear(
+    @GetMapping("/student/{studentId}/term/{academicTermId}")
+    public ResponseEntity<List<VolunteerActivityResponseDTO>> getByStudentAndAcademicTerm(
             @PathVariable Long studentId,
-            @PathVariable Year year) {
-        return ResponseEntity.ok(volunteerActivityService.getByStudentIdAndYear(studentId, year));
+            @PathVariable Long academicTermId) {
+        return ResponseEntity.ok(volunteerActivityService.getByStudentIdAndAcademicTerm(studentId, academicTermId));
     }
 
     // 봉사활동 등록 (cumulativeHours 자동 계산)

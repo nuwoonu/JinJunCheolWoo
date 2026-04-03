@@ -1,8 +1,5 @@
 package com.example.schoolmate.cheol.dto.careeraspirationdto;
 
-import com.example.schoolmate.common.entity.user.constant.Semester;
-import com.example.schoolmate.common.entity.user.constant.Year;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,11 +17,8 @@ public class StudentCareerDTO {
     @NotNull(message = "학생 ID는 필수입니다.")
     private Long studentId;
 
-    @NotNull(message = "학년은 필수입니다.")
-    private Year year;
-
-    @NotNull(message = "학기는 필수입니다.")
-    private Semester semester;
+    @NotNull(message = "학기 정보는 필수입니다.")
+    private Long academicTermId;
 
     private String specialtyOrInterest; // 특기 또는 흥미
     private String studentDesiredJob;   // 희망 직업

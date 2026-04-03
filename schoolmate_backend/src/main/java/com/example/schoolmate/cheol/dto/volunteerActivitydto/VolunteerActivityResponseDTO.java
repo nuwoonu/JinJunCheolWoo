@@ -3,7 +3,6 @@ package com.example.schoolmate.cheol.dto.volunteerActivitydto;
 import java.time.LocalDate;
 
 import com.example.schoolmate.cheol.entity.VolunteerActivity;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +17,8 @@ import lombok.NoArgsConstructor;
 public class VolunteerActivityResponseDTO {
     private Long id;
     private Long studentId;
-    private Year year;
+    private int schoolYear;
+    private int semester;
     private LocalDate startDate;
     private LocalDate endDate;
     private String organizer;
@@ -30,7 +30,8 @@ public class VolunteerActivityResponseDTO {
         return VolunteerActivityResponseDTO.builder()
                 .id(v.getId())
                 .studentId(v.getStudentInfo() != null ? v.getStudentInfo().getId() : null)
-                .year(v.getYear())
+                .schoolYear(v.getSchoolYearInt())
+                .semester(v.getSemester())
                 .startDate(v.getStartDate())
                 .endDate(v.getEndDate())
                 .organizer(v.getOrganizer())

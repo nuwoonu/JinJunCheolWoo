@@ -1,7 +1,6 @@
 package com.example.schoolmate.cheol.dto;
 
 import com.example.schoolmate.common.entity.user.constant.ActivityCategory;
-import com.example.schoolmate.common.entity.user.constant.Year;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +15,8 @@ import lombok.NoArgsConstructor;
 public class CocurricularActivitiesDTO {
     private Long id;
     private Long studentId;
-    private Year year;
+    private Long academicTermId;
+    private String termDisplayName;
     private ActivityCategory category;
     private String specifics;
 }
