@@ -9,7 +9,7 @@ import com.example.schoolmate.domain.resources.constant.ReservationStatus;
 import com.example.schoolmate.domain.resources.dto.ReservationDTO;
 import com.example.schoolmate.domain.resources.entity.Reservation;
 import com.example.schoolmate.domain.resources.repository.ReservationRepository;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
 
 import lombok.RequiredArgsConstructor;
 

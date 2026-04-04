@@ -1,6 +1,6 @@
 package com.example.schoolmate.domain.resources.dto;
 
-import com.example.schoolmate.common.service.FileManager;
+import com.example.schoolmate.global.util.FileManager;
 import com.example.schoolmate.domain.resources.constant.FacilityStatus;
 import com.example.schoolmate.domain.resources.constant.FacilityType;
 import com.example.schoolmate.domain.resources.entity.SchoolFacility;

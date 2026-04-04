@@ -1,15 +1,15 @@
 package com.example.schoolmate.domain.album.service;
 
-import com.example.schoolmate.common.entity.Classroom;
-import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.info.TeacherInfo;
-import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
-import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.common.service.FileManager;
-import com.example.schoolmate.common.service.TeacherService;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.classroom.entity.Classroom;
+import com.example.schoolmate.domain.student.entity.StudentInfo;
+import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
+import com.example.schoolmate.domain.user.entity.User;
+import com.example.schoolmate.domain.user.repository.UserRepository;
+import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
+import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
+import com.example.schoolmate.global.util.FileManager;
+import com.example.schoolmate.domain.teacher.service.TeacherService;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.album.entity.ClassPhoto;
 import com.example.schoolmate.domain.album.repository.ClassPhotoRepository;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;

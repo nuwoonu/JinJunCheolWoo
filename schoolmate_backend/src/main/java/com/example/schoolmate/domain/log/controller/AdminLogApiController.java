@@ -1,6 +1,6 @@
 package com.example.schoolmate.domain.log.controller;
 
-import com.example.schoolmate.config.SchoolmateUrls;
+import com.example.schoolmate.global.config.SchoolmateUrls;
 import com.example.schoolmate.domain.log.dto.LogSearchCondition;
 import com.example.schoolmate.domain.log.entity.SchoolmateLog;
 import com.example.schoolmate.domain.log.service.LogService;

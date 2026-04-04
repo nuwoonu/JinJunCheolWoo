@@ -1,8 +1,8 @@
 package com.example.schoolmate.domain.board.entity;
 
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
-import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.domain.user.entity.User;
+import com.example.schoolmate.domain.classroom.entity.Classroom;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

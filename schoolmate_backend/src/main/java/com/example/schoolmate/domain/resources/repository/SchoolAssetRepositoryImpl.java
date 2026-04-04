@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
-import com.example.schoolmate.config.school.SchoolQueryFilter;
+import com.example.schoolmate.global.config.school.SchoolQueryFilter;
 import com.example.schoolmate.domain.resources.entity.QSchoolAsset;
 import com.example.schoolmate.domain.resources.entity.SchoolAsset;
 import com.querydsl.core.types.dsl.BooleanExpression;

@@ -10,10 +10,10 @@ import com.example.schoolmate.domain.board.dto.CommentDTO;
 import com.example.schoolmate.domain.board.entity.Comment;
 import com.example.schoolmate.domain.board.repository.BoardRepository;
 import com.example.schoolmate.domain.board.repository.CommentRepository;
-import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.dto.CustomUserDTO;
+import com.example.schoolmate.domain.user.entity.User;
+import com.example.schoolmate.domain.user.entity.constant.UserRole;
+import com.example.schoolmate.domain.user.repository.UserRepository;
+import com.example.schoolmate.domain.user.dto.CustomUserDTO;
 
 import lombok.RequiredArgsConstructor;
 

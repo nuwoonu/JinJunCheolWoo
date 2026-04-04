@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.common.service.FileManager;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.FileManager;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.resources.constant.FacilityStatus;
 import com.example.schoolmate.domain.resources.dto.FacilityDTO;
 import com.example.schoolmate.domain.resources.entity.SchoolFacility;

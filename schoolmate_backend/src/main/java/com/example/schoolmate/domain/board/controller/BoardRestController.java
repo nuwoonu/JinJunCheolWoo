@@ -26,11 +26,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.schoolmate.common.service.FileManager;
+import com.example.schoolmate.global.util.FileManager;
 import com.example.schoolmate.domain.board.dto.BoardDTO;
 import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.service.BoardService;
-import com.example.schoolmate.dto.AuthUserDTO;
+import com.example.schoolmate.domain.user.dto.AuthUserDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -340,7 +340,7 @@ public class BoardRestController {
             @AuthenticationPrincipal AuthUserDTO authUser) {
         try {
             // [woo] 담임 교사 권한 확인
-            if (authUser == null || authUser.getCustomUserDTO().getRole() != com.example.schoolmate.common.entity.user.constant.UserRole.TEACHER) {
+            if (authUser == null || authUser.getCustomUserDTO().getRole() != com.example.schoolmate.domain.user.entity.constant.UserRole.TEACHER) {
                 return ResponseEntity.status(403).body("담임 교사만 파일을 업로드할 수 있습니다.");
             }
             int currentYear = java.time.LocalDate.now().getYear();
