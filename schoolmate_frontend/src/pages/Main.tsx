@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import PageLoader from "@/components/PageLoader";
-import { useSchoolSearch, type SchoolSummary } from "@/hooks/useSchoolSearch";
-import api from "@/api/auth";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import PageLoader from "@/shared/components/PageLoader";
+import { useSchoolSearch, type SchoolSummary } from "@/shared/hooks/useSchoolSearch";
+import api from "@/shared/api/authApi";
 
 interface ServiceNotice {
   id: number;
