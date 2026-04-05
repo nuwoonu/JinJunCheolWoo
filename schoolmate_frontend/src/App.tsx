@@ -41,6 +41,8 @@ import TeacherScheduleEdit from "@/pages/woo/teacher/ScheduleEdit";
 import TeacherList from "@/pages/woo/teacher/TeacherList";
 import ParentList from "@/pages/woo/teacher/ParentList";
 import TeacherGradeClasses from "@/pages/woo/teacher/GradeClasses";
+import AbilityClasses from "@/pages/cheol/teacher/AbilityClasses";
+import AbilityStudents from "@/pages/cheol/teacher/AbilityStudents";
 
 // [woo] 게시판
 import SchoolNotice from "@/pages/woo/board/SchoolNotice";
@@ -216,6 +218,24 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER"]}>
             <TeacherGradeClasses />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 교사 세부능력 - 학급 선택 */}
+      <Route
+        path="/teacher/ability-classes"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER"]}>
+            <AbilityClasses />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 교사 세부능력 - 학생 목록 및 입력 */}
+      <Route
+        path="/teacher/ability-students"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER"]}>
+            <AbilityStudents />
           </PrivateRoute>
         }
       />

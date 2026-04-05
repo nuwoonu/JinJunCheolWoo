@@ -39,7 +39,7 @@ function useSubmenu() {
     if (p.startsWith("/homework") || p.startsWith("/quiz")) r.teacherHomework = true;
     if (p.startsWith("/homework")) r.teacherHomeworkAssign = true;
     if (p.startsWith("/quiz")) r.teacherHomeworkQuiz = true;
-    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes")) r.teacherExam = true;
+    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes") || p.startsWith("/teacher/ability-classes") || p.startsWith("/teacher/ability-students")) r.teacherExam = true;
     if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.teacherAttendance = true;
     if (p.startsWith("/board/school-notice") || p.startsWith("/school/schedule")) r.teacherNotice = true;
     if (p.startsWith("/teacher/list") || p.startsWith("/board/teacher")) r.teacherStaff = true;
@@ -443,6 +443,11 @@ export default function Sidebar() {
                   <li>
                     <SNavLink to="/student/list?mode=view">
                       <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
+                    </SNavLink>
+                  </li>
+                  <li>
+                    <SNavLink to="/teacher/ability-classes">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학생 세부능력
                     </SNavLink>
                   </li>
                   <li>

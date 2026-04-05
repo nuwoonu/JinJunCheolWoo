@@ -218,6 +218,14 @@ export default function RoomView() {
                         {s.fullStudentNumber}
                       </span>
                     )}
+                    {s.dormitoryInfo && (
+                      <span style={{
+                        fontSize: "11px", display: "block", marginTop: "3px", paddingLeft: "22px",
+                        color: "#ef4444", fontWeight: 500,
+                      }}>
+                        배정됨: {s.dormitoryInfo}
+                      </span>
+                    )}
                   </div>
                 ))
               )}

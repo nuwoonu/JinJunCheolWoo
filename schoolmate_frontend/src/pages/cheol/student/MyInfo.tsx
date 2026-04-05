@@ -102,11 +102,11 @@ const getResult = (score: number): "Pass" | "Fail" => (score >= 40 ? "Pass" : "F
 // ───────────────────────────────────────────────
 const TABS = [
   { key: "details", icon: "ri-group-line", label: "세부 정보" },
-  { key: "attendance", icon: "ri-calendar-check-line", label: "Attendance" },
+  { key: "attendance", icon: "ri-mental-health-line", label: "행동 특성 및 종합의견" },
   { key: "awards", icon: "ri-trophy-line", label: "수상경력" },
   { key: "volunteer", icon: "ri-heart-line", label: "봉사활동" },
   { key: "grades", icon: "ri-file-edit-line", label: "성적" },
-  { key: "behavior", icon: "ri-mental-health-line", label: "세부능력 및 특기사항" },
+  { key: "behavior", icon: "ri-book-open-line", label: "세부능력 및 특기사항" },
   { key: "cocurricular", icon: "ri-lightbulb-line", label: "창의적 체험 활동" },
   { key: "dormitory", icon: "ri-building-4-line", label: "기숙사" },
   { key: "library", icon: "ri-book-line", label: "Library" },
@@ -442,7 +442,6 @@ interface BehaviorRecord {
   id: number;
   year: string;
   semester: string;
-  basicHabits?: string;
   specialNotes?: string;
 }
 
@@ -496,7 +495,7 @@ function BehaviorRecordsTab({ studentInfoId }: { studentInfoId: number }) {
       {/* 필터 헤더 */}
       <div className="shadow-1 radius-12 bg-base overflow-hidden">
         <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between flex-wrap gap-12">
-          <h6 className="mb-0 fw-semibold">세부능력 및 특기사항</h6>
+          <h6 className="mb-0 fw-semibold">행동 특성 및 종합의견</h6>
           <div className="d-flex gap-12 align-items-center flex-wrap">
             <select
               className="form-select form-select-sm"
@@ -539,19 +538,10 @@ function BehaviorRecordsTab({ studentInfoId }: { studentInfoId: number }) {
                       {yearLabel} {semLabel}
                     </span>
                   </div>
-                  <div className="p-24 d-flex flex-column gap-16">
-                    <div>
-                      <h6 className="text-md mb-6 fw-medium">기초 생활 기록</h6>
-                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                        {r.basicHabits ?? "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <h6 className="text-md mb-6 fw-medium">특기사항</h6>
-                      <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                        {r.specialNotes ?? "-"}
-                      </p>
-                    </div>
+                  <div className="p-24">
+                    <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                      {r.specialNotes ?? "-"}
+                    </p>
                   </div>
                 </div>
               );
@@ -568,9 +558,126 @@ function BehaviorRecordsTab({ studentInfoId }: { studentInfoId: number }) {
 // ───────────────────────────────────────────────
 const CATEGORY_ORDER = ["AUTONOMOUS", "CLUB", "VOLUNTEER", "CAREER"];
 
+// ───────────────────────────────────────────────
+// 세부능력 및 특기사항 탭 컴포넌트
+// ───────────────────────────────────────────────
+interface StudentAbility {
+  id: number;
+  subjectName: string;
+  subjectCode: string;
+  termDisplayName: string;
+  schoolYear: number;
+  semester: number;
+  content: string;
+}
+
+function StudentAbilityTab({ studentInfoId }: { studentInfoId: number }) {
+  const [abilities, setAbilities] = useState<StudentAbility[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterYear, setFilterYear] = useState<number | "ALL">("ALL");
+  const [filterSemester, setFilterSemester] = useState<number | "ALL">("ALL");
+
+  useEffect(() => {
+    api
+      .get(`/student-abilities/student/${studentInfoId}`)
+      .then((res) => setAbilities(res.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [studentInfoId]);
+
+  // 존재하는 학년도 목록 (오름차순)
+  const years = Array.from(new Set(abilities.map((a) => a.schoolYear))).sort((a, b) => a - b);
+
+  const filtered = abilities.filter((a) => {
+    if (filterYear !== "ALL" && a.schoolYear !== filterYear) return false;
+    if (filterSemester !== "ALL" && a.semester !== filterSemester) return false;
+    return true;
+  });
+
+  if (loading) {
+    return (
+      <div className="text-center py-48 text-secondary-light">
+        <i className="ri-loader-4-line text-3xl d-block mb-12" />
+        세부능력 정보를 불러오는 중...
+      </div>
+    );
+  }
+
+  return (
+    <div className="d-flex flex-column gap-16">
+      <div className="shadow-1 radius-12 bg-base overflow-hidden">
+        <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between flex-wrap gap-12">
+          <h6 className="mb-0 fw-semibold">세부능력 및 특기사항</h6>
+          <div className="d-flex gap-12 align-items-center flex-wrap">
+            {/* 학년도 필터 */}
+            <div className="d-flex gap-6 flex-wrap">
+              <button
+                type="button"
+                className={`btn btn-sm radius-8 ${filterYear === "ALL" ? "btn-primary-600" : "btn-outline-primary-600"}`}
+                onClick={() => setFilterYear("ALL")}
+              >
+                전체
+              </button>
+              {years.map((y) => (
+                <button
+                  key={y}
+                  type="button"
+                  className={`btn btn-sm radius-8 ${filterYear === y ? "btn-primary-600" : "btn-outline-primary-600"}`}
+                  onClick={() => setFilterYear(y)}
+                >
+                  {y}학년도
+                </button>
+              ))}
+            </div>
+            {/* 학기 필터 */}
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 110 }}
+              value={String(filterSemester)}
+              onChange={(e) => setFilterSemester(e.target.value === "ALL" ? "ALL" : Number(e.target.value))}
+            >
+              <option value="ALL">전체 학기</option>
+              <option value="1">1학기</option>
+              <option value="2">2학기</option>
+            </select>
+          </div>
+        </div>
+        <div className="card-body p-0">
+          {filtered.length === 0 ? (
+            <div className="text-center py-48 text-secondary-light">
+              <i className="ri-file-search-line text-4xl d-block mb-12" />
+              등록된 세부능력 기록이 없습니다.
+            </div>
+          ) : (
+            filtered.map((a) => (
+              <div key={a.id} className="border-bottom">
+                <div className="px-24 py-12 bg-neutral-50 d-flex align-items-center gap-12">
+                  <span className="badge bg-primary-100 text-primary-600 px-10 py-4 radius-4 text-xs fw-medium">
+                    {a.termDisplayName}
+                  </span>
+                  <span className="fw-bold text-sm">{a.subjectName}</span>
+                </div>
+                <div className="p-24">
+                  <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                    {a.content}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────
+// 창의적 체험 활동 탭 컴포넌트
+// ───────────────────────────────────────────────
 function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number }) {
   const [activities, setActivities] = useState<CocurricularActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterYear, setFilterYear] = useState<string>("ALL");
 
   useEffect(() => {
     api
@@ -582,10 +689,14 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
 
   // 학년별로 그룹핑
   const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
-  const grouped = YEAR_ORDER.map((yearKey) => ({
-    yearKey,
-    items: activities.filter((a) => a.year === yearKey),
-  })).filter((g) => g.items.length > 0);
+  const existingYears = YEAR_ORDER.filter((y) => activities.some((a) => a.year === y));
+  const grouped = YEAR_ORDER
+    .filter((yearKey) => filterYear === "ALL" || yearKey === filterYear)
+    .map((yearKey) => ({
+      yearKey,
+      items: activities.filter((a) => a.year === yearKey),
+    }))
+    .filter((g) => g.items.length > 0);
 
   if (loading) {
     return (
@@ -607,8 +718,27 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
 
   return (
     <div className="shadow-1 radius-12 bg-base overflow-hidden">
-      <div className="card-header border-bottom bg-base py-16 px-24">
+      <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between flex-wrap gap-12">
         <h6 className="text-lg fw-semibold mb-0">창의적 체험 활동 상황</h6>
+        <div className="d-flex gap-8 flex-wrap">
+          <button
+            type="button"
+            className={`btn btn-sm radius-8 ${filterYear === "ALL" ? "btn-primary-600" : "btn-outline-primary-600"}`}
+            onClick={() => setFilterYear("ALL")}
+          >
+            전체
+          </button>
+          {existingYears.map((y) => (
+            <button
+              key={y}
+              type="button"
+              className={`btn btn-sm radius-8 ${filterYear === y ? "btn-primary-600" : "btn-outline-primary-600"}`}
+              onClick={() => setFilterYear(y)}
+            >
+              {YEAR_LABEL[y]}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="card-body p-0">
         <div className="table-responsive">
@@ -1393,7 +1523,10 @@ export default function StudentMyInfo() {
           {activeTab === "grades" && <GradesTab studentInfoId={student.id} />}
 
           {/* 행동 특성 및 종합의견 탭 */}
-          {activeTab === "behavior" && <BehaviorRecordsTab studentInfoId={student.id} />}
+          {activeTab === "attendance" && <BehaviorRecordsTab studentInfoId={student.id} />}
+
+          {/* 세부능력 및 특기사항 탭 */}
+          {activeTab === "behavior" && <StudentAbilityTab studentInfoId={student.id} />}
 
           {/* 창의적 체험 활동 탭 */}
           {activeTab === "cocurricular" && <CocurricularActivitiesTab studentInfoId={student.id} />}
@@ -1405,7 +1538,7 @@ export default function StudentMyInfo() {
           {activeTab === "volunteer" && <VolunteerActivityTab studentInfoId={student.id} />}
 
           {/* 준비 중 탭 */}
-          {["attendance", "library"].includes(activeTab) && (
+          {["library"].includes(activeTab) && (
             <div className="shadow-1 radius-12 bg-base p-40 text-center text-secondary-light">
               <i className="ri-tools-line text-3xl mb-12 d-block" />
               준비 중입니다.

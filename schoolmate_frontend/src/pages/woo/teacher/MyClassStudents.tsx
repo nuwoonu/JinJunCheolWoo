@@ -117,17 +117,17 @@ export default function TeacherMyClassStudents() {
   const [editingNum, setEditingNum] = useState<string>("");
   const [editSaving, setEditSaving] = useState(false);
 
-  const [showVolunteerModal, setShowVolunteerModal] = useState(false);
+  // subView: 학생 정보 모달 내 서브 화면 ("volunteer" | "award" | "cocurricular" | null)
+  const [subView, setSubView] = useState<"volunteer" | "award" | "cocurricular" | null>(null);
+
   const [volunteerForm, setVolunteerForm] = useState(EMPTY_VOLUNTEER_FORM);
   const [volunteerSaving, setVolunteerSaving] = useState(false);
   const [volunteerError, setVolunteerError] = useState<string | null>(null);
 
-  const [showAwardModal, setShowAwardModal] = useState(false);
   const [awardForm, setAwardForm] = useState(EMPTY_AWARD_FORM);
   const [awardSaving, setAwardSaving] = useState(false);
   const [awardError, setAwardError] = useState<string | null>(null);
 
-  const [showCocurricularModal, setShowCocurricularModal] = useState(false);
   const [cocurricularForm, setCocurricularForm] = useState(EMPTY_COCURRICULAR_FORM);
   const [cocurricularSaving, setCocurricularSaving] = useState(false);
   const [cocurricularError, setCocurricularError] = useState<string | null>(null);
@@ -162,12 +162,12 @@ export default function TeacherMyClassStudents() {
 
   // [woo] 모달 열릴 때 배경 스크롤 방지
   useEffect(() => {
-    const open = showAssignModal || showAddModal || !!selectedStudent || showVolunteerModal || showAwardModal || showCocurricularModal;
+    const open = showAssignModal || showAddModal || !!selectedStudent;
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [showAssignModal, showAddModal, selectedStudent, showVolunteerModal, showAwardModal, showCocurricularModal]);
+  }, [showAssignModal, showAddModal, selectedStudent]);
 
   const handleSaveCocurricular = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -180,7 +180,7 @@ export default function TeacherMyClassStudents() {
         category: cocurricularForm.category,
         specifics: cocurricularForm.specifics,
       });
-      setShowCocurricularModal(false);
+      setSubView(null);
       setCocurricularForm(EMPTY_COCURRICULAR_FORM);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -203,7 +203,7 @@ export default function TeacherMyClassStudents() {
         day: awardForm.day || null,
         awardingOrganization: awardForm.awardingOrganization,
       });
-      setShowAwardModal(false);
+      setSubView(null);
       setAwardForm(EMPTY_AWARD_FORM);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -228,7 +228,7 @@ export default function TeacherMyClassStudents() {
         activityContent: volunteerForm.activityContent,
         hours: Number(volunteerForm.hours),
       });
-      setShowVolunteerModal(false);
+      setSubView(null);
       setVolunteerForm(EMPTY_VOLUNTEER_FORM);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -1041,448 +1041,443 @@ export default function TeacherMyClassStudents() {
       {/* [woo] 학생 상세 모달 */}
       {selectedStudent && (
         <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered">
+          <div className={`modal-dialog modal-dialog-centered${subView === "cocurricular" ? " modal-lg" : ""}`}>
             <div className="modal-content radius-12">
-              <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title">학생 정보</h6>
-                <button type="button" className="btn-close" onClick={() => setSelectedStudent(null)} />
-              </div>
-              <div className="modal-body p-24">
-                <div className="text-center mb-24">
-                  <div className="w-80-px h-80-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-16">
-                    <iconify-icon icon="mdi:account" className="text-primary-600 text-4xl" />
-                  </div>
-                  <h5 className="mb-4">{selectedStudent.name}</h5>
-                  <span className="text-secondary-light">{selectedStudent.studentNumber}번</span>
-                </div>
-                <div className="d-flex flex-column gap-16">
-                  {/* [woo] 반번호 수정 */}
-                  <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
-                    <span className="text-secondary-light">
-                      <iconify-icon icon="mdi:numeric" className="me-8" />
-                      반번호
+              <div className="modal-header border-bottom py-16 px-24 d-flex align-items-center gap-12">
+                {subView !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setSubView(null)}
+                    className="btn btn-sm btn-outline-neutral-300 radius-8 d-flex align-items-center gap-4 flex-shrink-0"
+                    style={{ padding: "4px 10px" }}
+                  >
+                    <iconify-icon icon="mdi:arrow-left" /> 뒤로
+                  </button>
+                )}
+                <h6 className="modal-title mb-0 flex-grow-1">
+                  {subView === null && "학생 정보"}
+                  {subView === "volunteer" && (
+                    <span className="d-flex align-items-center gap-8">
+                      <iconify-icon icon="mdi:heart-plus" className="text-success-600" />
+                      봉사활동 — {selectedStudent.name}
                     </span>
-                    <div className="d-flex align-items-center gap-8">
-                      <input
-                        type="number"
-                        className="form-control form-control-sm radius-8"
-                        style={{ width: 80 }}
-                        min={1}
-                        value={editingNum}
-                        onChange={(e) => setEditingNum(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-primary-600 radius-4 d-flex align-items-center gap-4"
-                        onClick={handleUpdateStudentNumber}
-                        disabled={editSaving || !editingNum || Number(editingNum) === selectedStudent.studentNumber}
-                      >
-                        {editSaving ? (
-                          <span className="spinner-border spinner-border-sm" />
-                        ) : (
-                          <iconify-icon icon="mdi:check" />
-                        )}
-                        변경
-                      </button>
+                  )}
+                  {subView === "award" && (
+                    <span className="d-flex align-items-center gap-8">
+                      <iconify-icon icon="mdi:trophy-outline" className="text-warning-600" />
+                      수상 경력 — {selectedStudent.name}
+                    </span>
+                  )}
+                  {subView === "cocurricular" && (
+                    <span className="d-flex align-items-center gap-8">
+                      <iconify-icon icon="mdi:lightbulb-outline" className="text-primary-600" />
+                      창의적 체험활동 — {selectedStudent.name}
+                    </span>
+                  )}
+                </h6>
+                <button type="button" className="btn-close ms-auto" onClick={() => { setSelectedStudent(null); setSubView(null); }} />
+              </div>
+
+              {/* 학생 정보 뷰 */}
+              {subView === null && (
+                <>
+                  <div className="modal-body p-24">
+                    <div className="text-center mb-24">
+                      <div className="w-80-px h-80-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-16">
+                        <iconify-icon icon="mdi:account" className="text-primary-600 text-4xl" />
+                      </div>
+                      <h5 className="mb-4">{selectedStudent.name}</h5>
+                      <span className="text-secondary-light">{selectedStudent.studentNumber}번</span>
+                    </div>
+                    <div className="d-flex flex-column gap-16">
+                      {/* [woo] 반번호 수정 */}
+                      <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
+                        <span className="text-secondary-light">
+                          <iconify-icon icon="mdi:numeric" className="me-8" />
+                          반번호
+                        </span>
+                        <div className="d-flex align-items-center gap-8">
+                          <input
+                            type="number"
+                            className="form-control form-control-sm radius-8"
+                            style={{ width: 80 }}
+                            min={1}
+                            value={editingNum}
+                            onChange={(e) => setEditingNum(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-primary-600 radius-4 d-flex align-items-center gap-4"
+                            onClick={handleUpdateStudentNumber}
+                            disabled={editSaving || !editingNum || Number(editingNum) === selectedStudent.studentNumber}
+                          >
+                            {editSaving ? (
+                              <span className="spinner-border spinner-border-sm" />
+                            ) : (
+                              <iconify-icon icon="mdi:check" />
+                            )}
+                            변경
+                          </button>
+                        </div>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
+                        <span className="text-secondary-light">
+                          <iconify-icon icon="mdi:phone" className="me-8" />
+                          연락처
+                        </span>
+                        <span className="fw-medium">{selectedStudent.phone ?? "-"}</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
+                        <span className="text-secondary-light">
+                          <iconify-icon icon="mdi:email" className="me-8" />
+                          이메일
+                        </span>
+                        <span className="fw-medium">{selectedStudent.email ?? "-"}</span>
+                      </div>
+                    </div>
+
+                    {/* 기록 추가 섹션 */}
+                    <div className="mt-20 pt-16 border-top">
+                      <p className="text-xs fw-semibold text-secondary-light mb-12" style={{ letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                        기록 추가
+                      </p>
+                      <div className="d-flex gap-10">
+                        {/* 봉사활동 */}
+                        <button
+                          type="button"
+                          onClick={() => { setVolunteerForm(EMPTY_VOLUNTEER_FORM); setVolunteerError(null); setSubView("volunteer"); }}
+                          style={{ flex: 1, padding: "14px 8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(22,163,74,0.18)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+                        >
+                          <div style={{ width: 40, height: 40, background: "#dcfce7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <iconify-icon icon="mdi:heart-plus" style={{ fontSize: 20, color: "#16a34a" }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", whiteSpace: "nowrap" }}>봉사활동</span>
+                        </button>
+
+                        {/* 수상 경력 */}
+                        <button
+                          type="button"
+                          onClick={() => { setAwardForm(EMPTY_AWARD_FORM); setAwardError(null); setSubView("award"); }}
+                          style={{ flex: 1, padding: "14px 8px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(202,138,4,0.18)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+                        >
+                          <div style={{ width: 40, height: 40, background: "#fef9c3", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 20, color: "#ca8a04" }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#ca8a04", whiteSpace: "nowrap" }}>수상 경력</span>
+                        </button>
+
+                        {/* 창의적 체험활동 */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCocurricularError(null);
+                            api.get(`/cocurricular-activities/student/${selectedStudent!.studentId}`)
+                              .then((res) => {
+                                const activities = res.data ?? [];
+                                setCocurricularActivities(activities);
+                                const existing = activities.find(
+                                  (a: { year: string; category: string; specifics?: string }) =>
+                                    a.year === "FIRST" && a.category === "AUTONOMOUS"
+                                );
+                                setCocurricularForm({ year: "FIRST", category: "AUTONOMOUS", specifics: existing?.specifics ?? "" });
+                              })
+                              .catch(() => { setCocurricularActivities([]); setCocurricularForm(EMPTY_COCURRICULAR_FORM); });
+                            setSubView("cocurricular");
+                          }}
+                          style={{ flex: 1, padding: "14px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(37,99,235,0.15)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+                        >
+                          <div style={{ width: 40, height: 40, background: "#dbeafe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 20, color: "#2563eb" }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", whiteSpace: "nowrap" }}>창의적 체험</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
-                    <span className="text-secondary-light">
-                      <iconify-icon icon="mdi:phone" className="me-8" />
-                      연락처
-                    </span>
-                    <span className="fw-medium">{selectedStudent.phone ?? "-"}</span>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
-                    <span className="text-secondary-light">
-                      <iconify-icon icon="mdi:email" className="me-8" />
-                      이메일
-                    </span>
-                    <span className="fw-medium">{selectedStudent.email ?? "-"}</span>
-                  </div>
-                </div>
-
-                {/* 기록 추가 섹션 */}
-                <div className="mt-20 pt-16 border-top">
-                  <p className="text-xs fw-semibold text-secondary-light mb-12" style={{ letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    기록 추가
-                  </p>
-                  <div className="d-flex gap-10">
-                    {/* 봉사활동 */}
+                  <div className="modal-footer border-top py-12 px-24 justify-content-end">
                     <button
                       type="button"
-                      onClick={() => { setVolunteerForm(EMPTY_VOLUNTEER_FORM); setVolunteerError(null); setShowVolunteerModal(true); }}
-                      style={{ flex: 1, padding: "14px 8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(22,163,74,0.18)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+                      className="btn btn-outline-neutral-300 radius-8"
+                      onClick={() => setSelectedStudent(null)}
                     >
-                      <div style={{ width: 40, height: 40, background: "#dcfce7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <iconify-icon icon="mdi:heart-plus" style={{ fontSize: 20, color: "#16a34a" }} />
-                      </div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", whiteSpace: "nowrap" }}>봉사활동</span>
+                      닫기
                     </button>
+                  </div>
+                </>
+              )}
 
-                    {/* 수상 경력 */}
-                    <button
-                      type="button"
-                      onClick={() => { setAwardForm(EMPTY_AWARD_FORM); setAwardError(null); setShowAwardModal(true); }}
-                      style={{ flex: 1, padding: "14px 8px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(202,138,4,0.18)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
-                    >
-                      <div style={{ width: 40, height: 40, background: "#fef9c3", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 20, color: "#ca8a04" }} />
-                      </div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#ca8a04", whiteSpace: "nowrap" }}>수상 경력</span>
-                    </button>
-
-                    {/* 창의적 체험활동 */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCocurricularError(null);
-                        api.get(`/cocurricular-activities/student/${selectedStudent!.studentId}`)
-                          .then((res) => {
-                            const activities = res.data ?? [];
-                            setCocurricularActivities(activities);
-                            const existing = activities.find(
-                              (a: { year: string; category: string; specifics?: string }) =>
-                                a.year === "FIRST" && a.category === "AUTONOMOUS"
+              {/* 창의적 체험활동 폼 */}
+              {subView === "cocurricular" && (
+                <form onSubmit={handleSaveCocurricular}>
+                  <div className="modal-body p-24">
+                    {cocurricularError && (
+                      <div className="alert alert-danger radius-8 mb-16 text-sm">{cocurricularError}</div>
+                    )}
+                    <div className="row gy-16">
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">학년 *</label>
+                        <select
+                          className="form-select"
+                          value={cocurricularForm.year}
+                          onChange={(e) => {
+                            const newYear = e.target.value;
+                            const existing = cocurricularActivities.find(
+                              (a) => a.year === newYear && a.category === cocurricularForm.category
                             );
-                            setCocurricularForm({ year: "FIRST", category: "AUTONOMOUS", specifics: existing?.specifics ?? "" });
-                          })
-                          .catch(() => { setCocurricularActivities([]); setCocurricularForm(EMPTY_COCURRICULAR_FORM); });
-                        setShowCocurricularModal(true);
-                      }}
-                      style={{ flex: 1, padding: "14px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(37,99,235,0.15)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
-                    >
-                      <div style={{ width: 40, height: 40, background: "#dbeafe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 20, color: "#2563eb" }} />
+                            setCocurricularForm((f) => ({ ...f, year: newYear, specifics: existing?.specifics ?? "" }));
+                          }}
+                          required
+                        >
+                          <option value="FIRST">1학년</option>
+                          <option value="SECOND">2학년</option>
+                          <option value="THIRD">3학년</option>
+                        </select>
                       </div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", whiteSpace: "nowrap" }}>창의적 체험</span>
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">영역 *</label>
+                        <select
+                          className="form-select"
+                          value={cocurricularForm.category}
+                          onChange={(e) => {
+                            const newCat = e.target.value;
+                            const existing = cocurricularActivities.find(
+                              (a) => a.year === cocurricularForm.year && a.category === newCat
+                            );
+                            setCocurricularForm((f) => ({ ...f, category: newCat, specifics: existing?.specifics ?? "" }));
+                          }}
+                          required
+                        >
+                          {COCURRICULAR_CATEGORIES.map((c) => (
+                            <option key={c.value} value={c.value}>{c.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-12">
+                        <label className="form-label fw-semibold text-sm">특기사항 *</label>
+                        <div className="text-xs text-secondary-light mb-6">
+                          학년+영역 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
+                        </div>
+                        <textarea
+                          className="form-control"
+                          rows={10}
+                          placeholder="특기사항을 입력하세요"
+                          value={cocurricularForm.specifics}
+                          onChange={(e) => setCocurricularForm((f) => ({ ...f, specifics: e.target.value }))}
+                          style={{ resize: "vertical", minHeight: 200 }}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                    <button
+                      type="button"
+                      className="btn btn-outline-neutral-300 radius-8"
+                      onClick={() => setSubView(null)}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
+                      disabled={cocurricularSaving}
+                    >
+                      {cocurricularSaving ? (
+                        <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
+                      ) : (
+                        <><iconify-icon icon="mdi:check" /> 저장</>
+                      )}
                     </button>
                   </div>
-                </div>
-              </div>
-              <div className="modal-footer border-top py-12 px-24 justify-content-end">
-                <button
-                  type="button"
-                  className="btn btn-outline-neutral-300 radius-8"
-                  onClick={() => setSelectedStudent(null)}
-                >
-                  닫기
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* 창의적 체험활동 모달 */}
-      {showCocurricularModal && selectedStudent && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content radius-12">
-              <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title d-flex align-items-center gap-8">
-                  <iconify-icon icon="mdi:lightbulb-outline" className="text-primary-600" />
-                  창의적 체험활동 — {selectedStudent.name}
-                </h6>
-                <button type="button" className="btn-close" onClick={() => setShowCocurricularModal(false)} />
-              </div>
-              <form onSubmit={handleSaveCocurricular}>
-                <div className="modal-body p-24">
-                  {cocurricularError && (
-                    <div className="alert alert-danger radius-8 mb-16 text-sm">{cocurricularError}</div>
-                  )}
-                  <div className="row gy-16">
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">학년 *</label>
-                      <select
-                        className="form-select"
-                        value={cocurricularForm.year}
-                        onChange={(e) => {
-                          const newYear = e.target.value;
-                          const existing = cocurricularActivities.find(
-                            (a) => a.year === newYear && a.category === cocurricularForm.category
-                          );
-                          setCocurricularForm((f) => ({ ...f, year: newYear, specifics: existing?.specifics ?? "" }));
-                        }}
-                        required
-                      >
-                        <option value="FIRST">1학년</option>
-                        <option value="SECOND">2학년</option>
-                        <option value="THIRD">3학년</option>
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">영역 *</label>
-                      <select
-                        className="form-select"
-                        value={cocurricularForm.category}
-                        onChange={(e) => {
-                          const newCat = e.target.value;
-                          const existing = cocurricularActivities.find(
-                            (a) => a.year === cocurricularForm.year && a.category === newCat
-                          );
-                          setCocurricularForm((f) => ({ ...f, category: newCat, specifics: existing?.specifics ?? "" }));
-                        }}
-                        required
-                      >
-                        {COCURRICULAR_CATEGORIES.map((c) => (
-                          <option key={c.value} value={c.value}>{c.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-semibold text-sm">특기사항 *</label>
-                      <div className="text-xs text-secondary-light mb-6">
-                        학년+영역 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
+                </form>
+              )}
+
+              {/* 수상 경력 폼 */}
+              {subView === "award" && (
+                <form onSubmit={handleSaveAward}>
+                  <div className="modal-body p-24">
+                    {awardError && (
+                      <div className="alert alert-danger radius-8 mb-16 text-sm">{awardError}</div>
+                    )}
+                    <div className="row gy-16">
+                      <div className="col-12">
+                        <label className="form-label fw-semibold text-sm">수상명 *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="예: 교내 과학 경진대회"
+                          value={awardForm.name}
+                          onChange={(e) => setAwardForm((f) => ({ ...f, name: e.target.value }))}
+                          required
+                        />
                       </div>
-                      <textarea
-                        className="form-control"
-                        rows={10}
-                        placeholder="특기사항을 입력하세요"
-                        value={cocurricularForm.specifics}
-                        onChange={(e) => setCocurricularForm((f) => ({ ...f, specifics: e.target.value }))}
-                        style={{ resize: "vertical", minHeight: 200 }}
-                        required
-                      />
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">등급 *</label>
+                        <select
+                          className="form-select"
+                          value={awardForm.achievementsGrade}
+                          onChange={(e) => setAwardForm((f) => ({ ...f, achievementsGrade: e.target.value }))}
+                          required
+                        >
+                          <option value="GOLD">금상</option>
+                          <option value="SILVER">은상</option>
+                          <option value="BRONZE">동상</option>
+                          <option value="HONORABLE_MENTION">장려</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">수상일 *</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={awardForm.day}
+                          onChange={(e) => setAwardForm((f) => ({ ...f, day: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="col-12">
+                        <label className="form-label fw-semibold text-sm">수상 기관 *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="예: 부여고등학교"
+                          value={awardForm.awardingOrganization}
+                          onChange={(e) => setAwardForm((f) => ({ ...f, awardingOrganization: e.target.value }))}
+                          required
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="modal-footer border-top py-16 px-24 gap-8">
-                  <button
-                    type="button"
-                    className="btn btn-outline-neutral-300 radius-8"
-                    onClick={() => setShowCocurricularModal(false)}
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
-                    disabled={cocurricularSaving}
-                  >
-                    {cocurricularSaving ? (
-                      <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
-                    ) : (
-                      <><iconify-icon icon="mdi:check" /> 저장</>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                    <button
+                      type="button"
+                      className="btn btn-outline-neutral-300 radius-8"
+                      onClick={() => setSubView(null)}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-warning-600 radius-8 d-flex align-items-center gap-6"
+                      disabled={awardSaving}
+                    >
+                      {awardSaving ? (
+                        <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
+                      ) : (
+                        <><iconify-icon icon="mdi:check" /> 저장</>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
 
-      {/* 수상 경력 추가 모달 */}
-      {showAwardModal && selectedStudent && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content radius-12">
-              <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title d-flex align-items-center gap-8">
-                  <iconify-icon icon="mdi:trophy-outline" className="text-warning-600" />
-                  수상 경력 추가 — {selectedStudent.name}
-                </h6>
-                <button type="button" className="btn-close" onClick={() => setShowAwardModal(false)} />
-              </div>
-              <form onSubmit={handleSaveAward}>
-                <div className="modal-body p-24">
-                  {awardError && (
-                    <div className="alert alert-danger radius-8 mb-16 text-sm">{awardError}</div>
-                  )}
-                  <div className="row gy-16">
-                    <div className="col-12">
-                      <label className="form-label fw-semibold text-sm">수상명 *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="예: 교내 과학 경진대회"
-                        value={awardForm.name}
-                        onChange={(e) => setAwardForm((f) => ({ ...f, name: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">등급 *</label>
-                      <select
-                        className="form-select"
-                        value={awardForm.achievementsGrade}
-                        onChange={(e) => setAwardForm((f) => ({ ...f, achievementsGrade: e.target.value }))}
-                        required
-                      >
-                        <option value="GOLD">금상</option>
-                        <option value="SILVER">은상</option>
-                        <option value="BRONZE">동상</option>
-                        <option value="HONORABLE_MENTION">장려</option>
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">수상일 *</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        value={awardForm.day}
-                        onChange={(e) => setAwardForm((f) => ({ ...f, day: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-semibold text-sm">수상 기관 *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="예: 부여고등학교"
-                        value={awardForm.awardingOrganization}
-                        onChange={(e) => setAwardForm((f) => ({ ...f, awardingOrganization: e.target.value }))}
-                        required
-                      />
+              {/* 봉사활동 폼 */}
+              {subView === "volunteer" && (
+                <form onSubmit={handleSaveVolunteer}>
+                  <div className="modal-body p-24">
+                    {volunteerError && (
+                      <div className="alert alert-danger radius-8 mb-16 text-sm">{volunteerError}</div>
+                    )}
+                    <div className="row gy-16">
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">학년 *</label>
+                        <select
+                          className="form-select"
+                          value={volunteerForm.year}
+                          onChange={(e) => setVolunteerForm((f) => ({ ...f, year: e.target.value }))}
+                          required
+                        >
+                          <option value="FIRST">1학년</option>
+                          <option value="SECOND">2학년</option>
+                          <option value="THIRD">3학년</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">시간(h) *</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          min={0.5}
+                          step={0.5}
+                          placeholder="예: 2"
+                          value={volunteerForm.hours}
+                          onChange={(e) => setVolunteerForm((f) => ({ ...f, hours: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">시작일 *</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={volunteerForm.startDate}
+                          onChange={(e) => setVolunteerForm((f) => ({ ...f, startDate: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold text-sm">종료일</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={volunteerForm.endDate}
+                          min={volunteerForm.startDate}
+                          onChange={(e) => setVolunteerForm((f) => ({ ...f, endDate: e.target.value }))}
+                        />
+                      </div>
+                      <div className="col-12">
+                        <label className="form-label fw-semibold text-sm">장소 또는 주관기관명 *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="예: (학교)부여고등학교"
+                          value={volunteerForm.organizer}
+                          onChange={(e) => setVolunteerForm((f) => ({ ...f, organizer: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="col-12">
+                        <label className="form-label fw-semibold text-sm">활동내용 *</label>
+                        <textarea
+                          className="form-control"
+                          rows={3}
+                          placeholder="봉사활동 내용을 입력하세요"
+                          value={volunteerForm.activityContent}
+                          onChange={(e) => setVolunteerForm((f) => ({ ...f, activityContent: e.target.value }))}
+                          required
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="modal-footer border-top py-16 px-24 gap-8">
-                  <button
-                    type="button"
-                    className="btn btn-outline-neutral-300 radius-8"
-                    onClick={() => setShowAwardModal(false)}
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-warning-600 radius-8 d-flex align-items-center gap-6"
-                    disabled={awardSaving}
-                  >
-                    {awardSaving ? (
-                      <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
-                    ) : (
-                      <><iconify-icon icon="mdi:check" /> 저장</>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                    <button
+                      type="button"
+                      className="btn btn-outline-neutral-300 radius-8"
+                      onClick={() => setSubView(null)}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-success-600 radius-8 d-flex align-items-center gap-6"
+                      disabled={volunteerSaving}
+                    >
+                      {volunteerSaving ? (
+                        <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
+                      ) : (
+                        <><iconify-icon icon="mdi:check" /> 저장</>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
 
-      {/* 봉사활동 기록 모달 */}
-      {showVolunteerModal && selectedStudent && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content radius-12">
-              <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title d-flex align-items-center gap-8">
-                  <iconify-icon icon="mdi:heart-plus" className="text-success-600" />
-                  봉사활동 기록 — {selectedStudent.name}
-                </h6>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowVolunteerModal(false)}
-                />
-              </div>
-              <form onSubmit={handleSaveVolunteer}>
-                <div className="modal-body p-24">
-                  {volunteerError && (
-                    <div className="alert alert-danger radius-8 mb-16 text-sm">{volunteerError}</div>
-                  )}
-                  <div className="row gy-16">
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">학년 *</label>
-                      <select
-                        className="form-select"
-                        value={volunteerForm.year}
-                        onChange={(e) => setVolunteerForm((f) => ({ ...f, year: e.target.value }))}
-                        required
-                      >
-                        <option value="FIRST">1학년</option>
-                        <option value="SECOND">2학년</option>
-                        <option value="THIRD">3학년</option>
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">시간(h) *</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        min={0.5}
-                        step={0.5}
-                        placeholder="예: 2"
-                        value={volunteerForm.hours}
-                        onChange={(e) => setVolunteerForm((f) => ({ ...f, hours: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">시작일 *</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        value={volunteerForm.startDate}
-                        onChange={(e) => setVolunteerForm((f) => ({ ...f, startDate: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold text-sm">종료일</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        value={volunteerForm.endDate}
-                        min={volunteerForm.startDate}
-                        onChange={(e) => setVolunteerForm((f) => ({ ...f, endDate: e.target.value }))}
-                      />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-semibold text-sm">장소 또는 주관기관명 *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="예: (학교)부여고등학교"
-                        value={volunteerForm.organizer}
-                        onChange={(e) => setVolunteerForm((f) => ({ ...f, organizer: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-semibold text-sm">활동내용 *</label>
-                      <textarea
-                        className="form-control"
-                        rows={3}
-                        placeholder="봉사활동 내용을 입력하세요"
-                        value={volunteerForm.activityContent}
-                        onChange={(e) => setVolunteerForm((f) => ({ ...f, activityContent: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer border-top py-16 px-24 gap-8">
-                  <button
-                    type="button"
-                    className="btn btn-outline-neutral-300 radius-8"
-                    onClick={() => setShowVolunteerModal(false)}
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-success-600 radius-8 d-flex align-items-center gap-6"
-                    disabled={volunteerSaving}
-                  >
-                    {volunteerSaving ? (
-                      <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
-                    ) : (
-                      <><iconify-icon icon="mdi:check" /> 저장</>
-                    )}
-                  </button>
-                </div>
-              </form>
             </div>
           </div>
         </div>

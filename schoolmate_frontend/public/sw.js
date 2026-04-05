@@ -15,8 +15,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('/api/')) return;
+  // GET 요청만 처리 (POST 등은 서비스 워커가 간섭하지 않음)
+  if (event.request.method !== 'GET') return;
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request).catch(() =>
+      caches.match(event.request).then((cached) => cached ?? fetch('/index.html'))
+    )
   );
 });
 

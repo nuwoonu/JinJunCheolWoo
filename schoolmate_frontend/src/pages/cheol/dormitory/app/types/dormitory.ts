@@ -57,4 +57,5 @@ export interface StudentSummary {
   name: string;
   studentNumber?: number;
   fullStudentNumber?: string;
+  dormitoryInfo?: string; // 현재 배정된 기숙사 주소 (없으면 미배정)
 }
