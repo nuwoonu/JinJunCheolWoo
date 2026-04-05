@@ -5,8 +5,27 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
+// [soojin] any 대신 Spring Boot 페이지 응답 타입 정의
+interface NoticeItem {
+  id: number;
+  title: string;
+  important?: boolean;
+  writerName?: string;
+  createDate?: string;
+  viewCount?: number;
+}
+interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
 export default function NoticeList() {
-  const [page, setPage] = useState<any>(null);
+  const [page, setPage] = useState<SpringPage<NoticeItem> | null>(null);
   // [soojin] 전체 공지 수 저장 (초기 로드 시 1회만 세팅) - TeacherList 패턴 통일
   const [totalAll, setTotalAll] = useState<number | null>(null);
   const isInitialLoad = useRef(true);
@@ -129,7 +148,7 @@ export default function NoticeList() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((n: any) => (
+                {list.map((n) => (
                   <tr key={n.id}>
                     <td style={tdCenterStyle}>
                       {n.important ? (

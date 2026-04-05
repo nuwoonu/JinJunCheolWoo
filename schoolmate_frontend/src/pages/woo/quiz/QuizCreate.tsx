@@ -24,6 +24,7 @@ interface QuestionForm {
   points: number;
   correctAnswer: string; // 단답형 정답 (쉼표 구분 복수 정답)
   options: OptionForm[]; // 객관식 선택지
+  explanation: string; // [soojin] 해설
 }
 
 export default function QuizCreate() {
@@ -39,6 +40,7 @@ export default function QuizCreate() {
     dueDate: "",
     dueTime: "",
     maxAttempts: "",
+    timeLimit: "",
     showAnswer: true,
   });
 
@@ -48,6 +50,7 @@ export default function QuizCreate() {
       questionType: "MULTIPLE_CHOICE",
       points: 1,
       correctAnswer: "",
+      explanation: "",
       options: [
         { optionText: "", isCorrect: false },
         { optionText: "", isCorrect: false },
@@ -73,6 +76,7 @@ export default function QuizCreate() {
         questionType: type,
         points: 1,
         correctAnswer: "",
+        explanation: "",
         options:
           type === "MULTIPLE_CHOICE"
             ? [
@@ -201,6 +205,7 @@ export default function QuizCreate() {
         courseSectionId: Number(form.courseSectionId),
         dueDate: dueDateTimeStr,
         maxAttempts: form.maxAttempts ? Number(form.maxAttempts) : null,
+        timeLimit: form.timeLimit ? Number(form.timeLimit) : null,
         showAnswer: form.showAnswer,
         questions: questions.map((q, i) => ({
           questionText: q.questionText,
@@ -208,6 +213,7 @@ export default function QuizCreate() {
           points: q.points,
           questionType: q.questionType,
           correctAnswer: q.questionType === "SHORT_ANSWER" ? q.correctAnswer : null,
+          explanation: q.explanation || null,
           options:
             q.questionType === "MULTIPLE_CHOICE"
               ? q.options.map((o, j) => ({
@@ -307,7 +313,7 @@ export default function QuizCreate() {
             </div>
           </div>
 
-          {/* 마감일 + 마감 시간 + 응시 횟수 + 정답 공개 */}
+          {/* 마감일 + 마감 시간 + 응시 횟수 + 제한시간 + 정답 공개 */}
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
             <div style={{ flex: "1 1 160px" }}>
               <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>마감일 *</label>
@@ -340,6 +346,18 @@ export default function QuizCreate() {
                 min={1}
                 value={form.maxAttempts}
                 onChange={(e) => setForm((f) => ({ ...f, maxAttempts: e.target.value }))}
+              />
+            </div>
+            <div style={{ flex: "1 1 140px" }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 6 }}>제한시간(분)</label>
+              <input
+                type="number"
+                className="form-control"
+                style={{ borderRadius: 8 }}
+                placeholder="제한 없음"
+                min={1}
+                value={form.timeLimit}
+                onChange={(e) => setForm((f) => ({ ...f, timeLimit: e.target.value }))}
               />
             </div>
             <div style={{ paddingBottom: 2 }}>
@@ -508,6 +526,19 @@ export default function QuizCreate() {
                 />
               </div>
             )}
+
+            {/* [soojin] 해설 입력 */}
+            <div style={{ marginTop: 16 }}>
+              <label style={{ fontWeight: 600, fontSize: 14, display: "block", marginBottom: 4 }}>해설 (선택사항)</label>
+              <textarea
+                className="form-control"
+                style={{ borderRadius: 8 }}
+                rows={3}
+                placeholder="문제 해설을 입력하세요"
+                value={q.explanation}
+                onChange={(e) => updateQuestion(qIdx, "explanation", e.target.value)}
+              />
+            </div>
           </div>
         </div>
       ))}

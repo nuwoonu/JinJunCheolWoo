@@ -44,13 +44,13 @@ export default function TodayMealWidget({ schoolId }: Props) {
   const allergyEntries = [...allergyMap.entries()].sort((a, b) => a[0] - b[0])
 
   return (
-    <div className="card shadow-sm h-100 d-flex flex-column" style={{ borderRadius: 16, border: '1px solid #e5e7eb' }}>
+    <div className="card shadow-sm h-100 d-flex flex-column dash-card">
       {/* 헤더 */}
-      <div className="p-16 border-bottom d-flex align-items-center justify-content-between">
-        <h6 className="fw-bold mb-0 text-sm">
-          <i className="ri-restaurant-line text-primary-600 me-2" />
-          오늘의 급식
-        </h6>
+      <div className="d-flex align-items-center justify-content-between dash-card-header">
+        <div className="d-flex align-items-center gap-8">
+          <i className="ri-restaurant-line text-primary-600" style={{ fontSize: 18 }} />
+          <h6 className="fw-bold mb-0 text-sm">오늘의 급식</h6>
+        </div>
         {meal?.mealType && (
           <span style={{
             fontSize: 11, fontWeight: 600, color: '#25A194',

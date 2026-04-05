@@ -101,7 +101,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [timerKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timerKey]); // [soojin] 의도적으로 timerKey만 의존: timerKey 변경 시에만 타이머 재시작 (pwStep 등 추가 시 무한루프 발생)
 
   const formatCountdown = (sec: number) => {
     const m = Math.floor(sec / 60)
@@ -129,10 +129,11 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       setPwStep("pending");
       setVerificationCode("");
       setTimerKey((k) => k + 1);
-    } catch (err: any) {
+    } catch (err: unknown) { // [soojin] any → unknown
+      const _e = err as { response?: { data?: { message?: string } } };
       setPwMsg({
         text:
-          err?.response?.data?.message ??
+          _e?.response?.data?.message ??
           "코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
         ok: false,
       });
@@ -158,9 +159,9 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       setPwMsg({ text: "이메일 로그인이 설정되었습니다.", ok: true });
       setPw({ next: "", confirm: "" });
       refetch();
-    } catch (err: any) {
+    } catch (err: unknown) { // [soojin] any → unknown
       const msg: string =
-        err?.response?.data?.message ?? "처리에 실패했습니다.";
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "처리에 실패했습니다.";
       setPwMsg({ text: msg, ok: false });
       if (msg.includes("코드")) setPwStep("pending");
     } finally {
@@ -184,7 +185,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       resetPwFlow();
       resetWdFlow();
     }
-  }, [isOpen, user?.profileImageUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, user?.profileImageUrl]); // [soojin] 의도적으로 isOpen/profileImageUrl만 의존: 모달 열릴 때와 이미지 변경 시에만 초기화 (refetch 추가 시 무한루프 발생)
 
   // ESC 키로 닫기
   useEffect(() => {
@@ -204,7 +205,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       resetPwFlow();
     }, 1500);
     return () => clearTimeout(timer);
-  }, [pwMsg]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pwMsg]); // [soojin] 의도적으로 pwMsg만 의존: 메시지 변경 시에만 자동 초기화 타이머 실행
 
   if (!isOpen) return null;
 
@@ -238,10 +239,11 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       setPwStep("pending");
       setVerificationCode("");
       setTimerKey((k) => k + 1); // 타이머 재시작
-    } catch (err: any) {
+    } catch (err: unknown) { // [soojin] any → unknown
+      const _e = err as { response?: { data?: { message?: string } } };
       setPwMsg({
         text:
-          err?.response?.data?.message ??
+          _e?.response?.data?.message ??
           "코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
         ok: false,
       });
@@ -284,9 +286,9 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       });
       setPwMsg({ text: "비밀번호가 변경되었습니다.", ok: true });
       setPw({ next: "", confirm: "" });
-    } catch (err: any) {
+    } catch (err: unknown) { // [soojin] any → unknown
       const msg: string =
-        err?.response?.data?.message ?? "비밀번호 변경에 실패했습니다.";
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "비밀번호 변경에 실패했습니다.";
       setPwMsg({ text: msg, ok: false });
       // 코드 관련 오류면 코드 입력 단계로 되돌림
       if (msg.includes("코드")) setPwStep("pending");
@@ -304,10 +306,11 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
       setWdStep("pending");
       setWdCode("");
       setTimerKey((k) => k + 1);
-    } catch (err: any) {
+    } catch (err: unknown) { // [soojin] any → unknown
+      const _e = err as { response?: { data?: { message?: string } } };
       setWdMsg({
         text:
-          err?.response?.data?.message ??
+          _e?.response?.data?.message ??
           "코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
         ok: false,
       });
@@ -335,9 +338,9 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
     try {
       await api.post("/user/withdraw", { verificationCode: wdCode });
       signOut();
-    } catch (err: any) {
+    } catch (err: unknown) { // [soojin] any → unknown
       const msg: string =
-        err?.response?.data?.message ?? "회원 탈퇴에 실패했습니다.";
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "회원 탈퇴에 실패했습니다.";
       setWdMsg({ text: msg, ok: false });
       if (msg.includes("코드")) setWdStep("request");
     } finally {

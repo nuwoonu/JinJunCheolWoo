@@ -242,14 +242,11 @@ export default function TeacherDashboard() {
         <div className="row gy-4">
           {/* [woo] 1. 알림 메시지 — /api/notifications 연동 */}
           <div className="col-xxl-4 col-lg-4">
-            <div className="card" style={{ height: 480 }}>
+            <div className="card dash-card" style={{ height: 480 }}>
               <div className="card-body p-0 d-flex flex-column" style={{ height: "100%" }}>
-                <div
-                  className="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200"
-                  style={{ flexShrink: 0 }}
-                >
+                <div className="d-flex align-items-center gap-8 dash-card-header">
                   <i className="ri-notification-3-line text-primary-600 text-lg" />
-                  <div style={{ fontSize: 16, fontWeight: 600 }}>알림 메시지</div>
+                  <h6 className="fw-bold mb-0 text-sm">알림 메시지</h6>
                   {notifications.filter((n) => !n.isRead).length > 0 && (
                     <span
                       className="badge text-white text-xs px-6 py-2 radius-4 fw-semibold"
@@ -336,15 +333,12 @@ export default function TeacherDashboard() {
 
           {/* 3. 오늘 할 일 */}
           <div className="col-xxl-4 col-lg-4">
-            <div className="card" style={{ height: 480 }}>
+            <div className="card dash-card" style={{ height: 480 }}>
               <div className="card-body p-0 d-flex flex-column" style={{ height: "100%" }}>
-                <div
-                  className="d-flex align-items-center justify-content-between px-20 py-16 border-bottom border-neutral-200"
-                  style={{ flexShrink: 0 }}
-                >
-                  <div className="d-flex align-items-center gap-10">
+                <div className="d-flex align-items-center justify-content-between dash-card-header">
+                  <div className="d-flex align-items-center gap-8">
                     <i className="bi bi-check2-square text-primary-600 text-lg" />
-                    <div style={{ fontSize: 16, fontWeight: 600, color: "#111827" }}>오늘 할 일</div>
+                    <h6 className="fw-bold mb-0 text-sm">오늘 할 일</h6>
                   </div>
                   <button
                     onClick={() => setShowTodoModal(true)}
@@ -555,11 +549,11 @@ export default function TeacherDashboard() {
 
           {/* 4. 일정 (캘린더) */}
           <div className="col-xxl-6 col-lg-6">
-            <div className="card h-100">
+            <div className="card h-100 dash-card">
               <div className="card-body p-0">
-                <div className="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200">
+                <div className="d-flex align-items-center gap-8 dash-card-header">
                   <i className="bi bi-calendar3 text-primary-600 text-lg" />
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#111827" }}>일정</div>
+                  <h6 className="fw-bold mb-0 text-sm">일정</h6>
                 </div>
                 <div className="p-20">
                   <MiniCalendar />
@@ -600,13 +594,11 @@ export default function TeacherDashboard() {
 
           {/* 5. 빠른 메뉴 */}
           <div className="col-xxl-6 col-lg-6">
-            <div className="card h-100">
+            <div className="card h-100 dash-card">
               <div className="card-body p-0 d-flex flex-column">
-                <div
-                  className="d-flex align-items-center gap-10 px-20 py-16 border-bottom border-neutral-200"
-                  style={{ flexShrink: 0 }}
-                >
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#111827" }}>바로 가기</div>
+                <div className="d-flex align-items-center gap-8 dash-card-header">
+                  <i className="bi bi-grid" style={{ fontSize: 16, color: "#25A194", lineHeight: 1 }} />
+                  <h6 className="fw-bold mb-0 text-sm">바로 가기</h6>
                 </div>
                 <div className="p-16" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                   <div

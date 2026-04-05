@@ -4,8 +4,28 @@ import AdminLayout from '@/components/layout/admin/AdminLayout';
 import admin from '@/api/adminApi';
 import { ADMIN_ROUTES } from '@/constants/routes';
 
+// [soojin] any 대신 Spring Boot 페이지 응답 타입 정의
+interface ClassItem {
+  cid: number;
+  year: number;
+  grade: number;
+  classNum: number;
+  teacherName?: string;
+  studentCount?: number;
+  status: string;
+}
+interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
 export default function ClassList() {
-  const [page, setPage] = useState<any>(null);
+  const [page, setPage] = useState<SpringPage<ClassItem> | null>(null);
   // [soojin] 전체 학급 수 저장 (초기 로드 시 1회만 세팅) - TeacherList 패턴 통일
   const [totalAll, setTotalAll] = useState<number | null>(null);
   const isInitialLoad = useRef(true);
@@ -49,7 +69,7 @@ export default function ClassList() {
   };
   const list = page?.content ?? [];
   const toggleAll = (checked: boolean) =>
-    setSelected(checked ? list.map((c: any) => c.cid) : []);
+    setSelected(checked ? list.map((c) => c.cid) : []);
   const toggleOne = (cid: number) =>
     setSelected((prev) =>
       prev.includes(cid) ? prev.filter((x) => x !== cid) : [...prev, cid],
@@ -215,7 +235,7 @@ export default function ClassList() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((c: any) => (
+                {list.map((c) => (
                   <tr key={c.cid}>
                     <td style={{ padding: '14px 16px', fontSize: 13, color: '#374151', borderBottom: '1px solid #f3f4f6', textAlign: 'center', verticalAlign: 'middle' }}>
                       <input

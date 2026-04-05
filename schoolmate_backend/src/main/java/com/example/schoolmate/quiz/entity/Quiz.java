@@ -84,6 +84,9 @@ public class Quiz extends SchoolBaseEntity {
     // [woo] 응시 횟수 제한 (null이면 무제한)
     private Integer maxAttempts;
 
+    // [soojin] 수정하는 이유: 퀴즈 제한시간(분) 저장을 위해 필드 추가
+    private Integer timeLimit;
+
     // [woo] 제출 후 정답 공개 여부
     @Builder.Default
     @Column(nullable = false)

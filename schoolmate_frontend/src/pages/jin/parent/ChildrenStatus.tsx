@@ -194,7 +194,7 @@ export default function ParentChildrenStatus() {
           <div className="row gy-4 mb-24">
             {/* 자녀 프로필 + 출결 현황 */}
             <div className="col-xl-4 col-md-5">
-              <div className="card shadow-sm p-24 h-100 text-center" style={{ borderRadius: 16 }}>
+              <div className="card shadow-sm p-24 h-100 text-center dash-card">
                 <div className="w-120-px h-120-px rounded-circle bg-neutral-200 mx-auto mb-16 d-flex align-items-center justify-content-center text-secondary-light overflow-hidden">
                   {selectedChild.profileImageUrl ? (
                     <img
@@ -280,12 +280,12 @@ export default function ParentChildrenStatus() {
           {/* 하단: 가정통신문 + 오늘의 급식 */}
           <div className="row gy-4 mb-24" style={{ minHeight: 320 }}>
             <div className="col-xl-8 d-flex flex-column">
-              <div className="card shadow-sm h-100" style={{ borderRadius: 16 }}>
-                <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
-                  <h6 className="fw-bold mb-0 text-sm">
-                    <i className="ri-file-list-3-line text-primary-600 me-2" />
-                    가정통신문
-                  </h6>
+              <div className="card shadow-sm h-100 dash-card">
+                <div className="d-flex justify-content-between align-items-center dash-card-header">
+                  <div className="d-flex align-items-center gap-8">
+                    <i className="ri-file-list-3-line text-primary-600" style={{ fontSize: 18 }} />
+                    <h6 className="fw-bold mb-0 text-sm">가정통신문</h6>
+                  </div>
                   <Link to="/board/parent-notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>
                     더보기
                   </Link>
@@ -372,12 +372,12 @@ export default function ParentChildrenStatus() {
               <ClassNotebookWidget classroomId={null} studentUserUid={selectedChildId} moreHref="/board/class-diary" />
             </div>
             <div className="col-xl-6 d-flex flex-column">
-              <div className="card shadow-sm h-100" style={{ borderRadius: 16 }}>
-                <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
-                  <h6 className="fw-bold mb-0 text-sm">
-                    <i className="ri-parent-line text-primary-600 me-2" />
-                    학부모 게시판
-                  </h6>
+              <div className="card shadow-sm h-100 dash-card">
+                <div className="d-flex justify-content-between align-items-center dash-card-header">
+                  <div className="d-flex align-items-center gap-8">
+                    <i className="ri-parent-line text-primary-600" style={{ fontSize: 18 }} />
+                    <h6 className="fw-bold mb-0 text-sm">학부모 게시판</h6>
+                  </div>
                   <a href="/board/parent" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>
                     더보기
                   </a>

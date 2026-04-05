@@ -45,11 +45,12 @@ export default function NeisEventsWidget() {
   }, [])
 
   return (
-    <div className="card shadow-sm h-100 overflow-hidden" style={{ borderRadius: 16, border: "1px solid #e0e0e0" }}>
-      <div className="d-flex align-items-center justify-content-between p-16 border-bottom">
-        <h6 className="fw-bold mb-0 text-sm">
-          <i className="ri-calendar-event-line text-primary-600 me-2" />학교 일정
-        </h6>
+    <div className="card shadow-sm h-100 overflow-hidden dash-card">
+      <div className="d-flex align-items-center justify-content-between dash-card-header">
+        <div className="d-flex align-items-center gap-8">
+          <i className="ri-calendar-event-line text-primary-600" style={{ fontSize: 18 }} />
+          <h6 className="fw-bold mb-0 text-sm">학교 일정</h6>
+        </div>
         <button
           className="btn btn-sm btn-outline-primary rounded-pill px-12 py-4"
           style={{ fontSize: 12, lineHeight: 1 }}

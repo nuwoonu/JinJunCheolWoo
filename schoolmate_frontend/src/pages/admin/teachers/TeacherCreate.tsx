@@ -77,9 +77,10 @@ export default function TeacherCreate() {
     try {
       await admin.post("/teachers", payload);
       navigate(ADMIN_ROUTES.TEACHERS.LIST);
-    } catch (err: any) {
-      const msg = err?.response?.data || "교사 등록에 실패했습니다.";
-      setSubmitError(msg);
+    } catch (err: unknown) {
+      // [soojin] any → unknown, axios 응답 구조 타입 캐스팅
+      const errData = (err as { response?: { data?: unknown } })?.response?.data;
+      setSubmitError(typeof errData === "string" ? errData : "교사 등록에 실패했습니다.");
     }
   };
 

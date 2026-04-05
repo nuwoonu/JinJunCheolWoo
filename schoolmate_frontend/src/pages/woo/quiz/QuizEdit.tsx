@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../api/auth";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 
@@ -23,6 +23,7 @@ interface QuestionForm {
   points: number;
   correctAnswer: string;
   options: OptionForm[];
+  explanation: string; // [soojin] 해설
 }
 
 export default function QuizEdit() {
@@ -39,6 +40,7 @@ export default function QuizEdit() {
     classroomId: "",
     dueDate: "",
     maxAttempts: "",
+    timeLimit: "",
     showAnswer: true,
   });
 
@@ -61,6 +63,7 @@ export default function QuizEdit() {
           classroomId: quiz.classroomId != null ? String(quiz.classroomId) : "",
           dueDate: quiz.dueDate ? quiz.dueDate.slice(0, 10) : "",
           maxAttempts: quiz.maxAttempts != null ? String(quiz.maxAttempts) : "",
+          timeLimit: quiz.timeLimit != null ? String(quiz.timeLimit) : "",
           showAnswer: quiz.showAnswer ?? true,
         });
 
@@ -72,6 +75,7 @@ export default function QuizEdit() {
               questionType: q.questionType,
               points: q.points || 1,
               correctAnswer: q.correctAnswer || "",
+              explanation: q.explanation || "",
               options:
                 q.questionType === "MULTIPLE_CHOICE" && q.options
                   ? q.options.map((o: any) => ({
@@ -102,6 +106,7 @@ export default function QuizEdit() {
         questionType: type,
         points: 1,
         correctAnswer: "",
+        explanation: "",
         options:
           type === "MULTIPLE_CHOICE"
             ? [
@@ -206,6 +211,7 @@ export default function QuizEdit() {
         classroomId: Number(form.classroomId),
         dueDate: form.dueDate + "T23:59:59",
         maxAttempts: form.maxAttempts ? Number(form.maxAttempts) : null,
+        timeLimit: form.timeLimit ? Number(form.timeLimit) : null,
         showAnswer: form.showAnswer,
         questions: questions.map((q, i) => ({
           questionText: q.questionText,
@@ -213,6 +219,7 @@ export default function QuizEdit() {
           points: q.points,
           questionType: q.questionType,
           correctAnswer: q.questionType === "SHORT_ANSWER" ? q.correctAnswer : null,
+          explanation: q.explanation || null,
           options:
             q.questionType === "MULTIPLE_CHOICE"
               ? q.options.map((o, j) => ({
@@ -315,8 +322,19 @@ export default function QuizEdit() {
                 onChange={(e) => setForm((f) => ({ ...f, maxAttempts: e.target.value }))}
               />
             </div>
+            <div className="col-md-2 mb-16 mb-md-0">
+              <label className="form-label fw-semibold text-sm">제한시간(분)</label>
+              <input
+                type="number"
+                className="form-control radius-8"
+                placeholder="제한 없음"
+                min={1}
+                value={form.timeLimit}
+                onChange={(e) => setForm((f) => ({ ...f, timeLimit: e.target.value }))}
+              />
+            </div>
             {/* [woo] 정답 공개 토글 - remixicon 버튼으로 표시 */}
-            <div className="col-md-2 d-flex align-items-end">
+            <div className="col-md-1 d-flex align-items-end">
               <button
                 type="button"
                 className={`btn btn-sm d-flex align-items-center gap-6 ${form.showAnswer ? "btn-success" : "btn-outline-secondary"}`}
@@ -438,6 +456,18 @@ export default function QuizEdit() {
                 </p>
               </div>
             )}
+
+            {/* [soojin] 해설 입력 */}
+            <div className="mb-8" style={{ marginTop: 16 }}>
+              <label className="form-label fw-semibold text-sm">해설 (선택사항)</label>
+              <textarea
+                className="form-control radius-8"
+                rows={3}
+                placeholder="문제 해설을 입력하세요"
+                value={q.explanation}
+                onChange={(e) => updateQuestion(qIdx, "explanation", e.target.value)}
+              />
+            </div>
           </div>
         </div>
       ))}

@@ -6,6 +6,30 @@ import { ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
 import { ADMIN_ROUTES } from '@/constants/routes';
 import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
+// [soojin] any 대신 백엔드 응답 타입 정의
+interface ParentChild {
+  uid: number;
+  name: string;
+  code?: string;
+  schoolName?: string;
+  relationship?: string;
+}
+interface ParentSearchResult {
+  uid: number;
+  name: string;
+  code?: string;
+  schoolName?: string;
+}
+interface ParentData {
+  id: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  roleRequestId?: number | null;
+  roleRequestStatus?: string;
+  children?: ParentChild[];
+}
+
 const thStyle: React.CSSProperties = {
   padding: "12px 16px",
   fontSize: 12,
@@ -20,7 +44,7 @@ const thStyle: React.CSSProperties = {
 export default function ParentDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [parent, setParent] = useState<any>(null);
+  const [parent, setParent] = useState<ParentData | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -31,10 +55,10 @@ export default function ParentDetail() {
   const [saving, setSaving] = useState(false);
   const { msg, error, setMsg, setError } = useAdminMsg();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<ParentSearchResult[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [relationship, setRelationship] = useState("OTHER");
-  const [pendingStudent, setPendingStudent] = useState<any>(null);
+  const [pendingStudent, setPendingStudent] = useState<ParentSearchResult | null>(null);
 
   const load = () =>
     admin.get(`/parents/${id}`).then((r) => {
@@ -64,7 +88,7 @@ export default function ParentDetail() {
       await admin.put(`/parents/${id}`, form);
       setMsg("저장되었습니다.");
       load();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(apiErrMsg(err, "저장에 실패했습니다."));
     } finally {
       setSaving(false);
@@ -72,17 +96,20 @@ export default function ParentDetail() {
   };
 
   const approveRequest = async () => {
+    if (!parent?.roleRequestId) return; // [soojin] roleRequestId 없을 때 API 호출 방지
     await admin.post(`/role-requests/${parent.roleRequestId}/approve`);
     load();
   };
 
   const rejectRequest = async () => {
+    if (!parent?.roleRequestId) return; // [soojin] roleRequestId 없을 때 API 호출 방지
     await admin.post(`/role-requests/${parent.roleRequestId}/reject`, { reason: rejectReason });
     setRejectReason("");
     load();
   };
 
   const suspendRequest = async () => {
+    if (!parent?.roleRequestId) return; // [soojin] roleRequestId 없을 때 API 호출 방지
     if (!confirm("역할을 정지하시겠습니까?")) return;
     await admin.post(`/role-requests/${parent.roleRequestId}/suspend`);
     load();
@@ -102,7 +129,7 @@ export default function ParentDetail() {
     setSearchResults(r.data?.content ?? []);
   };
 
-  const selectStudent = (student: any) => {
+  const selectStudent = (student: ParentSearchResult) => {
     setPendingStudent(student);
     setRelationship("OTHER");
   };
@@ -128,7 +155,7 @@ export default function ParentDetail() {
       </ParentAdminLayout>
     );
 
-  const children: any[] = parent.children ?? [];
+  const children: ParentChild[] = parent.children ?? [];
 
   return (
     <ParentAdminLayout msg={msg} error={error}>
@@ -203,7 +230,7 @@ export default function ParentDetail() {
                   </div>
                   {searchResults.length > 0 && (
                     <div style={{ maxHeight: 250, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8 }}>
-                      {searchResults.map((s: any) => (
+                      {searchResults.map((s) => (
                         <div
                           key={s.uid}
                           style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderBottom: "1px solid #f3f4f6" }}
@@ -445,7 +472,7 @@ export default function ParentDetail() {
                       </tr>
                     </thead>
                     <tbody>
-                      {children.map((c: any) => (
+                      {children.map((c) => (
                         <tr key={c.uid}>
                           <td style={{ padding: "12px 16px", paddingLeft: 24, fontWeight: 600 }}>{c.name}</td>
                           <td style={{ padding: "12px 16px" }}>{c.code ?? "-"}</td>

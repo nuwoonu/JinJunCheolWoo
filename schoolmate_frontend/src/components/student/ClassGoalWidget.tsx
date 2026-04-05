@@ -40,16 +40,13 @@ export default function ClassGoalWidget({ classroomId }: Props) {
   const now = new Date()
 
   return (
-    <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: '1px solid #e5e7eb' }}>
+    <div className="card shadow-sm h-100 dash-card">
       {/* 헤더 */}
-      <div
-        className="d-flex align-items-center justify-content-between p-16"
-        style={{ borderBottom: '1px solid #e5e7eb' }}
-      >
-        <h6 className="fw-bold mb-0 text-sm">
-          <i className="ri-focus-3-line text-primary-600 me-2" />
-          이달의 학급 목표
-        </h6>
+      <div className="d-flex align-items-center justify-content-between dash-card-header">
+        <div className="d-flex align-items-center gap-8">
+          <i className="ri-focus-3-line text-primary-600" style={{ fontSize: 18 }} />
+          <h6 className="fw-bold mb-0 text-sm">이달의 학급 목표</h6>
+        </div>
         <span className="text-xs" style={{ color: '#9ca3af', lineHeight: 1 }}>
           {now.getFullYear()}년 {now.getMonth() + 1}월
         </span>

@@ -95,13 +95,13 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
 
   return (
     <>
-      <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: '1px solid #e5e7eb' }}>
+      <div className="card shadow-sm h-100 dash-card">
         {/* [woo] 헤더 */}
-        <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
-          <h6 className="fw-bold mb-0 text-sm">
-            <i className="ri-book-open-line text-primary-600 me-2" />
-            우리 반 알림장
-          </h6>
+        <div className="d-flex justify-content-between align-items-center dash-card-header">
+          <div className="d-flex align-items-center gap-8">
+            <i className="ri-book-open-line text-primary-600" style={{ fontSize: 18 }} />
+            <h6 className="fw-bold mb-0 text-sm">우리 반 알림장</h6>
+          </div>
           <div className="d-flex align-items-center gap-8">
             {moreHref && (
               <a

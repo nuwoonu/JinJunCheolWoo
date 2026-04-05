@@ -124,15 +124,6 @@ export default function RegisterSchoolSelect() {
           {/* 검색 폼 */}
           <form onSubmit={handleSearch} className="mb-3">
             <div className="row g-2 align-items-end">
-              <div className="col-6">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="학교명 검색 (예: 서울중학교)"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
               <div className="col-3">
                 <select
                   className="form-select"
@@ -143,6 +134,15 @@ export default function RegisterSchoolSelect() {
                     <option key={k} value={k}>{k || '전체'}</option>
                   ))}
                 </select>
+              </div>
+              <div className="col-6">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="학교명 검색 (예: 서울중학교)"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
               <div className="col-3">
                 <button

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../../api/auth";
 import { useAuth } from "../../../contexts/AuthContext";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
@@ -22,6 +22,15 @@ interface Submission {
   status: "SUBMITTED" | "LATE" | "GRADED";
 }
 
+// [soojin] 학급 전체 학생 제출 현황 타입
+interface StudentWithSubmission {
+  studentInfoId: number;
+  studentName: string;
+  studentNumber: string;
+  submitted: boolean;
+  submission: Submission | null;
+}
+
 interface HomeworkDetail {
   id: number;
   title: string;
@@ -34,7 +43,6 @@ interface HomeworkDetail {
   dueDate: string;
   attachmentUrl: string | null;
   attachmentOriginalName: string | null;
-  // [woo] 최대 점수
   maxScore: number;
   submissionCount: number;
   totalStudentCount: number;
@@ -42,18 +50,20 @@ interface HomeworkDetail {
   updateDate: string;
   submissions: Submission[] | null;
   mySubmission: Submission | null;
+  // [soojin] 학급 전체 학생 목록 (교사용)
+  allStudents: StudentWithSubmission[] | null;
 }
 
-const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
-  OPEN: { text: "진행중", cls: "bg-success-100 text-success-600" },
-  CLOSED: { text: "마감", cls: "bg-danger-100 text-danger-600" },
-  GRADED: { text: "채점완료", cls: "bg-primary-100 text-primary-600" },
+const STATUS_LABEL: Record<string, { text: string; bg: string; color: string }> = {
+  OPEN: { text: "진행중", bg: "var(--success-100)", color: "var(--success-600)" },
+  CLOSED: { text: "마감", bg: "var(--danger-100)", color: "var(--danger-600)" },
+  GRADED: { text: "채점완료", bg: "var(--primary-100)", color: "var(--primary-600)" },
 };
 
-const SUB_STATUS: Record<string, { text: string; cls: string }> = {
-  SUBMITTED: { text: "제출", cls: "bg-success-100 text-success-600" },
-  LATE: { text: "지각제출", cls: "bg-warning-100 text-warning-600" },
-  GRADED: { text: "채점완료", cls: "bg-primary-100 text-primary-600" },
+const SUB_STATUS: Record<string, { text: string; bg: string; color: string }> = {
+  SUBMITTED: { text: "제출", bg: "var(--success-100)", color: "var(--success-600)" },
+  LATE: { text: "지각제출", bg: "var(--warning-100)", color: "var(--warning-600)" },
+  GRADED: { text: "채점완료", bg: "var(--primary-100)", color: "var(--primary-600)" },
 };
 
 export default function HomeworkDetailPage() {
@@ -103,7 +113,6 @@ export default function HomeworkDetailPage() {
     };
   }, [gradeTarget]);
 
-  // [woo] 학생 과제 제출
   const handleSubmit = async () => {
     if (!submitContent.trim() && !submitFile) {
       return alert("내용 또는 파일을 첨부해주세요.");
@@ -127,7 +136,6 @@ export default function HomeworkDetailPage() {
     }
   };
 
-  // [woo] 교사 채점
   const handleGrade = async (submissionId: number) => {
     setGrading(true);
     try {
@@ -147,7 +155,6 @@ export default function HomeworkDetailPage() {
     }
   };
 
-  // [woo] 마감일 수정
   const handleUpdateDueDate = async () => {
     if (!newDueDate) return alert("마감일을 선택해주세요.");
     try {
@@ -177,7 +184,6 @@ export default function HomeworkDetailPage() {
     }
   };
 
-  // [woo] 과제 삭제
   const handleDelete = async () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
@@ -189,7 +195,6 @@ export default function HomeworkDetailPage() {
     }
   };
 
-  // [woo] 과제 상태 변경 (OPEN / CLOSED / GRADED)
   const handleStatusChange = async (newStatus: string) => {
     const labels: Record<string, string> = { OPEN: "진행중", CLOSED: "마감", GRADED: "채점완료" };
     if (!confirm(`과제 상태를 "${labels[newStatus]}"(으)로 변경하시겠습니까?`)) return;
@@ -204,7 +209,9 @@ export default function HomeworkDetailPage() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="text-center py-40 text-secondary-light">불러오는 중...</div>
+        <div style={{ textAlign: "center", padding: "2.5rem", color: "var(--text-secondary-light)" }}>
+          불러오는 중...
+        </div>
       </DashboardLayout>
     );
   }
@@ -212,42 +219,67 @@ export default function HomeworkDetailPage() {
   if (!homework) {
     return (
       <DashboardLayout>
-        <div className="text-center py-40 text-secondary-light">과제를 찾을 수 없습니다.</div>
+        <div style={{ textAlign: "center", padding: "2.5rem", color: "var(--text-secondary-light)" }}>
+          과제를 찾을 수 없습니다.
+        </div>
       </DashboardLayout>
     );
   }
 
   const st = STATUS_LABEL[homework.status] ?? STATUS_LABEL.OPEN;
   const isOverdue = new Date(homework.dueDate) < new Date();
+  const allStudents = homework.allStudents ?? [];
+  const submittedCount = allStudents.filter((s) => s.submitted).length;
+
+  // ========== 목록으로 버튼 (공통) ==========
+  const BackButton = () => (
+    <button
+      onClick={() => navigate("/homework")}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.375rem",
+        marginBottom: "1.5rem",
+        padding: "0.375rem 0.875rem",
+        border: "1px solid var(--neutral-200)",
+        borderRadius: "0.5rem",
+        background: "none",
+        cursor: "pointer",
+        fontSize: "0.875rem",
+        color: "var(--neutral-700)",
+      }}
+    >
+      ← 과제 목록으로
+    </button>
+  );
 
   return (
     <DashboardLayout>
-      {/* [soojin] 브레드크럼 제거 → 목록으로 버튼으로 교체 */}
-      <button
-        onClick={() => navigate("/homework")}
+      <BackButton />
+
+      {/* ── 과제 정보 카드 ── */}
+      <div
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "0.375rem",
-          marginBottom: "1.5rem",
-          padding: "0.375rem 0.875rem",
+          backgroundColor: "#fff",
+          borderRadius: "0.75rem",
           border: "1px solid var(--neutral-200)",
-          borderRadius: "0.5rem",
-          background: "none",
-          cursor: "pointer",
-          fontSize: "0.875rem",
-          color: "var(--neutral-700)",
+          marginBottom: "1.5rem",
+          overflow: "hidden",
         }}
       >
-        ← 과제 목록으로
-      </button>
-
-      {/* 과제 내용 카드 */}
-      <div className="card radius-12 mb-24">
-        <div className="card-header d-flex justify-content-between align-items-center py-16 px-24 border-bottom">
-          <div>
-            <h6 className="mb-4">{homework.title}</h6>
-            <div className="d-flex align-items-center gap-12 text-sm text-secondary-light">
+        {/* 헤더 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            padding: "1.25rem 1.5rem",
+            borderBottom: "1px solid var(--neutral-200)",
+          }}
+        >
+          <div style={{ flexGrow: 1, marginRight: "1rem" }}>
+            <h6 style={{ marginBottom: "0.375rem" }}>{homework.title}</h6>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.875rem", color: "var(--text-secondary-light)" }}>
               <span>{homework.teacherName}</span>
               <span>|</span>
               <span>{homework.classroomName}</span>
@@ -255,23 +287,58 @@ export default function HomeworkDetailPage() {
               <span>{homework.createDate?.slice(0, 10)}</span>
             </div>
           </div>
-          <div className="d-flex align-items-center gap-8">
-            <span className={`badge ${st.cls}`}>{st.text}</span>
-            {/* [woo] 교사: 마감일 클릭 시 수정 가능 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", flexShrink: 0 }}>
+            <span
+              style={{
+                padding: "0.2rem 0.625rem",
+                borderRadius: "0.375rem",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                backgroundColor: st.bg,
+                color: st.color,
+              }}
+            >
+              {st.text}
+            </span>
+            {/* 마감일 */}
             {isTeacher && editingDueDate ? (
-              <div className="d-flex align-items-center gap-4">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
                 <input
                   type="date"
-                  className="form-control form-control-sm radius-8"
-                  style={{ width: 150 }}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    borderRadius: "0.375rem",
+                    border: "1px solid var(--neutral-300)",
+                    fontSize: "0.875rem",
+                    width: 150,
+                  }}
                   value={newDueDate}
                   onChange={(e) => setNewDueDate(e.target.value)}
                 />
-                <button className="btn btn-sm btn-primary-600 radius-8" onClick={handleUpdateDueDate}>
+                <button
+                  style={{
+                    padding: "0.25rem 0.625rem",
+                    borderRadius: "0.375rem",
+                    border: "none",
+                    backgroundColor: "var(--primary-600)",
+                    color: "#fff",
+                    fontSize: "0.8125rem",
+                    cursor: "pointer",
+                  }}
+                  onClick={handleUpdateDueDate}
+                >
                   저장
                 </button>
                 <button
-                  className="btn btn-sm btn-outline-neutral-300 radius-8"
+                  style={{
+                    padding: "0.25rem 0.625rem",
+                    borderRadius: "0.375rem",
+                    border: "1px solid var(--neutral-300)",
+                    background: "none",
+                    fontSize: "0.8125rem",
+                    cursor: "pointer",
+                    color: "var(--neutral-600)",
+                  }}
                   onClick={() => setEditingDueDate(false)}
                 >
                   취소
@@ -279,8 +346,14 @@ export default function HomeworkDetailPage() {
               </div>
             ) : (
               <span
-                className={`text-sm ${isOverdue ? "text-danger-600" : "text-secondary-light"} ${isTeacher ? "cursor-pointer" : ""}`}
-                style={isTeacher ? { cursor: "pointer" } : undefined}
+                style={{
+                  fontSize: "0.875rem",
+                  color: isOverdue ? "var(--danger-600)" : "var(--text-secondary-light)",
+                  cursor: isTeacher ? "pointer" : "default",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.25rem",
+                }}
                 onClick={() => {
                   if (isTeacher) {
                     setNewDueDate(homework.dueDate?.slice(0, 10) ?? "");
@@ -289,26 +362,42 @@ export default function HomeworkDetailPage() {
                 }}
                 title={isTeacher ? "클릭하여 마감일 수정" : undefined}
               >
-                마감: {homework.dueDate?.slice(0, 10)}
-                {isTeacher && <iconify-icon icon="mdi:pencil" className="ms-4 text-xs" />}
+                {isOverdue ? "기한 지남" : `마감: ${homework.dueDate?.slice(0, 10)}`}
+                {isTeacher && <iconify-icon icon="mdi:pencil" style={{ fontSize: "0.875rem" }} />}
               </span>
             )}
           </div>
         </div>
-        <div className="card-body p-24">
-          {/* 과제 본문 */}
-          <div className="mb-20" style={{ whiteSpace: "pre-wrap", minHeight: 100 }}>
+
+        {/* 본문 */}
+        <div style={{ padding: "1.5rem" }}>
+          <div style={{ whiteSpace: "pre-wrap", minHeight: 80, color: "var(--neutral-800)", marginBottom: "1.25rem", lineHeight: 1.6 }}>
             {homework.content}
           </div>
 
-          {/* [woo] 교사 첨부파일 (예시/참고 자료) */}
+          {/* 교사 첨부파일 */}
           {homework.attachmentUrl && (
-            <div className="p-16 bg-neutral-50 radius-8 mb-20">
-              <span className="fw-semibold text-sm d-block mb-8">첨부파일</span>
+            <div
+              style={{
+                padding: "1rem",
+                backgroundColor: "var(--neutral-50)",
+                borderRadius: "0.5rem",
+                marginBottom: "1.25rem",
+                border: "1px solid var(--neutral-200)",
+              }}
+            >
+              <span style={{ fontSize: "0.875rem", fontWeight: 600, display: "block", marginBottom: "0.5rem" }}>첨부파일</span>
               <a
-                href={`/uploads/homework/${homework.attachmentUrl}`}
+                href={homework.attachmentUrl}
                 download={homework.attachmentOriginalName ?? homework.attachmentUrl}
-                className="text-primary-600 hover-text-primary-700 d-flex align-items-center gap-4"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.375rem",
+                  color: "var(--primary-600)",
+                  fontSize: "0.875rem",
+                  textDecoration: "none",
+                }}
               >
                 <iconify-icon icon="mdi:attachment" />
                 {homework.attachmentOriginalName ?? homework.attachmentUrl}
@@ -316,55 +405,64 @@ export default function HomeworkDetailPage() {
             </div>
           )}
 
-          {/* 제출 현황 요약 */}
-          <div className="d-flex align-items-center gap-16 text-sm">
-            <span className="text-secondary-light">
-              제출: <strong>{homework.submissionCount}</strong> / {homework.totalStudentCount}명
-            </span>
-          </div>
-
-          {/* [woo] 교사 전용: 상태 변경 + 삭제 버튼 */}
+          {/* 교사 전용: 상태 변경 + 수정/삭제 */}
           {isTeacher && (
-            <div className="d-flex align-items-center gap-8 mt-20">
-              <span className="text-sm fw-semibold me-4">상태 변경:</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", paddingTop: "1rem", borderTop: "1px solid var(--neutral-100)" }}>
+              <span style={{ fontSize: "0.875rem", fontWeight: 600, marginRight: "0.25rem" }}>상태 변경:</span>
               {(
                 [
-                  {
-                    value: "OPEN",
-                    label: "진행중",
-                    activeBtn: "btn-success-600",
-                    outlineBtn: "btn-outline-success-600",
-                  },
-                  { value: "CLOSED", label: "마감", activeBtn: "btn-danger-600", outlineBtn: "btn-outline-danger-600" },
-                  {
-                    value: "GRADED",
-                    label: "채점완료",
-                    activeBtn: "btn-primary-600",
-                    outlineBtn: "btn-outline-primary-600",
-                  },
+                  { value: "OPEN", label: "진행중", color: "var(--success-600)" },
+                  { value: "CLOSED", label: "마감", color: "var(--danger-600)" },
+                  { value: "GRADED", label: "채점완료", color: "var(--primary-600)" },
                 ] as const
               ).map((s) => {
                 const isActive = homework.status === s.value;
                 return (
                   <button
                     key={s.value}
-                    className={`btn btn-sm radius-8 ${isActive ? s.activeBtn : s.outlineBtn}`}
                     disabled={isActive}
                     onClick={() => handleStatusChange(s.value)}
+                    style={{
+                      padding: "0.3rem 0.875rem",
+                      borderRadius: "0.5rem",
+                      fontSize: "0.875rem",
+                      cursor: isActive ? "default" : "pointer",
+                      border: `1px solid ${s.color}`,
+                      backgroundColor: isActive ? s.color : "transparent",
+                      color: isActive ? "#fff" : s.color,
+                    }}
                   >
                     {s.label}
                   </button>
                 );
               })}
-              {/* [woo] 과제 수정/삭제 버튼 */}
-              <div className="ms-auto d-flex gap-8">
+              <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
                 <button
-                  className="btn btn-outline-primary-600 btn-sm radius-8"
+                  style={{
+                    padding: "0.3rem 0.875rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid var(--primary-600)",
+                    background: "none",
+                    color: "var(--primary-600)",
+                    fontSize: "0.875rem",
+                    cursor: "pointer",
+                  }}
                   onClick={() => navigate(`/homework/${id}/edit`)}
                 >
                   수정
                 </button>
-                <button className="btn btn-outline-danger-600 btn-sm radius-8" onClick={handleDelete}>
+                <button
+                  style={{
+                    padding: "0.3rem 0.875rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid var(--danger-600)",
+                    background: "none",
+                    color: "var(--danger-600)",
+                    fontSize: "0.875rem",
+                    cursor: "pointer",
+                  }}
+                  onClick={handleDelete}
+                >
                   삭제
                 </button>
               </div>
@@ -373,182 +471,358 @@ export default function HomeworkDetailPage() {
         </div>
       </div>
 
-      {/* ========== [woo] 교사 전용: 제출 현황 목록 ========== */}
-      {isTeacher && homework.submissions && (
-        <div className="card radius-12 mb-24">
-          <div className="card-header py-16 px-24 border-bottom">
-            <h6 className="mb-0">
-              제출 현황 ({homework.submissions.length}/{homework.totalStudentCount})
-            </h6>
-          </div>
-          <div className="card-body p-0">
-            <div className="table-responsive">
-              <table className="table bordered-table mb-0">
-                <thead>
-                  <tr>
-                    <th style={{ width: 80 }}>번호</th>
-                    <th>학생명</th>
-                    <th style={{ width: 120 }}>제출일</th>
-                    <th style={{ width: 80 }}>상태</th>
-                    <th style={{ width: 80 }}>점수</th>
-                    <th style={{ width: 100 }}>첨부</th>
-                    <th style={{ width: 100 }}>채점</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {homework.submissions.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-24 text-secondary-light">
-                        제출한 학생이 없습니다.
-                      </td>
-                    </tr>
-                  ) : (
-                    homework.submissions.map((sub) => {
-                      const subSt = SUB_STATUS[sub.status] ?? SUB_STATUS.SUBMITTED;
-                      return (
-                        <tr key={sub.id}>
-                          <td>{sub.studentNumber}</td>
-                          <td>{sub.studentName}</td>
-                          <td className="text-secondary-light">{sub.submittedAt?.slice(0, 10)}</td>
-                          <td>
-                            <span className={`badge ${subSt.cls}`}>{subSt.text}</span>
-                          </td>
-                          <td>{sub.score !== null ? `${sub.score}/${homework.maxScore ?? 100}` : "-"}</td>
-                          <td>
-                            {sub.attachmentUrl ? (
-                              <a
-                                href={`/uploads/homework/${sub.attachmentUrl}`}
-                                download={sub.attachmentOriginalName ?? sub.attachmentUrl}
-                                className="text-primary-600"
-                              >
-                                <iconify-icon icon="mdi:download" />
-                              </a>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                          <td>
-                            {sub.status !== "GRADED" ? (
-                              <button
-                                className="btn btn-sm btn-primary-600 radius-8"
-                                onClick={() => {
-                                  setGradeTarget(sub.id);
-                                  setGradeScore(sub.score?.toString() ?? "");
-                                  setGradeFeedback(sub.feedback ?? "");
-                                }}
-                              >
-                                채점
-                              </button>
-                            ) : (
-                              <button
-                                className="btn btn-sm btn-outline-primary-600 radius-8"
-                                onClick={() => {
-                                  setGradeTarget(sub.id);
-                                  setGradeScore(sub.score?.toString() ?? "");
-                                  setGradeFeedback(sub.feedback ?? "");
-                                }}
-                              >
-                                수정
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+      {/* ── 교사 전용: 제출 통계 + 학생 목록 ── */}
+      {isTeacher && (
+        <div
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: "0.75rem",
+            border: "1px solid var(--neutral-200)",
+            marginBottom: "1.5rem",
+            overflow: "hidden",
+          }}
+        >
+          {/* 제출 통계 */}
+          <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--neutral-200)" }}>
+            <h6 style={{ fontWeight: 600, marginBottom: "1rem" }}>제출 현황</h6>
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ padding: "1rem", borderRadius: "0.5rem", backgroundColor: "var(--success-50)", textAlign: "center" }}>
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-secondary-light)", marginBottom: "0.375rem" }}>제출</p>
+                  <p style={{ fontWeight: 700, color: "var(--success-600)", fontSize: "1rem", marginBottom: 0 }}>{submittedCount}명</p>
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ padding: "1rem", borderRadius: "0.5rem", backgroundColor: "var(--danger-50)", textAlign: "center" }}>
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-secondary-light)", marginBottom: "0.375rem" }}>미제출</p>
+                  <p style={{ fontWeight: 700, color: "var(--danger-600)", fontSize: "1rem", marginBottom: 0 }}>
+                    {allStudents.length - submittedCount}명
+                  </p>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* 학생 목록 */}
+          <div style={{ padding: "1.25rem 1.5rem" }}>
+            <h6 style={{ fontWeight: 600, marginBottom: "0.75rem" }}>학생별 제출 결과</h6>
+            {allStudents.length === 0 ? (
+              <p style={{ textAlign: "center", color: "var(--text-secondary-light)", padding: "1.5rem 0", marginBottom: 0 }}>
+                학생 정보가 없습니다.
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {allStudents.map((s) => {
+                  const sub = s.submission;
+                  const subSt = sub ? (SUB_STATUS[sub.status] ?? SUB_STATUS.SUBMITTED) : null;
+                  return (
+                    <div
+                      key={s.studentInfoId}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "0.875rem 1rem",
+                        borderRadius: "0.75rem",
+                        border: "1px solid var(--neutral-200)",
+                        gap: "0.75rem",
+                      }}
+                    >
+                      {/* 아바타 */}
+                      <div
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: "0.5rem",
+                          backgroundColor: s.submitted ? "var(--primary-100)" : "var(--neutral-100)",
+                          color: s.submitted ? "var(--primary-600)" : "var(--neutral-400)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: 700,
+                          fontSize: "0.8125rem",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {s.studentNumber?.slice(-2) ?? "?"}
+                      </div>
+
+                      {/* 학생 정보 */}
+                      <div style={{ flexGrow: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.125rem" }}>
+                          <span style={{ fontWeight: 600, color: "var(--neutral-700)" }}>{s.studentName}</span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-secondary-light)" }}>{s.studentNumber}</span>
+                        </div>
+                        {sub && (
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-secondary-light)" }}>
+                            {sub.submittedAt?.slice(0, 16).replace("T", " ")}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 점수 */}
+                      <div style={{ textAlign: "right", marginRight: "0.5rem" }}>
+                        {sub && sub.score !== null ? (
+                          <>
+                            <p style={{ fontWeight: 700, color: "var(--primary-600)", fontSize: "1.125rem", marginBottom: 0 }}>
+                              {sub.score}점
+                            </p>
+                            <p style={{ fontSize: "0.75rem", color: "var(--text-secondary-light)", marginBottom: 0 }}>
+                              {homework.maxScore ?? 100}점 만점
+                            </p>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: "0.875rem", color: "var(--text-secondary-light)" }}>-</span>
+                        )}
+                      </div>
+
+                      {/* 상태 badge 또는 채점 버튼 */}
+                      {s.submitted && sub ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                          <span
+                            style={{
+                              padding: "0.2rem 0.5rem",
+                              borderRadius: "0.375rem",
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                              backgroundColor: subSt?.bg,
+                              color: subSt?.color,
+                            }}
+                          >
+                            {subSt?.text}
+                          </span>
+                          {/* 첨부파일 */}
+                          {sub.attachmentUrl && (
+                            <a
+                              href={sub.attachmentUrl}
+                              download={sub.attachmentOriginalName ?? sub.attachmentUrl}
+                              style={{ color: "var(--primary-600)", display: "flex", alignItems: "center" }}
+                            >
+                              <iconify-icon icon="mdi:download" style={{ fontSize: "1.125rem" }} />
+                            </a>
+                          )}
+                          <button
+                            style={{
+                              padding: "0.3rem 0.75rem",
+                              borderRadius: "0.5rem",
+                              border: sub.status === "GRADED" ? "1px solid var(--primary-600)" : "none",
+                              backgroundColor: sub.status === "GRADED" ? "transparent" : "var(--primary-600)",
+                              color: sub.status === "GRADED" ? "var(--primary-600)" : "#fff",
+                              fontSize: "0.8125rem",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              setGradeTarget(sub.id);
+                              setGradeScore(sub.score?.toString() ?? "");
+                              setGradeFeedback(sub.feedback ?? "");
+                            }}
+                          >
+                            {sub.status === "GRADED" ? "수정" : "채점"}
+                          </button>
+                        </div>
+                      ) : (
+                        <span
+                          style={{
+                            padding: "0.2rem 0.625rem",
+                            borderRadius: "0.375rem",
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            border: "1px solid var(--danger-300)",
+                            color: "var(--danger-600)",
+                            backgroundColor: "var(--danger-50)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          미제출
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* [woo] 채점 모달 */}
+      {/* ── 채점 모달 ── */}
       {gradeTarget !== null && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content radius-12">
-              <div className="modal-header border-bottom py-16 px-24">
-                <h6 className="modal-title">채점</h6>
-                <button type="button" className="btn-close" onClick={() => setGradeTarget(null)} />
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1050,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: "0.75rem",
+              width: "100%",
+              maxWidth: 480,
+              margin: "1rem",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--neutral-200)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h6 style={{ margin: 0 }}>채점</h6>
+              <button
+                style={{ background: "none", border: "none", fontSize: "1.25rem", cursor: "pointer", color: "var(--neutral-500)", lineHeight: 1 }}
+                onClick={() => setGradeTarget(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: "1.5rem" }}>
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ display: "block", fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>
+                  점수{" "}
+                  <span style={{ fontWeight: 400, color: "var(--text-secondary-light)" }}>
+                    (최대 {homework?.maxScore ?? 100}점)
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  style={{
+                    width: "100%",
+                    padding: "0.625rem 0.875rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid var(--neutral-300)",
+                    fontSize: "0.875rem",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                  placeholder={`0 ~ ${homework?.maxScore ?? 100}`}
+                  max={homework?.maxScore ?? 100}
+                  min={0}
+                  value={gradeScore}
+                  onChange={(e) => setGradeScore(e.target.value)}
+                />
               </div>
-              <div className="modal-body p-24">
-                <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">
-                    점수 <span className="text-secondary-light fw-normal">(최대 {homework?.maxScore ?? 100}점)</span>
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control radius-8"
-                    placeholder={`0 ~ ${homework?.maxScore ?? 100}`}
-                    max={homework?.maxScore ?? 100}
-                    min={0}
-                    value={gradeScore}
-                    onChange={(e) => setGradeScore(e.target.value)}
-                  />
-                </div>
-                <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">피드백</label>
-                  <textarea
-                    className="form-control radius-8"
-                    rows={4}
-                    placeholder="피드백을 입력하세요"
-                    value={gradeFeedback}
-                    onChange={(e) => setGradeFeedback(e.target.value)}
-                  />
-                </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <label style={{ display: "block", fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>피드백</label>
+                <textarea
+                  style={{
+                    width: "100%",
+                    padding: "0.625rem 0.875rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid var(--neutral-300)",
+                    fontSize: "0.875rem",
+                    outline: "none",
+                    resize: "vertical",
+                    boxSizing: "border-box",
+                  }}
+                  rows={4}
+                  placeholder="피드백을 입력하세요"
+                  value={gradeFeedback}
+                  onChange={(e) => setGradeFeedback(e.target.value)}
+                />
               </div>
-              <div className="modal-footer border-top py-16 px-24 gap-8">
-                <button className="btn btn-outline-neutral-300 radius-8" onClick={() => setGradeTarget(null)}>
-                  취소
-                </button>
-                <button
-                  className="btn btn-primary-600 radius-8"
-                  onClick={() => handleGrade(gradeTarget)}
-                  disabled={grading}
-                >
-                  {grading ? "저장 중..." : "채점 완료"}
-                </button>
-              </div>
+            </div>
+            <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid var(--neutral-200)", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+              <button
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid var(--neutral-300)",
+                  background: "none",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  color: "var(--neutral-600)",
+                }}
+                onClick={() => setGradeTarget(null)}
+              >
+                취소
+              </button>
+              <button
+                style={{
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: "0.5rem",
+                  border: "none",
+                  backgroundColor: "var(--primary-600)",
+                  color: "#fff",
+                  cursor: grading ? "not-allowed" : "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  opacity: grading ? 0.7 : 1,
+                }}
+                onClick={() => handleGrade(gradeTarget)}
+                disabled={grading}
+              >
+                {grading ? "저장 중..." : "채점 완료"}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ========== [woo] 학생 전용: 제출 영역 ========== */}
+      {/* ── 학생 전용: 제출 영역 ── */}
       {isStudent && (
-        <div className="card radius-12">
-          <div className="card-header py-16 px-24 border-bottom">
-            <h6 className="mb-0">{homework.mySubmission ? "나의 제출" : "과제 제출"}</h6>
+        <div
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: "0.75rem",
+            border: "1px solid var(--neutral-200)",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--neutral-200)" }}>
+            <h6 style={{ margin: 0 }}>{homework.mySubmission ? "나의 제출" : "과제 제출"}</h6>
           </div>
-          <div className="card-body p-24">
+          <div style={{ padding: "1.5rem" }}>
             {homework.mySubmission ? (
-              // [woo] 이미 제출한 경우 - 제출 내용 + 채점 결과 표시
+              // 이미 제출한 경우
               <div>
-                <div className="mb-16">
-                  <span className="fw-semibold text-sm d-block mb-8">제출 내용</span>
-                  <div className="p-16 bg-neutral-50 radius-8" style={{ whiteSpace: "pre-wrap" }}>
+                <div style={{ marginBottom: "1rem" }}>
+                  <span style={{ fontWeight: 600, fontSize: "0.875rem", display: "block", marginBottom: "0.5rem" }}>제출 내용</span>
+                  <div
+                    style={{
+                      padding: "1rem",
+                      backgroundColor: "var(--neutral-50)",
+                      borderRadius: "0.5rem",
+                      whiteSpace: "pre-wrap",
+                      border: "1px solid var(--neutral-200)",
+                      fontSize: "0.875rem",
+                      color: "var(--neutral-800)",
+                    }}
+                  >
                     {homework.mySubmission.content || "(내용 없음)"}
                   </div>
                 </div>
+
                 {homework.mySubmission.attachmentUrl && (
-                  <div className="mb-16">
-                    <span className="fw-semibold text-sm d-block mb-8">첨부파일</span>
+                  <div style={{ marginBottom: "1rem" }}>
+                    <span style={{ fontWeight: 600, fontSize: "0.875rem", display: "block", marginBottom: "0.5rem" }}>첨부파일</span>
                     <a
-                      href={`/uploads/homework/${homework.mySubmission.attachmentUrl}`}
+                      href={homework.mySubmission.attachmentUrl}
                       download={homework.mySubmission.attachmentOriginalName}
-                      className="text-primary-600"
+                      style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", color: "var(--primary-600)", fontSize: "0.875rem" }}
                     >
-                      <iconify-icon icon="mdi:attachment" className="me-4" />
+                      <iconify-icon icon="mdi:attachment" />
                       {homework.mySubmission.attachmentOriginalName}
                     </a>
                   </div>
                 )}
-                <div className="d-flex gap-16 text-sm">
-                  <span>제출일: {homework.mySubmission.submittedAt?.slice(0, 10)}</span>
+
+                <div style={{ display: "flex", gap: "1rem", fontSize: "0.875rem", flexWrap: "wrap" }}>
+                  <span style={{ color: "var(--text-secondary-light)" }}>
+                    제출일: {homework.mySubmission.submittedAt?.slice(0, 10)}
+                  </span>
                   <span>
                     상태:{" "}
-                    <span className={`badge ${(SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).cls}`}>
+                    <span
+                      style={{
+                        padding: "0.15rem 0.4rem",
+                        borderRadius: "0.25rem",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        backgroundColor: (SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).bg,
+                        color: (SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).color,
+                      }}
+                    >
                       {(SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).text}
                     </span>
                   </span>
@@ -561,45 +835,89 @@ export default function HomeworkDetailPage() {
                     </span>
                   )}
                 </div>
+
                 {homework.mySubmission.feedback && (
-                  <div className="mt-16 p-16 bg-primary-50 radius-8">
-                    <span className="fw-semibold text-sm d-block mb-4">교사 피드백</span>
-                    <div style={{ whiteSpace: "pre-wrap" }}>{homework.mySubmission.feedback}</div>
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      padding: "1rem",
+                      backgroundColor: "var(--primary-50)",
+                      borderRadius: "0.5rem",
+                      border: "1px solid var(--primary-100)",
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, fontSize: "0.875rem", display: "block", marginBottom: "0.25rem" }}>교사 피드백</span>
+                    <div style={{ whiteSpace: "pre-wrap", fontSize: "0.875rem", color: "var(--neutral-800)" }}>
+                      {homework.mySubmission.feedback}
+                    </div>
                   </div>
                 )}
               </div>
             ) : homework.status === "CLOSED" ? (
-              // [woo] 마감된 과제
-              <div className="text-center py-24 text-danger-600">마감된 과제입니다. 제출할 수 없습니다.</div>
+              <div
+                style={{ textAlign: "center", padding: "1.5rem 0", color: "var(--danger-600)", fontSize: "0.9375rem" }}
+              >
+                마감된 과제입니다. 제출할 수 없습니다.
+              </div>
             ) : (
-              // [woo] 제출 폼
+              // 제출 폼
               <div>
-                <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">제출 내용</label>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>제출 내용</label>
                   <textarea
-                    className="form-control radius-8"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 0.875rem",
+                      borderRadius: "0.5rem",
+                      border: "1px solid var(--neutral-300)",
+                      fontSize: "0.875rem",
+                      outline: "none",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                    }}
                     rows={6}
                     placeholder="과제 내용을 작성하세요"
                     value={submitContent}
                     onChange={(e) => setSubmitContent(e.target.value)}
                   />
                 </div>
-                <div className="mb-20">
-                  <label className="form-label fw-semibold text-sm">첨부파일</label>
+                <div style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>첨부파일</label>
                   <input
                     type="file"
-                    className="form-control radius-8"
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem 0.75rem",
+                      borderRadius: "0.5rem",
+                      border: "1px solid var(--neutral-300)",
+                      fontSize: "0.875rem",
+                      boxSizing: "border-box",
+                    }}
                     onChange={(e) => setSubmitFile(e.target.files?.[0] ?? null)}
                   />
                   {submitFile && (
-                    <div className="mt-8 text-sm text-secondary-light">
-                      <iconify-icon icon="mdi:attachment" className="me-4" />
+                    <div style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "var(--text-secondary-light)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                      <iconify-icon icon="mdi:attachment" />
                       {submitFile.name} ({(submitFile.size / 1024).toFixed(1)} KB)
                     </div>
                   )}
                 </div>
-                <div className="d-flex justify-content-end">
-                  <button className="btn btn-primary-600 radius-8" onClick={handleSubmit} disabled={submitting}>
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    style={{
+                      padding: "0.625rem 1.5rem",
+                      borderRadius: "0.5rem",
+                      border: "none",
+                      backgroundColor: "var(--primary-600)",
+                      color: "#fff",
+                      fontWeight: 600,
+                      fontSize: "0.9375rem",
+                      cursor: submitting ? "not-allowed" : "pointer",
+                      opacity: submitting ? 0.7 : 1,
+                    }}
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                  >
                     {submitting ? "제출 중..." : "제출하기"}
                   </button>
                 </div>

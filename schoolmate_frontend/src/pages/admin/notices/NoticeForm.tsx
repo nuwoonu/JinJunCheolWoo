@@ -30,7 +30,7 @@ export default function NoticeForm() {
         });
       });
     }
-  }, [id]);
+  }, [id, isEdit]); // [soojin] isEdit 의존성 추가 — isEdit 변경 시에도 재조회 필요
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +47,7 @@ export default function NoticeForm() {
         await admin.post("/notices", form);
         navigate(ADMIN_ROUTES.NOTICES.LIST);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(apiErrMsg(err, "저장에 실패했습니다."));
     } finally {
       setSaving(false);

@@ -30,6 +30,8 @@ export function useAdminMsg() {
 /**
  * Axios 에러에서 백엔드 메시지를 추출하는 유틸
  */
-export function apiErrMsg(err: any, fallback = '오류가 발생했습니다.'): string {
-  return err?.response?.data?.message ?? err?.message ?? fallback;
+export function apiErrMsg(err: unknown, fallback = '오류가 발생했습니다.'): string {
+  // [soojin] any → unknown, axios 에러 구조 타입 캐스팅
+  const e = err as { response?: { data?: { message?: string } }; message?: string };
+  return e?.response?.data?.message ?? e?.message ?? fallback;
 }

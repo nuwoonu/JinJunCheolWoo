@@ -44,6 +44,9 @@ public interface StudentInfoRepositoryCustom {
 
     List<StudentInfo> findByClassroomCid(Long classroomId);
 
+    // [soojin] 수정하는 이유: 퀴즈 교사 목록에서 학급 전체 학생 수 통계 집계
+    long countByClassroomCid(Long classroomId);
+
     List<StudentInfo> findByClassroomYearAndClassroomGradeAndClassroomClassNum(int year, int grade, int classNum);
 
     Optional<StudentInfo> findByUserUid(Long uid);

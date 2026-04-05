@@ -36,9 +36,10 @@ const EMPTY_MODEL_FORM = {
 export default function Assets() {
   // --- 상태 관리 ---
   const [currentTab, setCurrentTab] = useState<"assets" | "models">("assets");
-  const [page, setPage] = useState<any>(null);
-  const [models, setModels] = useState<any[]>([]);
-  const [summaries, setSummaries] = useState<any[]>([]);
+  // [soojin] any → 구체적 타입 정의
+  const [page, setPage] = useState<{ content: Record<string, unknown>[]; totalElements: number; totalPages: number; number: number; first: boolean; last: boolean } | null>(null);
+  const [models, setModels] = useState<Record<string, unknown>[]>([]);
+  const [summaries, setSummaries] = useState<Record<string, unknown>[]>([]);
   // [soojin] 전체 건수 표시용 - 초기 로드 시 한 번만 세팅
   const [totalAll, setTotalAll] = useState<number | null>(null);
   const isInitialLoad = useRef(true);
@@ -53,8 +54,9 @@ export default function Assets() {
   const [showModelModal, setShowModelModal] = useState(false);
 
   // 폼 상태
-  const [assetForm, setAssetForm] = useState<any>({ ...EMPTY_ASSET_FORM });
-  const [modelForm, setModelForm] = useState<any>({ ...EMPTY_MODEL_FORM });
+  // [soojin] any → EMPTY_FORM 타입 그대로 사용
+  const [assetForm, setAssetForm] = useState<typeof EMPTY_ASSET_FORM>({ ...EMPTY_ASSET_FORM });
+  const [modelForm, setModelForm] = useState<typeof EMPTY_MODEL_FORM>({ ...EMPTY_MODEL_FORM });
 
   // --- 데이터 로드 ---
   const load = (p = 0, kw = keyword) =>
@@ -88,26 +90,26 @@ export default function Assets() {
     setAssetForm({ ...EMPTY_ASSET_FORM });
     setShowAssetModal(true);
   };
-  const openAssetEdit = (a: any) => {
+  const openAssetEdit = (a: Record<string, unknown>) => {
     setAssetForm({
-      id: a.id,
-      modelId: a.modelId ?? "",
-      name: a.name ?? "",
-      category: a.category ?? "",
-      manufacturer: a.manufacturer ?? "",
+      id: (a.id as number) ?? null,
+      modelId: (a.modelId as string | number) ?? "",
+      name: (a.name as string) ?? "",
+      category: (a.category as string) ?? "",
+      manufacturer: (a.manufacturer as string) ?? "",
       description: "",
-      assetCode: a.assetCode ?? "",
-      serialNumber: a.serialNumber ?? "",
-      location: a.location ?? "",
-      status: a.status ?? "AVAILABLE",
-      purchaseDate: a.purchaseDate ?? "",
+      assetCode: (a.assetCode as string) ?? "",
+      serialNumber: (a.serialNumber as string) ?? "",
+      location: (a.location as string) ?? "",
+      status: (a.status as string) ?? "AVAILABLE",
+      purchaseDate: (a.purchaseDate as string) ?? "",
     });
     setShowAssetModal(true);
   };
 
   const handleAssetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: any = {
+    const payload = {
       ...assetForm,
       modelId: assetForm.modelId !== "" ? Number(assetForm.modelId) : undefined,
     };
@@ -131,13 +133,13 @@ export default function Assets() {
     setModelForm({ ...EMPTY_MODEL_FORM });
     setShowModelModal(true);
   };
-  const openModelEdit = (m: any) => {
+  const openModelEdit = (m: Record<string, unknown>) => {
     setModelForm({
-      id: m.id,
-      name: m.name ?? "",
-      category: m.category ?? "",
-      manufacturer: m.manufacturer ?? "",
-      description: m.description ?? "",
+      id: (m.id as number) ?? null,
+      name: (m.name as string) ?? "",
+      category: (m.category as string) ?? "",
+      manufacturer: (m.manufacturer as string) ?? "",
+      description: (m.description as string) ?? "",
       imageFile: null,
     });
     setShowModelModal(true);
@@ -261,8 +263,8 @@ export default function Assets() {
                       value={assetForm.modelId}
                       onChange={(e) => {
                         const mid = e.target.value;
-                        const m = models.find((m: any) => String(m.id) === mid);
-                        setAssetForm((f: any) => ({
+                        const m = models.find((m) => String(m.id) === mid);
+                        setAssetForm((f) => ({
                           ...f,
                           modelId: mid,
                           name: m?.name ?? "",
@@ -273,7 +275,7 @@ export default function Assets() {
                       }}
                     >
                       <option value="" disabled>모델을 선택하세요</option>
-                      {models.map((m: any) => (
+                      {models.map((m) => (
                         <option key={m.id} value={m.id}>
                           [{m.category}] {m.name} ({m.manufacturer})
                         </option>
@@ -294,25 +296,25 @@ export default function Assets() {
                 <div className="row g-3">
                   <div className="col-md-6">
                     <label className="form-label fw-bold">관리 번호</label>
-                    <input className="form-control" value={assetForm.assetCode} onChange={(e) => setAssetForm((f: any) => ({ ...f, assetCode: e.target.value }))} required />
+                    <input className="form-control" value={assetForm.assetCode} onChange={(e) => setAssetForm((f) => ({ ...f, assetCode: e.target.value }))} required />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold">시리얼 번호</label>
-                    <input className="form-control" value={assetForm.serialNumber} onChange={(e) => setAssetForm((f: any) => ({ ...f, serialNumber: e.target.value }))} />
+                    <input className="form-control" value={assetForm.serialNumber} onChange={(e) => setAssetForm((f) => ({ ...f, serialNumber: e.target.value }))} />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold">상태</label>
-                    <select className="form-select" value={assetForm.status} onChange={(e) => setAssetForm((f: any) => ({ ...f, status: e.target.value }))}>
+                    <select className="form-select" value={assetForm.status} onChange={(e) => setAssetForm((f) => ({ ...f, status: e.target.value }))}>
                       {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold">보관 위치</label>
-                    <input className="form-control" value={assetForm.location} onChange={(e) => setAssetForm((f: any) => ({ ...f, location: e.target.value }))} />
+                    <input className="form-control" value={assetForm.location} onChange={(e) => setAssetForm((f) => ({ ...f, location: e.target.value }))} />
                   </div>
                   <div className="col-md-12">
                     <label className="form-label fw-bold">구매일</label>
-                    <input type="date" className="form-control" value={assetForm.purchaseDate} onChange={(e) => setAssetForm((f: any) => ({ ...f, purchaseDate: e.target.value }))} />
+                    <input type="date" className="form-control" value={assetForm.purchaseDate} onChange={(e) => setAssetForm((f) => ({ ...f, purchaseDate: e.target.value }))} />
                   </div>
                 </div>
               </div>
@@ -337,12 +339,12 @@ export default function Assets() {
               <div style={{ padding: "20px" }}>
                 <div className="mb-3">
                   <label className="form-label fw-bold">모델명</label>
-                  <input className="form-control" required placeholder="예: 갤럭시북4 Pro" value={modelForm.name} onChange={(e) => setModelForm((f: any) => ({ ...f, name: e.target.value }))} />
+                  <input className="form-control" required placeholder="예: 갤럭시북4 Pro" value={modelForm.name} onChange={(e) => setModelForm((f) => ({ ...f, name: e.target.value }))} />
                 </div>
                 <div className="row g-2 mb-3">
                   <div className="col-6">
                     <label className="form-label fw-bold">분류</label>
-                    <input className="form-control" list="categoryOptions" required placeholder="예: 노트북" value={modelForm.category} onChange={(e) => setModelForm((f: any) => ({ ...f, category: e.target.value }))} />
+                    <input className="form-control" list="categoryOptions" required placeholder="예: 노트북" value={modelForm.category} onChange={(e) => setModelForm((f) => ({ ...f, category: e.target.value }))} />
                     <datalist id="categoryOptions">
                       <option value="노트북" />
                       <option value="태블릿" />
@@ -351,16 +353,16 @@ export default function Assets() {
                   </div>
                   <div className="col-6">
                     <label className="form-label fw-bold">제조사</label>
-                    <input className="form-control" placeholder="예: 삼성전자" value={modelForm.manufacturer} onChange={(e) => setModelForm((f: any) => ({ ...f, manufacturer: e.target.value }))} />
+                    <input className="form-control" placeholder="예: 삼성전자" value={modelForm.manufacturer} onChange={(e) => setModelForm((f) => ({ ...f, manufacturer: e.target.value }))} />
                   </div>
                 </div>
                 <div className="mb-3">
                   <label className="form-label fw-bold">대표 이미지</label>
-                  <input type="file" className="form-control" accept="image/*" onChange={(e) => setModelForm((f: any) => ({ ...f, imageFile: e.target.files?.[0] || null }))} />
+                  <input type="file" className="form-control" accept="image/*" onChange={(e) => setModelForm((f) => ({ ...f, imageFile: e.target.files?.[0] || null }))} />
                 </div>
                 <div className="mb-3">
                   <label className="form-label fw-bold">상세 설명 (스펙)</label>
-                  <textarea className="form-control" rows={3} value={modelForm.description} onChange={(e) => setModelForm((f: any) => ({ ...f, description: e.target.value }))} />
+                  <textarea className="form-control" rows={3} value={modelForm.description} onChange={(e) => setModelForm((f) => ({ ...f, description: e.target.value }))} />
                 </div>
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 20px", borderTop: "1px solid var(--border-color)", position: "sticky", bottom: 0, background: "var(--white)" }}>
@@ -497,7 +499,7 @@ export default function Assets() {
             {/* 재고 요약 카드 */}
             {summaries.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 16, flexShrink: 0 }}>
-                {summaries.map((s: any) => (
+                {summaries.map((s) => (
                   <div key={s.category} style={{ flex: "1 1 200px", minWidth: 180 }}>
                     <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #e5e7eb", borderLeft: "4px solid #25A194", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", padding: "16px 20px" }}>
                       <div style={{ fontSize: 11, color: "#6b7280", fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>{s.category || "미분류"}</div>
@@ -532,7 +534,7 @@ export default function Assets() {
                     </tr>
                   </thead>
                   <tbody>
-                    {assetList.map((a: any) => (
+                    {assetList.map((a) => (
                       <tr key={a.id}>
                         <td style={{ ...tdStyle, color: "#6b7280" }}>{a.assetCode}</td>
                         <td style={{ ...tdStyle, fontWeight: 600 }}>{a.name}</td>
@@ -613,7 +615,7 @@ export default function Assets() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredModels.map((m: any) => (
+                    {filteredModels.map((m) => (
                       <tr key={m.id}>
                         <td style={{ ...tdStyle, fontWeight: 600 }}>{m.name}</td>
                         <td style={{ ...tdStyle, textAlign: "center" }}>

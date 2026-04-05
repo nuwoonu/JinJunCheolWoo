@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import "./styles/dashboard-card.css"; // [soojin] 대시보드 카드 공통 스타일
 import { useEffect } from "react";
 import PrivateRoute from "@/components/PrivateRoute";
 import PageLoader from "@/components/PageLoader";
@@ -18,6 +19,8 @@ import SelectInfo from "@/pages/auth/SelectInfo";
 import RegisterSchoolSelect from "@/pages/auth/RegisterSchoolSelect";
 import Main from "@/pages/Main";
 import MainDesign from "@/pages/Main-design";
+import SchoolSearchPage from "@/pages/SchoolSearchPage"; // [soojin] 학교 찾기 독립 페이지
+import ServiceNoticePage from "@/pages/ServiceNoticePage"; // [soojin] 공지사항 독립 페이지
 // [cheol] 학생 관련
 import StudentList from "@/pages/cheol/student/StudentList";
 import StudentMyInfo from "@/pages/cheol/student/MyInfo";
@@ -41,6 +44,7 @@ import TeacherScheduleEdit from "@/pages/woo/teacher/ScheduleEdit";
 import TeacherList from "@/pages/woo/teacher/TeacherList";
 import ParentList from "@/pages/woo/teacher/ParentList";
 import TeacherGradeClasses from "@/pages/woo/teacher/GradeClasses";
+import ClassMaterials from "@/pages/woo/teacher/ClassMaterials"; // [soojin] 수업 자료 관리
 
 // [woo] 게시판
 import SchoolNotice from "@/pages/woo/board/SchoolNotice";
@@ -157,8 +161,10 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/hub" replace />} />
-      <Route path="/main" element={<Main />} />
+      <Route path="/main" element={<MainDesign />} /> {/* [soojin] Main-design을 Main 화면으로 변경 */}
       <Route path="/main-design" element={<MainDesign />} />
+      <Route path="/school-search" element={<SchoolSearchPage />} /> {/* [soojin] 학교 찾기 독립 페이지 */}
+      <Route path="/service-notice" element={<ServiceNoticePage />} /> {/* [soojin] 공지사항 독립 페이지 */}
       <Route path="/login" element={<Login />} />
       <Route path="/hub" element={<Hub />} />
       {/* [woo] OAuth2 소셜 로그인 콜백 - 토큰 저장 후 역할별 대시보드로 이동 */}
@@ -365,6 +371,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherSchedulePage />
+          </PrivateRoute>
+        }
+      />
+      {/* [soojin] 수업 자료 관리 */}
+      <Route
+        path="/teacher/class-materials"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <ClassMaterials />
           </PrivateRoute>
         }
       />

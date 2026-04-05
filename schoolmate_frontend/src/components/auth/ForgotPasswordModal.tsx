@@ -32,7 +32,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: Props) {
       })
     }, 1000)
     return () => clearInterval(id)
-  }, [timerKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timerKey]) // [soojin] 의도적으로 timerKey만 의존: timerKey 변경 시에만 타이머 재시작 (step 추가 시 무한루프 발생)
 
   const formatCountdown = (sec: number) => {
     const m = Math.floor(sec / 60).toString().padStart(2, '0')
@@ -52,7 +52,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (isOpen) reset()
-  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen]) // [soojin] 의도적으로 isOpen만 의존: 모달 열릴 때만 초기화 (reset 함수 추가 시 무한루프 발생)
 
   useEffect(() => {
     if (!isOpen) return
@@ -72,8 +72,10 @@ export default function ForgotPasswordModal({ isOpen, onClose }: Props) {
       setStep('pending')
       setCode('')
       setTimerKey(k => k + 1)
-    } catch (err: any) {
-      setMsg({ text: err?.response?.data?.message ?? '코드 발송에 실패했습니다.', ok: false })
+    } catch (err: unknown) {
+      // [soojin] any → unknown, axios 응답 구조 타입 캐스팅
+      const text = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? '코드 발송에 실패했습니다.';
+      setMsg({ text, ok: false })
     } finally {
       setLoading(false)
     }
@@ -97,8 +99,9 @@ export default function ForgotPasswordModal({ isOpen, onClose }: Props) {
     try {
       await api.post('/auth/password/reset', { email, verificationCode: code, newPassword: pw.next })
       setStep('done')
-    } catch (err: any) {
-      const text: string = err?.response?.data?.message ?? '비밀번호 변경에 실패했습니다.'
+    } catch (err: unknown) {
+      // [soojin] any → unknown, axios 응답 구조 타입 캐스팅
+      const text: string = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? '비밀번호 변경에 실패했습니다.'
       setMsg({ text, ok: false })
       if (text.includes('코드')) setStep('pending')
     } finally {

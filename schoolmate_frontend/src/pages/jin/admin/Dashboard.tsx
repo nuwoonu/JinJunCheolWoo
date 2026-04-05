@@ -453,14 +453,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── 1행: 탭 전환형 현황 카드 ── */}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          border: "1px solid #e5e7eb",
-          marginBottom: 24,
-        }}
-      >
+      <div className="card shadow-sm dash-card" style={{ marginBottom: 24 }}>
         {/* [soojin] 탭 헤더: 아이콘 추가, 활성 색 변경, 밑줄 텍스트 중앙 정렬 (참고 디자인 반영) */}
         <div
           style={{
@@ -762,33 +755,13 @@ export default function AdminDashboard() {
         {/* 학생 대기 목록 */}
         <div style={{ flex: "1 1 400px", minWidth: 320 }}>
           {/* [soojin] 2행 학생 카드: 필터 탭(승인/대기/정지/거절) + 고정 높이 목록 */}
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-            }}
-          >
+          <div className="card shadow-sm dash-card">
             {/* [soojin] 필터 탭을 헤더 우측으로 이동 */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 20px",
-                borderBottom: "1px solid #e5e7eb",
-              }}
-            >
-              <h6
-                style={{
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: "#111827",
-                  margin: 0,
-                }}
-              >
-                학생 계정 승인 현황
-              </h6>
+            <div className="d-flex align-items-center justify-content-between dash-card-header">
+              <div className="d-flex align-items-center gap-8">
+                <i className="ri-user-follow-line text-primary-600" style={{ fontSize: 18 }} />
+                <h6 className="fw-bold mb-0 text-sm">학생 계정 승인 현황</h6>
+              </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 {(
                   ["ACTIVE", "PENDING", "SUSPENDED", "REJECTED"] as RRStatus[]
@@ -915,33 +888,13 @@ export default function AdminDashboard() {
 
         {/* [soojin] 2행 교사 카드: 필터 탭(승인/대기/정지/거절) + 고정 높이 목록 */}
         <div style={{ flex: "1 1 400px", minWidth: 320 }}>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-            }}
-          >
+          <div className="card shadow-sm dash-card">
             {/* [soojin] 필터 탭을 헤더 우측으로 이동 */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 20px",
-                borderBottom: "1px solid #e5e7eb",
-              }}
-            >
-              <h6
-                style={{
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: "#111827",
-                  margin: 0,
-                }}
-              >
-                교사 계정 승인 현황
-              </h6>
+            <div className="d-flex align-items-center justify-content-between dash-card-header">
+              <div className="d-flex align-items-center gap-8">
+                <i className="ri-user-star-line text-primary-600" style={{ fontSize: 18 }} />
+                <h6 className="fw-bold mb-0 text-sm">교사 계정 승인 현황</h6>
+              </div>
               {/* [soojin] 현재 선택 필터만 표시, 클릭 시 드롭다운으로 나머지 옵션 노출 */}
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div style={{ position: "relative" }}>
@@ -1135,42 +1088,19 @@ export default function AdminDashboard() {
       <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
         {/* 학급 현황 */}
         <div style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24 }}>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
-              }}
-            >
+          <div className="card shadow-sm dash-card d-flex flex-column h-100">
+            <div className="d-flex align-items-center justify-content-between dash-card-header">
               {/* [soojin] "N년 N학기 편성 학급"을 제목 우측으로 이동 */}
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <h6
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: "#111827",
-                    margin: 0,
-                  }}
-                >
-                  학급 현황
-                </h6>
-                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
-                  {settings
-                    ? `${settings.schoolYear}년 ${settings.semester}학기 편성 학급`
-                    : "로딩 중…"}
-                </p>
+              <div className="d-flex align-items-center gap-8">
+                <i className="ri-group-line text-primary-600" style={{ fontSize: 18 }} />
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                  <h6 className="fw-bold mb-0 text-sm">학급 현황</h6>
+                  <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                    {settings
+                      ? `${settings.schoolYear}년 ${settings.semester}학기 편성 학급`
+                      : "로딩 중…"}
+                  </p>
+                </div>
               </div>
               <Link
                 to={ADMIN_ROUTES.CLASSES.LIST}
@@ -1378,39 +1308,16 @@ export default function AdminDashboard() {
 
         {/* 다가오는 학사 일정 */}
         <div style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24 }}>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                borderBottom: "1px solid #e5e7eb",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <h6
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: "#111827",
-                    margin: 0,
-                  }}
-                >
-                  다가오는 학사 일정
-                </h6>
-                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
-                  오늘 이후 60일 이내
-                </p>
+          <div className="card shadow-sm dash-card d-flex flex-column h-100">
+            <div className="d-flex align-items-center justify-content-between dash-card-header">
+              <div className="d-flex align-items-center gap-8">
+                <i className="ri-calendar-event-line text-primary-600" style={{ fontSize: 18 }} />
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                  <h6 className="fw-bold mb-0 text-sm">다가오는 학사 일정</h6>
+                  <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                    오늘 이후 60일 이내
+                  </p>
+                </div>
               </div>
               <Link
                 to={ADMIN_ROUTES.MASTER.SCHEDULE}

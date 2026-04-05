@@ -75,8 +75,29 @@ function roleRequestBadge(status: string) {
   );
 }
 
+// [soojin] any 대신 Spring Boot 페이지 응답 타입 정의
+interface StudentItem {
+  uid: number;
+  code?: string;
+  name: string;
+  email?: string;
+  latestClass?: string;
+  statusName?: string;
+  roleRequestStatus?: string;
+  roleRequestId?: number;
+}
+interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
 export default function StudentList() {
-  const [page, setPage] = useState<any>(null);
+  const [page, setPage] = useState<SpringPage<StudentItem> | null>(null);
   // [soojin] 전체 인원 수 저장 (초기 로드 시 1회만 세팅) - TeacherList 패턴 통일
   const [totalAll, setTotalAll] = useState<number | null>(null);
   const isInitialLoad = useRef(true);
@@ -122,7 +143,7 @@ export default function StudentList() {
     load(0);
   };
 
-  const toggleAll = (checked: boolean) => setSelected(checked ? (page?.content ?? []).map((s: any) => s.uid) : []);
+  const toggleAll = (checked: boolean) => setSelected(checked ? (page?.content ?? []).map((s) => s.uid) : []);
   const toggleOne = (uid: string) =>
     setSelected((prev) => (prev.includes(uid) ? prev.filter((x) => x !== uid) : [...prev, uid]));
 
@@ -571,7 +592,7 @@ export default function StudentList() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((s: any) => (
+                {list.map((s) => (
                   <tr key={s.uid}>
                     <td
                       style={{

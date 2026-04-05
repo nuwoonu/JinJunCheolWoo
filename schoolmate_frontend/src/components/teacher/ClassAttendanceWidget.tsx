@@ -167,17 +167,12 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
 
   return (
     <>
-    <div className="card shadow-sm h-100" style={{ borderRadius: 16 }}>
+    <div className="card shadow-sm h-100 dash-card">
       {/* [woo] 헤더 */}
-      <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
+      <div className="d-flex justify-content-between align-items-center dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-user-follow-line text-primary-600" style={{ fontSize: 20 }} />
-          <div>
-            <h6 className="fw-bold mb-0 text-sm">학급 학생 출결 상태</h6>
-            <p className="text-secondary-light text-xs mb-0 mt-2">
-              {grade}학년 {classNum}반 ({total}명)
-            </p>
-          </div>
+          <h6 className="fw-bold mb-0 text-sm">학급 학생 출결 상태</h6>
         </div>
         <Link
           to="/attendance/student"
@@ -197,6 +192,7 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
       </div>
 
       <div className="p-16 d-flex flex-column gap-12">
+        <p className="text-secondary-light text-xs mb-0">{grade}학년 {classNum}반 ({total}명)</p>
         {isHoliday ? (
           <div className="text-center py-32">
             <i className="ri-calendar-event-line d-block mb-12" style={{ fontSize: 40, color: "#d1d5db" }} />

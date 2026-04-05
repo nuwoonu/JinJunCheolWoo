@@ -15,6 +15,40 @@ import type { GrantInfo } from '@/api/auth';
 
 // [joon] 교사 상세
 
+// [soojin] any 대신 백엔드 응답 타입 정의
+interface TeacherData {
+  uid?: number;
+  name?: string;
+  email?: string;
+  code?: string;
+  subjectCode?: string;
+  department?: string;
+  position?: string;
+  statusName?: string;
+  roleRequestId?: number | null;
+  roleRequestStatus?: string;
+}
+interface TeacherSection {
+  id: number;
+  classroomId?: number;
+  grade: number;
+  classNum: number;
+  subjectName?: string;
+  termName?: string;
+  studentCount?: number;
+}
+interface TeacherClassroom {
+  cid: number;
+  year?: number;
+  grade?: number;
+  classNum?: number;
+}
+interface GrantEntry {
+  id: number;
+  grantedRoleDescription?: string;
+  schoolName?: string;
+}
+
 /** SUPER_ADMIN이 부여 가능한 GrantedRole 목록 (SUPER_ADMIN 제외) */
 const GRANTED_ROLES = [
   { value: "SCHOOL_ADMIN", label: "학교 관리자" },
@@ -49,7 +83,7 @@ const POSITIONS = [
   "평교사",
   "기간제교사",
 ];
-// @ts-ignore [woo] 추후 사용 예정
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- [soojin] 추후 사용 예정, @ts-ignore 대신 eslint 주석으로 교체
 const SYSTEM_ROLES = [
   { value: "STAFF", label: "교직원" },
   { value: "ADMIN", label: "관리자" },
@@ -98,7 +132,7 @@ export default function TeacherDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { selectedSchool } = useSchool();
-  const [teacher, setTeacher] = useState<any>(null);
+  const [teacher, setTeacher] = useState<TeacherData | null>(null);
   const [subjects, setSubjects] = useState<{ code: string; name: string }[]>([]); // cheol
   const [form, setForm] = useState({
     name: "",
@@ -115,13 +149,13 @@ export default function TeacherDetail() {
   const { msg, error, setMsg, setError } = useAdminMsg();
 
   // 수업 분반 관련 state
-  const [sections, setSections] = useState<any[]>([]);
-  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [sections, setSections] = useState<TeacherSection[]>([]);
+  const [classrooms, setClassrooms] = useState<TeacherClassroom[]>([]);
   const [selectedClassroomIds, setSelectedClassroomIds] = useState<number[]>([]);
   const [sectionSaving, setSectionSaving] = useState(false);
 
   // 위임 권한 관련 state
-  const [grants, setGrants] = useState<any[]>([]);
+  const [grants, setGrants] = useState<GrantEntry[]>([]);
   const [newGrantRole, setNewGrantRole] = useState("");
 
   const grants_user: GrantInfo[] = user?.grants ?? [];
@@ -175,7 +209,7 @@ export default function TeacherDetail() {
       await admin.put(`/teachers/${uid}`, form);
       setMsg("저장되었습니다.");
       load();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(apiErrMsg(err, "저장에 실패했습니다."));
     } finally {
       setSaving(false);
@@ -418,7 +452,7 @@ export default function TeacherDetail() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-                    {sections.map((s: any) => (
+                    {sections.map((s) => (
                       <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                           <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(37,161,148,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -457,8 +491,8 @@ export default function TeacherDetail() {
                       담당 과목 <strong style={{ color: '#111827' }}>{teacher.subject}</strong> 으로 수업할 학급을 선택하세요.
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                      {classrooms.map((c: any) => {
-                        const alreadyAdded = sections.some((s: any) => s.classroomId === c.cid);
+                      {classrooms.map((c) => {
+                        const alreadyAdded = sections.some((s) => s.classroomId === c.cid);
                         const checked = selectedClassroomIds.includes(c.cid);
                         return (
                           <label
@@ -609,7 +643,7 @@ export default function TeacherDetail() {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-                        {grants.map((g: any) => (
+                        {grants.map((g) => (
                           <div
                             key={g.id}
                             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb' }}

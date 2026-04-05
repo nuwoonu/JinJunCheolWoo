@@ -75,6 +75,10 @@ public class QuizQuestion extends BaseEntity {
     @OrderBy("optionOrder ASC")
     private List<QuizOption> options = new ArrayList<>();
 
+    // [soojin] 문제 해설
+    @Column(length = 2000)
+    private String explanation;
+
     // ========== 편의 메서드 ==========
 
     // [woo] 단답형 정답 검증 (공백 제거, 대소문자 무시)

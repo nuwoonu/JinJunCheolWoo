@@ -74,6 +74,8 @@ public class QuizService {
                 .classroom(courseSection.getClassroom())
                 .dueDate(request.getDueDate())
                 .maxAttempts(request.getMaxAttempts())
+                // [soojin] 수정하는 이유: 출제 시 제한시간 저장값 반영
+                .timeLimit(request.getTimeLimit())
                 .showAnswer(request.getShowAnswer() != null ? request.getShowAnswer() : true)
                 .build();
 
@@ -87,6 +89,7 @@ public class QuizService {
                         .points(qReq.getPoints() > 0 ? qReq.getPoints() : 1)
                         .questionType(qReq.getQuestionType())
                         .correctAnswer(qReq.getCorrectAnswer())
+                        .explanation(qReq.getExplanation())
                         .build();
 
                 // [woo] 객관식 선택지 추가
@@ -123,7 +126,18 @@ public class QuizService {
                 .orElseThrow(() -> new IllegalArgumentException("교사 정보를 찾을 수 없습니다."));
 
         return quizRepository.findByTeacherInfoId(teacher.getId(), pageable)
-                .map(QuizDTO.ListResponse::fromEntity);
+                .map(quiz -> {
+                    QuizDTO.ListResponse response = QuizDTO.ListResponse.fromEntity(quiz);
+                    // [soojin] 수정하는 이유: 교사용 카드 목록에서 응시 통계 표시를 위해 계산값 주입
+                    int submissionCount = submissionRepository.countDistinctStudentByQuizId(quiz.getId());
+                    int totalStudentCount = (int) studentInfoRepository.countByClassroomCid(quiz.getClassroom().getCid());
+                    double averageScore = submissionRepository.findAverageScorePercentByQuizId(quiz.getId()).orElse(0.0);
+
+                    response.setSubmissionCount(submissionCount);
+                    response.setTotalStudentCount(totalStudentCount);
+                    response.setAverageScore(Math.round(averageScore * 10.0) / 10.0);
+                    return response;
+                });
     }
 
     public Page<QuizDTO.ListResponse> getStudentQuizzes(CustomUserDTO userDTO, Pageable pageable) {
@@ -201,6 +215,27 @@ public class QuizService {
             response.setSubmissions(allSubs.stream()
                     .map(s -> QuizDTO.SubmissionResponse.fromEntity(s, false))
                     .toList());
+
+            // [soojin] 학급 전체 학생(응시 + 미응시) 목록 생성
+            List<StudentInfo> allStudentsInClass = studentInfoRepository.findByClassroomCid(quiz.getClassroom().getCid());
+            Map<Long, QuizSubmission> latestByStudent = allSubs.stream()
+                    .collect(Collectors.toMap(
+                            s -> s.getStudent().getId(),
+                            s -> s,
+                            (a, b) -> a.getAttemptNumber() >= b.getAttemptNumber() ? a : b
+                    ));
+            List<QuizDTO.StudentWithSubmissionResponse> allStudentList = allStudentsInClass.stream()
+                    .map(si -> {
+                        QuizSubmission sub = latestByStudent.get(si.getId());
+                        return QuizDTO.StudentWithSubmissionResponse.builder()
+                                .studentInfoId(si.getId())
+                                .studentName(si.getUser().getName())
+                                .studentNumber(si.getFullStudentNumber())
+                                .submitted(sub != null)
+                                .latestSubmission(sub != null ? QuizDTO.SubmissionResponse.fromEntity(sub, false) : null)
+                                .build();
+                    }).toList();
+            response.setAllStudents(allStudentList);
         }
 
         // [woo] 학생: 본인 응시 결과
@@ -317,6 +352,8 @@ public class QuizService {
         quiz.setWeek(request.getWeek());
         quiz.setDueDate(request.getDueDate());
         quiz.setMaxAttempts(request.getMaxAttempts());
+        // [soojin] 수정하는 이유: 수정 요청에서도 제한시간 변경 가능하도록 동기화
+        quiz.setTimeLimit(request.getTimeLimit());
         if (request.getShowAnswer() != null) {
             quiz.setShowAnswer(request.getShowAnswer());
         }
@@ -346,6 +383,7 @@ public class QuizService {
                 eq.setPoints(rq.getPoints() > 0 ? rq.getPoints() : 1);
                 eq.setQuestionType(rq.getQuestionType());
                 eq.setCorrectAnswer(rq.getCorrectAnswer());
+                eq.setExplanation(rq.getExplanation());
 
                 // [woo] 객관식 선택지 in-place 업데이트
                 if (rq.getQuestionType() == QuestionType.MULTIPLE_CHOICE && rq.getOptions() != null) {
@@ -392,6 +430,7 @@ public class QuizService {
                         .points(rq.getPoints() > 0 ? rq.getPoints() : 1)
                         .questionType(rq.getQuestionType())
                         .correctAnswer(rq.getCorrectAnswer())
+                        .explanation(rq.getExplanation())
                         .build();
 
                 if (rq.getQuestionType() == QuestionType.MULTIPLE_CHOICE && rq.getOptions() != null) {

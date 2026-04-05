@@ -51,10 +51,11 @@ export default function StudentCreate() {
     password: "",
     classroomId: "",
   });
-  const [classrooms, setClassrooms] = useState<any[]>([]);
-  const [guardians, setGuardians] = useState<any[]>([]);
+  // [soojin] any[] 대신 구체적 타입 정의
+  const [classrooms, setClassrooms] = useState<{ id: number; name: string }[]>([]);
+  const [guardians, setGuardians] = useState<{ parentId: string; name: string; relation: string }[]>([]);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchResult, setSearchResult] = useState<any[]>([]);
+  const [searchResult, setSearchResult] = useState<{ id?: number; uid?: number; name: string; email?: string }[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [relModal, setRelModal] = useState<{ parentId: string; name: string } | null>(null);
   const [relation, setRelation] = useState("FATHER");
@@ -80,7 +81,7 @@ export default function StudentCreate() {
     setSearchResult(Array.isArray(r.data) ? r.data : (r.data?.content ?? []));
   };
 
-  const addGuardian = (p: any) => {
+  const addGuardian = (p: { id?: number; uid?: number; name: string; email?: string }) => {
     setShowModal(false);
     setSearchKeyword("");
     setSearchResult([]);
@@ -189,7 +190,7 @@ export default function StudentCreate() {
               onChange={(e) => setForm((f) => ({ ...f, classroomId: e.target.value }))}
             >
               <option value="">배정 안함 (미배정)</option>
-              {classrooms.map((c: any) => (
+              {classrooms.map((c) => (
                 <option key={c.cid} value={c.cid}>
                   {c.year}학년도 {c.grade}학년 {c.classNum}반
                 </option>
@@ -385,7 +386,7 @@ export default function StudentCreate() {
                 </button>
               </div>
               <div style={{ maxHeight: 300, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8 }}>
-                {searchResult.map((p: any) => (
+                {searchResult.map((p) => (
                   <button
                     key={p.id ?? p.uid}
                     type="button"

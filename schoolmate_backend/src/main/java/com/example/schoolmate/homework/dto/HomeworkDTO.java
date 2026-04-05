@@ -131,6 +131,9 @@ public class HomeworkDTO {
         // [woo] 본인 제출 정보 (학생용)
         private SubmissionResponse mySubmission;
 
+        // [soojin] 학급 전체 학생 (제출 + 미제출 포함, 교사용)
+        private List<StudentWithSubmissionResponse> allStudents;
+
         public static DetailResponse fromEntity(Homework homework, int totalStudentCount) {
             // [woo 03/25] 교사이름[과목] 형태로 표시
             String tName = homework.getCourseSection().getTeacher().getUser().getName();
@@ -203,6 +206,22 @@ public class HomeworkDTO {
                     .status(submission.getStatus())
                     .build();
         }
+    }
+
+    // ========== [soojin] 학급 전체 학생 제출 현황 응답 ==========
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StudentWithSubmissionResponse {
+        private Long studentInfoId;
+        private String studentName;
+        private String studentNumber;
+        // [soojin] true: 제출완료, false: 미제출
+        private boolean submitted;
+        // [soojin] 미제출 학생은 null
+        private SubmissionResponse submission;
     }
 
     // ========== 채점 요청 ==========

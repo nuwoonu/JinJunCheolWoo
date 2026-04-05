@@ -213,12 +213,12 @@ export default function DashboardScheduleWidget() {
   return (
     <>
       {/* [woo 03-27] 카드 — className="card"로 다크 테마 자동 대응 */}
-      <div className="card" style={css.card}>
+      <div className="card dash-card" style={css.card}>
         {/* 헤더 */}
-        <div className="border-bottom" style={css.cardHeader}>
-          <div style={css.cardTitle}>
-            <span style={{ marginRight: 6 }}></span>
-            {label}
+        <div className="d-flex align-items-center justify-content-between dash-card-header" style={css.cardHeaderExtra}>
+          <div className="d-flex align-items-center gap-8">
+            <span style={{ fontSize: 18, lineHeight: 1 }}></span>
+            <h6 className="fw-bold mb-0 text-sm">{label}</h6>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button onClick={openAdd} style={css.addBtn}>
@@ -515,25 +515,13 @@ function ScheduleModal({
 
 const css: Record<string, React.CSSProperties> = {
   card: {
-    borderRadius: 12,
     height: 480,
     display: "flex",
     flexDirection: "column",
   },
-  cardHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "16px 20px",
-    flexWrap: "wrap",
+  cardHeaderExtra: {
+    flexWrap: "wrap" as const,
     gap: 8,
-  },
-  cardTitle: {
-    margin: 0,
-    fontSize: 16,
-    fontWeight: 600,
-    display: "flex",
-    alignItems: "center",
   },
   cardBody: {
     padding: "20px",

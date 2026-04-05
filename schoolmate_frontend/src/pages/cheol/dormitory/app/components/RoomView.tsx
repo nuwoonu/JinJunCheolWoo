@@ -1,4 +1,3 @@
-// @ts-nocheck — [woo] unused 변수 빌드 에러 방지
 import { useNavigate, useParams, useLocation } from "react-router";
 import { ArrowLeft, User, UserPlus, UserMinus, Search } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -60,8 +59,10 @@ export default function RoomView() {
     try {
       await assign(selectedBed.dormitoryId, selectedStudent.id);
       setShowAssignForm(false);
-    } catch (e: any) {
-      alert(e?.response?.data?.message ?? "배정 중 오류가 발생했습니다.");
+    } catch (e: unknown) {
+      // [soojin] any → unknown, axios 응답 구조 타입 캐스팅
+      const errMsg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      alert(errMsg ?? "배정 중 오류가 발생했습니다.");
     } finally {
       setAssigning(false);
     }
@@ -71,8 +72,10 @@ export default function RoomView() {
     if (!confirm("배정을 해제하시겠습니까?")) return;
     try {
       await unassign(studentId);
-    } catch (e: any) {
-      alert(e?.response?.data?.message ?? "해제 중 오류가 발생했습니다.");
+    } catch (e: unknown) {
+      // [soojin] any → unknown, axios 응답 구조 타입 캐스팅
+      const errMsg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      alert(errMsg ?? "해제 중 오류가 발생했습니다.");
     }
   };
 

@@ -35,7 +35,7 @@ function useSubmenu() {
     // [soojin] 학급 소식 드롭다운 키
     if (p.startsWith("/parent/class/notice") || p.startsWith("/class/album")) r.classNews = true;
     // [soojin] TEACHER 전용 드롭다운 키
-    if (p.startsWith("/teacher/schedule")) r.teacherSchedule = true;
+    if (p.startsWith("/teacher/schedule") || p.startsWith("/teacher/class-materials")) r.teacherSchedule = true;
     if (p.startsWith("/homework") || p.startsWith("/quiz")) r.teacherHomework = true;
     if (p.startsWith("/homework")) r.teacherHomeworkAssign = true;
     if (p.startsWith("/quiz")) r.teacherHomeworkQuiz = true;
@@ -287,8 +287,8 @@ export default function Sidebar() {
                     </SNavLink>
                   </li>
                   <li>
-                    <SNavLink to="/teacher/schedule">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 수업 관리
+                    <SNavLink to="/teacher/class-materials">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 수업 자료
                     </SNavLink>
                   </li>
                 </ul>

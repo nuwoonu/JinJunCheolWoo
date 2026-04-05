@@ -2,103 +2,118 @@ import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import PageLoader from "@/components/PageLoader";
-import { useSchoolSearch, type SchoolSummary } from "@/hooks/useSchoolSearch";
-import api from "@/api/auth";
-
-interface ServiceNotice {
-  id: number;
-  title: string;
-  writerName: string;
-  viewCount: number;
-  isPinned: boolean;
-  createDate: string;
-}
-
-interface ServiceNoticeDetail extends ServiceNotice {
-  content: string;
-  updateDate: string;
-}
-
-const SCHOOL_KIND_OPTIONS = [
-  { value: "", label: "전체" },
-  { value: "초등학교", label: "초등학교" },
-  { value: "중학교", label: "중학교" },
-  { value: "고등학교", label: "고등학교" },
-  { value: "특수학교", label: "특수학교" },
-];
 
 type TabKey = "admin" | "teacher" | "parent" | "student";
 
-const TAB_DATA: { key: TabKey; label: string; emoji: string; items: { emoji: string; title: string; desc: string }[] }[] = [
+const TAB_DATA: {
+  key: TabKey;
+  label: string;
+  items: { title: string; desc: string; icon: string }[];
+}[] = [
   {
     key: "admin",
     label: "관리자",
-    emoji: "🔧",
     items: [
-      { emoji: "🔑", title: "권한 관리", desc: "사용자별 접근 권한을 세밀하게 설정하고 관리합니다." },
-      { emoji: "🗄️", title: "학사 데이터 관리", desc: "학교 전체 학사 데이터를 한 곳에서 체계적으로 관리합니다." },
-      { emoji: "📢", title: "공지 관리", desc: "학교 공지사항을 작성하고 대상별로 발송합니다." },
-      { emoji: "👔", title: "교직원 정보 관리", desc: "교직원 정보를 등록·수정하고 담당 업무를 배정합니다." },
+      {
+        icon: "ri-shield-keyhole-line",
+        title: "권한 관리",
+        desc: "사용자별 접근 권한을 세밀하게 설정하고 관리합니다.",
+      },
+      {
+        icon: "ri-database-2-line",
+        title: "학사 데이터 관리",
+        desc: "학교 전체 학사 데이터를 한 곳에서 체계적으로 관리합니다.",
+      },
+      { icon: "ri-megaphone-line", title: "공지 관리", desc: "학교 공지사항을 작성하고 대상별로 발송합니다." },
+      { icon: "ri-team-line", title: "교직원 정보 관리", desc: "교직원 정보를 등록·수정하고 담당 업무를 배정합니다." },
     ],
   },
   {
     key: "teacher",
     label: "교사",
-    emoji: "👩‍🏫",
     items: [
-      { emoji: "📊", title: "교사 전용 대시보드", desc: "담당 학급 현황을 한눈에 파악하는 맞춤 대시보드를 제공합니다." },
-      { emoji: "✅", title: "출결 / 성적 / 과제 관리", desc: "출석 체크, 성적 입력, 과제 배포와 제출 확인을 한 곳에서 처리합니다." },
-      { emoji: "🏫", title: "학급 관리", desc: "학급 구성원을 관리하고 학급별 활동을 기록합니다." },
-      { emoji: "💬", title: "학부모 상담 관리", desc: "상담 일정을 관리하고 상담 기록을 체계적으로 보관합니다." },
+      {
+        icon: "ri-dashboard-3-line",
+        title: "교사 전용 대시보드",
+        desc: "담당 학급 현황을 한눈에 파악하는 맞춤 대시보드를 제공합니다.",
+      },
+      {
+        icon: "ri-clipboard-line",
+        title: "출결 / 성적 / 과제 관리",
+        desc: "출석 체크, 성적 입력, 과제 배포와 제출 확인을 한 곳에서 처리합니다.",
+      },
+      { icon: "ri-group-line", title: "학급 관리", desc: "학급 구성원을 관리하고 학급별 활동을 기록합니다." },
+      {
+        icon: "ri-chat-3-line",
+        title: "학부모 상담 관리",
+        desc: "상담 일정을 관리하고 상담 기록을 체계적으로 보관합니다.",
+      },
     ],
   },
   {
     key: "parent",
     label: "학부모",
-    emoji: "👨‍👩‍👧",
     items: [
-      { emoji: "👧", title: "자녀 선택", desc: "하나의 계정으로 여러 자녀를 전환하며 관리할 수 있습니다." },
-      { emoji: "📈", title: "자녀 학습 / 생활 현황", desc: "자녀의 출석, 성적, 과제 현황을 실시간으로 확인합니다." },
-      { emoji: "🗓️", title: "상담 신청", desc: "담임 교사에게 간편하게 상담을 신청하고 일정을 조율합니다." },
-      { emoji: "💭", title: "학부모 게시판", desc: "같은 학교 학부모들과 정보를 나누는 소통 공간입니다." },
+      { icon: "ri-parent-line", title: "자녀 선택", desc: "하나의 계정으로 여러 자녀를 전환하며 관리할 수 있습니다." },
+      {
+        icon: "ri-line-chart-line",
+        title: "자녀 학습 / 생활 현황",
+        desc: "자녀의 출석, 성적, 과제 현황을 실시간으로 확인합니다.",
+      },
+      {
+        icon: "ri-calendar-schedule-line",
+        title: "상담 신청",
+        desc: "담임 교사에게 간편하게 상담을 신청하고 일정을 조율합니다.",
+      },
+      { icon: "ri-article-line", title: "학부모 게시판", desc: "같은 학교 학부모들과 정보를 나누는 소통 공간입니다." },
     ],
   },
   {
     key: "student",
     label: "학생",
-    emoji: "🎒",
     items: [
-      { emoji: "📖", title: "개인 학습 대시보드", desc: "나의 학습 진행 상황과 성적 변화를 시각적으로 확인합니다." },
-      { emoji: "📝", title: "과제 / 일정 확인", desc: "제출해야 할 과제와 다가오는 일정을 한눈에 확인합니다." },
-      { emoji: "🎓", title: "학급 보드", desc: "우리 반 공지사항과 활동을 한 곳에서 확인하는 공간입니다." },
-      { emoji: "🗨️", title: "학생 게시판", desc: "학교 생활에 대해 자유롭게 소통하는 학생 전용 게시판입니다." },
+      {
+        icon: "ri-bar-chart-box-line",
+        title: "개인 학습 대시보드",
+        desc: "나의 학습 진행 상황과 성적 변화를 시각적으로 확인합니다.",
+      },
+      {
+        icon: "ri-todo-line",
+        title: "과제 / 일정 확인",
+        desc: "제출해야 할 과제와 다가오는 일정을 한눈에 확인합니다.",
+      },
+      {
+        icon: "ri-layout-grid-line",
+        title: "학급 보드",
+        desc: "우리 반 공지사항과 활동을 한 곳에서 확인하는 공간입니다.",
+      },
+      {
+        icon: "ri-discuss-line",
+        title: "학생 게시판",
+        desc: "학교 생활에 대해 자유롭게 소통하는 학생 전용 게시판입니다.",
+      },
     ],
   },
-];
+]; // [soojin] 역할별 카드 ri 아이콘으로 교체
 
 export default function Main() {
   const { user, loading } = useAuth();
 
-  const schoolSearch = useSchoolSearch((params) => api.get("/schools", { params }), 5);
-  const [selectedSchool, setSelectedSchool] = useState<SchoolSummary | null>(null);
-
-  const [notices, setNotices] = useState<ServiceNotice[]>([]);
-  const [noticePage, setNoticePage] = useState(0);
-  const [noticeTotalPages, setNoticeTotalPages] = useState(1);
-  const [noticeTotalElements, setNoticeTotalElements] = useState(0);
-  const [noticeLoading, setNoticeLoading] = useState(false);
-  const [selectedNotice, setSelectedNotice] = useState<ServiceNoticeDetail | null>(null);
-  const [noticeDetailLoading, setNoticeDetailLoading] = useState(false);
-
   const [activeTab, setActiveTab] = useState<TabKey>("admin");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [heroPassed, setHeroPassed] = useState(false); // [soojin] 히어로 섹션 지났는지 여부
+
+  // [soojin] PWA 앱 설치 관련 state - Main.tsx에서 이식
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    fetchNotices(0);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setIsScrolled(y > 20);
+      setHeroPassed(y > 64); // [soojin] 스페이서(64px) 넘으면 히어로 상단이 뷰포트 벗어남
+    };
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -117,32 +132,57 @@ export default function Main() {
     return () => window.removeEventListener("scroll", checkReveal);
   }, []);
 
-  const fetchNotices = (p = 0) => {
-    setNoticeLoading(true);
-    api
-      .get(`/service-notices?page=${p}&size=10`)
-      .then((res) => {
-        setNotices(res.data.content);
-        setNoticeTotalPages(res.data.totalPages);
-        setNoticeTotalElements(res.data.totalElements);
-        setNoticePage(res.data.number ?? p);
-      })
-      .catch(() => {})
-      .finally(() => setNoticeLoading(false));
-  };
+  // [soojin] PWA 앱 설치 권유 로직 - Main.tsx에서 이식
+  useEffect(() => {
+    const dismissed = localStorage.getItem("pwa-install-dismissed");
+    if (dismissed && Date.now() - parseInt(dismissed) < 1 * 24 * 60 * 60 * 1000) return; // [soojin] 30일 → 1일로 변경
 
-  const openNotice = (id: number) => {
-    setNoticeDetailLoading(true);
-    api
-      .get(`/service-notices/${id}`)
-      .then((res) => setSelectedNotice(res.data))
-      .catch(() => {})
-      .finally(() => setNoticeDetailLoading(false));
-  };
+    if (window.matchMedia("(display-mode: standalone)").matches) return;
+
+    const iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (iosDevice) {
+      const isStandalone = (window.navigator as any).standalone === true;
+      if (!isStandalone) {
+        setIsIOS(true);
+        setShowInstallPrompt(true);
+      }
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", () => {
+      setShowInstallPrompt(false);
+      setDeferredPrompt(null);
+    });
+
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  }, []);
 
   const scrollTo = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // [soojin] PWA 설치 핸들러 - Main.tsx에서 이식
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setShowInstallPrompt(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const handleInstallDismiss = () => {
+    setShowInstallPrompt(false);
+    localStorage.setItem("pwa-install-dismissed", Date.now().toString());
   };
 
   if (loading) return <PageLoader />;
@@ -177,13 +217,13 @@ export default function Main() {
 
         html, body { margin: 0; padding: 0; }
         .sm-root {
-          font-family: 'Noto Sans KR', sans-serif;
+          font-family: var(--app-font-sans);
           color: var(--navy);
           background: var(--white);
           overflow-x: hidden;
           -webkit-font-smoothing: antialiased;
         }
-        .outfit { font-family: 'Outfit', sans-serif; }
+        .outfit { font-family: var(--app-font-sans); }
 
         /* ── 공통 섹션 ── */
         .sm-section { padding: 120px 48px; }
@@ -209,8 +249,8 @@ export default function Main() {
           border-radius: 50%;
         }
         .sm-section-title {
-          font-size: 2.8rem;
-          font-weight: 800;
+          font-size: 2rem;
+          font-weight: 700;
           line-height: 1.3;
           letter-spacing: -1px;
           margin-bottom: 16px;
@@ -238,8 +278,10 @@ export default function Main() {
 
         /* ── NAV ── */
         .sm-nav {
-          position: sticky;
+          position: fixed; /* [soojin] sticky → fixed (overflow-x:hidden 때문에 sticky 깨짐) */
           top: 0;
+          left: 0;
+          right: 0;
           z-index: 1000;
           height: 64px;
           background: rgba(255,255,255,0.92);
@@ -261,7 +303,7 @@ export default function Main() {
           cursor: pointer;
           background: none;
           border: none;
-          font-family: 'Noto Sans KR', sans-serif;
+          font-family: var(--app-font-sans);
         }
         .nav-link-tab:hover { color: var(--teal); }
         .btn-login-nav {
@@ -295,24 +337,7 @@ export default function Main() {
           position: relative;
           overflow: hidden;
         }
-        .hero-wrap::before {
-          content: '';
-          position: absolute;
-          top: -30%; right: -20%;
-          width: 800px; height: 800px;
-          background: rgba(78,205,196,0.15);
-          border-radius: 50%;
-          pointer-events: none;
-        }
-        .hero-wrap::after {
-          content: '';
-          position: absolute;
-          bottom: -20%; left: -10%;
-          width: 600px; height: 600px;
-          background: rgba(255,255,255,0.03);
-          border-radius: 50%;
-          pointer-events: none;
-        }
+        /* [soojin] hero 배경 동그라미 도형 제거 */
         .hero-inner {
           max-width: 1200px;
           margin: 0 auto;
@@ -330,7 +355,7 @@ export default function Main() {
           margin-bottom: 48px;
         }
         .hero-title {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--app-font-sans);
           font-size: 4.2rem;
           font-weight: 900;
           line-height: 1.1;
@@ -347,13 +372,15 @@ export default function Main() {
           color: var(--white);
         }
         .hero-desc {
-          font-size: 1.1rem;
+          font-size: 1.2rem;
+          font-weight: 500; /* [soojin] 글자 굵기 400 → 500으로 한 단계 상향 */
           line-height: 1.8;
           color: rgba(255,255,255,0.8);
           margin-bottom: 40px;
           max-width: 560px;
           margin-left: auto;
           margin-right: auto;
+          margin-bottom: 10px;
         }
         .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
         .btn-hero-primary {
@@ -490,29 +517,41 @@ export default function Main() {
         .hero-float {
           position: absolute;
           background: rgba(255,255,255,0.96);
-          border-radius: 14px;
-          padding: 14px 18px;
+          border-radius: 16px;
+          padding: 16px 20px;
           box-shadow: var(--shadow-lg);
           display: flex;
           align-items: center;
-          gap: 10px;
-          font-size: 0.82rem;
+          gap: 12px;
+          font-size: 0.84rem;
           font-weight: 600;
           color: var(--navy);
           z-index: 2;
         }
-        .hero-float.float-1 { top: -10px; right: -20px; animation: floatUp 3s ease-in-out infinite; }
-        .hero-float.float-2 { bottom: 40px; left: -30px; animation: floatUp 3s ease-in-out 1.5s infinite; }
+        .hero-float.float-1 { top: 12%; right: -50px; animation: floatUp 3s ease-in-out 0s infinite; }
+        .hero-float.float-2 { bottom: 45px; left: -30px; animation: floatUp 3s ease-in-out 1.5s infinite; }
+        .hero-float.float-3 { bottom: 30%; right: -90px; animation: floatUp 3s ease-in-out 1.0s infinite; }
+        .hero-float.float-4 { bottom: -30px; right: -60px; animation: floatUp 3s ease-in-out 2.0s infinite; }
+        .hero-float.float-5 { bottom: 50%; left: -70px; animation: floatUp 3s ease-in-out 0.5s infinite; }
+        .hero-float.float-6 { top: -30px; left: -20px; animation: floatUp 3s ease-in-out 2.5s infinite; }
         .float-icon {
-          width: 36px; height: 36px;
-          border-radius: 10px;
+          width: 38px; height: 38px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.1rem;
+          font-size: 1.3rem;
         }
         .float-icon.teal { background: var(--teal-light); }
         .float-icon.coral { background: #FFF0EE; }
+        .float-icon.mint { background: #EAFAF8; }
+        .float-icon.amber { background: #FFF8EC; }
+        .float-icon.purple { background: #F0EEFF; }
+
+        /* ── PAIN POINTS (색상 override: #25a194) ── */
+        .pain-section .section-label { background: #E0F5F5; color: #25a194; }
+        .pain-section .section-label::before { background: #25a194; }
+        .pain-section .hl { color: #157A7C; }
 
         /* ── PAIN POINTS ── */
         .pain-grid {
@@ -529,17 +568,19 @@ export default function Main() {
           overflow: hidden;
           transition: all 0.3s;
           border: 1px solid transparent;
+          min-height: 240px;
         }
         .pain-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(26,158,160,0.15); }
         .pain-tag {
-          position: absolute;
-          top: 16px; right: 16px;
+          display: inline-block;
           background: #FFF0EE;
           color: var(--accent-coral);
-          font-size: 0.72rem;
+          font-size: 0.82rem;
           font-weight: 700;
           padding: 4px 10px;
           border-radius: 50px;
+          margin-bottom: 12px;
+          margin-top: 12px;
         }
         .pain-icon {
           width: 52px; height: 52px;
@@ -591,9 +632,9 @@ export default function Main() {
           margin: 0 auto 24px;
           font-size: 2rem;
         }
-        .overview-card h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px; color: var(--navy); text-align: center; }
-        .overview-card-sub { font-size: 0.85rem; color: var(--teal); font-weight: 600; margin-bottom: 16px; text-align: center; }
-        .overview-card p { font-size: 0.95rem; color: var(--warm-gray); line-height: 1.7; text-align: center; margin: 0; }
+        .overview-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; color: var(--navy); text-align: center; }
+        .overview-card-sub { font-size: 0.82rem; color: var(--teal); font-weight: 600; margin-bottom: 16px; text-align: center; }
+        .overview-card p { font-size: 0.92rem; color: var(--warm-gray); line-height: 1.7; text-align: center; margin: 0; }
 
         /* ── ROLE FEATURES ── */
         .features-tabs {
@@ -610,7 +651,7 @@ export default function Main() {
           border-radius: 50px;
           border: none;
           background: transparent;
-          font-family: 'Noto Sans KR', sans-serif;
+          font-family: var(--app-font-sans);
           font-size: 0.92rem;
           font-weight: 600;
           color: var(--warm-gray);
@@ -653,6 +694,7 @@ export default function Main() {
           align-items: center;
           justify-content: center;
           font-size: 1.1rem;
+          color: var(--teal-dark); /* [soojin] 아이콘 색상 회원가입 버튼(teal-dark)으로 변경 */
         }
         .feature-item h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: var(--navy); }
         .feature-item p { font-size: 0.88rem; color: var(--warm-gray); line-height: 1.5; margin: 0; }
@@ -693,7 +735,7 @@ export default function Main() {
           gap: 12px;
           border-bottom: 1px solid rgba(26,158,160,0.1);
         }
-        .preview-logo-sm { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.9rem; color: var(--teal-dark); }
+        .preview-logo-sm { font-family: var(--app-font-sans); font-weight: 800; font-size: 0.9rem; color: var(--teal-dark); }
         .preview-nav-items { display: flex; gap: 20px; margin-left: 24px; }
         .preview-nav-item { width: 48px; height: 8px; background: var(--teal-light); border-radius: 4px; }
         .preview-nav-item.active { background: var(--teal); width: 60px; }
@@ -732,14 +774,15 @@ export default function Main() {
           font-size: 1.3rem;
         }
         .preview-feat h4 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; color: var(--white); }
-        .preview-feat p { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.5; margin: 0; }
+        .preview-feat p { font-size: 1rem; color: rgba(255,255,255,0.5); line-height: 1.5; margin: 0; }
 
         /* ── COMPARISON ── */
         .compare-container {
           display: grid;
-          grid-template-columns: 1fr 60px 1fr;
+          grid-template-columns: 400px 180px 400px;
           align-items: center;
           margin-top: 56px;
+          width: 980px; /* [soojin] 카드 폭 고정으로 좌우 대칭 보장 */
         }
         .compare-col { border-radius: var(--radius-lg); padding: 40px 36px; }
         .compare-col.before { background: #FFF8F7; border: 1px solid #FFE8E5; }
@@ -779,7 +822,6 @@ export default function Main() {
           justify-content: center;
           color: var(--white);
           font-size: 1.4rem;
-          box-shadow: 0 4px 20px rgba(26,158,160,0.3);
         }
 
         /* ── KEY FEATURES (roadmap) ── */
@@ -799,7 +841,7 @@ export default function Main() {
           border: 1px solid transparent;
         }
         .roadmap-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(26,158,160,0.15); }
-        .roadmap-num { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; color: var(--teal-light); margin-bottom: 12px; }
+        .roadmap-num { font-family: var(--app-font-sans); font-size: 2rem; font-weight: 700; color: var(--teal-dark); margin-bottom: 12px; } /* [soojin] 카드 숫자 색상을 주요 기능(teal-dark)으로 변경 */
         .roadmap-icon {
           width: 48px; height: 48px;
           border-radius: 14px;
@@ -813,60 +855,22 @@ export default function Main() {
         .roadmap-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; color: var(--navy); }
         .roadmap-card p { font-size: 0.82rem; color: var(--warm-gray); line-height: 1.5; margin: 0; }
 
-        /* ── SCHOOL SEARCH ── */
-        .school-search-box { background: var(--white); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-md); }
-        .school-result-item {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 12px 16px; border-radius: 10px; cursor: pointer;
-          transition: all 0.2s; border: 1px solid #eaeaea; margin-bottom: 8px; background: var(--white);
-        }
-        .school-result-item:hover, .school-result-item.sel { background: var(--teal-pale); border-color: var(--teal); }
-        .school-info-card {
-          background: var(--teal-dark);
-          border-radius: var(--radius); padding: 28px; color: var(--white);
-        }
-        .school-info-item { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
-        .school-info-label { font-size: 0.76rem; color: rgba(255,255,255,0.72); margin-bottom: 3px; }
-        .school-info-value { font-size: 0.92rem; font-weight: 600; }
-
-        /* ── NOTICE ── */
-        .notice-wrap { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-md); }
-        .notice-hd { padding: 18px 24px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-        .notice-row {
-          display: flex; align-items: center; padding: 13px 24px;
-          border-bottom: 1px solid #f8f8f8; cursor: pointer;
-          transition: background 0.18s; gap: 14px;
-        }
-        .notice-row:hover { background: var(--teal-pale); }
-        .notice-row:last-child { border-bottom: none; }
-        .notice-pin { background: var(--accent-coral); color: var(--white); font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 5px; white-space: nowrap; }
-        .notice-title { flex: 1; font-size: 0.92rem; font-weight: 500; color: var(--navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .notice-meta { font-size: 0.78rem; color: #9ca3af; white-space: nowrap; }
-
         /* ── CTA ── */
         .cta-section {
-          background: var(--teal);
+          background: #25a194; /* [soojin] 히어로 배경색(#25a194)과 동일하게 변경 */
           text-align: center;
           padding: 100px 48px;
           position: relative;
           overflow: hidden;
         }
-        .cta-section::before {
-          content: '';
-          position: absolute;
-          top: -100px; right: -100px;
-          width: 400px; height: 400px;
-          background: rgba(255,255,255,0.04);
-          border-radius: 50%;
-          pointer-events: none;
-        }
+        .cta-section::before { content: none; } /* [soojin] 동그라미 장식 제거 */
         .cta-eyebrow { font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 16px; font-weight: 500; }
         .cta-title {
-          font-size: 3rem; font-weight: 900;
+          font-size: 3rem; font-weight: 700;
           color: var(--white); line-height: 1.3;
           letter-spacing: -1px; margin-bottom: 20px;
         }
-        .cta-desc { font-size: 1.1rem; color: rgba(255,255,255,0.7); margin-bottom: 40px; line-height: 1.7; }
+        .cta-desc { font-size: 1.4rem; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 40px; line-height: 1.7; } /* [soojin] font-size 1.1→1.4rem(+2단계), font-weight 400→500(+1단계) */
         .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
         .btn-cta-primary {
           background: var(--white); color: var(--teal-dark);
@@ -924,24 +928,58 @@ export default function Main() {
           .cta-title { font-size: 2rem; }
           .cta-buttons { flex-direction: column; align-items: center; }
           .cta-section { padding: 64px 20px; }
-          .hero-float.float-1 { right: -5px; top: -5px; }
-          .hero-float.float-2 { left: -5px; bottom: 20px; }
+          .hero-float.float-1 { top: 12%; right: -5px; }
+          .hero-float.float-2 { bottom: -12px; left: -5px; }
+          .hero-float.float-3 { bottom: 5%; right: -5px; }
+          .hero-float.float-4 { bottom: -12px; right: -5px; }
+          .hero-float.float-5 { bottom: 20%; left: -5px; }
+          .hero-float.float-6 { top: -36px; left: -5px; }
         }
+
+        /* [soojin] PWA 설치 팝업 배너 - Main.tsx에서 이식 */
+        .install-prompt-banner {
+          position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+          background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); /* [soojin] 반투명 배경 */
+          padding: 18px 24px; border-radius: 16px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.15); z-index: 9999;
+          width: 90%; max-width: 480px; border: 1px solid rgba(232,236,236,0.6);
+          display: flex; align-items: center; justify-content: space-between; gap: 16px;
+          animation: slideUpPrompt 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUpPrompt { from { opacity: 0; transform: translate(-50%, 40px); } to { opacity: 1; transform: translate(-50%, 0); } }
       `}</style>
 
       <div className="sm-root">
-
         {/* ════ NAV ════ */}
         <nav className={`sm-nav${isScrolled ? " scrolled" : ""}`}>
-          <div style={{ width: '100%', padding: '0 24px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              width: "100%",
+              padding: "0 24px",
+              boxSizing: "border-box",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <div className="d-flex align-items-center gap-3">
               <a href="#hero" onClick={scrollTo("hero")} style={{ lineHeight: 0 }}>
                 <img src="/images/schoolmateLogo.png" alt="SchoolMate" width="160" height="37" />
               </a>
               <div className="d-none d-md-flex gap-1 ms-2">
-                <button className="nav-link-tab" onClick={scrollTo("features")}>서비스 소개</button>
-                <button className="nav-link-tab" onClick={scrollTo("school")}>학교 찾기</button>
-                <button className="nav-link-tab" onClick={scrollTo("notice")}>공지사항</button>
+                <button className="nav-link-tab" onClick={scrollTo("features")}>
+                  서비스 소개
+                </button>
+                <a href="/school-search" className="nav-link-tab">
+                  {" "}
+                  {/* [soojin] 스크롤 → 페이지 이동 */}
+                  학교 찾기
+                </a>
+                <a href="/service-notice" className="nav-link-tab">
+                  {" "}
+                  {/* [soojin] 스크롤 → 페이지 이동 */}
+                  공지사항
+                </a>
               </div>
             </div>
             <div className="d-flex gap-3 align-items-center">
@@ -956,20 +994,40 @@ export default function Main() {
             </div>
           </div>
         </nav>
-
+        <div style={{ height: 64 }} /> {/* [soojin] fixed nav 높이만큼 스페이서 */}
         {/* ════ 섹션 1: HERO ════ */}
-        <section id="hero" className="hero-wrap" style={{ background: "#25a194" }}> {/* [soojin] Main.tsx 히어로 바탕색(#25a194)으로 변경 */}
+        <section id="hero" className="hero-wrap" style={{ background: "#25a194" }}>
+          {" "}
+          {/* [soojin] Main.tsx 히어로 바탕색(#25a194)으로 변경 */}
           <div className="hero-inner">
             <div className="hero-text" style={{ color: "#ffffff" }}>
-              <h1 className="hero-title outfit" style={{ color: "#ffffff" }}>School Mate</h1>
-              <h2 className="hero-subtitle" style={{ color: "#ffffff" }}>통합 학사 관리 플랫폼</h2>
-              <p className="hero-desc" style={{ color: "rgba(255,255,255,0.8)" }}>
-                교사, 학생, 학부모를 하나의 플랫폼으로 연결합니다.
-                출결, 성적, 과제, 상담, 일정까지 — 모든 학사 정보를 한 곳에서 관리하세요.
+              {/* <h1 className="hero-title outfit" style={{ color: "#ffffff" }}>
+                School Mate
+              </h1> */}
+              <p className="hero-desc" style={{ color: "ffffff" }}>
+                학교에 관한 모든 정보를 한 곳에서 관리해주는{" "}
+                <img
+                  src="/images/schoolmateLogo.png"
+                  alt="SchoolMate"
+                  style={{
+                    height: "1.6em",
+                    verticalAlign: "middle",
+                    display: "inline",
+                    filter: "brightness(0) invert(1)",
+                  }}
+                />
               </p>
+              <h2 className="hero-subtitle" style={{ color: "#ffffff" }}>
+                학사 통합 관리 플랫폼
+              </h2>
               <div className="hero-buttons">
-                <a href="/register" className="btn-hero-primary">무료로 시작하기 →</a>
-                <a href="#preview" onClick={scrollTo("preview")} className="btn-hero-secondary">미리보기</a>
+                <a href="/register" className="btn-hero-primary">
+                  지금 바로 시작하기
+                </a>
+                <button className="btn-hero-secondary" onClick={handleInstallClick}>
+                  APP 다운로드
+                </button>{" "}
+                {/* [soojin] 미리보기 → APP 다운로드 */}
               </div>
             </div>
 
@@ -987,6 +1045,35 @@ export default function Main() {
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--warm-gray)" }}>새 알림</div>
                   <div style={{ color: "var(--accent-coral)", fontWeight: 800 }}>3건 도착</div>
+                </div>
+              </div>
+              {/* [soojin] 상담 신청 / 성적 조회 / 과제·퀴즈 / 학교 일정 플로팅 카드 추가 */}
+              <div className="hero-float float-3">
+                <div className="float-icon amber">📝</div>
+                <div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--warm-gray)" }}>과제/퀴즈</div>
+                  <div style={{ color: "var(--accent-amber)", fontWeight: 800 }}>확인하기</div>
+                </div>
+              </div>
+              <div className="hero-float float-4">
+                <div className="float-icon mint">📈</div>
+                <div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--warm-gray)" }}>성적 조회</div>
+                  <div style={{ color: "var(--accent-mint)", fontWeight: 800 }}>바로가기</div>
+                </div>
+              </div>
+              <div className="hero-float float-5">
+                <div className="float-icon purple">💬</div>
+                <div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--warm-gray)" }}>상담 신청</div>
+                  <div style={{ color: "#7C6DFF", fontWeight: 800 }}>신청하기</div>
+                </div>
+              </div>
+              <div className="hero-float float-6">
+                <div className="float-icon coral">📅</div>
+                <div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--warm-gray)" }}>학교 일정</div>
+                  <div style={{ color: "var(--accent-coral)", fontWeight: 800 }}>일정 보기</div>
                 </div>
               </div>
 
@@ -1030,13 +1117,19 @@ export default function Main() {
                             <div className="mock-card-line" />
                           </div>
                           <div className="mock-card">
-                            <div className="mock-card-line" style={{ background: "var(--accent-mint)", opacity: 0.3 }} />
+                            <div
+                              className="mock-card-line"
+                              style={{ background: "var(--accent-mint)", opacity: 0.3 }}
+                            />
                             <div className="mock-card-line" />
                             <div className="mock-card-line" />
                           </div>
                           <div className="mock-card">
                             <div className="mock-card-line" />
-                            <div className="mock-card-line" style={{ background: "var(--accent-amber)", opacity: 0.3 }} />
+                            <div
+                              className="mock-card-line"
+                              style={{ background: "var(--accent-amber)", opacity: 0.3 }}
+                            />
                             <div className="mock-card-line" />
                           </div>
                           <div className="mock-card">
@@ -1053,80 +1146,137 @@ export default function Main() {
             </div>
           </div>
         </section>
-
         {/* ════ 섹션 2: PAIN POINTS ════ */}
-        <section className="sm-section" style={{ background: "var(--light-gray)" }}>
+        <section className="sm-section pain-section" style={{ background: "var(--light-gray)" }}>
           <div className="sm-inner">
             <div className="reveal">
               <div className="section-label">PROBLEM</div>
-              <h2 className="sm-section-title">
+              <h3 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
                 기존 학사 시스템,
                 <br />
                 <span className="hl">이런 불편함</span> 느끼셨나요?
-              </h2>
-              <p className="sm-section-desc">
-                학교마다 다른 앱, 복잡한 메뉴, 흩어진 정보. 학부모와 교사 모두가 겪고 있는 문제입니다.
-              </p>
+              </h3>
             </div>
             <div className="pain-grid">
               {[
-                { tag: "불편", emoji: "📱", title: "학교마다 다른 앱", desc: "자녀가 다른 학교에 다니면 앱도 따로, 회원가입도 따로. 매번 두 개의 앱을 번갈아 확인해야 합니다.", delay: "reveal-d1" },
-                { tag: "복잡", emoji: "🧭", title: "직관적이지 않은 메뉴", desc: "어디서 성적을 보는지, 출결은 어떻게 확인하는지 — 메뉴 구조가 복잡해서 원하는 정보를 찾기 어렵습니다.", delay: "reveal-d2" },
-                { tag: "비효율", emoji: "🔀", title: "흩어진 학사 정보", desc: "출결은 여기, 성적은 저기, 공지는 또 다른 곳. 하나로 통합되지 않아 중요한 정보를 놓치기 쉽습니다.", delay: "reveal-d3" },
+                {
+                  tag: "불편",
+                  title: "학교마다 다른 앱",
+                  desc: "자녀가 다른 학교에 다니면 앱도 따로, 회원가입도 따로\n매번 두 개의 앱을 번갈아 확인하는 불편함",
+                  delay: "reveal-d1",
+                },
+                {
+                  tag: "복잡",
+                  title: "직관적이지 않은 메뉴",
+                  desc: "성적은 어디서 보는지, 출결은 어떻게 확인하는지\n원하는 정보를 찾기 어려운 복잡한 메뉴 구조",
+                  delay: "reveal-d2",
+                },
+                {
+                  tag: "비효율",
+                  title: "흩어진 학사 정보",
+                  desc: "출결은 이 앱, 성적은 저 앱, 공지는 또 다른 앱\n중요한 정보를 한 곳에서 보지 못하고 시간만 보내는\n비효율 형태",
+                  delay: "reveal-d3",
+                },
               ].map((c) => (
                 <div key={c.title} className={`pain-card reveal ${c.delay}`}>
                   <div className="pain-tag">{c.tag}</div>
-                  <div className="pain-icon">{c.emoji}</div>
-                  <h3>{c.title}</h3>
-                  <p>{c.desc}</p>
+                  <h4
+                    style={{
+                      marginTop: 4,
+                      marginBottom: 12,
+                      fontSize: "1.2rem",
+                      fontWeight: 700,
+                      color: "var(--navy)",
+                    }}
+                  >
+                    {c.title}
+                  </h4>
+                  <p
+                    style={{
+                      fontSize: "0.95rem",
+                      color: "var(--warm-gray)",
+                      lineHeight: 1.6,
+                      margin: 0,
+                      paddingBottom: 30,
+                      whiteSpace: "pre-line",
+                    }}
+                  >
+                    {c.desc}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
-
         {/* ════ 섹션 3: SYSTEM OVERVIEW ════ */}
         <section id="features" className="sm-section" style={{ background: "var(--white)", textAlign: "center" }}>
           <div className="sm-inner">
             <div className="reveal">
               <div className="section-label">SYSTEM OVERVIEW</div>
-              <h2 className="sm-section-title">
+              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
                 School Mate가
                 <br />
-                <span className="hl">해결합니다</span>
+                <span className="hl" style={{ color: "var(--teal-dark)" }}>
+                  해결합니다
+                </span>
               </h2>
-              <p className="sm-section-desc" style={{ margin: "0 auto" }}>
+              <p className="sm-section-desc" style={{ margin: "0 auto", fontSize: "1.2rem", fontWeight: "500" }}>
                 교사, 학생, 학부모를 하나의 플랫폼으로 연결하는 교육 관리 시스템
               </p>
             </div>
             <div className="overview-grid">
               {[
-                { emoji: "📋", title: "통합 관리", sub: "All-in-One Management", desc: "출결, 성적, 과제, 상담, 일정 — 모든 정보를 하나의 시스템에서 통합 관리합니다.", delay: "reveal-d1" },
-                { emoji: "👥", title: "역할 기반 시스템", sub: "Role-Based Access", desc: "사용자 역할에 따라 맞춤형 화면을 제공합니다. 교사, 학생, 학부모 전용 대시보드로 각자 필요한 정보만 빠르게.", delay: "reveal-d2" },
-                { emoji: "✨", title: "쉬운 UI", sub: "Intuitive Interface", desc: "누구나 쉽게 사용할 수 있는 직관적인 화면 구성. 복잡한 메뉴를 최소화했습니다.", delay: "reveal-d3" },
+                {
+                  title: "통합 관리",
+                  sub: "All-in-One Management",
+                  desc: "출결, 성적, 과제, 상담, 일정 학교에 대한 모든 정보를\n하나의 시스템에서 통합 관리합니다.",
+                  delay: "reveal-d1",
+                },
+                {
+                  title: "역할 기반 시스템",
+                  sub: "Role-Based Access",
+                  desc: "사용자 역할에 따라 맞춤형 화면을 제공합니다.\n교사, 학생, 학부모 전용 대시보드로 각자 필요한 정보만 빠르게 전달합니다.",
+                  delay: "reveal-d2",
+                },
+                {
+                  title: "쉬운 UI",
+                  sub: "Intuitive Interface",
+                  desc: "누구나 쉽게 사용할 수 있는 직관적인 화면으로 구성,\n불필요하고 복잡한 메뉴를 최소화했습니다.",
+                  delay: "reveal-d3",
+                },
               ].map((c) => (
                 <div key={c.title} className={`overview-card reveal ${c.delay}`}>
-                  <div className="overview-icon">{c.emoji}</div>
-                  <h3>{c.title}</h3>
-                  <div className="overview-card-sub">{c.sub}</div>
-                  <p>{c.desc}</p>
+                  <div className="overview-card-sub" style={{ marginBottom: 6 }}>
+                    {c.sub}
+                  </div>
+                  <h4 style={{ fontSize: "1.2rem", fontWeight: 700, margin: "0 0 6px 0", lineHeight: 1.3 }}>
+                    {c.title}
+                  </h4>
+                  <p style={{ whiteSpace: "pre-line" }}>{c.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
-
         {/* ════ 섹션 4: ROLE-BASED FEATURES ════ */}
         <section className="sm-section" style={{ background: "var(--light-gray)" }}>
           <div className="sm-inner">
             <div className="reveal">
               <div className="section-label">FEATURES</div>
-              <h2 className="sm-section-title">
-                역할별 <span className="hl">맞춤 기능</span>
+              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
+                역할별{" "}
+                <span className="hl" style={{ color: "var(--teal-dark)" }}>
+                  맞춤 기능
+                </span>
               </h2>
-              <p className="sm-section-desc">각 사용자에게 꼭 필요한 기능만 제공합니다.</p>
+              <p
+                className="sm-section-desc"
+                style={{ margin: "0", fontSize: "1.2rem", fontWeight: "500", textAlign: "left" }}
+              >
+                각 사용자에게 꼭 필요한 기능만 제공합니다.
+              </p>
             </div>
-            <div className="reveal" style={{ marginTop: 48 }}>
+            <div className="reveal" style={{ marginTop: 10 }}>
               <div className="features-tabs">
                 {TAB_DATA.map((t) => (
                   <button
@@ -1134,7 +1284,7 @@ export default function Main() {
                     className={`tab-btn${activeTab === t.key ? " active" : ""}`}
                     onClick={() => setActiveTab(t.key)}
                   >
-                    {t.emoji} {t.label}
+                    {t.label}
                   </button>
                 ))}
               </div>
@@ -1144,25 +1294,26 @@ export default function Main() {
                 <div key={t.key} className="features-grid">
                   {t.items.map((item) => (
                     <div key={item.title} className="feature-item">
-                      <div className="feature-dot">{item.emoji}</div>
+                      <div className="feature-dot">
+                        <i className={item.icon} />
+                      </div>
                       <div>
-                        <h4>{item.title}</h4>
+                        <h6 style={{ fontWeight: 700 }}>{item.title}</h6>
                         <p>{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : null
+              ) : null,
             )}
           </div>
         </section>
-
         {/* ════ 섹션 5: DASHBOARD PREVIEW ════ */}
         <section id="preview" className="sm-section preview-section">
           <div className="sm-inner" style={{ position: "relative", zIndex: 1 }}>
             <div className="reveal" style={{ textAlign: "center" }}>
               <div className="section-label">PREVIEW</div>
-              <h2 className="sm-section-title">
+              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
                 한눈에 보는
                 <br />
                 <span style={{ color: "var(--accent-mint)" }}>학사 대시보드</span>
@@ -1197,9 +1348,21 @@ export default function Main() {
                   </div>
                   <div className="preview-widget">
                     <div className="pw-title" />
-                    <div className="pw-row"><div className="pw-cell h" /><div className="pw-cell h" /><div className="pw-cell h" /></div>
-                    <div className="pw-row"><div className="pw-cell" /><div className="pw-cell" /><div className="pw-cell" /></div>
-                    <div className="pw-row"><div className="pw-cell" /><div className="pw-cell" /><div className="pw-cell" /></div>
+                    <div className="pw-row">
+                      <div className="pw-cell h" />
+                      <div className="pw-cell h" />
+                      <div className="pw-cell h" />
+                    </div>
+                    <div className="pw-row">
+                      <div className="pw-cell" />
+                      <div className="pw-cell" />
+                      <div className="pw-cell" />
+                    </div>
+                    <div className="pw-row">
+                      <div className="pw-cell" />
+                      <div className="pw-cell" />
+                      <div className="pw-cell" />
+                    </div>
                   </div>
                   <div className="preview-widget">
                     <div className="pw-title" />
@@ -1212,12 +1375,11 @@ export default function Main() {
             </div>
             <div className="preview-features-row reveal">
               {[
-                { emoji: "⚡", title: "실시간 동기화", desc: "교사가 입력하면 학부모와 학생에게 즉시 반영됩니다." },
-                { emoji: "📱", title: "모바일 최적화", desc: "어디서든 스마트폰으로 편하게 확인할 수 있습니다." },
-                { emoji: "🔒", title: "안전한 데이터", desc: "개인정보 보호와 보안을 최우선으로 설계했습니다." },
+                { title: "실시간 동기화", desc: "교사가 입력하면 학부모와 학생에게 즉시 반영됩니다." },
+                { title: "모바일 최적화", desc: "어디서든 스마트폰으로 편하게 확인할 수 있습니다." },
+                { title: "안전한 데이터", desc: "개인정보 보호와 보안을 최우선으로 설계했습니다." },
               ].map((f) => (
                 <div key={f.title} className="preview-feat">
-                  <div className="preview-feat-icon">{f.emoji}</div>
                   <h4>{f.title}</h4>
                   <p>{f.desc}</p>
                 </div>
@@ -1225,249 +1387,146 @@ export default function Main() {
             </div>
           </div>
         </section>
-
         {/* ════ 섹션 6: COMPARISON ════ */}
         <section className="sm-section" style={{ background: "var(--white)" }}>
-          <div className="sm-inner">
+          <div className="sm-inner" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div className="reveal" style={{ textAlign: "center" }}>
               <div className="section-label">COMPARISON</div>
-              <h2 className="sm-section-title">기존 시스템 vs <span className="hl">School Mate</span></h2>
-              <p className="sm-section-desc" style={{ margin: "0 auto" }}>무엇이 달라졌을까요?</p>
+              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
+                <span style={{ color: "#000" }}>기존 시스템 </span> vs{" "}
+                <img
+                  src="/images/schoolmate_logo.png"
+                  alt="School Mate"
+                  style={{ height: "5.5rem", verticalAlign: "middle" }}
+                />
+              </h2>
+              <p
+                className="sm-section-desc"
+                style={{ fontSize: "2rem", fontWeight: "500", margin: "0 auto", color: "#333" }}
+              >
+                무엇이 달라졌을까요?
+              </p>
             </div>
             <div className="compare-container reveal">
               <div className="compare-col before">
-                <h3>⚠️ 기존 시스템</h3>
-                {["학교 중심 계정 구조", "자녀별 계정 분리 → 다자녀 관리 불편", "교사와 학생 중심 설계", "복잡한 메뉴 구조"].map((txt) => (
-                  <div key={txt} className="compare-item"><div className="ci-icon">✕</div>{txt}</div>
+                <h3>기존 시스템</h3>
+                {[
+                  "학교 중심 계정 구조",
+                  "자녀별 계정 분리 → 다자녀 관리 불편",
+                  "교사와 학생 중심 설계",
+                  "복잡한 메뉴 구조",
+                ].map((txt) => (
+                  <div key={txt} className="compare-item">
+                    <div className="ci-icon">✕</div>
+                    {txt}
+                  </div>
                 ))}
               </div>
               <div className="compare-arrow">
                 <div className="arrow-circle">→</div>
               </div>
               <div className="compare-col after">
-                <h3>💡 School Mate</h3>
-                {["학부모 계정으로 자녀 선택", "다자녀 통합 대시보드", "역할 기반 맞춤 화면", "직관적인 UI"].map((txt) => (
-                  <div key={txt} className="compare-item"><div className="ci-icon">✓</div>{txt}</div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ════ 섹션 7: KEY FEATURES ════ */}
-        <section className="sm-section" style={{ background: "var(--light-gray)" }}>
-          <div className="sm-inner">
-            <div className="reveal" style={{ textAlign: "center" }}>
-              <div className="section-label">KEY FEATURES</div>
-              <h2 className="sm-section-title"><span className="hl">주요 기능</span></h2>
-              <p className="sm-section-desc" style={{ margin: "0 auto" }}>School Mate가 제공하는 핵심 기능을 소개합니다.</p>
-            </div>
-            <div className="roadmap-grid">
-              {[
-                { num: "01", emoji: "🤖", title: "AI 스마트 알림", desc: "중요한 공지사항을 반복 알림으로 놓치지 않도록", delay: "reveal-d1" },
-                { num: "02", emoji: "🔗", title: "NEIS 공식 연동", desc: "나이스 시스템과의 공식 데이터 연동 지원", delay: "reveal-d2" },
-                { num: "03", emoji: "🌐", title: "다국어 자동 번역", desc: "AI를 활용한 공지 다국어 자동 번역 기능", delay: "reveal-d3" },
-                { num: "04", emoji: "📅", title: "상담 예약 시스템", desc: "학부모-교사 간 편리한 상담 예약 기능", delay: "reveal-d4" },
-                { num: "05", emoji: "📉", title: "성적 변화 감지", desc: "학생 성적 변화를 자동으로 분석하고 알림", delay: "reveal-d5" },
-              ].map((c) => (
-                <div key={c.num} className={`roadmap-card reveal ${c.delay}`}>
-                  <div className="roadmap-num outfit">{c.num}</div>
-                  <div className="roadmap-icon">{c.emoji}</div>
-                  <h4>{c.title}</h4>
-                  <p>{c.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ════ 섹션 8: 학교 찾기 ════ */}
-        <section id="school" className="sm-section" style={{ background: "var(--white)" }}>
-          <div className="sm-inner">
-            <div className="text-center mb-5 reveal">
-              <div className="section-label">학교 찾기</div>
-              <h2 className="sm-section-title">우리 학교를 찾아보세요</h2>
-              <p className="sm-section-desc" style={{ margin: "0 auto" }}>학교명 또는 종류로 검색하고 상세 정보를 확인하세요</p>
-            </div>
-            <div className="row g-4 justify-content-center">
-              <div className="col-lg-5">
-                <div className="school-search-box reveal">
-                  <form onSubmit={schoolSearch.handleSearch}>
-                    <input
-                      type="text"
-                      className="form-control mb-2"
-                      placeholder="학교명을 입력하세요"
-                      value={schoolSearch.name}
-                      onChange={(e) => schoolSearch.setName(e.target.value)}
-                      style={{ borderRadius: 10 }}
-                    />
-                    <div className="d-flex gap-2 mb-2">
-                      <select
-                        className="form-select"
-                        value={schoolSearch.schoolKind}
-                        onChange={(e) => schoolSearch.setSchoolKind(e.target.value)}
-                        style={{ borderRadius: 10 }}
-                      >
-                        {SCHOOL_KIND_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value}>{o.label}</option>
-                        ))}
-                      </select>
-                      <button
-                        type="submit"
-                        className="btn flex-shrink-0"
-                        style={{ background: "var(--teal)", color: "#fff", borderRadius: 50, fontWeight: 600, minWidth: 70 }}
-                        disabled={schoolSearch.loading}
-                      >
-                        {schoolSearch.loading ? "..." : "검색"}
-                      </button>
+                <h3>School Mate</h3>
+                {["학부모 계정으로 자녀 선택", "다자녀 통합 대시보드", "역할 기반 맞춤 화면", "직관적인 UI"].map(
+                  (txt) => (
+                    <div key={txt} className="compare-item">
+                      <div className="ci-icon">✓</div>
+                      {txt}
                     </div>
-                  </form>
-                  {schoolSearch.searched && (
-                    <div style={{ marginTop: 14 }}>
-                      {schoolSearch.schools.length === 0 ? (
-                        <div className="text-center py-4 text-secondary" style={{ fontSize: "0.9rem" }}>
-                          검색 결과가 없습니다.
-                        </div>
-                      ) : (
-                        <>
-                          <small className="text-secondary px-1 d-block mb-2">총 {schoolSearch.totalElements}개</small>
-                          {schoolSearch.schools.map((school) => (
-                            <div
-                              key={school.id}
-                              className={`school-result-item${selectedSchool?.id === school.id ? " sel" : ""}`}
-                              onClick={() => setSelectedSchool(school)}
-                            >
-                              <div style={{ minWidth: 0 }}>
-                                <div style={{ fontWeight: 600, color: "var(--navy)", fontSize: "0.92rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                  {school.name}
-                                </div>
-                                <div style={{ fontSize: "0.78rem", color: "#9ca3af", marginTop: 2 }}>
-                                  {school.schoolKind} · {school.officeOfEducation}
-                                </div>
-                              </div>
-                              <i className="ri-arrow-right-s-line" style={{ color: selectedSchool?.id === school.id ? "var(--teal)" : "#d1d5db", fontSize: 18, flexShrink: 0 }} />
-                            </div>
-                          ))}
-                          {schoolSearch.totalPages > 1 && (
-                            <div className="d-flex justify-content-center mt-2 gap-1">
-                              <button className="btn btn-sm btn-outline-secondary" disabled={schoolSearch.page === 0} onClick={() => schoolSearch.fetchSchools(schoolSearch.page - 1)}>이전</button>
-                              <span style={{ lineHeight: "30px", fontSize: "0.82rem", color: "#6b7280", padding: "0 6px" }}>{schoolSearch.page + 1} / {schoolSearch.totalPages}</span>
-                              <button className="btn btn-sm btn-outline-secondary" disabled={schoolSearch.page >= schoolSearch.totalPages - 1} onClick={() => schoolSearch.fetchSchools(schoolSearch.page + 1)}>다음</button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="col-lg-7">
-                {selectedSchool ? (
-                  <div className="school-info-card reveal">
-                    <div className="d-flex align-items-center gap-3 mb-3">
-                      <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <i className="ri-building-2-line" style={{ fontSize: 24 }} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: "1.3rem", fontWeight: 800, lineHeight: 1.2 }}>{selectedSchool.name}</div>
-                        <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.72)", marginTop: 3 }}>{selectedSchool.schoolKind} · {selectedSchool.officeOfEducation}</div>
-                      </div>
-                    </div>
-                    <div className="school-info-item"><div className="school-info-label">전화번호</div><div className="school-info-value">{selectedSchool.phoneNumber || "—"}</div></div>
-                    <div className="school-info-item">
-                      <div className="school-info-label">홈페이지</div>
-                      <div className="school-info-value" style={{ wordBreak: "break-all" }}>
-                        {selectedSchool.homepage ? (
-                          <a href={selectedSchool.homepage} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", textDecoration: "underline" }}>{selectedSchool.homepage}</a>
-                        ) : "—"}
-                      </div>
-                    </div>
-                    <div className="school-info-item"><div className="school-info-label">주소</div><div className="school-info-value" style={{ fontSize: "0.88rem" }}>{selectedSchool.address || "—"}</div></div>
-                  </div>
-                ) : (
-                  <div style={{ minHeight: 240, border: "2px dashed rgba(26,158,160,0.25)", borderRadius: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#9ca3af", gap: 10 }}>
-                    <i className="ri-building-2-line" style={{ fontSize: 40, color: "var(--teal-light)" }} />
-                    <div style={{ fontSize: "0.9rem", textAlign: "center" }}>
-                      좌측에서 학교를 검색 후 클릭하면
-                      <br />상세 정보가 표시됩니다.
-                    </div>
-                  </div>
+                  ),
                 )}
               </div>
             </div>
           </div>
         </section>
-
-        {/* ════ 섹션 9: 공지사항 ════ */}
-        <section id="notice" className="sm-section" style={{ background: "var(--light-gray)" }}>
+        {/* ════ 섹션 7: KEY FEATURES ════ */}
+        <section className="sm-section" style={{ background: "var(--light-gray)" }}>
           <div className="sm-inner">
-            <div className="text-center mb-4 reveal">
-              <div className="section-label">공지사항</div>
-              <h2 className="sm-section-title">SchoolMate 소식</h2>
-              <p className="sm-section-desc" style={{ margin: "0 auto" }}>서비스 업데이트 및 중요 공지를 확인하세요</p>
+            <div className="reveal" style={{ textAlign: "center" }}>
+              <div className="section-label">KEY FEATURES</div>
+              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
+                <span className="hl" style={{ color: "var(--teal-dark)" }}>
+                  주요 기능
+                </span>{" "}
+                {/* [soojin] 색상을 회원가입 버튼(teal-dark)으로 변경 */}
+              </h2>
+              <p className="sm-section-desc" style={{ margin: "0 auto" }}>
+                School Mate가 제공하는 핵심 기능을 소개합니다.
+              </p>
             </div>
-            <div className="row justify-content-center">
-              <div className="col-lg-8">
-                <div className="notice-wrap reveal">
-                  <div className="notice-hd">
-                    <span style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.95rem" }}>전체 공지</span>
-                    <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>총 {noticeTotalElements}건</span>
-                  </div>
-                  {noticeLoading ? (
-                    <div className="text-center py-5 text-secondary">불러오는 중...</div>
-                  ) : notices.length === 0 ? (
-                    <div className="text-center py-5 text-secondary">등록된 공지사항이 없습니다.</div>
-                  ) : (
-                    notices.map((n) => (
-                      <div key={n.id} className="notice-row" onClick={() => openNotice(n.id)}>
-                        {n.isPinned && <span className="notice-pin">공지</span>}
-                        <span className="notice-title">{n.title}</span>
-                        <span className="notice-meta">{n.writerName} · {n.createDate?.slice(0, 10)}</span>
-                        <i className="ri-arrow-right-s-line" style={{ color: "#d1d5db", fontSize: 17 }} />
-                      </div>
-                    ))
-                  )}
-                  {noticeTotalPages > 1 && (
-                    <div className="d-flex justify-content-center py-3 gap-1">
-                      <button className="btn btn-sm btn-outline-secondary" disabled={noticePage === 0} onClick={() => fetchNotices(noticePage - 1)}>이전</button>
-                      {Array.from({ length: noticeTotalPages }, (_, i) => (
-                        <button
-                          key={i}
-                          className="btn btn-sm"
-                          style={i === noticePage ? { background: "var(--teal)", color: "#fff", border: "none" } : { border: "1px solid #dee2e6", color: "#555" }}
-                          onClick={() => fetchNotices(i)}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                      <button className="btn btn-sm btn-outline-secondary" disabled={noticePage >= noticeTotalPages - 1} onClick={() => fetchNotices(noticePage + 1)}>다음</button>
-                    </div>
-                  )}
+            <div className="roadmap-grid">
+              {[
+                {
+                  num: "01",
+                  title: "스마트 알림",
+                  desc: "중요한 공지사항을 반복 알림으로 놓치지 않도록",
+                  delay: "reveal-d1",
+                },
+                {
+                  num: "02",
+                  title: "NEIS 공식 연동",
+                  desc: "나이스 시스템과의 공식 데이터\n연동 지원",
+                  delay: "reveal-d2",
+                },
+                {
+                  num: "03",
+                  title: "다국어 자동 번역",
+                  desc: "AI를 활용한 공지\n다국어 자동 번역 기능",
+                  delay: "reveal-d3",
+                },
+                {
+                  num: "04",
+                  title: "상담 예약 시스템",
+                  desc: "학부모-교사 간 편리한\n상담 예약 기능",
+                  delay: "reveal-d4",
+                },
+                {
+                  num: "05",
+                  title: "성적 변화 감지",
+                  desc: "학생 성적 변화를\n자동으로 분석하고 알림",
+                  delay: "reveal-d5",
+                },
+              ].map((c) => (
+                <div key={c.num} className={`roadmap-card reveal ${c.delay}`}>
+                  <div className="roadmap-num outfit">{c.num}</div>
+                  <h6>{c.title}</h6>
+                  <p style={{ whiteSpace: "pre-line" }}>{c.desc}</p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
-
         {/* ════ 섹션 10: CTA ════ */}
         <section className="cta-section" id="cta">
           <div className="sm-inner" style={{ position: "relative", zIndex: 1 }}>
             <div className="reveal">
-              <p className="cta-eyebrow">교사, 학생, 학부모 모두를 위한</p>
               <h2 className="cta-title">
-                School Mate와 함께
+                <img
+                  src="/images/schoolmateLogo.png"
+                  alt="SchoolMate"
+                  style={{
+                    height: "1.5em",
+                    verticalAlign: "middle",
+                    filter: "brightness(0) invert(1)",
+                    marginBottom: "4px",
+                  }}
+                />
+                와 함께
                 <br />
                 학사 관리의 변화를 경험하세요
               </h2>
               <p className="cta-desc">지금 바로 시작하고, 더 나은 교육 환경을 만들어 보세요.</p>
               <div className="cta-buttons">
-                <a href="/register" className="btn-cta-primary">무료로 시작하기 →</a>
-                <a href="#" className="btn-cta-secondary">도입 문의하기</a>
+                <a href="/register" className="btn-cta-primary">
+                  무료로 시작하기
+                </a>
+                <a href="#" className="btn-cta-secondary">
+                  도입 문의하기
+                </a>
               </div>
             </div>
           </div>
         </section>
-
         {/* ════ FOOTER ════ */}
         <footer className="main-footer">
           <div className="container">
@@ -1490,43 +1549,64 @@ export default function Main() {
         </footer>
       </div>
 
-      {/* 공지 상세 모달 */}
-      {(selectedNotice || noticeDetailLoading) && (
-        <div
-          className="modal fade show d-block"
-          tabIndex={-1}
-          style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 2000 }}
-          onClick={(e) => { if (e.target === e.currentTarget) setSelectedNotice(null); }}
-        >
-          <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-            <div className="modal-content" style={{ borderRadius: 16 }}>
-              {noticeDetailLoading ? (
-                <div className="modal-body text-center py-5">
-                  <div className="spinner-border" style={{ color: "var(--teal)" }} />
-                </div>
-              ) : (
-                selectedNotice && (
-                  <>
-                    <div className="modal-header" style={{ borderBottom: "1px solid #f0f0f0", padding: "18px 24px" }}>
-                      <div>
-                        {selectedNotice.isPinned && <span className="notice-pin me-2">공지</span>}
-                        <span style={{ fontWeight: 700, color: "var(--navy)", fontSize: "1.05rem" }}>{selectedNotice.title}</span>
-                        <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: 5 }}>
-                          {selectedNotice.writerName} · {selectedNotice.createDate?.slice(0, 10)} · 조회 {selectedNotice.viewCount}
-                        </div>
-                      </div>
-                      <button type="button" className="btn-close" onClick={() => setSelectedNotice(null)} />
-                    </div>
-                    <div className="modal-body" style={{ padding: "24px", whiteSpace: "pre-wrap", lineHeight: 1.9, color: "#374151", fontSize: "0.93rem" }}>
-                      {selectedNotice.content}
-                    </div>
-                    <div className="modal-footer" style={{ borderTop: "1px solid #f0f0f0", padding: "14px 24px" }}>
-                      <button className="btn" style={{ background: "var(--teal)", color: "#fff", borderRadius: 50 }} onClick={() => setSelectedNotice(null)}>닫기</button>
-                    </div>
-                  </>
-                )
-              )}
+      {/* [soojin] PWA 설치 권유 팝업 - 히어로 섹션 지난 후에만 표시 */}
+      {showInstallPrompt && heroPassed && (
+        <div className="install-prompt-banner">
+          <div className="d-flex align-items-center gap-3" style={{ minWidth: 0 }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                background: "var(--teal-pale)",
+                borderRadius: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <i className="ri-download-cloud-2-line" style={{ fontSize: 24, color: "var(--teal)" }} />
             </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.95rem" }}>SchoolMate 앱 설치하기</div>
+              <div
+                style={{
+                  fontSize: "0.8rem",
+                  color: "var(--warm-gray)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: isIOS ? "normal" : "nowrap",
+                }}
+              >
+                {isIOS
+                  ? "Safari 하단 공유 버튼 → '홈 화면에 추가'를 눌러 설치하세요."
+                  : "바탕화면에서 더 빠르고 편리하게 접속하세요!"}
+              </div>
+            </div>
+          </div>
+          <div className="d-flex gap-2 flex-shrink-0">
+            <button
+              className="btn btn-sm btn-light"
+              onClick={handleInstallDismiss}
+              style={{ borderRadius: 8, fontSize: "0.85rem", fontWeight: 600 }}
+            >
+              나중에
+            </button>
+            {!isIOS && (
+              <button
+                className="btn btn-sm"
+                onClick={handleInstallClick}
+                style={{
+                  background: "var(--teal-dark)",
+                  color: "#fff",
+                  borderRadius: 8,
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                }}
+              >
+                설치
+              </button>
+            )}
           </div>
         </div>
       )}

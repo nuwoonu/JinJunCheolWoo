@@ -64,6 +64,9 @@
 / ================================= Table Of Contents =================================== **/
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 :root {
+  --app-font-sans: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bs-font-sans-serif: var(--app-font-sans);
+  --bs-body-font-family: var(--app-font-sans);
   --default-font: ;
   --h1: clamp(2rem, 1.2rem + 4vw, 4.5rem);
   --h2: clamp(1.75rem, 1.11rem + 3.2vw, 3.75rem);
@@ -371,7 +374,7 @@ html {
 body {
   background-color: var(--bg-color);
   color: var(--text-secondary-light);
-  font-family: "Inter", sans-serif;
+  font-family: var(--app-font-sans);
   font-size: 1rem;
   padding: 0;
   margin: 0;
@@ -13285,7 +13288,7 @@ input[type="date"] {
   fill: #4b5563 !important;
   font-size: 14px;
   font-weight: 700 !important;
-  font-family: Inter, sans-serif;
+  font-family: var(--app-font-sans);
 }
 
 .circle-none circle {

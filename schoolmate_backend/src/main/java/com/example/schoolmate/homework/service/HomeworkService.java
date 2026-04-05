@@ -185,7 +185,10 @@ public class HomeworkService {
 
     public HomeworkDTO.DetailResponse getHomework(Long homeworkId, CustomUserDTO userDTO) {
         Homework homework = findHomeworkOrThrow(homeworkId);
-        int total = studentInfoRepository.findByClassroomCid(homework.getCourseSection().getClassroom().getCid()).size();
+        // [soojin] allStudents 빌드를 위해 리스트로 먼저 받음
+        List<StudentInfo> allStudentsInClass = studentInfoRepository.findByClassroomCid(
+                homework.getCourseSection().getClassroom().getCid());
+        int total = allStudentsInClass.size();
 
         HomeworkDTO.DetailResponse response = HomeworkDTO.DetailResponse.fromEntity(homework, total);
 
@@ -194,6 +197,22 @@ public class HomeworkService {
                     .map(HomeworkDTO.SubmissionResponse::fromEntity)
                     .collect(Collectors.toList());
             response.setSubmissions(subs);
+
+            // [soojin] 학급 전체 학생(제출 + 미제출) 목록 생성
+            Map<Long, HomeworkSubmission> submissionByStudent = homework.getSubmissions().stream()
+                    .collect(Collectors.toMap(s -> s.getStudent().getId(), s -> s));
+            List<HomeworkDTO.StudentWithSubmissionResponse> allStudentList = allStudentsInClass.stream()
+                    .map(si -> {
+                        HomeworkSubmission sub = submissionByStudent.get(si.getId());
+                        return HomeworkDTO.StudentWithSubmissionResponse.builder()
+                                .studentInfoId(si.getId())
+                                .studentName(si.getUser().getName())
+                                .studentNumber(si.getFullStudentNumber())
+                                .submitted(sub != null)
+                                .submission(sub != null ? HomeworkDTO.SubmissionResponse.fromEntity(sub) : null)
+                                .build();
+                    }).toList();
+            response.setAllStudents(allStudentList);
         }
 
         if (isStudent(userDTO)) {

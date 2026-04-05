@@ -3,6 +3,7 @@ import api from "@/api/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import MainFooter from "@/components/layout/MainFooter";
 import ForgotPasswordModal from "@/components/auth/ForgotPasswordModal";
+import LoginLeftPanel from "@/components/auth/LoginLeftPanel";
 import "../../styles/login.css";
 
 export default function Login() {
@@ -79,8 +80,8 @@ export default function Login() {
 
           {/* 본문 영역 */}
           <div className="login-body">
-            {/* 왼쪽 색상 박스 */}
-            <div className="login-left" />
+            {/* [soojin] 왼쪽 대시보드 목업 슬라이더 패널 */}
+            <LoginLeftPanel />
 
             {/* 오른쪽 - 폼 */}
             <div className="login-right">
@@ -200,7 +201,7 @@ export default function Login() {
                 </div>
 
                 <div className="register-link">
-                  아직 계정이 없으신가요? <a href="/register">회원가입</a>
+                  아직 계정이 없으신가요? <a href="/register">회원가입하기</a>
                 </div>
               </div>
             </div>

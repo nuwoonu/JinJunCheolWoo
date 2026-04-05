@@ -47,6 +47,9 @@ public class QuizDTO {
         // [woo] 응시 횟수 제한 (null이면 무제한)
         private Integer maxAttempts;
 
+        // [soojin] 수정하는 이유: 생성/수정 요청에서 제한시간 전달
+        private Integer timeLimit;
+
         // [woo] 정답 공개 여부 (기본 true)
         private Boolean showAnswer;
 
@@ -76,6 +79,9 @@ public class QuizDTO {
 
         // [woo] 객관식 선택지
         private List<OptionRequest> options;
+
+        // [soojin] 문제 해설
+        private String explanation;
     }
 
     // ========== 선택지 요청 ==========
@@ -113,12 +119,18 @@ public class QuizDTO {
         private int questionCount;
         private int totalPoints;
         private Integer maxAttempts;
+        private Integer timeLimit;
         private boolean showAnswer;
         private LocalDateTime createDate;
 
         // [woo] 학생용: 응시 여부, 최고 점수
         private Integer myAttemptCount;
         private Integer myBestScore;
+
+        // [soojin] 수정하는 이유: 교사 카드형 목록 통계값 제공
+        private Integer submissionCount;
+        private Integer totalStudentCount;
+        private Double averageScore;
 
         public static ListResponse fromEntity(Quiz quiz) {
             // [woo 03/25] 교사이름[과목] 형태로 표시
@@ -138,6 +150,7 @@ public class QuizDTO {
                     .questionCount(quiz.getQuestions().size())
                     .totalPoints(quiz.getTotalPoints())
                     .maxAttempts(quiz.getMaxAttempts())
+                    .timeLimit(quiz.getTimeLimit())
                     .showAnswer(quiz.isShowAnswer())
                     .createDate(quiz.getCreateDate())
                     .build();
@@ -163,6 +176,7 @@ public class QuizDTO {
         private LocalDateTime dueDate;
         private int totalPoints;
         private Integer maxAttempts;
+        private Integer timeLimit;
         private boolean showAnswer;
         private LocalDateTime createDate;
 
@@ -174,6 +188,9 @@ public class QuizDTO {
 
         // [woo] 학생용: 본인 응시 결과
         private List<SubmissionResponse> mySubmissions;
+
+        // [soojin] 교사용: 학급 전체 학생 (응시 + 미응시 포함)
+        private List<StudentWithSubmissionResponse> allStudents;
 
         public static DetailResponse fromEntity(Quiz quiz) {
             // [woo 03/25] 교사이름[과목] 형태로 표시
@@ -192,6 +209,7 @@ public class QuizDTO {
                     .dueDate(quiz.getDueDate())
                     .totalPoints(quiz.getTotalPoints())
                     .maxAttempts(quiz.getMaxAttempts())
+                    .timeLimit(quiz.getTimeLimit())
                     .showAnswer(quiz.isShowAnswer())
                     .createDate(quiz.getCreateDate())
                     .build();
@@ -213,6 +231,8 @@ public class QuizDTO {
         // [woo] 교사용/결과용: 정답 (풀기 화면에서는 null)
         private String correctAnswer;
         private List<OptionResponse> options;
+        // [soojin] 교사용/결과용: 해설 (풀기 화면에서는 null)
+        private String explanation;
 
         public static QuestionResponse fromEntity(QuizQuestion q, boolean includeAnswer) {
             List<OptionResponse> opts = q.getOptions().stream()
@@ -226,6 +246,7 @@ public class QuizDTO {
                     .points(q.getPoints())
                     .questionType(q.getQuestionType())
                     .correctAnswer(includeAnswer ? q.getCorrectAnswer() : null)
+                    .explanation(includeAnswer ? q.getExplanation() : null)
                     .options(opts)
                     .build();
         }
@@ -313,6 +334,22 @@ public class QuizDTO {
 
             return builder.build();
         }
+    }
+
+    // ========== [soojin] 학급 전체 학생 응시 현황 응답 ==========
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StudentWithSubmissionResponse {
+        private Long studentInfoId;
+        private String studentName;
+        private String studentNumber;
+        // [soojin] true: 응시완료, false: 미응시
+        private boolean submitted;
+        // [soojin] 미응시 학생은 null
+        private SubmissionResponse latestSubmission;
     }
 
     // ========== 개별 답안 응답 ==========

@@ -80,10 +80,10 @@ export default function ClassGoalEditor({ classroomId }: Props) {
 
   return (
     <>
-      <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
+      <div className="card shadow-sm h-100 dash-card">
         {/* 카드 헤더 */}
-        <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
-          <div className="d-flex align-items-center gap-10">
+        <div className="d-flex justify-content-between align-items-center dash-card-header">
+          <div className="d-flex align-items-center gap-8">
             <iconify-icon icon="ri:focus-3-line" className="text-primary-600 text-xl" />
             <h6 className="fw-bold mb-0 text-sm">이달의 학급 목표</h6>
           </div>

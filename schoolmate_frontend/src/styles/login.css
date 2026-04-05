@@ -6,7 +6,7 @@
   height: 100%;
   background-color: #ffffff;
   padding: 20px 24px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--app-font-sans);
   box-sizing: border-box;
 }
 
@@ -30,16 +30,1528 @@
   min-height: 0;
 }
 
-/* 왼쪽 색상 박스 */
+/* [soojin] 왼쪽 패널 - 대시보드 목업 슬라이더 */
 .login-left {
-  flex: 1;
-  background-color: #E6F7F5;
+  flex: 1.2;
+  background: linear-gradient(145deg, #e8f8f6 0%, #d4f1ed 100%);
   border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lp-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px 8px 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.lp-perspective-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lp-float-wrap {
+  position: relative;
+  width: 360px;
+  max-width: calc(100% - 24px);
+  transform: rotateZ(-4deg);
+  transform-origin: center center;
+}
+
+.lp-float-wrap::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  bottom: -38px;
+  width: 300px;
+  max-width: calc(100% - 8px);
+  height: 14px;
+  transform: rotate(4deg);
+  transform-origin: left center;
+  border-radius: 30%;
+  background: rgba(146, 210, 201, 0.62);
+  filter: blur(10px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lp-3d-card {
+  width: 100%;
+  box-shadow: none;
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  position: relative;
+  z-index: 1;
+}
+
+/* 슬라이드 기본 레이아웃 */
+.lp-slide {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px;
+}
+
+/* 관리자 슬라이드 - 실제 관리자 대시보드 형태 목업 */
+.lp-slide-admin {
+  padding: 16px;
+  gap: 5px;
+}
+
+.lp-admin-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lp-admin-title {
+  margin: 2px 0 1px;
+  color: #1a2e2c;
+}
+
+.lp-admin-sub {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.lp-admin-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 600;
+  padding-top: 3px;
+  white-space: nowrap;
+}
+
+.lp-admin-board {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.lp-admin-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.lp-admin-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  padding: 8px 2px 7px;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  font-weight: 400;
+  color: #374151;
+  border-bottom: 2px solid transparent;
+  cursor: default;
+}
+
+.lp-admin-tab-active {
+  color: #25a194;
+  border-bottom-color: #25a194;
+}
+
+.lp-admin-tab-student {
+  font-weight: 600;
+}
+
+.lp-admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.lp-admin-metric {
+  position: relative;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 8px 12px;
+  min-height: 72px;
+}
+
+.lp-admin-metric-total {
+  background: #d8efec;
+  border-color: #9fd7d1;
+}
+
+.lp-admin-metric-inactive {
+  background: #f3f4f6;
+}
+
+.lp-admin-metric-label {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: #374151;
+  font-weight: 400;
+}
+
+.lp-admin-metric-value {
+  margin-top: 4px;
+  color: #111827;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.lp-admin-metric-num {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.lp-admin-metric-unit {
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #374151;
+  font-weight: 400;
+}
+
+.lp-admin-metric-state {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  font-size: 0.82rem;
+}
+
+.lp-admin-metric-state-ok {
+  color: #25a194;
+}
+
+.lp-admin-metric-state-off {
+  color: #9ca3af;
+}
+
+.lp-admin-metric-rate {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.lp-admin-metric-watermark {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  font-size: 1.55rem;
+  color: rgba(37, 161, 148, 0.28);
+}
+
+.lp-admin-progress {
+  margin-top: 6px;
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.lp-admin-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #25a194;
+}
+
+.lp-admin-chart {
+  padding: 4px 12px 8px;
+}
+
+.lp-admin-chart-title {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.lp-admin-bars {
+  border-top: 1px dashed #e5e7eb;
+  border-bottom: 1px dashed #e5e7eb;
+  padding: 6px 12px 5px;
+  min-height: 98px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 8px;
+}
+
+.lp-admin-bar-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.lp-admin-bar {
+  width: 18px;
+  border-radius: 4px 4px 0 0;
+  background: #25a194;
+}
+
+.lp-admin-bar-count {
+  margin-top: 3px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.lp-admin-bar-label {
+  margin-top: 1px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: #374151;
+  font-weight: 400;
+}
+
+/* 슬라이드 헤더 */
+.lp-slide-header {
+  margin-bottom: 2px;
+}
+
+.lp-slide-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #1a2e2c;
+  margin: 3px 0 2px;
+  line-height: 1.2;
+}
+
+.lp-slide-desc {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 역할 뱃지 */
+.lp-role-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.lp-role-admin {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+}
+.lp-role-teacher {
+  background: rgba(37, 161, 148, 0.15);
+  color: #25a194;
+}
+.lp-role-parent {
+  background: rgba(217, 119, 6, 0.12);
+  color: #d97706;
+}
+.lp-role-student {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0ea5e9;
+}
+
+/* ── 실제 대시보드와 동일한 카드 구조 ── */
+.lp-mock-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 20px 0 rgba(52, 77, 75, 0.06);
+  overflow: hidden;
+}
+
+.lp-mock-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.lp-mock-card-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.lp-mock-card-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #25a194;
+  background: #e6f7f5;
+  border-radius: 20px;
+  padding: 1px 7px;
+}
+
+.lp-mock-card-body {
+  padding: 8px 12px;
+}
+
+/* 카드 내 아이콘 (Remix Icon) */
+.lp-icon {
+  color: #25a194;
+  font-size: 0.875rem;
+  font-weight: 400;
+  -webkit-text-stroke: 0;
+}
+
+/* 통계 카드 행 */
+.lp-stat-row {
+  display: flex;
+  gap: 6px;
+}
+
+.lp-stat-box {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 6px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(52, 77, 75, 0.05);
+}
+
+.lp-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 4px;
+}
+
+.lp-stat-num {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a2e2c;
+  line-height: 1.2;
+}
+.lp-stat-label {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  margin-top: 1px;
+}
+
+/* 목록 행 */
+.lp-list-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+}
+
+.lp-list-name {
+  flex: 1;
+  font-size: 0.78rem;
+  color: #374151;
+}
+
+/* 아바타 */
+.lp-avatar-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4ecdc4, #2bb5ab);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lp-avatar-xs {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #374151;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 칩 */
+.lp-chip {
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 교사 - 알림 메시지 카드 내부 */
+.lp-teacher-alert-badge-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: #ef4444;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.lp-teacher-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.lp-teacher-alert-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #f8fafc;
+  padding: 6px 7px;
+}
+
+.lp-teacher-alert-item-highlight {
+  border-color: #b7e8c8;
+  background: #eefaf2;
+}
+
+.lp-teacher-alert-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.lp-teacher-alert-title-wrap {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lp-teacher-alert-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-teacher-alert-new {
+  flex-shrink: 0;
+  color: #ef4444;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.lp-teacher-alert-meta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #9ca3af;
+}
+
+.lp-teacher-alert-time {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.lp-teacher-alert-meta i {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.lp-teacher-alert-desc {
+  margin-top: 3px;
+  font-size: 0.625rem;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lp-todo-row {
+  gap: 5px;
+}
+
+.lp-todo-radio {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.lp-todo-remove {
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.lp-todo-remove i {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+/* 이벤트 행 */
+.lp-event-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+}
+
+.lp-event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lp-event-date {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.lp-event-text {
+  font-size: 0.75rem;
+  color: #374151;
+}
+
+.lp-inline-new {
+  margin-left: 4px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+/* 2컬럼 레이아웃 */
+.lp-two-col {
+  display: flex;
+  gap: 6px;
+}
+.lp-two-col .lp-mock-card {
+  flex: 1;
+}
+
+.lp-three-col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lp-three-col .lp-mock-card {
+  min-width: 0;
+}
+
+/* 출결 도넛 */
+.lp-attend-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lp-donut {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: conic-gradient(#25a194 0% 89%, #e55353 89% 93%, #f97316 93% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lp-donut-inner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-donut-num {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #1a2e2c;
+}
+
+.lp-attend-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lp-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+.lp-legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.lp-legend-label {
+  flex: 1;
+}
+.lp-legend-val {
+  font-weight: 700;
+  color: #374151;
+}
+
+/* 시간표 */
+.lp-timetable-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.lp-period {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  width: 36px;
+  flex-shrink: 0;
+}
+.lp-subject {
+  font-size: 0.75rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* 과제 미제출 행 */
+.lp-hw-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.lp-hw-label {
+  font-size: 0.75rem;
+  color: #374151;
+}
+.lp-hw-avatars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.lp-hw-more {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  margin-left: 3px;
+}
+
+/* 자녀 프로필 (학부모 카드 전용) */
+.lp-parent-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lp-parent-profile-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1px;
+}
+
+.lp-parent-photo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #bcbec0;
+  color: #111827;
+  font-size: 0.3125rem;
+  letter-spacing: 0;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-parent-photo-icon {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.lp-parent-student-name {
+  font-size: 0.5625rem;
+  line-height: 1.15;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.lp-parent-student-class {
+  font-size: 0.4375rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.lp-parent-attend-pill {
+  margin-top: 1px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: #09c443;
+  color: #ffffff;
+  font-size: 0.375rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.lp-parent-divider {
+  border-top: 1px solid #e5e7eb;
+  margin: 2px 0 1px;
+}
+
+.lp-parent-attend-title {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.4375rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.lp-parent-attend-title i {
+  color: #22c55e;
+  font-size: 0.5rem;
+}
+
+.lp-parent-attend-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  margin-top: 1px;
+}
+
+.lp-parent-attend-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.lp-parent-attend-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.5625rem;
+  font-weight: 500;
+}
+
+.lp-parent-attend-circle-present {
+  background: #06c43a;
+}
+
+.lp-parent-attend-circle-late {
+  background: #ffa12f;
+}
+
+.lp-parent-attend-circle-absent {
+  background: #ff4f11;
+}
+
+.lp-parent-attend-label {
+  font-size: 0.4375rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+/* 교사 - 바로가기 카드 내부 */
+.lp-teacher-shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.lp-teacher-shortcut {
+  border: 1px solid transparent;
+  border-radius: 9px;
+  min-height: 54px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #f8fafc;
+  cursor: default;
+}
+
+.lp-teacher-shortcut-icon-wrap {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-teacher-shortcut-icon {
+  font-size: 0.625rem;
+}
+
+.lp-teacher-shortcut-label {
+  font-size: 0.5625rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.lp-teacher-shortcut-class {
+  background: #eef9f4;
+}
+.lp-teacher-shortcut-class .lp-teacher-shortcut-icon-wrap {
+  background: #c9efd9;
+}
+.lp-teacher-shortcut-class .lp-teacher-shortcut-icon {
+  color: #15803d;
+}
+
+.lp-teacher-shortcut-lesson {
+  background: #eff5ff;
+}
+.lp-teacher-shortcut-lesson .lp-teacher-shortcut-icon-wrap {
+  background: #d7e6ff;
+}
+.lp-teacher-shortcut-lesson .lp-teacher-shortcut-icon {
+  color: #1d4ed8;
+}
+
+.lp-teacher-shortcut-homework {
+  background: #fff9ea;
+}
+.lp-teacher-shortcut-homework .lp-teacher-shortcut-icon-wrap {
+  background: #fee9b8;
+}
+.lp-teacher-shortcut-homework .lp-teacher-shortcut-icon {
+  color: #d97706;
+}
+
+.lp-teacher-shortcut-grade {
+  background: #f6efff;
+}
+.lp-teacher-shortcut-grade .lp-teacher-shortcut-icon-wrap {
+  background: #e7d7ff;
+}
+.lp-teacher-shortcut-grade .lp-teacher-shortcut-icon {
+  color: #7c3aed;
+}
+
+/* 학부모 - 학교 일정 카드 내부 */
+.lp-school-cal-badge {
+  padding: 0;
+  background: transparent;
+  border-radius: 999px;
+}
+
+.lp-school-cal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border: 1px solid #1f77ff;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1f77ff;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lp-school-cal-btn i {
+  font-size: 0.5625rem;
+}
+
+.lp-school-schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-school-schedule-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 5px 7px;
+  border: 1px solid #f6e8c7;
+  background: #fffcf3;
+}
+
+.lp-school-schedule-row-openclass {
+  border-color: #f7dfb0;
+  background: #fff8e8;
+}
+
+.lp-school-schedule-row-fieldtrip {
+  border-color: #c9f2e7;
+  background: #ecfcf7;
+}
+
+.lp-school-schedule-row-exam {
+  border-color: #d7e5ff;
+  background: #eff5ff;
+}
+
+.lp-school-schedule-row-counsel {
+  border-color: #f8d6e7;
+  background: #fff1f7;
+}
+
+.lp-school-schedule-row-career {
+  border-color: #d7f1ff;
+  background: #eef9ff;
+}
+
+.lp-school-schedule-left {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #f4b12e;
+  font-size: 0.5rem;
+  font-weight: 700;
+}
+
+.lp-school-schedule-row-openclass .lp-school-schedule-left {
+  color: #e7a622;
+}
+
+.lp-school-schedule-row-fieldtrip .lp-school-schedule-left {
+  color: #16a085;
+}
+
+.lp-school-schedule-row-exam .lp-school-schedule-left {
+  color: #3b82f6;
+}
+
+.lp-school-schedule-row-counsel .lp-school-schedule-left {
+  color: #d9468f;
+}
+
+.lp-school-schedule-row-career .lp-school-schedule-left {
+  color: #0ea5e9;
+}
+
+.lp-school-schedule-left i {
+  flex-shrink: 0;
+  font-size: 0.5625rem;
+}
+
+.lp-school-schedule-left span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-school-dday {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #1f77ff;
+  color: #ffffff;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lp-school-dday-danger {
+  background: #f03c4b;
+}
+
+/* 학부모 슬라이드 카드 자체 축소 */
+.lp-slide-parent .lp-two-col {
+  gap: 4px;
+}
+
+.lp-slide-parent .lp-two-col .lp-mock-card:first-child {
+  flex: 0 0 43%;
+}
+
+.lp-slide-parent .lp-two-col .lp-mock-card:last-child {
+  flex: 1 1 57%;
+}
+
+.lp-slide-parent .lp-mock-card {
+  border-radius: 12px;
+}
+
+.lp-slide-parent .lp-mock-card-header {
+  padding: 6px 9px;
+}
+
+.lp-slide-parent .lp-mock-card-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.lp-slide-parent .lp-mock-card-body {
+  padding: 8px 10px;
+}
+
+/* 학생 슬라이드 카드 비율 복원(컴팩트) */
+.lp-slide-student .lp-two-col {
+  gap: 3px;
+}
+
+.lp-slide-student .lp-mock-card {
+  border-radius: 12px;
+}
+
+.lp-slide-student .lp-mock-card-header {
+  padding: 5px 8px;
+}
+
+.lp-slide-student .lp-mock-card-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.lp-slide-student .lp-mock-card-body {
+  padding: 7px 10px;
+}
+
+/* 학생 - 이달의 학급 목표 카드 내부 */
+.lp-student-goal-badge-wrap {
+  padding: 0;
+  background: transparent;
+}
+
+.lp-student-goal-badge {
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.lp-student-goal-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lp-student-goal-month {
+  border: 1px solid #a7e9c6;
+  background: #ecfaf2;
+  border-radius: 6px;
+  padding: 3px 5px;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.lp-student-goal-box {
+  border: 1px solid #f4df96;
+  background: #fff9e8;
+  border-radius: 6px;
+  padding: 4px 5px;
+}
+
+.lp-student-goal-box-title {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.lp-student-goal-box-text {
+  margin-top: 1px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.lp-student-goal-section {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.lp-student-goal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lp-student-goal-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lp-student-goal-num {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2aa79f;
+  color: #ffffff;
+  font-size: 0.5rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lp-student-goal-text {
+  font-size: 0.625rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* 학생 - 오늘의 시간표 카드 내부 */
+.lp-student-time-badge-wrap {
+  padding: 0;
+  background: transparent;
+}
+
+.lp-student-time-badge {
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.lp-student-time-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lp-student-time-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.lp-student-time-row-current {
+  border-color: #b8ece2;
+  background: #f0fdfa;
+}
+
+.lp-student-time-period {
+  flex-shrink: 0;
+  width: 24px;
+  padding: 1px 0;
+  border-radius: 999px;
+  background: #e6f7f5;
+  color: #25a194;
+  font-size: 0.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.lp-student-time-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.lp-student-time-subject {
+  font-size: 0.6875rem;
+  color: #374151;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.lp-student-time-meta {
+  margin-top: 1px;
+  font-size: 0.5625rem;
+  color: #9ca3af;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 학생 - 퀴즈 현황 카드 내부 */
+.lp-student-quiz-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-student-quiz-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 4px 0;
+}
+
+.lp-student-quiz-left {
+  min-width: 0;
+  flex: 1;
+}
+
+.lp-student-quiz-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.lp-student-quiz-meta {
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.625rem;
+  color: #9ca3af;
+  font-weight: 400;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lp-student-quiz-sep {
+  color: #e5e7eb;
+}
+
+.lp-student-quiz-right {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lp-student-quiz-dday {
+  font-size: 0.75rem;
+  color: #4f7de8;
+  font-weight: 600;
+}
+
+.lp-student-quiz-status {
+  padding: 1px 6px;
+  border-radius: 7px;
+  background: #e6f7f5;
+  color: #25a194;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.lp-student-quiz-status-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* 큰 숫자 */
+.lp-big-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.lp-mini-chips {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* 성적 행 */
+.lp-grade-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+}
+.lp-grade-subj {
+  font-size: 0.75rem;
+  color: #374151;
+}
+.lp-grade-score {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* 이번 주 일정 */
+.lp-week-row {
+  display: flex;
+  gap: 3px;
+}
+.lp-day-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 3px;
+}
+.lp-day-label {
+  font-size: 0.6875rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+.lp-day-dot-wrap {
+  margin-top: 4px;
+  height: 7px;
+}
+.lp-day-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* 제출 현황 */
+.lp-submit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lp-submit-nums {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.lp-submit-sep {
+  font-size: 0.875rem;
+  color: #d1d5db;
+}
+.lp-submit-bar-wrap {
+  flex: 1;
+}
+.lp-submit-bar {
+  height: 7px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.lp-submit-fill {
+  height: 100%;
+  background: #25a194;
+  border-radius: 4px;
+}
+.lp-submit-bar-label {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  margin-top: 3px;
+  text-align: right;
+}
+
+/* 급식 */
+.lp-meal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lp-meal-item {
+  font-size: 0.6875rem;
+  color: #374151;
+  padding: 1px 0;
+}
+
+/* 다음 수업 */
+.lp-next-class {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lp-next-period {
+  font-size: 0.6875rem;
+  color: #9ca3af;
+}
+.lp-next-subject {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #25a194;
+}
+.lp-next-room {
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+
+/* Dot indicator */
+.lp-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
+.lp-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(37, 161, 148, 0.3);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+}
+
+.lp-dot-active {
+  background: #25a194;
+  width: 18px;
+  border-radius: 3px;
 }
 
 /* 오른쪽 폼 영역 */
 .login-right {
-  flex: 1;
+  flex: 0.8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,8 +1570,8 @@
 .login-form-wrapper .form-label {
   display: block;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #4a5568;
+  font-weight: 400;
+  color: #000000;
   margin-bottom: 8px;
 }
 
@@ -69,6 +1581,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   font-size: 1rem;
+  font-weight: 400;
   color: #1a1a2e;
   transition: all 0.2s ease;
   background-color: #ffffff;
@@ -83,6 +1596,7 @@
 
 .login-form-wrapper .form-input::placeholder {
   color: #a0aec0;
+  font-weight: 400;
 }
 
 .login-form-wrapper .password-wrapper {
@@ -119,33 +1633,57 @@
 .login-form-wrapper .form-check {
   display: flex;
   align-items: center;
-  gap: 8px;
   padding: 0;
+  position: relative;
 }
 
 .login-form-wrapper .form-check-input {
-  width: 18px;
-  height: 18px;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
-  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
   margin: 0;
-}
-
-.login-form-wrapper .form-check-input:checked {
-  background-color: #25a194;
-  border-color: #25a194;
+  pointer-events: none;
 }
 
 .login-form-wrapper .form-check-label {
   color: #4a5568;
   cursor: pointer;
+  font-weight: 300;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.login-form-wrapper .form-check-label::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #cbd5e0;
+  border-radius: 4px;
+  background-color: #ffffff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 8px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: border-color 0.12s ease-in-out, box-shadow 0.12s ease-in-out;
+}
+
+.login-form-wrapper .form-check-input:checked + .form-check-label::before {
+  border-color: #25a194;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath d='M1%204.5%20L4.5%208%20L11%201.5' fill='none' stroke='%2325a194' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.login-form-wrapper .form-check-input:focus-visible + .form-check-label::before {
+  box-shadow: 0 0 0 3px rgba(37, 161, 148, 0.16);
 }
 
 .login-form-wrapper .forgot-link {
   color: #25a194;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 300;
 }
 
 .login-form-wrapper .forgot-link:hover {
@@ -154,13 +1692,13 @@
 
 .login-form-wrapper .btn-login {
   width: 100%;
-  padding: 16px 24px;
+  padding: 14px 24px;
   background-color: #25a194;
   color: #ffffff;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 300;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -202,13 +1740,13 @@
 
 .login-form-wrapper .btn-social {
   width: 100%;
-  padding: 14px 24px;
+  padding: 12px 24px;
   background-color: #ffffff;
   color: #1a1a2e;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 1.0625rem;
+  font-weight: 300;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -240,13 +1778,14 @@
   text-align: center;
   margin-top: 32px;
   font-size: 0.9375rem;
+  font-weight: 300;
   color: #4a5568;
 }
 
 .login-form-wrapper .register-link a {
   color: #25a194;
-  font-weight: 600;
-  text-decoration: none;
+  font-weight: 300;
+  text-decoration: underline;
 }
 
 .login-form-wrapper .register-link a:hover {
@@ -310,4 +1849,11 @@
   .mobile-logo {
     display: none;
   }
+}
+
+/* 로그인 왼쪽 4개 슬라이드 제목 강제 축소 */
+.login-left .lp-slide-header .lp-slide-title.lp-slide-title-compact {
+  font-size: 20px !important;
+  line-height: 1.1 !important;
+  margin: 2px 0 1px !important;
 }

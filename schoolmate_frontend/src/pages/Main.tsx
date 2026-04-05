@@ -150,7 +150,7 @@ export default function Main() {
     <>
       <style>{`
         html, body { margin: 0; padding: 0; }
-        .main-root { font-family: 'Pretendard', 'Noto Sans KR', sans-serif; }
+        .main-root { font-family: var(--app-font-sans); }
 
         /* ── 네비게이션 ── */
         .main-nav {

@@ -6,6 +6,39 @@ import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants
 import { ADMIN_ROUTES } from '@/constants/routes';
 import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
 
+// [soojin] any 대신 백엔드 응답 타입 정의
+interface StudentAssignment {
+  schoolYear: number;
+  grade: number;
+  classNum: number;
+  attendanceNum: number;
+}
+interface StudentGuardian {
+  parentId: number;
+  name: string;
+  phone?: string;
+  relationship?: string;
+}
+interface StudentData {
+  name?: string;
+  code?: string;
+  email?: string;
+  statusName?: string;
+  statusDescription?: string;
+  roleRequestId?: number | null;
+  roleRequestStatus?: string;
+  assignments?: StudentAssignment[];
+  guardians?: StudentGuardian[];
+  basicHabits?: string;
+  specialNotes?: string;
+}
+interface ParentSearchResult {
+  id?: number;
+  uid?: number;
+  name: string;
+  email?: string;
+}
+
 const TH_STYLE: React.CSSProperties = {
   padding: "12px 16px",
   fontSize: 12,
@@ -36,11 +69,11 @@ const LABEL_STYLE: React.CSSProperties = {
 export default function StudentDetail() {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
-  const [student, setStudent] = useState<any>(null);
+  const [student, setStudent] = useState<StudentData | null>(null);
   const [tab, setTab] = useState("basic");
-  const [form, setForm] = useState<any>({});
+  const [form, setForm] = useState<Partial<StudentData>>({});
   const [parentSearch, setParentSearch] = useState("");
-  const [parentResults, setParentResults] = useState<any[]>([]);
+  const [parentResults, setParentResults] = useState<ParentSearchResult[]>([]);
   const [showParentModal, setShowParentModal] = useState(false);
   const [relationship, setRelationship] = useState("OTHER");
   const { msg, error, setMsg, setError } = useAdminMsg();
@@ -72,7 +105,7 @@ export default function StudentDetail() {
       await admin.put(`/students/${uid}/basic`, form);
       setMsg("저장되었습니다.");
       load();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(apiErrMsg(err, "저장에 실패했습니다."));
     }
   };
@@ -106,17 +139,20 @@ export default function StudentDetail() {
   };
 
   const approveRequest = async () => {
+    if (!student?.roleRequestId) return; // [soojin] roleRequestId 없을 때 API 호출 방지
     await admin.post(`/role-requests/${student.roleRequestId}/approve`);
     load();
   };
 
   const rejectRequest = async () => {
+    if (!student?.roleRequestId) return; // [soojin] roleRequestId 없을 때 API 호출 방지
     await admin.post(`/role-requests/${student.roleRequestId}/reject`, { reason: rejectReason });
     setRejectReason("");
     load();
   };
 
   const suspendRequest = async () => {
+    if (!student?.roleRequestId) return; // [soojin] roleRequestId 없을 때 API 호출 방지
     if (!confirm("역할을 정지하시겠습니까?")) return;
     await admin.post(`/role-requests/${student.roleRequestId}/suspend`);
     load();
@@ -241,7 +277,7 @@ export default function StudentDetail() {
                         className="form-control"
                         required
                         value={form.name ?? ""}
-                        onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))}
+                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-6">
@@ -250,7 +286,7 @@ export default function StudentDetail() {
                         className="form-control"
                         required
                         value={form.code ?? ""}
-                        onChange={(e) => setForm((f: any) => ({ ...f, code: e.target.value }))}
+                        onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-12">
@@ -258,7 +294,7 @@ export default function StudentDetail() {
                       <select
                         className="form-select"
                         value={form.statusName ?? ""}
-                        onChange={(e) => setForm((f: any) => ({ ...f, statusName: e.target.value }))}
+                        onChange={(e) => setForm((f) => ({ ...f, statusName: e.target.value }))}
                       >
                         {Object.entries(STUDENT_STATUS).map(([value, cfg]) => (
                           <option key={value} value={value}>{cfg.label}</option>
@@ -271,7 +307,7 @@ export default function StudentDetail() {
                         className="form-control"
                         rows={3}
                         value={form.basicHabits ?? ""}
-                        onChange={(e) => setForm((f: any) => ({ ...f, basicHabits: e.target.value }))}
+                        onChange={(e) => setForm((f) => ({ ...f, basicHabits: e.target.value }))}
                       />
                     </div>
                     <div className="col-md-12">
@@ -280,7 +316,7 @@ export default function StudentDetail() {
                         className="form-control"
                         rows={3}
                         value={form.specialNotes ?? ""}
-                        onChange={(e) => setForm((f: any) => ({ ...f, specialNotes: e.target.value }))}
+                        onChange={(e) => setForm((f) => ({ ...f, specialNotes: e.target.value }))}
                       />
                     </div>
                     <div className="col-12" style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
@@ -310,7 +346,7 @@ export default function StudentDetail() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(student.assignments ?? []).map((a: any) => (
+                      {(student.assignments ?? []).map((a) => (
                         <tr key={a.schoolYear}>
                           <td style={{ ...TD_STYLE, fontWeight: 600 }}>{a.schoolYear}학년도</td>
                           <td style={TD_STYLE}>
@@ -364,7 +400,7 @@ export default function StudentDetail() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(student.guardians ?? []).map((g: any) => (
+                      {(student.guardians ?? []).map((g) => (
                         <tr key={g.parentId}>
                           <td style={{ ...TD_STYLE, fontWeight: 600 }}>{g.name}</td>
                           <td style={TD_STYLE}>{g.phone}</td>
@@ -509,7 +545,7 @@ export default function StudentDetail() {
                 </select>
               </div>
               <div style={{ maxHeight: 260, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8 }}>
-                {parentResults.map((p: any) => (
+                {parentResults.map((p) => (
                   <button
                     key={p.id ?? p.uid}
                     type="button"

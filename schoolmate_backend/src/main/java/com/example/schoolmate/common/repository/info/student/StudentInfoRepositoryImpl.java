@@ -231,6 +231,24 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
     }
 
     @Override
+    public long countByClassroomCid(Long classroomId) {
+        QStudentInfo s = QStudentInfo.studentInfo;
+        QStudentAssignment assign = QStudentAssignment.studentAssignment;
+        QClassroom c = QClassroom.classroom;
+
+        // [soojin] 수정하는 이유: 학급별 학생 수를 직접 카운트해서 목록 통계 쿼리 비용 절감
+        Long count = query
+                .select(s.countDistinct())
+                .from(s)
+                .join(s.assignments, assign)
+                .join(assign.classroom, c)
+                .where(c.cid.eq(classroomId)
+                        .and(isMaxSchoolYear(s, assign)))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
+
+    @Override
     public List<StudentInfo> findByClassroomYearAndClassroomGradeAndClassroomClassNum(int year, int grade,
             int classNum) {
         QStudentInfo s = QStudentInfo.studentInfo;
