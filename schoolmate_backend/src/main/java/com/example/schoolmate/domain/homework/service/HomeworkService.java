@@ -21,6 +21,7 @@ import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
 import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
 import com.example.schoolmate.domain.term.repository.CourseSectionRepository;
 import com.example.schoolmate.global.util.FileManager;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.user.dto.CustomUserDTO;
 import com.example.schoolmate.domain.homework.dto.HomeworkDTO;
 import com.example.schoolmate.domain.homework.entity.Homework;
@@ -87,6 +88,13 @@ public class HomeworkService {
                 saved.getId(), saved.getTitle(),
                 courseSection.getDisplayName(),
                 teacher.getUser().getName());
+
+        // 해당 학급 학생들에게 과제 출제 알림
+        studentInfoRepository.findByClassroomCid(courseSection.getClassroom().getCid())
+                .stream().map(si -> si.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(teacher.getUser(), u, "새 과제 등록",
+                        "'" + saved.getTitle() + "' 과제가 등록되었습니다. (마감: " + saved.getDueDate() + ")",
+                        "/homework/" + saved.getId()));
 
         return HomeworkDTO.DetailResponse.fromEntity(saved, totalStudents);
     }
@@ -302,6 +310,14 @@ public class HomeworkService {
 
         submission.grade(request.getScore(), request.getFeedback());
         log.info("[woo] 과제 채점: 제출={}, 점수={} by {}", submissionId, request.getScore(), userDTO.getName());
+
+        // 학생에게 채점 완료 알림
+        if (submission.getStudent() != null && submission.getStudent().getUser() != null) {
+            NotificationHelper.send(submission.getStudent().getUser(), "과제 채점 완료",
+                    "'" + submission.getHomework().getTitle() + "' 과제가 채점되었습니다. (점수: " + request.getScore() + ")",
+                    "/homework/" + submission.getHomework().getId());
+        }
+
         return HomeworkDTO.SubmissionResponse.fromEntity(submission);
     }
 

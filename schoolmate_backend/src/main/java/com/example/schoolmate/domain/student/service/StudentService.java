@@ -42,6 +42,7 @@ import com.example.schoolmate.domain.parent.repository.FamilyRelationRepository;
 import com.example.schoolmate.domain.parent.repository.ParentInfoRepository;
 import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
 import com.example.schoolmate.global.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.term.entity.SchoolYear;
 import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
@@ -215,6 +216,10 @@ public class StudentService {
         // 관리자 직접 등록 시 즉시 ACTIVE RoleRequest 생성
         roleRequestRepository.save(RoleRequest.createActive(user, UserRole.STUDENT, SchoolContextHolder.getSchoolId(), null));
 
+        // 학생에게 등록 완료 알림
+        NotificationHelper.send(user, "학생 등록 완료",
+                user.getName() + "님의 학생 계정이 등록되었습니다.", "/hub");
+
         // 저장된 User UID 반환
         return user.getUid();
     }
@@ -346,6 +351,10 @@ public class StudentService {
             StudentInfo info = user.getInfoForSchool(StudentInfo.class, SchoolContextHolder.getSchoolId());
             if (info != null) {
                 info.setStatus(status);
+
+                // 학생에게 상태 변경 알림
+                NotificationHelper.send(user, "학적 상태 변경",
+                        "학적 상태가 '" + status.getDescription() + "'(으)로 변경되었습니다.");
             }
         }
     }

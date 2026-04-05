@@ -31,6 +31,7 @@ import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
 import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
 import com.example.schoolmate.global.config.school.SchoolContextHolder;
 import com.example.schoolmate.global.util.LogHelper;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.term.entity.SchoolYear;
@@ -236,6 +237,16 @@ public class ClassroomService {
         logChange(cid, "CREATE",
                 "학급 생성 (학년도: " + request.getYear() + ", " + request.getGrade() + "-" + request.getClassNum() + ")");
 
+        // 담임 교사에게 학급 배정 알림
+        if (request.getTeacherUid() != null) {
+            User assignedTeacher = userRepository.findById(request.getTeacherUid()).orElse(null);
+            if (assignedTeacher != null) {
+                NotificationHelper.send(assignedTeacher, "담임 학급 배정",
+                        request.getGrade() + "학년 " + request.getClassNum() + "반 담임으로 배정되었습니다.",
+                        "/classroom");
+            }
+        }
+
         return cid;
     }
 
@@ -272,6 +283,11 @@ public class ClassroomService {
                     .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
             classroom.setTeacher(teacher);
             logChange(classroom.getCid(), "UPDATE", "담임 교사 변경: " + teacher.getName());
+
+            // 새 담임 교사에게 알림
+            NotificationHelper.send(teacher, "담임 학급 배정",
+                    classroom.getGrade() + "학년 " + classroom.getClassNum() + "반 담임으로 배정되었습니다.",
+                    "/classroom");
         } else {
             classroom.setTeacher(null);
             logChange(classroom.getCid(), "UPDATE", "담임 교사 해제");
@@ -312,6 +328,13 @@ public class ClassroomService {
         }
 
         logChange(cid, "ASSIGN_STUDENT", users.size() + "명 학생 배정");
+
+        // 배정된 학생들에게 학급 배정 알림
+        String className = classroom.getGrade() + "학년 " + classroom.getClassNum() + "반";
+        for (User user : users) {
+            NotificationHelper.send(user, "학급 배정 안내",
+                    className + "에 배정되었습니다.", "/classroom");
+        }
     }
 
     public String assignStudents(Long cid, List<Long> studentUids, int randomCount) {
@@ -357,6 +380,10 @@ public class ClassroomService {
         info.getAssignments().removeIf(a -> a.getClassroom().getCid().equals(classroom.getCid()));
 
         logChange(cid, "REMOVE_STUDENT", "학생 제외: " + user.getName());
+
+        // 학생에게 학급 제외 알림
+        NotificationHelper.send(user, "학급 변경 안내",
+                classroom.getGrade() + "학년 " + classroom.getClassNum() + "반에서 제외되었습니다.");
     }
 
     public void removeStudents(Long cid, List<Long> studentUids) {
@@ -395,6 +422,10 @@ public class ClassroomService {
 
         logChange(currentCid, "TRANSFER_OUT", "학생 전출: " + user.getName() + " -> " + targetClassroom.getClassName());
         logChange(targetCid, "TRANSFER_IN", "학생 전입: " + user.getName() + " (from " + currentCid + ")");
+
+        // 학생에게 반 이동 알림
+        NotificationHelper.send(user, "학급 이동 안내",
+                targetClassroom.getClassName() + "(으)로 이동되었습니다.", "/classroom");
     }
 
     public void bulkUpdateClassStatus(List<Long> cids, String statusName) {
@@ -556,6 +587,11 @@ public class ClassroomService {
             User teacher = userRepository.findById(request.getTeacherUid())
                     .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
             classroom.setTeacher(teacher);
+
+            // 담임 교사에게 알림
+            NotificationHelper.send(teacher, "담임 학급 배정",
+                    classroom.getGrade() + "학년 " + classroom.getClassNum() + "반 담임으로 배정되었습니다.",
+                    "/classroom");
         } else {
             classroom.setTeacher(null);
         }

@@ -7,8 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.schoolmate.global.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
+import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
+import com.example.schoolmate.domain.staff.repository.StaffInfoRepository;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
 import com.example.schoolmate.domain.term.entity.SchoolYear;
@@ -35,6 +39,9 @@ public class AcademicTermService {
     private final AcademicTermRepository academicTermRepository;
     private final SchoolYearRepository schoolYearRepository;
     private final SchoolRepository schoolRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
+    private final StudentInfoRepository studentInfoRepository;
 
     /**
      * 현재 학교의 활성 학기 조회
@@ -113,7 +120,14 @@ public class AcademicTermService {
         term.setStatus(AcademicTermStatus.ACTIVE);
         term.setStartDate(startDate);
         term.setEndDate(endDate);
-        return academicTermRepository.save(term);
+        AcademicTerm saved = academicTermRepository.save(term);
+
+        // 학교 구성원에게 새 학기 개설 알림
+        String title = "새 학기 시작";
+        String content = year + "학년도 " + semester + "학기가 시작되었습니다. (" + startDate + " ~ " + endDate + ")";
+        notifySchoolMembers(schoolId, title, content);
+
+        return saved;
     }
 
     /**
@@ -165,6 +179,18 @@ public class AcademicTermService {
     }
 
     // ── 내부 유틸 ────────────────────────────────────────────────────────────
+
+    private void notifySchoolMembers(Long schoolId, String title, String content) {
+        teacherInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content));
+        staffInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content));
+        studentInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content));
+    }
 
     private AcademicTerm defaultTerm() {
         AcademicTerm term = new AcademicTerm();

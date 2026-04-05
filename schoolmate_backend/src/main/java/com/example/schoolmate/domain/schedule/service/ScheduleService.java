@@ -13,10 +13,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.domain.calendar.dto.SchoolCalendarDTO;
 import com.example.schoolmate.global.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.calendar.entity.SchoolCalendar;
 import com.example.schoolmate.domain.calendar.entity.constant.EventType;
 import com.example.schoolmate.domain.calendar.repository.SchoolCalendarRepository;
+import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
+import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
+import com.example.schoolmate.domain.staff.repository.StaffInfoRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +32,9 @@ public class ScheduleService {
 
     private final SchoolCalendarRepository schoolCalendarRepository;
     private final SchoolRepository schoolRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
+    private final StudentInfoRepository studentInfoRepository;
 
     @Transactional(readOnly = true)
     public List<SchoolCalendarDTO.Response> getEvents(LocalDate start, LocalDate end) {
@@ -59,7 +66,15 @@ public class ScheduleService {
             schoolRepository.findById(schoolId).ifPresent(event::setSchool);
         }
 
-        return schoolCalendarRepository.save(event).getId();
+        Long savedId = schoolCalendarRepository.save(event).getId();
+
+        // 학교 구성원에게 일정 등록 알림
+        if (schoolId != null) {
+            notifySchoolMembers(schoolId, "새 학사 일정 등록",
+                    "'" + request.getTitle() + "' 일정이 등록되었습니다.", "/schedule");
+        }
+
+        return savedId;
     }
 
     public void updateEvent(Long id, SchoolCalendarDTO.Request request) {
@@ -73,13 +88,29 @@ public class ScheduleService {
                 EventType.valueOf(request.getEventType()),
                 request.getTargetGrade(),
                 request.getDescription());
+
+        // 학교 구성원에게 일정 변경 알림
+        Long schoolId = event.getSchool() != null ? event.getSchool().getId() : null;
+        if (schoolId != null) {
+            notifySchoolMembers(schoolId, "학사 일정 변경",
+                    "'" + request.getTitle() + "' 일정이 변경되었습니다.", "/schedule");
+        }
     }
 
     public void deleteEvent(Long id) {
-        if (!schoolCalendarRepository.existsById(id)) {
-            throw new IllegalArgumentException("일정을 찾을 수 없습니다.");
-        }
+        SchoolCalendar event = schoolCalendarRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("일정을 찾을 수 없습니다."));
+
+        Long schoolId = event.getSchool() != null ? event.getSchool().getId() : null;
+        String eventTitle = event.getTitle();
+
         schoolCalendarRepository.deleteById(id);
+
+        // 학교 구성원에게 일정 취소 알림
+        if (schoolId != null) {
+            notifySchoolMembers(schoolId, "학사 일정 취소",
+                    "'" + eventTitle + "' 일정이 취소되었습니다.", "/schedule");
+        }
     }
 
     public void importScheduleFromCsv(MultipartFile file) throws Exception {
@@ -103,5 +134,17 @@ public class ScheduleService {
                 createEvent(request);
             }
         }
+    }
+
+    private void notifySchoolMembers(Long schoolId, String title, String content, String actionUrl) {
+        teacherInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content, actionUrl));
+        staffInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content, actionUrl));
+        studentInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content, actionUrl));
     }
 }

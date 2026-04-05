@@ -20,6 +20,7 @@ import com.example.schoolmate.domain.consultation.entity.ConsultationReservation
 import com.example.schoolmate.domain.consultation.entity.ConsultationType;
 import com.example.schoolmate.domain.consultation.entity.ReservationStatus;
 import com.example.schoolmate.domain.consultation.repository.ConsultationReservationRepository;
+import com.example.schoolmate.global.util.NotificationHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -104,6 +105,20 @@ public class ConsultationReservationService {
         }
 
         ConsultationReservation saved = reservationRepository.save(reservation);
+
+        // 담임 교사에게 상담 예약 알림
+        if (saved.getStudentInfo() != null && saved.getStudentInfo().getCurrentAssignment() != null
+                && saved.getStudentInfo().getCurrentAssignment().getClassroom() != null) {
+            User teacher = saved.getStudentInfo().getCurrentAssignment().getClassroom().getTeacher();
+            if (teacher != null) {
+                String studentName = saved.getStudentInfo().getUser() != null
+                        ? saved.getStudentInfo().getUser().getName() : "";
+                NotificationHelper.send(writer, teacher, "새 상담 예약",
+                        studentName + " 학생 상담 예약이 신청되었습니다. (" + req.getDate() + ")",
+                        "/consultation");
+            }
+        }
+
         return toResponse(saved);
     }
 
@@ -119,6 +134,16 @@ public class ConsultationReservationService {
             throw new RuntimeException("대기 중인 예약만 취소할 수 있습니다.");
         }
         reservation.setStatus(ReservationStatus.CANCELLED);
+
+        // 담임 교사에게 예약 취소 알림
+        if (reservation.getStudentInfo() != null && reservation.getStudentInfo().getCurrentAssignment() != null
+                && reservation.getStudentInfo().getCurrentAssignment().getClassroom() != null) {
+            User teacher = reservation.getStudentInfo().getCurrentAssignment().getClassroom().getTeacher();
+            if (teacher != null) {
+                NotificationHelper.send(reservation.getWriter(), teacher, "상담 예약 취소",
+                        reservation.getDate() + " 상담 예약이 취소되었습니다.", "/consultation");
+            }
+        }
     }
 
     // [soojin] 예약 완료 처리 (교사) - CONFIRMED → COMPLETED
@@ -130,6 +155,13 @@ public class ConsultationReservationService {
             throw new RuntimeException("확정된 예약만 완료 처리할 수 있습니다.");
         }
         reservation.setStatus(ReservationStatus.COMPLETED);
+
+        // 예약자(학부모)에게 상담 완료 알림
+        if (reservation.getWriter() != null) {
+            NotificationHelper.send(reservation.getWriter(), "상담 완료",
+                    reservation.getDate() + " 상담이 완료 처리되었습니다.", "/consultation");
+        }
+
         return toResponse(reservation);
     }
 
@@ -143,6 +175,12 @@ public class ConsultationReservationService {
             throw new RuntimeException("대기 중이거나 확정된 예약만 취소할 수 있습니다.");
         }
         reservation.setStatus(ReservationStatus.CANCELLED);
+
+        // 예약자(학부모)에게 교사 취소 알림
+        if (reservation.getWriter() != null) {
+            NotificationHelper.send(reservation.getWriter(), "상담 예약 취소",
+                    reservation.getDate() + " 상담 예약이 교사에 의해 취소되었습니다.", "/consultation");
+        }
     }
 
     // [soojin] 예약 확정 (교사) - 일정 조정 가능 (PENDING → 확정, CONFIRMED → 일정 변경)
@@ -161,6 +199,14 @@ public class ConsultationReservationService {
             if (req.getEndTime() != null) reservation.setEndTime(req.getEndTime());
         }
         reservation.setStatus(ReservationStatus.CONFIRMED);
+
+        // 예약자(학부모)에게 확정 알림
+        if (reservation.getWriter() != null) {
+            NotificationHelper.send(reservation.getWriter(), "상담 예약 확정",
+                    reservation.getDate() + " " + reservation.getStartTime() + " 상담이 확정되었습니다.",
+                    "/consultation");
+        }
+
         return toResponse(reservation);
     }
 

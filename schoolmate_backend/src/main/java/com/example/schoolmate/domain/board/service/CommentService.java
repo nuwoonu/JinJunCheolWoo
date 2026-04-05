@@ -14,6 +14,7 @@ import com.example.schoolmate.domain.user.entity.User;
 import com.example.schoolmate.domain.user.entity.constant.UserRole;
 import com.example.schoolmate.domain.user.repository.UserRepository;
 import com.example.schoolmate.domain.user.dto.CustomUserDTO;
+import com.example.schoolmate.global.util.NotificationHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -68,6 +69,24 @@ public class CommentService {
                 .build();
 
         Comment saved = commentRepository.save(comment);
+
+        // 게시글 작성자에게 댓글 알림 (본인 댓글 제외)
+        User postWriter = board.getWriter();
+        if (postWriter != null && !postWriter.getUid().equals(writer.getUid())) {
+            NotificationHelper.send(writer, postWriter, "새 댓글",
+                    "'" + board.getTitle() + "' 게시글에 새 댓글이 달렸습니다.",
+                    "/board/" + boardId);
+        }
+
+        // 대댓글인 경우 원 댓글 작성자에게도 알림 (본인 및 게시글 작성자와 중복 제외)
+        if (parent != null && parent.getWriter() != null
+                && !parent.getWriter().getUid().equals(writer.getUid())
+                && !parent.getWriter().getUid().equals(postWriter.getUid())) {
+            NotificationHelper.send(writer, parent.getWriter(), "새 대댓글",
+                    "내 댓글에 대댓글이 달렸습니다.",
+                    "/board/" + boardId);
+        }
+
         CommentDTO.Response dto = CommentDTO.Response.from(saved);
         dto.setReplies(List.of());
         return dto;

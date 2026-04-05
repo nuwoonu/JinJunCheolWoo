@@ -18,6 +18,8 @@ import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
 import com.example.schoolmate.domain.staff.repository.StaffInfoRepository;
 import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.global.util.NotificationHelper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -153,6 +155,10 @@ public class TransferService {
 
         log.info("학생 전입 처리 완료: uid={}, {} → {}", user.getUid(), fromSchoolName, targetSchool.getName());
 
+        // 학생에게 전입 완료 알림
+        NotificationHelper.send(user, "전입 처리 완료",
+                fromSchoolName + "에서 " + targetSchool.getName() + "(으)로 전입 처리되었습니다.", "/hub");
+
         TransferDTO.TransferResult result = new TransferDTO.TransferResult();
         result.setName(user.getName());
         result.setFromSchoolName(fromSchoolName);
@@ -208,6 +214,10 @@ public class TransferService {
         }
 
         log.info("교사 전입 처리 완료: uid={}, {} → {}", user.getUid(), fromSchoolName, targetSchool.getName());
+
+        // 교사에게 전입 완료 알림
+        NotificationHelper.send(user, "전입 처리 완료",
+                fromSchoolName + "에서 " + targetSchool.getName() + "(으)로 전입 처리되었습니다.", "/hub");
 
         TransferDTO.TransferResult result = new TransferDTO.TransferResult();
         result.setName(user.getName());
@@ -266,6 +276,10 @@ public class TransferService {
         }
 
         log.info("교직원 전입 처리 완료: uid={}, {} → {}", user.getUid(), fromSchoolName, targetSchool.getName());
+
+        // 교직원에게 전입 완료 알림
+        NotificationHelper.send(user, "전입 처리 완료",
+                fromSchoolName + "에서 " + targetSchool.getName() + "(으)로 전입 처리되었습니다.", "/hub");
 
         TransferDTO.TransferResult result = new TransferDTO.TransferResult();
         result.setName(user.getName());

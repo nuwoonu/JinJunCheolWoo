@@ -33,6 +33,7 @@ import com.example.schoolmate.domain.user.repository.UserRepository;
 import com.example.schoolmate.domain.staff.repository.StaffInfoRepository;
 import com.example.schoolmate.domain.notification.repository.NotificationRepository;
 import com.example.schoolmate.global.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -132,6 +133,10 @@ public class StaffService {
             }
         }
 
+        // 교직원에게 등록 완료 알림
+        NotificationHelper.send(user, "교직원 등록 완료",
+                user.getName() + "님의 교직원 계정이 등록되었습니다.", "/hub");
+
         return user;
     }
 
@@ -209,8 +214,13 @@ public class StaffService {
         List<User> users = userRepository.findAllById(uids);
         for (User user : users) {
             StaffInfo info = user.getInfoForSchool(StaffInfo.class, SchoolContextHolder.getSchoolId());
-            if (info != null)
+            if (info != null) {
                 info.setStatus(status);
+
+                // 교직원에게 상태 변경 알림
+                NotificationHelper.send(user, "재직 상태 변경",
+                        "재직 상태가 '" + status.getDescription() + "'(으)로 변경되었습니다.");
+            }
         }
     }
 
