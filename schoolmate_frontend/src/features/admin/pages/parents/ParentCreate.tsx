@@ -106,7 +106,7 @@ export default function ParentCreate() {
           </button>
           <button
             type="submit"
-            style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+            style={{ padding: "9px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
           >
             등록 완료
           </button>

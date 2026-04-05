@@ -85,7 +85,7 @@ export default function ServiceNoticeDetail() {
             <div style={{ display: "flex", gap: 12, padding: "16px 24px", borderTop: "1px solid #e5e7eb" }}>
               <button
                 onClick={() => navigate(ADMIN_ROUTES.SERVICE_NOTICES.EDIT(notice.id))}
-                style={{ padding: "8px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                style={{ padding: "8px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
               >
                 수정
               </button>

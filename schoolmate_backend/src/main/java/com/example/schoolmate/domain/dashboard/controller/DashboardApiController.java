@@ -146,6 +146,12 @@ public class DashboardApiController {
             profile.put("email", parentUser.getEmail());
             profile.put("phone", phone);
             profile.put("address", parentInfo != null ? parentInfo.getAddress() : null);
+            // [soojin] 학부모 본인 프로필 사진 URL 포함
+            profileRepository.findByUser(parentUser).ifPresent(p -> {
+                if (p.getUuid() != null) {
+                    profile.put("profileImageUrl", FileManager.UploadType.PROFILE.toUrl(p.getUuid()));
+                }
+            });
             data.put("parentProfile", profile);
 
             // 자녀 목록

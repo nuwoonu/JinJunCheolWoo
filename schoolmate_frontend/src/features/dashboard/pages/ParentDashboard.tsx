@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "@/shared/api/authApi";
 import Header from "@/shared/components/layout/Header";
@@ -21,6 +21,7 @@ interface ParentProfile {
   email: string;
   phone: string | null;
   address: string | null;
+  profileImageUrl?: string | null;
 }
 
 interface ParentDashboardData {
@@ -31,15 +32,36 @@ interface ParentDashboardData {
 export default function ParentDashboard() {
   const [data, setData] = useState<ParentDashboardData>({ children: [], parentProfile: null });
   const [loading, setLoading] = useState(true);
+  // [soojin] 프로필 사진 업로드 후 즉시 반영을 위한 별도 상태
+  const [profileImgSrc, setProfileImgSrc] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const { signOut } = useAuth();
 
   useEffect(() => {
     api
       .get("/dashboard/parent")
-      .then((res) => setData(res.data))
+      .then((res) => {
+        setData(res.data);
+        setProfileImgSrc(res.data.parentProfile?.profileImageUrl ?? null);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // [soojin] 프로필 사진 변경 핸들러 — POST /user/profile/image 기존 엔드포인트 재사용
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await api.post("/user/profile/image", fd);
+      setProfileImgSrc(res.data.profileImageUrl);
+    } catch {
+      // 업로드 실패 시 무시
+    }
+    e.target.value = "";
+  };
 
   const getInitial = (name: string) => name.charAt(0);
 
@@ -81,23 +103,62 @@ export default function ParentDashboard() {
                   justifyContent: "space-between",
                 }}
               >
-                {/* 아바타 */}
+                {/* [soojin] 아바타 — 클릭 시 사진 업로드, 사진 있으면 실제 이미지 표시 */}
                 <div
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #4ecdc4, #2bb5ab)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "28px",
-                    fontWeight: 700,
-                    color: "#fff",
-                  }}
+                  style={{ position: "relative", cursor: "pointer", flexShrink: 0 }}
+                  onClick={() => fileRef.current?.click()}
+                  title="클릭하여 프로필 사진 변경"
                 >
-                  {parentProfile ? getInitial(parentProfile.name) : "?"}
+                  {profileImgSrc ? (
+                    <img
+                      src={profileImgSrc}
+                      alt="프로필"
+                      style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        borderRadius: "50%",
+                        background: "#25a194",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "28px",
+                        fontWeight: 700,
+                        color: "#fff",
+                      }}
+                    >
+                      {parentProfile ? getInitial(parentProfile.name) : "?"}
+                    </div>
+                  )}
+                  {/* 카메라 아이콘 오버레이 */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      right: 0,
+                      width: "24px",
+                      height: "24px",
+                      borderRadius: "50%",
+                      backgroundColor: "#2bb5ab",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                    }}
+                  >
+                    <i className="ri-camera-line" style={{ fontSize: "12px", color: "#fff" }} />
+                  </div>
                 </div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleProfileImageChange}
+                />
 
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontWeight: 700, fontSize: "18px", color: "#222" }}>{parentProfile?.name ?? "-"}</div>

@@ -205,7 +205,7 @@ export default function BuildingList() {
     <div
       style={{
         minHeight: "100%",
-        background: "linear-gradient(150deg, #f8fafc 0%, #e2e8f0 100%)",
+        background: "#f8fafc",
         padding: "32px",
         overflowY: "auto",
       }}
@@ -550,7 +550,7 @@ export default function BuildingList() {
                     style={{
                       width: "140px",
                       height: "280px",
-                      background: `linear-gradient(175deg, ${building.color} 0%, ${shadeColor(building.color, -18)} 100%)`,
+                      background: building.color,
                       position: "relative",
                       overflow: "hidden",
                       boxShadow: "6px 8px 24px rgba(0,0,0,0.22), inset -5px 0 10px rgba(0,0,0,0.08)",
@@ -660,7 +660,7 @@ export default function BuildingList() {
                   style={{
                     width: "150px",
                     height: "10px",
-                    background: "linear-gradient(180deg, #94a3b8 0%, #64748b 100%)",
+                    background: "#94a3b8",
                     borderRadius: "0 0 3px 3px",
                   }}
                 />
@@ -670,7 +670,7 @@ export default function BuildingList() {
                   style={{
                     width: "120px",
                     height: "8px",
-                    background: "radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, transparent 70%)",
+                    background: "rgba(0,0,0,0.08)",
                     marginTop: "3px",
                   }}
                 />

@@ -164,7 +164,7 @@ export default function AcademicTermManagement() {
           <div style={{ padding: '16px 24px', borderTop: '1px solid #e5e7eb', textAlign: 'right' }}>
             <button
               type="submit" disabled={saving}
-              style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
+              style={{ padding: '10px 28px', background: '#25A194', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
             >
               {saving ? <><span className="spinner-border spinner-border-sm me-2" />개설 중...</> : '학기 개설'}
             </button>

@@ -51,7 +51,7 @@ export default function FloorList() {
     <div
       style={{
         minHeight: "100%",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+        background: "#f8fafc",
         padding: "32px",
         overflowY: "auto",
       }}

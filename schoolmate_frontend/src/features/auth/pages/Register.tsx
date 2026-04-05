@@ -345,7 +345,7 @@ export default function Register() {
                           background:
                             !form.email || sendingCode
                               ? "#e5e7eb"
-                              : "linear-gradient(135deg, #25a194, #1a7a6e)",
+                              : "#25a194",
                           color:
                             !form.email || sendingCode ? "#9ca3af" : "#fff",
                           fontSize: 13,
@@ -439,7 +439,7 @@ export default function Register() {
                             countdown === 0 ||
                             verifyingCode
                               ? "#e5e7eb"
-                              : "linear-gradient(135deg, #25a194, #1a7a6e)",
+                              : "#25a194",
                           color:
                             verificationCode.length !== 6 ||
                             countdown === 0 ||
@@ -505,7 +505,7 @@ export default function Register() {
                   style={{
                     background: submitDisabled
                       ? "#e5e7eb"
-                      : "linear-gradient(135deg, var(--primary-500, #25a194), var(--primary-700, #1a7a6e))",
+                      : "var(--primary-500, #25a194)",
                     color: submitDisabled ? "#9ca3af" : "#fff",
                     borderRadius: 20,
                     boxShadow: submitDisabled

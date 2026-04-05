@@ -741,7 +741,7 @@ export default function StudentAttendance() {
                 <div
                   style={{
                     padding: "16px",
-                    background: "linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%)",
+                    background: "#f0f4ff",
                     borderBottom: "1px solid #e5e7eb",
                     flexShrink: 0,
                   }}

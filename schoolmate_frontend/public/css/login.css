@@ -18,7 +18,7 @@ body {
 .login-left {
   width: 30%;
   max-width: 30%;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;

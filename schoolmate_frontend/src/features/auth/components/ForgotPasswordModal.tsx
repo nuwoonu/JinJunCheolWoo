@@ -112,7 +112,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: Props) {
   // ── 공통 스타일 ─────────────────────────────────────────────────────────────
   const primaryBtn: React.CSSProperties = {
     width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
-    background: 'linear-gradient(135deg, #25A194, #1a7a6e)',
+    background: '#25A194',
     color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'center',
   }
 

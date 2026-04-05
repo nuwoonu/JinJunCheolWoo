@@ -90,7 +90,7 @@ export default function SelectRole() {
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     background: selected === role.value
-                      ? 'linear-gradient(135deg, rgba(37,161,148,0.07), rgba(37,161,148,0.13))'
+                      ? 'rgba(37,161,148,0.10)'
                       : 'var(--white)',
                     boxShadow: selected === role.value
                       ? '0 4px 12px rgba(37,161,148,0.18)'

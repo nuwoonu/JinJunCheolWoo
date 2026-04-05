@@ -101,7 +101,7 @@ export default function ServiceNoticeForm() {
                   <button
                     type="submit"
                     disabled={loading}
-                    style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1 }}
+                    style={{ padding: "9px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1 }}
                   >
                     {loading ? '처리 중...' : (isEdit ? '수정 완료' : '등록')}
                   </button>

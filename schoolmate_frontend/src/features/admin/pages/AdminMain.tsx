@@ -111,7 +111,7 @@ export default function AdminMain() {
               width: 56,
               height: 56,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+              background: "#25A194",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -155,7 +155,7 @@ export default function AdminMain() {
                 transition: "all 0.2s ease",
                 background:
                   hovered === item.to
-                    ? "linear-gradient(135deg, rgba(37,161,148,0.07), rgba(37,161,148,0.13))"
+                    ? "rgba(37,161,148,0.10)"
                     : "#fff",
                 boxShadow:
                   hovered === item.to
@@ -195,7 +195,7 @@ export default function AdminMain() {
                 transition: "all 0.2s ease",
                 background:
                   hovered === "__test__"
-                    ? "linear-gradient(135deg, rgba(245,158,11,0.1), rgba(217,119,6,0.16))"
+                    ? "rgba(245,158,11,0.13)"
                     : "#fffbeb",
                 boxShadow:
                   hovered === "__test__"

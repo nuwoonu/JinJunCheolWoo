@@ -125,7 +125,7 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
                     {caption && (
                       <div style={{
                         position: 'absolute', bottom: 0, left: 0, right: 0,
-                        background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+                        background: 'rgba(0,0,0,0.5)',
                         color: '#fff', fontSize: 10, padding: '12px 6px 4px',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         opacity: 0, transition: 'opacity 0.2s',

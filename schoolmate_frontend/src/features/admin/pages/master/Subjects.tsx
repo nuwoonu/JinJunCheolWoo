@@ -180,7 +180,7 @@ export default function Subjects() {
                 onClick={() => setCsvResults(null)}
                 style={{
                   padding: "8px 20px",
-                  background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+                  background: "#25A194",
                   border: "none",
                   borderRadius: 8,
                   fontSize: 14,
@@ -292,7 +292,7 @@ export default function Subjects() {
                   type="submit"
                   style={{
                     padding: "8px 16px",
-                    background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+                    background: "#25A194",
                     border: "none",
                     borderRadius: 8,
                     fontSize: 14,

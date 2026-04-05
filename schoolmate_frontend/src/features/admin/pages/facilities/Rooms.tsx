@@ -195,7 +195,7 @@ export default function Rooms() {
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 20px", borderTop: "1px solid #e5e7eb" }}>
                 <button type="button" onClick={() => setShowModal(false)} style={{ padding: "8px 16px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 14, color: "#374151", cursor: "pointer" }}>취소</button>
-                <button type="submit" style={{ padding: "8px 16px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
+                <button type="submit" style={{ padding: "8px 16px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
                   {form.id !== null ? "수정" : "등록"}
                 </button>
               </div>

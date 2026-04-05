@@ -358,7 +358,7 @@ export default function StaffDetail() {
                   <button
                     type="submit"
                     disabled={saving}
-                    style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: saving ? 0.7 : 1 }}
+                    style={{ padding: '9px 18px', background: '#25A194', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: saving ? 0.7 : 1 }}
                   >
                     {saving ? (
                       <><span className="spinner-border spinner-border-sm" style={{ marginRight: 6 }} />저장 중...</>
@@ -463,7 +463,7 @@ export default function StaffDetail() {
                         type="button"
                         onClick={addGrant}
                         disabled={!newGrantRole || !selectedSchool?.id}
-                        style={{ padding: '9px 14px', background: 'linear-gradient(135deg, #25A194, #1a7a6e)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#fff', cursor: (!newGrantRole || !selectedSchool?.id) ? 'not-allowed' : 'pointer', opacity: (!newGrantRole || !selectedSchool?.id) ? 0.6 : 1 }}
+                        style={{ padding: '9px 14px', background: '#25A194', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#fff', cursor: (!newGrantRole || !selectedSchool?.id) ? 'not-allowed' : 'pointer', opacity: (!newGrantRole || !selectedSchool?.id) ? 0.6 : 1 }}
                       >
                         부여
                       </button>

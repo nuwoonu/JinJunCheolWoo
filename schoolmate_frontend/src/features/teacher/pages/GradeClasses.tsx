@@ -67,7 +67,7 @@ export default function TeacherGradeClasses() {
       {/* 안내 헤더 */}
       <div
         className="card radius-12 mb-24 border-0"
-        style={{ background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)" }}
+        style={{ background: "#3b82f6" }}
       >
         <div className="card-body p-24 d-flex align-items-center gap-16">
           <div

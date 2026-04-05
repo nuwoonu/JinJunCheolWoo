@@ -222,7 +222,7 @@ export default function ParentDetail() {
                       onKeyDown={(e) => e.key === "Enter" && searchStudents()}
                     />
                     <button
-                      style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                      style={{ padding: "9px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                       onClick={searchStudents}
                     >
                       검색
@@ -283,7 +283,7 @@ export default function ParentDetail() {
                       다시 검색
                     </button>
                     <button
-                      style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", flex: 1 }}
+                      style={{ padding: "9px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", flex: 1 }}
                       onClick={addChild}
                     >
                       연결 추가
@@ -427,7 +427,7 @@ export default function ParentDetail() {
                 <div style={{ padding: "16px 24px", borderTop: "1px solid #e5e7eb", textAlign: "right" }}>
                   <button
                     type="submit"
-                    style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                    style={{ padding: "9px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                     disabled={saving}
                   >
                     {saving ? (
@@ -454,7 +454,7 @@ export default function ParentDetail() {
                   </h6>
                   <button
                     className="btn btn-sm"
-                    style={{ padding: "9px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                    style={{ padding: "9px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
                     onClick={() => setShowModal(true)}
                   >
                     <i className="bi bi-plus-lg" /> 자녀 추가

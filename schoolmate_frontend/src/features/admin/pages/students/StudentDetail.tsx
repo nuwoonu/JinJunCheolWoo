@@ -123,7 +123,7 @@ export default function StudentDetail() {
     setParentResults(Array.isArray(r.data) ? r.data : (r.data?.content ?? []));
   };
 
-  const addGuardian = async (parentId: string) => {
+  const addGuardian = async (parentId: number | undefined) => {
     await admin.post(`/students/${uid}/guardian`, null, {
       params: { parentId, relationship },
     });
@@ -132,7 +132,7 @@ export default function StudentDetail() {
     load();
   };
 
-  const removeGuardian = async (parentId: string) => {
+  const removeGuardian = async (parentId: number) => {
     if (!confirm("보호자 연동을 해제하시겠습니까?")) return;
     await admin.delete(`/students/${uid}/guardian/${parentId}`);
     load();

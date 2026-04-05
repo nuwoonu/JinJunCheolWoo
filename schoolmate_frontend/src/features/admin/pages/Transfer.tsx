@@ -228,7 +228,7 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
                         <button
                           onClick={() => onSelect(s)}
                           style={{
-                            background: `linear-gradient(135deg, ${primary}, #1a7a6e)`,
+                            background: primary,
                             color: "#fff", border: "none", borderRadius: 8,
                             padding: "5px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer",
                           }}

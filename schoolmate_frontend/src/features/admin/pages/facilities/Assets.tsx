@@ -209,7 +209,7 @@ export default function Assets() {
   };
   const btnPrimaryModal: React.CSSProperties = {
     padding: "8px 16px",
-    background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+    background: "#25A194",
     border: "none",
     borderRadius: 8,
     fontSize: 14,

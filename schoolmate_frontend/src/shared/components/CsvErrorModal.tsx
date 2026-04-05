@@ -32,7 +32,7 @@ export default function CsvErrorModal({ errors, onClose }: CsvErrorModalProps) {
         <div style={{ padding: "12px 20px", borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "flex-end" }}>
           <button
             onClick={onClose}
-            style={{ padding: "8px 20px", background: "linear-gradient(135deg, #25A194, #1a7a6e)", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
+            style={{ padding: "8px 20px", background: "#25A194", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer" }}
           >
             확인
           </button>

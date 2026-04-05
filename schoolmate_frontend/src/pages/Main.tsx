@@ -170,7 +170,7 @@ export default function Main() {
         .btn-login-nav:hover { color: ${P}; }
         .btn-register-nav {
           color: #fff; font-weight: 600; font-size: 0.9rem;
-          background: linear-gradient(135deg, ${P}, #1a7a6e);
+          background: ${P};
           padding: 8px 18px; border-radius: 20px; text-decoration: none;
           box-shadow: 0 3px 12px rgba(37,161,148,0.3); transition: all 0.2s;
         }
@@ -255,7 +255,7 @@ export default function Main() {
         }
         .school-result-item:hover, .school-result-item.sel { background: rgba(37,161,148,0.08); border-color: ${P}; }
         .school-info-card {
-          background: linear-gradient(135deg, ${P}, #1a7a6e);
+          background: ${P};
           border-radius: 14px; padding: 28px; color: #fff;
         }
         .school-info-item { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }

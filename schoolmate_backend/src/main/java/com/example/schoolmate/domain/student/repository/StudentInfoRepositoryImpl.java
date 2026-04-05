@@ -365,6 +365,11 @@ public class StudentInfoRepositoryImpl implements StudentInfoRepositoryCustom {
 
     // ── 공통 필터 ─────────────────────────────────────────────────────────────────
 
+    // [soojin] countByClassroomCid에서 사용 - isCurrentSchoolYear 위임
+    private BooleanExpression isMaxSchoolYear(QStudentInfo s, QStudentAssignment assign) {
+        return isCurrentSchoolYear(assign);
+    }
+
     // 현재 학년도(status=CURRENT)의 배정 이력인지 확인하는 필터
     private BooleanExpression isCurrentSchoolYear(QStudentAssignment assign) {
         return assign.schoolYear.status.eq(SchoolYearStatus.CURRENT);

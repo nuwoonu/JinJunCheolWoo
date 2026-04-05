@@ -377,7 +377,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
     padding: "10px 0",
     borderRadius: 10,
     border: "none",
-    background: "linear-gradient(135deg, #25A194, #1a7a6e)",
+    background: "#25A194",
     color: "#fff",
     fontWeight: 700,
     fontSize: 14,
@@ -484,8 +484,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
               {/* 프로필 이미지 영역 */}
               <div
                 style={{
-                  background:
-                    "linear-gradient(135deg, #25A194 0%, #1a7a6e 100%)",
+                  background: "#25A194",
                   padding: "28px 0 52px",
                   textAlign: "center",
                 }}
@@ -824,7 +823,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                           cursor: isSocial ? "not-allowed" : "pointer",
                           background: isSocial
                             ? "#f3f4f6"
-                            : "linear-gradient(135deg, #25A194, #1a7a6e)",
+                            : "#25A194",
                           color: isSocial ? "#9ca3af" : "#fff",
                         }}
                       >
@@ -1752,7 +1751,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                       border: "none",
                       background: wdLoading
                         ? "#fca5a5"
-                        : "linear-gradient(135deg, #ef4444, #b91c1c)",
+                        : "#ef4444",
                       color: "#fff",
                       fontWeight: 700,
                       fontSize: 14,
@@ -1840,7 +1839,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                       padding: "10px 0",
                       borderRadius: 10,
                       border: "none",
-                      background: "linear-gradient(135deg, #ef4444, #b91c1c)",
+                      background: "#ef4444",
                       color: "#fff",
                       fontWeight: 700,
                       fontSize: 14,
