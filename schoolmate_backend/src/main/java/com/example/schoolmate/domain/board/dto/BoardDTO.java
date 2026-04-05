@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 
 import java.util.Set;
 
-import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.domain.user.entity.constant.UserRole;
 import com.example.schoolmate.domain.board.entity.Board;
 import com.example.schoolmate.domain.board.entity.BoardType;
 

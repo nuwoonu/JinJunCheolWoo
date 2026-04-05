@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import PageLoader from "@/components/PageLoader";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import PageLoader from "@/shared/components/PageLoader";
 
 type TabKey = "admin" | "teacher" | "parent" | "student";
 

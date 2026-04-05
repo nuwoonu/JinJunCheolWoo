@@ -9,7 +9,8 @@ import com.example.schoolmate.domain.resources.constant.ReservationStatus;
 import com.example.schoolmate.domain.resources.dto.ReservationDTO;
 import com.example.schoolmate.domain.resources.entity.Reservation;
 import com.example.schoolmate.domain.resources.repository.ReservationRepository;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.NotificationHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +41,13 @@ public class ReservationService {
 
         // 이미 처리된 예약인지 확인 로직 등을 추가할 수 있음
         reservation.setStatus(ReservationStatus.APPROVED);
+
+        // 신청자에게 승인 알림
+        if (reservation.getUser() != null) {
+            String resourceName = reservation.getResource() != null ? reservation.getResource().getName() : "자원";
+            NotificationHelper.send(reservation.getUser(), "예약 승인",
+                    "'" + resourceName + "' 예약이 승인되었습니다.", "/resources/reservations");
+        }
     }
 
     /**
@@ -51,5 +59,13 @@ public class ReservationService {
 
         reservation.setStatus(ReservationStatus.REJECTED);
         reservation.setRejectReason(rejectReason);
+
+        // 신청자에게 반려 ���림
+        if (reservation.getUser() != null) {
+            String resourceName = reservation.getResource() != null ? reservation.getResource().getName() : "자원";
+            String reason = (rejectReason != null && !rejectReason.isBlank()) ? " (사유: " + rejectReason + ")" : "";
+            NotificationHelper.send(reservation.getUser(), "예약 반려",
+                    "'" + resourceName + "' 예약��� 반려되었습니다." + reason, "/resources/reservations");
+        }
     }
 }

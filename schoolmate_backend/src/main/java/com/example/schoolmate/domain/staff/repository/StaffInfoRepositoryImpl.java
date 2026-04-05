@@ -1,0 +1,100 @@
+package com.example.schoolmate.domain.staff.repository;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
+
+import com.example.schoolmate.domain.staff.dto.StaffDTO;
+import com.example.schoolmate.domain.staff.entity.QStaffInfo;
+import com.example.schoolmate.domain.staff.entity.constant.EmploymentType;
+import com.example.schoolmate.domain.staff.entity.constant.StaffStatus;
+import com.example.schoolmate.domain.user.entity.QUser;
+import com.example.schoolmate.domain.user.entity.User;
+import com.example.schoolmate.domain.user.entity.constant.UserRole;
+import com.example.schoolmate.global.config.school.SchoolQueryFilter;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class StaffInfoRepositoryImpl implements StaffInfoRepositoryCustom {
+    private final JPAQueryFactory query;
+
+    @Override
+    public Page<User> search(StaffDTO.StaffSearchCondition cond, Pageable pageable) {
+        QUser user = QUser.user;
+        QStaffInfo info = QStaffInfo.staffInfo;
+
+        BooleanExpression isStaff = user.roles.contains(UserRole.STAFF);
+        BooleanExpression searchFilter = searchPredicate(cond.getType(), cond.getKeyword());
+        BooleanExpression statusFilter = statusFilter(cond.getStatus());
+        BooleanExpression employmentTypeFilter = employmentTypeFilter(cond.getEmploymentType());
+        BooleanExpression schoolFilter = SchoolQueryFilter.schoolIdEq(info.school.id);
+
+        JPAQuery<User> contentQuery = query
+                .selectFrom(user)
+                .leftJoin(info).on(info.user.eq(user))
+                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter, schoolFilter)
+                .groupBy(user.uid)
+                .orderBy(info.code.max().desc());
+
+        if (pageable.isPaged()) {
+            contentQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
+        }
+
+        List<User> content = contentQuery.fetch();
+
+        JPAQuery<Long> countQuery = query
+                .select(user.countDistinct())
+                .from(user)
+                .leftJoin(info).on(info.user.eq(user))
+                .where(isStaff, searchFilter, statusFilter, employmentTypeFilter, schoolFilter);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression statusFilter(String status) {
+        if (status == null || status.isEmpty())
+            return null;
+        QStaffInfo info = QStaffInfo.staffInfo;
+        return info.status.eq(StaffStatus.valueOf(status));
+    }
+
+    private BooleanExpression employmentTypeFilter(String employmentType) {
+        if (employmentType == null || employmentType.isEmpty())
+            return null;
+        QStaffInfo info = QStaffInfo.staffInfo;
+        return info.employmentType.eq(EmploymentType.valueOf(employmentType));
+    }
+
+    private BooleanExpression searchPredicate(String type, String keyword) {
+        if (keyword == null || keyword.isEmpty())
+            return null;
+        QUser user = QUser.user;
+        QStaffInfo info = QStaffInfo.staffInfo;
+
+        return switch (type) {
+            case "name" -> user.name.contains(keyword);
+            case "email" -> user.email.contains(keyword);
+            case "dept" -> info.department.contains(keyword);
+            case "jobTitle" -> info.jobTitle.contains(keyword);
+            case "code" -> info.code.contains(keyword);
+            case "extNum" -> info.extensionNumber.contains(keyword);
+            default -> null;
+        };
+    }
+
+    @Override
+    public long countByStatus(StaffStatus status) {
+        QStaffInfo info = QStaffInfo.staffInfo;
+        Long count = query.select(info.count())
+                .from(info)
+                .where(info.status.eq(status), SchoolQueryFilter.schoolIdEq(info.school.id))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
+}
