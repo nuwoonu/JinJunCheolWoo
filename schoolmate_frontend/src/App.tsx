@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import "./styles/dashboard-card.css"; // [soojin] 대시보드 카드 공통 스타일
+import "@/shared/styles/dashboard-card.css"; // [soojin] 대시보드 카드 공통 스타일
 import { useEffect } from "react";
 import PrivateRoute from "@/shared/components/PrivateRoute";
 import PageLoader from "@/shared/components/PageLoader";

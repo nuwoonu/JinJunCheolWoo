@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AdminLayout from '@/components/layout/admin/AdminLayout';
-import admin from '@/api/adminApi';
-import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/constants/statusConfig';
-import { ADMIN_ROUTES } from '@/constants/routes';
-import { useAdminMsg, apiErrMsg } from '@/hooks/useAdminMsg';
+import AdminLayout from '@/shared/components/layout/admin/AdminLayout';
+import admin from '@/shared/api/adminApi';
+import { STUDENT_STATUS, ROLE_REQUEST_STATUS, STATUS_DEFAULT } from '@/shared/constants/statusConfig';
+import { ADMIN_ROUTES } from '@/shared/constants/routes';
+import { useAdminMsg, apiErrMsg } from '@/shared/hooks/useAdminMsg';
 
 // [soojin] any 대신 백엔드 응답 타입 정의
 interface StudentAssignment {

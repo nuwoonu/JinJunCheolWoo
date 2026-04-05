@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "@/api/auth";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import api from "@/shared/api/authApi";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
 // [soojin] /teacher/class-materials - 수업 자료 관리 페이지
 // 교사가 등록한 수업 자료 목록 조회 및 관리

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ReactQuill, QUILL_MODULES, QUILL_FORMATS, isQuillEmpty } from "@/shared/quillConfig";
+import { ReactQuill, QUILL_MODULES, QUILL_FORMATS, isQuillEmpty } from "@/shared/types/quillConfig";
 import "react-quill-new/dist/quill.snow.css";
-import api from "@/api/auth";
-import { useAuth } from "@/contexts/AuthContext";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import api from "@/shared/api/authApi";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
 // [soojin] /board/parent/write - 학부모 게시판 작성 (ClassBoardWrite.tsx 형식)
 // PARENT, TEACHER, ADMIN 작성 가능 / 파일 첨부 전체 허용

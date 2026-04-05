@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSchoolSearch, type SchoolSummary } from "@/hooks/useSchoolSearch";
-import api from "@/api/auth";
+import { useSchoolSearch, type SchoolSummary } from "@/shared/hooks/useSchoolSearch";
+import api from "@/shared/api/authApi";
 
 const SCHOOL_KIND_OPTIONS = [
   { value: "", label: "전체" },
