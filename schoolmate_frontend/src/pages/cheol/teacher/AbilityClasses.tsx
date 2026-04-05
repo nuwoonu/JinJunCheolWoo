@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "@/api/auth";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import api from "@/shared/api/authApi";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
 // [cheol] /teacher/ability-classes - 세부능력 입력 전 학급 선택 페이지
 

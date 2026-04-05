@@ -28,7 +28,7 @@ public class StudentAbilityResponseDTO {
                 .subjectCode(sa.getSubject().getCode())
                 .academicTermId(sa.getAcademicTerm().getId())
                 .termDisplayName(sa.getAcademicTerm().getDisplayName())
-                .schoolYear(sa.getAcademicTerm().getSchoolYear())
+                .schoolYear(sa.getAcademicTerm().getSchoolYearInt())
                 .semester(sa.getAcademicTerm().getSemester())
                 .content(sa.getContent())
                 .build();

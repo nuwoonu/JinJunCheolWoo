@@ -1,7 +1,8 @@
 package com.example.schoolmate.cheol.entity;
 
-import com.example.schoolmate.common.entity.info.StudentInfo;
+import com.example.schoolmate.domain.grade.entity.Subject;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+import com.example.schoolmate.domain.student.entity.StudentInfo;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 
 import jakarta.persistence.Column;
@@ -23,8 +24,8 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "student_ability", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_student_subject_term",
-                columnNames = { "student_info_id", "subject_id", "academic_term_id" })
+        @UniqueConstraint(name = "uk_student_subject_term", columnNames = { "student_info_id", "subject_id",
+                "academic_term_id" })
 })
 @Getter
 @SuperBuilder

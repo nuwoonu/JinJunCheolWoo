@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import api from "@/api/auth";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import api from "@/shared/api/authApi";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
 // [cheol] /teacher/ability-students - 세부능력 및 특기사항 입력 페이지
 
