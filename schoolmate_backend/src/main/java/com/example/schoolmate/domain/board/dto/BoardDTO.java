@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 
 import java.util.Set;
 
-import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.domain.user.entity.constant.UserRole;
 import com.example.schoolmate.domain.board.entity.Board;
 import com.example.schoolmate.domain.board.entity.BoardType;
 
@@ -155,6 +155,11 @@ public class BoardDTO {
 
         /** 목록 조회용 (content 제외) */
         public static Response fromEntityForList(Board board) {
+            return fromEntityForList(board, 0L, 0L);
+        }
+
+        // [soojin] 목록 조회용 — likeCount/commentCount 포함 오버로드 (학급 게시판 목록에서 사용)
+        public static Response fromEntityForList(Board board, long likeCount, long commentCount) {
             return Response.builder()
                     .id(board.getId())
                     .boardType(board.getBoardType())
@@ -177,6 +182,8 @@ public class BoardDTO {
                     // [soojin] 태그, 작성자 역할
                     .tag(board.getTag())
                     .writerRole(resolveWriterRole(board.getWriter().getRoles()))
+                    .likeCount(likeCount)
+                    .commentCount(commentCount)
                     .build();
         }
 

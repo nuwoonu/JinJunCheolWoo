@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.schoolmate.common.entity.Classroom;
-import com.example.schoolmate.common.entity.info.TeacherInfo;
+import com.example.schoolmate.domain.classroom.entity.Classroom;
+import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.CourseSection;
 

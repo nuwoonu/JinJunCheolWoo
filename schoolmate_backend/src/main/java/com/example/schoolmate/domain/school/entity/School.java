@@ -1,6 +1,6 @@
 package com.example.schoolmate.domain.school.entity;
 
-import com.example.schoolmate.common.entity.BaseEntity;
+import com.example.schoolmate.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

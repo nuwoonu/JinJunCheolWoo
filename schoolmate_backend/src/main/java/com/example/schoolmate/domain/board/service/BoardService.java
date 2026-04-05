@@ -23,23 +23,23 @@ import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.repository.BoardConsentRepository;
 import com.example.schoolmate.domain.board.repository.BoardReadRepository;
 import com.example.schoolmate.domain.board.repository.BoardRepository;
-import com.example.schoolmate.common.entity.info.TeacherInfo;
-import com.example.schoolmate.common.entity.user.User;
-import com.example.schoolmate.common.entity.user.constant.UserRole;
-import com.example.schoolmate.common.repository.UserRepository;
-import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
-import com.example.schoolmate.common.entity.info.FamilyRelation;
-import com.example.schoolmate.common.entity.info.StudentInfo;
-import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
-import com.example.schoolmate.common.repository.info.FamilyRelationRepository;
-import com.example.schoolmate.common.repository.info.staff.StaffInfoRepository;
-import com.example.schoolmate.common.repository.info.student.StudentInfoRepository;
-import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.common.util.NotificationHelper;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
+import com.example.schoolmate.domain.user.entity.User;
+import com.example.schoolmate.domain.user.entity.constant.UserRole;
+import com.example.schoolmate.domain.user.repository.UserRepository;
+import com.example.schoolmate.domain.classroom.repository.ClassroomRepository;
+import com.example.schoolmate.domain.parent.entity.FamilyRelation;
+import com.example.schoolmate.domain.student.entity.StudentInfo;
+import com.example.schoolmate.domain.student.entity.StudentAssignment;
+import com.example.schoolmate.domain.parent.repository.FamilyRelationRepository;
+import com.example.schoolmate.domain.staff.repository.StaffInfoRepository;
+import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
+import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
+import com.example.schoolmate.global.util.NotificationHelper;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
-import com.example.schoolmate.dto.CustomUserDTO;
-import com.example.schoolmate.common.entity.Classroom;
+import com.example.schoolmate.domain.user.dto.CustomUserDTO;
+import com.example.schoolmate.domain.classroom.entity.Classroom;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +68,7 @@ public class BoardService {
 
     // [woo 03-27] 담임 학급 보유 여부 확인
     public boolean hasHomeroom(Long uid, int year) {
-        return classroomRepository.findByTeacherUidAndYear(uid, year).isPresent();
+        return classroomRepository.findByTeacherUidAndSchoolYear_Year(uid, year).isPresent();
     }
 
     // ========== 게시물 조회 ==========
@@ -86,7 +86,7 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getClassNotices(Long classroomId, Pageable pageable) {
         // [soojin] keyword=null, searchType=null - 학급 공지는 검색 미사용
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_NOTICE, classroomId, null, null, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_NOTICE, classroomId, null, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -97,7 +97,7 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getClassBoard(Long classroomId, Pageable pageable) {
         // [soojin] keyword=null, searchType=null - 검색 없이 전체 조회
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, null, null, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_BOARD, classroomId, null, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -108,7 +108,7 @@ public class BoardService {
      */
     public Page<BoardDTO.Response> getClassDiary(Long classroomId, Pageable pageable) {
         // [soojin] keyword=null, searchType=null - 알림장은 검색 미사용
-        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_DIARY, classroomId, null, null, pageable)
+        return boardRepository.findByTypeAndClassroom(BoardType.CLASS_DIARY, classroomId, null, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -128,7 +128,7 @@ public class BoardService {
         // [woo] 교사 → 담임 학급
         if (isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
-            return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+            return classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
                     .map(c -> getClassDiary(c.getCid(), pageable))
                     .orElse(Page.empty(pageable));
         }
@@ -168,24 +168,25 @@ public class BoardService {
      * 학생: 본인 학급 / 교사: 담임 학급
      */
     // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
-    public Page<BoardDTO.Response> getClassBoardAuto(CustomUserDTO userDTO, String keyword, String searchType, Pageable pageable) {
+    // [soojin] tag 파라미터 추가 - 태그 탭 필터링 지원
+    public Page<BoardDTO.Response> getClassBoardAuto(CustomUserDTO userDTO, String keyword, String searchType, String tag, Pageable pageable) {
         // [woo 03-27] 학생 → 본인 학급
         if (isStudent(userDTO)) {
             return studentInfoRepository.findByUserUid(userDTO.getUid())
                     .filter(s -> s.getCurrentAssignment() != null && s.getCurrentAssignment().getClassroom() != null)
                     .map(s -> boardRepository
-                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, s.getCurrentAssignment().getClassroom().getCid(), keyword, searchType, pageable)
-                            .map(BoardDTO.Response::fromEntityForList))
+                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, s.getCurrentAssignment().getClassroom().getCid(), keyword, searchType, tag, pageable)
+                            .map(b -> BoardDTO.Response.fromEntityForList(b,
+                                    boardLikeRepository.countByBoard_Id(b.getId()),
+                                    commentRepository.countByBoard_IdAndIsDeletedFalse(b.getId()))))
                     .orElse(Page.empty(pageable));
         }
 
         // [woo 03-27] 교사 → 담임 학급
         if (isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
-            return classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
-                    .map(c -> boardRepository
-                            .findByTypeAndClassroom(BoardType.CLASS_BOARD, c.getCid(), keyword, searchType, pageable)
-                            .map(BoardDTO.Response::fromEntityForList))
+            return classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
+                    .map(c -> getClassBoard(c.getCid(), pageable))
                     .orElse(Page.empty(pageable));
         }
 
@@ -196,7 +197,9 @@ public class BoardService {
     public List<BoardDTO.Response> getPopularBoards(BoardType boardType, int limit) {
         return boardRepository.findTopByViewCount(boardType, limit)
                 .stream()
-                .map(BoardDTO.Response::fromEntityForList)
+                .map(b -> BoardDTO.Response.fromEntityForList(b,
+                        boardLikeRepository.countByBoard_Id(b.getId()),
+                        commentRepository.countByBoard_IdAndIsDeletedFalse(b.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -466,7 +469,7 @@ public class BoardService {
         if ((request.getBoardType() == BoardType.PARENT_NOTICE || request.getBoardType() == BoardType.CLASS_DIARY)
                 && targetClassroom == null && isTeacher(userDTO)) {
             int currentYear = java.time.LocalDate.now().getYear();
-            classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+            classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
                     .ifPresent(classroom -> {
                         request.setTargetClassroomId(classroom.getCid());
                         request.setTargetGrade(classroom.getGrade());
@@ -481,7 +484,7 @@ public class BoardService {
         if (request.getBoardType() == BoardType.CLASS_BOARD && targetClassroom == null) {
             if (isTeacher(userDTO)) {
                 int currentYear = java.time.LocalDate.now().getYear();
-                classroomRepository.findByTeacherUidAndYear(userDTO.getUid(), currentYear)
+                classroomRepository.findByTeacherUidAndSchoolYear_Year(userDTO.getUid(), currentYear)
                         .ifPresent(classroom -> {
                             request.setTargetClassroomId(classroom.getCid());
                             request.setTargetGrade(classroom.getGrade());
@@ -949,7 +952,7 @@ public class BoardService {
             classroomCid = board.getTargetClassroom().getCid();
         } else if (teacherUid != null) {
             int currentYear = java.time.LocalDate.now().getYear();
-            classroomCid = classroomRepository.findByTeacherUidAndYear(teacherUid, currentYear)
+            classroomCid = classroomRepository.findByTeacherUidAndSchoolYear_Year(teacherUid, currentYear)
                     .map(Classroom::getCid).orElse(null);
         }
         log.info("[woo] 읽음현황 - boardId={}, classroomCid={}", boardId, classroomCid);
@@ -1060,7 +1063,7 @@ public class BoardService {
             classroomCid = board.getTargetClassroom().getCid();
         } else if (teacherUid != null) {
             int currentYear = java.time.LocalDate.now().getYear();
-            classroomCid = classroomRepository.findByTeacherUidAndYear(teacherUid, currentYear)
+            classroomCid = classroomRepository.findByTeacherUidAndSchoolYear_Year(teacherUid, currentYear)
                     .map(Classroom::getCid).orElse(null);
         }
 

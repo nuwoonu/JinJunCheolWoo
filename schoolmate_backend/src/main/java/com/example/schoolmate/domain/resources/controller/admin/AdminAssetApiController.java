@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.schoolmate.config.SchoolmateUrls;
+import com.example.schoolmate.global.config.SchoolmateUrls;
 import com.example.schoolmate.domain.resources.constant.AssetStatus;
 import com.example.schoolmate.domain.resources.dto.AssetDTO;
 import com.example.schoolmate.domain.resources.dto.AssetModelDTO;

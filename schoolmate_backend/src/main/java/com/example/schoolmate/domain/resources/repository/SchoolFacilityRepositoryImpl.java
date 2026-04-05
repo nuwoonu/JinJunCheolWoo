@@ -2,7 +2,7 @@ package com.example.schoolmate.domain.resources.repository;
 
 import java.util.List;
 
-import com.example.schoolmate.config.school.SchoolQueryFilter;
+import com.example.schoolmate.global.config.school.SchoolQueryFilter;
 import com.example.schoolmate.domain.resources.entity.QSchoolFacility;
 import com.example.schoolmate.domain.resources.entity.SchoolFacility;
 import com.querydsl.core.types.dsl.BooleanExpression;
