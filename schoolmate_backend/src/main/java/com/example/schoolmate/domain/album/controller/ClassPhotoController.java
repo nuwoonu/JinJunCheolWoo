@@ -1,8 +1,8 @@
 package com.example.schoolmate.domain.album.controller;
 
-import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.domain.user.entity.constant.UserRole;
 import com.example.schoolmate.domain.album.service.ClassPhotoService;
-import com.example.schoolmate.dto.AuthUserDTO;
+import com.example.schoolmate.domain.user.dto.AuthUserDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

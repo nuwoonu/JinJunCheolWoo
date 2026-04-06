@@ -10,8 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.common.service.FileManager;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.FileManager;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.resources.constant.AssetStatus;
 import com.example.schoolmate.domain.resources.dto.AssetDTO;
 import com.example.schoolmate.domain.resources.dto.AssetModelDTO;

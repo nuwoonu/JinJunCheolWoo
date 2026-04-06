@@ -1,6 +1,6 @@
 package com.example.schoolmate.domain.servicenotice.controller;
 
-import com.example.schoolmate.config.SchoolmateUrls;
+import com.example.schoolmate.global.config.SchoolmateUrls;
 import com.example.schoolmate.domain.servicenotice.dto.ServiceNoticeDTO;
 import com.example.schoolmate.domain.servicenotice.service.ServiceNoticeService;
 import lombok.RequiredArgsConstructor;

@@ -6,12 +6,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.common.entity.Classroom;
-import com.example.schoolmate.common.entity.info.TeacherInfo;
-import com.example.schoolmate.common.repository.classroom.ClassroomRepository;
-import com.example.schoolmate.common.repository.info.student.StudentAssignmentRepository;
-import com.example.schoolmate.common.repository.info.teacher.TeacherInfoRepository;
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.domain.classroom.entity.Classroom;
+import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
+import com.example.schoolmate.domain.classroom.repository.ClassroomRepository;
+import com.example.schoolmate.domain.student.repository.StudentAssignmentRepository;
+import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
 import com.example.schoolmate.domain.term.entity.CourseSection;
@@ -55,7 +55,7 @@ public class CourseSectionService {
     public int getStudentCount(CourseSection section) {
         Classroom classroom = section.getClassroom();
         return studentAssignmentRepository
-                .findByClassroomAndSchoolYear(classroom, classroom.getYear())
+                .findByClassroomAndSchoolYear(classroom, classroom.getSchoolYear())
                 .size();
     }
 

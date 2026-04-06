@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import com.example.schoolmate.common.entity.user.constant.UserRole;
+import com.example.schoolmate.domain.user.entity.constant.UserRole;
 import com.example.schoolmate.domain.board.entity.Comment;
 
 import lombok.AllArgsConstructor;

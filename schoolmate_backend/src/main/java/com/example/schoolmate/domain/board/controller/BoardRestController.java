@@ -26,11 +26,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.schoolmate.common.service.FileManager;
+import com.example.schoolmate.global.util.FileManager;
 import com.example.schoolmate.domain.board.dto.BoardDTO;
 import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.service.BoardService;
-import com.example.schoolmate.dto.AuthUserDTO;
+import com.example.schoolmate.domain.user.dto.AuthUserDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -157,6 +157,7 @@ public class BoardRestController {
      */
     // [soojin] keyword, searchType 파라미터 추가 - 전체/제목/내용/작성자 필터 검색 지원
     // [soojin] sortBy 파라미터 추가 - createDate(최신순) / viewCount(조회순·인기순) 동적 정렬 지원
+    // [soojin] tag 파라미터 추가 - 태그 탭 필터링 지원
     @GetMapping("/class-board")
     public ResponseEntity<Map<String, Object>> getClassBoardAuto(
             @RequestParam(defaultValue = "0") int page,
@@ -164,6 +165,7 @@ public class BoardRestController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "ALL") String searchType,
             @RequestParam(defaultValue = "createDate") String sortBy,
+            @RequestParam(required = false) String tag,
             @AuthenticationPrincipal AuthUserDTO authUser) {
 
         Sort sort = "viewCount".equals(sortBy)
@@ -174,6 +176,7 @@ public class BoardRestController {
                 authUser.getCustomUserDTO(),
                 keyword,
                 searchType,
+                tag,
                 PageRequest.of(page, size, sort));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
@@ -340,7 +343,7 @@ public class BoardRestController {
             @AuthenticationPrincipal AuthUserDTO authUser) {
         try {
             // [woo] 담임 교사 권한 확인
-            if (authUser == null || authUser.getCustomUserDTO().getRole() != com.example.schoolmate.common.entity.user.constant.UserRole.TEACHER) {
+            if (authUser == null || authUser.getCustomUserDTO().getRole() != com.example.schoolmate.domain.user.entity.constant.UserRole.TEACHER) {
                 return ResponseEntity.status(403).body("담임 교사만 파일을 업로드할 수 있습니다.");
             }
             int currentYear = java.time.LocalDate.now().getYear();

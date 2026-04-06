@@ -6,12 +6,19 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.schoolmate.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
+import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
+import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
+import com.example.schoolmate.domain.staff.repository.StaffInfoRepository;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
+import com.example.schoolmate.domain.term.entity.SchoolYear;
+import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
 import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
+import com.example.schoolmate.domain.term.repository.SchoolYearRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,13 +29,19 @@ import lombok.RequiredArgsConstructor;
  * - 현재 활성 학기 조회: status = ACTIVE인 AcademicTerm
  * - 학기 전환: 기존 ACTIVE → CLOSED, 신규 AcademicTerm ACTIVE로 생성
  * - 과거 학기 기록은 CLOSED 상태로 영구 보존됩니다.
+ *
+ * 학년도 전환 시 SchoolYear 상태(CURRENT/PAST)도 함께 관리합니다.
  */
 @Service
 @RequiredArgsConstructor
 public class AcademicTermService {
 
     private final AcademicTermRepository academicTermRepository;
+    private final SchoolYearRepository schoolYearRepository;
     private final SchoolRepository schoolRepository;
+    private final TeacherInfoRepository teacherInfoRepository;
+    private final StaffInfoRepository staffInfoRepository;
+    private final StudentInfoRepository studentInfoRepository;
 
     /**
      * 현재 학교의 활성 학기 조회
@@ -58,40 +71,63 @@ public class AcademicTermService {
     /**
      * 새 학기 개설 및 활성화
      * - 기존 활성 학기를 CLOSED 처리합니다.
+     * - 학년도가 바뀌는 경우 이전 SchoolYear를 PAST로, 새 SchoolYear를 CURRENT로 전환합니다.
      * - 이미 동일 학년도·학기가 존재하면 해당 학기를 ACTIVE로 전환합니다.
      */
     @Transactional
-    public AcademicTerm openTerm(int schoolYear, int semester, LocalDate startDate, LocalDate endDate) {
+    public AcademicTerm openTerm(int year, int semester, LocalDate startDate, LocalDate endDate) {
         Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId == null) {
             throw new IllegalStateException("학교 컨텍스트가 없습니다.");
         }
 
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new IllegalArgumentException("학교를 찾을 수 없습니다."));
+
         // 기존 활성 학기 종료
         academicTermRepository.findBySchoolIdAndStatus(schoolId, AcademicTermStatus.ACTIVE)
                 .ifPresent(existing -> existing.setStatus(AcademicTermStatus.CLOSED));
 
-        // 동일 학년도·학기가 이미 존재하면 재활성화
-        AcademicTerm term = academicTermRepository
-                .findBySchoolIdAndSchoolYearAndSemester(schoolId, schoolYear, semester)
+        // SchoolYear 처리: 학년도가 바뀌면 기존 CURRENT → PAST, 신규 학년도 CURRENT 설정
+        schoolYearRepository.findBySchoolIdAndStatus(schoolId, SchoolYearStatus.CURRENT)
+                .ifPresent(current -> {
+                    if (current.getYear() != year) {
+                        current.setStatus(SchoolYearStatus.PAST);
+                    }
+                });
+
+        SchoolYear schoolYear = schoolYearRepository.findBySchoolIdAndYear(schoolId, year)
                 .orElseGet(() -> {
-                    School school = schoolRepository.findById(schoolId)
-                            .orElseThrow(() -> new IllegalArgumentException("학교를 찾을 수 없습니다."));
-                    AcademicTerm newTerm = AcademicTerm.builder()
-                            .schoolYear(schoolYear)
-                            .semester(semester)
-                            .startDate(startDate)
-                            .endDate(endDate)
-                            .status(AcademicTermStatus.ACTIVE)
-                            .build();
+                    SchoolYear sy = new SchoolYear(year, SchoolYearStatus.CURRENT);
+                    sy.setSchool(school);
+                    return sy;
+                });
+        schoolYear.setStatus(SchoolYearStatus.CURRENT);
+        schoolYear = schoolYearRepository.save(schoolYear);
+
+        // 동일 학년도·학기가 이미 존재하면 재활성화
+        final SchoolYear finalSchoolYear = schoolYear;
+        AcademicTerm term = academicTermRepository
+                .findBySchoolIdAndSchoolYear_YearAndSemester(schoolId, year, semester)
+                .orElseGet(() -> {
+                    AcademicTerm newTerm = new AcademicTerm(finalSchoolYear, semester, startDate,
+                            endDate, AcademicTermStatus.ACTIVE);
                     newTerm.setSchool(school);
                     return newTerm;
                 });
 
+        term.setSchoolYear(finalSchoolYear);
         term.setStatus(AcademicTermStatus.ACTIVE);
         term.setStartDate(startDate);
         term.setEndDate(endDate);
-        return academicTermRepository.save(term);
+        AcademicTerm saved = academicTermRepository.save(term);
+
+        // 학교 구성원에게 새 학기 개설 알림
+        String title = "새 학기 시작";
+        String content = year + "학년도 " + semester + "학기가 시작되었습니다. (" + startDate + " ~ " + endDate + ")";
+        notifySchoolMembers(schoolId, title, content);
+
+        return saved;
     }
 
     /**
@@ -111,7 +147,7 @@ public class AcademicTermService {
     public List<AcademicTerm> getTermHistory() {
         Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId == null) return List.of();
-        return academicTermRepository.findBySchoolIdOrderBySchoolYearDescSemesterDesc(schoolId);
+        return academicTermRepository.findBySchoolIdOrderBySchoolYear_YearDescSemesterDesc(schoolId);
     }
 
     // [woo] schoolId 직접 전달 — SchoolContextHolder 미설정 환경(교사/학생 API)용
@@ -125,13 +161,13 @@ public class AcademicTermService {
      * 특정 학년도·학기 조회
      */
     @Transactional(readOnly = true)
-    public AcademicTerm getTerm(int schoolYear, int semester) {
+    public AcademicTerm getTerm(int year, int semester) {
         Long schoolId = SchoolContextHolder.getSchoolId();
         if (schoolId == null) throw new IllegalStateException("학교 컨텍스트가 없습니다.");
         return academicTermRepository
-                .findBySchoolIdAndSchoolYearAndSemester(schoolId, schoolYear, semester)
+                .findBySchoolIdAndSchoolYear_YearAndSemester(schoolId, year, semester)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        schoolYear + "학년도 " + semester + "학기 정보가 없습니다."));
+                        year + "학년도 " + semester + "학기 정보가 없습니다."));
     }
 
     // ── 하위 호환: SystemSettingService 대체 용도 ──────────────────────────
@@ -139,7 +175,8 @@ public class AcademicTermService {
     /** 현재 학년도 반환 (기존 SystemSettingService.getCurrentSchoolYear() 대체) */
     @Transactional(readOnly = true)
     public int getCurrentSchoolYear() {
-        return getCurrentTerm().getSchoolYear();
+        AcademicTerm term = getCurrentTerm();
+        return term.getSchoolYear() != null ? term.getSchoolYear().getYear() : LocalDate.now().getYear();
     }
 
     /** 현재 학기 반환 (기존 SystemSettingService.getCurrentSemester() 대체) */
@@ -150,9 +187,21 @@ public class AcademicTermService {
 
     // ── 내부 유틸 ────────────────────────────────────────────────────────────
 
+    private void notifySchoolMembers(Long schoolId, String title, String content) {
+        teacherInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content));
+        staffInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content));
+        studentInfoRepository.findBySchoolId(schoolId).stream()
+                .map(info -> info.getUser()).filter(u -> u != null)
+                .forEach(u -> NotificationHelper.send(u, title, content));
+    }
+
     private AcademicTerm defaultTerm() {
         AcademicTerm term = new AcademicTerm();
-        term.setSchoolYear(LocalDate.now().getYear());
+        // schoolYear은 null로 유지 (비영속 기본값)
         term.setSemester(1);
         term.setStatus(AcademicTermStatus.ACTIVE);
         return term;

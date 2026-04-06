@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.schoolmate.domain.resources.constant.AssetStatus;
-import com.example.schoolmate.common.service.FileManager;
+import com.example.schoolmate.global.util.FileManager;
 import com.example.schoolmate.domain.resources.entity.AssetModel;
 import com.example.schoolmate.domain.resources.entity.SchoolAsset;
 

@@ -8,12 +8,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,7 +35,7 @@ import lombok.Setter;
 @Table(
     name = "academic_term",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"school_id", "school_year", "semester"})
+        @UniqueConstraint(columnNames = {"school_year_id", "semester"})
     }
 )
 @Getter
@@ -45,9 +47,10 @@ public class AcademicTerm extends SchoolBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** 학년도 (예: 2025, 2026) */
-    @Column(nullable = false)
-    private int schoolYear;
+    /** 학년도 FK - EAGER: 학기 조회 시 항상 함께 필요하며 작은 엔티티임 */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "school_year_id")
+    private SchoolYear schoolYear;
 
     /** 학기 (1 또는 2) */
     @Column(nullable = false)
@@ -64,8 +67,7 @@ public class AcademicTerm extends SchoolBaseEntity {
     @Column(nullable = false)
     private AcademicTermStatus status;
 
-    @Builder
-    public AcademicTerm(int schoolYear, int semester, LocalDate startDate,
+    public AcademicTerm(SchoolYear schoolYear, int semester, LocalDate startDate,
                         LocalDate endDate, AcademicTermStatus status) {
         this.schoolYear = schoolYear;
         this.semester = semester;
@@ -74,8 +76,13 @@ public class AcademicTerm extends SchoolBaseEntity {
         this.status = status != null ? status : AcademicTermStatus.ACTIVE;
     }
 
+    /** 학년도 정수값 편의 메서드 */
+    public int getSchoolYearInt() {
+        return schoolYear != null ? schoolYear.getYear() : 0;
+    }
+
     /** 학기 표시명 (예: "2025학년도 1학기") */
     public String getDisplayName() {
-        return schoolYear + "학년도 " + semester + "학기";
+        return getSchoolYearInt() + "학년도 " + semester + "학기";
     }
 }

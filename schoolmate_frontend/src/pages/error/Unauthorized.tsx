@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/shared/contexts/AuthContext'
 
 // [woo] 403 - 접근 권한 없음 (Spring Boot error/403.html 참조)
 

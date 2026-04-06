@@ -1,0 +1,16 @@
+package com.example.schoolmate.domain.user.entity.constant;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum TestType {
+    MIDTERMTEST("중간고사"),
+    FINALTEST("기말고사"),
+    QUIZ("퀴즈"),
+    HOMEWORK("과제"),
+    PERFORMANCEASSESSMENT("수행평가");
+
+    private final String description;
+}

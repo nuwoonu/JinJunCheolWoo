@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.schoolmate.config.SchoolmateUrls;
+import com.example.schoolmate.global.config.SchoolmateUrls;
 import com.example.schoolmate.domain.resources.constant.FacilityStatus;
 import com.example.schoolmate.domain.resources.constant.FacilityType;
 import com.example.schoolmate.domain.resources.dto.FacilityDTO;

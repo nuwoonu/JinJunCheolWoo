@@ -1,0 +1,101 @@
+package com.example.schoolmate.domain.admin.controller;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.schoolmate.global.config.SchoolmateUrls;
+import com.example.schoolmate.domain.parent.dto.ParentDTO;
+import com.example.schoolmate.domain.student.dto.StudentDTO;
+import com.example.schoolmate.domain.parent.entity.constant.FamilyRelationship;
+import com.example.schoolmate.domain.parent.service.ParentService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+// 학부모 관리 REST API
+@Slf4j
+@RestController
+@RequestMapping(SchoolmateUrls.ADMIN_PARENTS)
+@RequiredArgsConstructor
+@PreAuthorize("@grants.canManageParents()")
+public class AdminParentApiController {
+
+    private final ParentService parentService;
+
+    @GetMapping
+    public ResponseEntity<Page<ParentDTO.Summary>> list(
+            ParentDTO.ParentSearchCondition condition,
+            @PageableDefault(size = 10) Pageable pageable) {
+        if (condition == null)
+            condition = new ParentDTO.ParentSearchCondition();
+        return ResponseEntity.ok(parentService.getParentList(condition, pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ParentDTO.DetailResponse> detail(@PathVariable Long id) {
+        return ResponseEntity.ok(parentService.getParentDetail(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> create(@RequestBody ParentDTO.CreateRequest request) {
+        try {
+            parentService.createParent(request);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("학부모 등록 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody ParentDTO.UpdateRequest request) {
+        request.setId(id);
+        parentService.updateParent(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/import-csv")
+    public ResponseEntity<String> importCsv(@RequestParam MultipartFile file) {
+        try {
+            parentService.importParentsFromCsv(file);
+            return ResponseEntity.ok("등록되었습니다.");
+        } catch (Exception e) {
+            log.error("학부모 CSV 가져오기 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    // 학생 검색 (자녀 연동용)
+    @GetMapping("/search-student")
+    public ResponseEntity<List<StudentDTO.SummaryResponse>> searchStudent(@RequestParam String keyword) {
+        return ResponseEntity.ok(parentService.searchStudentsForLinking(keyword));
+    }
+
+    @PostMapping("/{parentId}/child")
+    public ResponseEntity<String> addChild(@PathVariable Long parentId,
+            @RequestParam Long studentUid, @RequestParam FamilyRelationship relationship) {
+        parentService.addChild(parentId, studentUid, relationship);
+        return ResponseEntity.ok("추가되었습니다.");
+    }
+
+    @PutMapping("/{parentId}/child")
+    public ResponseEntity<String> updateChildRelation(@PathVariable Long parentId,
+            @RequestParam Long studentUid, @RequestParam FamilyRelationship relationship) {
+        parentService.updateChildRelationship(parentId, studentUid, relationship);
+        return ResponseEntity.ok("수정되었습니다.");
+    }
+
+    @DeleteMapping("/{parentId}/child/{studentUid}")
+    public ResponseEntity<String> removeChild(@PathVariable Long parentId, @PathVariable Long studentUid) {
+        parentService.removeChild(parentId, studentUid);
+        return ResponseEntity.ok("해제되었습니다.");
+    }
+}

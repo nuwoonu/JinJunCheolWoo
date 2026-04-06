@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.schoolmate.domain.board.dto.CommentDTO;
 import com.example.schoolmate.domain.board.service.CommentService;
-import com.example.schoolmate.dto.AuthUserDTO;
+import com.example.schoolmate.domain.user.dto.AuthUserDTO;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,0 +1,1887 @@
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import api from "@/shared/api/authApi";
+
+type WdStep = "request" | "pending";
+
+// 어디서든 openProfileModal()로 열 수 있는 프로필 모달
+// 사용: const { openProfileModal } = useProfileModal()
+
+const ROLE_LABEL: Record<string, string> = {
+  STUDENT: "학생",
+  TEACHER: "교사",
+  ADMIN: "관리자",
+  STAFF: "교직원",
+  PARENT: "학부모",
+  GUEST: "게스트",
+};
+
+const GRANT_LABEL: Record<string, string> = {
+  SUPER_ADMIN: "최고 관리자",
+  SCHOOL_ADMIN: "학교 관리자",
+  PARENT_MANAGER: "학부모 관리",
+  STUDENT_MANAGER: "학생 관리",
+  CLASS_MANAGER: "학급 관리",
+  TEACHER_MANAGER: "교사 관리",
+  STAFF_MANAGER: "교직원 관리",
+  NOTICE_MANAGER: "공지 관리",
+  SCHEDULE_MANAGER: "일정 관리",
+  FACILITY_MANAGER: "시설 관리",
+  ASSET_MANAGER: "기자재 관리",
+  DORMITORY_MANAGER: "기숙사 관리",
+  LIBRARIAN: "도서 관리",
+  NURSE: "보건 관리",
+  NUTRITIONIST: "급식 관리",
+};
+
+const PROVIDERS = [
+  { key: "email", label: "이메일", icon: "ri-mail-line", color: "#6366f1" },
+  { key: "google", label: "Google", icon: "ri-google-fill", color: "#ea4335" },
+  {
+    key: "kakao",
+    label: "Kakao",
+    icon: "ri-kakao-talk-fill",
+    color: "#f9e000",
+  },
+];
+
+type PwStep = "request" | "pending" | "change";
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function ProfileModal({ isOpen, onClose }: Props) {
+  const { user, refetch, signOut } = useAuth();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [imgLoading, setImgLoading] = useState(false);
+
+  // 뷰 전환 (profile / password / link-email / withdraw)
+  const [view, setView] = useState<
+    "profile" | "password" | "link-email" | "withdraw"
+  >("profile");
+
+  // 비밀번호 변경 3단계 흐름
+  const [pwStep, setPwStep] = useState<PwStep>("request");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [pw, setPw] = useState({ next: "", confirm: "" });
+  const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(
+    null,
+  );
+  const [pwLoading, setPwLoading] = useState(false);
+
+  // 회원 탈퇴 흐름
+  const [wdStep, setWdStep] = useState<WdStep>("request");
+  const [wdCode, setWdCode] = useState("");
+  const [wdMsg, setWdMsg] = useState<{ text: string; ok: boolean } | null>(
+    null,
+  );
+  const [wdLoading, setWdLoading] = useState(false);
+
+  // 카운트다운 (초 단위)
+  const [countdown, setCountdown] = useState(0);
+  const [timerKey, setTimerKey] = useState(0); // 재발송 시 타이머 재시작용
+
+  // 카운트다운 타이머 — timerKey가 바뀔 때마다 재시작
+  useEffect(() => {
+    if (pwStep !== "pending" && wdStep !== "pending") return;
+    const SECONDS = 5 * 60;
+    setCountdown(SECONDS);
+    const id = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(id);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [timerKey]); // [soojin] 의도적으로 timerKey만 의존: timerKey 변경 시에만 타이머 재시작 (pwStep 등 추가 시 무한루프 발생)
+
+  const formatCountdown = (sec: number) => {
+    const m = Math.floor(sec / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (sec % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+  const resetPwFlow = () => {
+    setPwStep("request");
+    setVerificationCode("");
+    setPw({ next: "", confirm: "" });
+    setPwMsg(null);
+    setPwLoading(false);
+    setCountdown(0);
+  };
+
+  // ── 이메일 로그인 연동 인증 코드 발송 ─────────────────────────────────────
+  const handleSendLinkEmailCode = async () => {
+    setPwLoading(true);
+    setPwMsg(null);
+    try {
+      await api.post("/user/link/email/send-code");
+      setPwStep("pending");
+      setVerificationCode("");
+      setTimerKey((k) => k + 1);
+    } catch (err: unknown) { // [soojin] any → unknown
+      const _e = err as { response?: { data?: { message?: string } } };
+      setPwMsg({
+        text:
+          _e?.response?.data?.message ??
+          "코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        ok: false,
+      });
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  // ── 이메일 로그인 연동 최종 제출 ───────────────────────────────────────────
+  const handleLinkEmailSubmit = async (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    if (pw.next !== pw.confirm) {
+      setPwMsg({ text: "비밀번호가 일치하지 않습니다.", ok: false });
+      return;
+    }
+    setPwLoading(true);
+    setPwMsg(null);
+    try {
+      await api.post("/user/link/email", {
+        verificationCode,
+        password: pw.next,
+      });
+      setPwMsg({ text: "이메일 로그인이 설정되었습니다.", ok: true });
+      setPw({ next: "", confirm: "" });
+      refetch();
+    } catch (err: unknown) { // [soojin] any → unknown
+      const msg: string =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "처리에 실패했습니다.";
+      setPwMsg({ text: msg, ok: false });
+      if (msg.includes("코드")) setPwStep("pending");
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  const resetWdFlow = () => {
+    setWdStep("request");
+    setWdCode("");
+    setWdMsg(null);
+    setWdLoading(false);
+    setCountdown(0);
+  };
+
+  // 모달 열릴 때 최신 이미지 동기화 및 상태 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setImgSrc(user?.profileImageUrl ?? null);
+      setView("profile");
+      resetPwFlow();
+      resetWdFlow();
+    }
+  }, [isOpen, user?.profileImageUrl]); // [soojin] 의도적으로 isOpen/profileImageUrl만 의존: 모달 열릴 때와 이미지 변경 시에만 초기화 (refetch 추가 시 무한루프 발생)
+
+  // ESC 키로 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [isOpen, onClose]);
+
+  // 비밀번호 변경 성공 시 1.5초 후 프로필 뷰로 복귀
+  useEffect(() => {
+    if (!pwMsg?.ok) return;
+    const timer = setTimeout(() => {
+      setView("profile");
+      resetPwFlow();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [pwMsg]); // [soojin] 의도적으로 pwMsg만 의존: 메시지 변경 시에만 자동 초기화 타이머 실행
+
+  if (!isOpen) return null;
+
+  const isSocial = !(user?.hasPassword ?? true); // 비밀번호 없으면 순수 소셜 계정
+
+  // ── 이미지 업로드 ──────────────────────────────────────────────────────────
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImgLoading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await api.post("/user/profile/image", fd);
+      setImgSrc(res.data.profileImageUrl);
+      refetch();
+    } catch {
+      alert("이미지 업로드에 실패했습니다.");
+    } finally {
+      setImgLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  // ── 인증 코드 발송 ─────────────────────────────────────────────────────────
+  const handleSendCode = async () => {
+    setPwLoading(true);
+    setPwMsg(null);
+    try {
+      await api.post("/user/password/send-code");
+      setPwStep("pending");
+      setVerificationCode("");
+      setTimerKey((k) => k + 1); // 타이머 재시작
+    } catch (err: unknown) { // [soojin] any → unknown
+      const _e = err as { response?: { data?: { message?: string } } };
+      setPwMsg({
+        text:
+          _e?.response?.data?.message ??
+          "코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        ok: false,
+      });
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  // ── 코드 확인 → 비밀번호 입력 단계로 이동 ─────────────────────────────────
+  const handleVerifyCode = (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    if (!verificationCode.trim()) {
+      setPwMsg({ text: "인증 코드를 입력해주세요.", ok: false });
+      return;
+    }
+    if (countdown === 0) {
+      setPwMsg({
+        text: "인증 코드가 만료되었습니다. 코드를 다시 발송해주세요.",
+        ok: false,
+      });
+      return;
+    }
+    setPwMsg(null);
+    setPwStep("change");
+  };
+
+  // ── 비밀번호 변경 최종 제출 ────────────────────────────────────────────────
+  const handlePwSubmit = async (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    if (pw.next !== pw.confirm) {
+      setPwMsg({ text: "새 비밀번호가 일치하지 않습니다.", ok: false });
+      return;
+    }
+    setPwLoading(true);
+    setPwMsg(null);
+    try {
+      await api.post("/user/password", {
+        verificationCode,
+        newPassword: pw.next,
+      });
+      setPwMsg({ text: "비밀번호가 변경되었습니다.", ok: true });
+      setPw({ next: "", confirm: "" });
+    } catch (err: unknown) { // [soojin] any → unknown
+      const msg: string =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "비밀번호 변경에 실패했습니다.";
+      setPwMsg({ text: msg, ok: false });
+      // 코드 관련 오류면 코드 입력 단계로 되돌림
+      if (msg.includes("코드")) setPwStep("pending");
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  // ── 회원 탈퇴 인증 코드 발송 ───────────────────────────────────────────────
+  const handleSendWdCode = async () => {
+    setWdLoading(true);
+    setWdMsg(null);
+    try {
+      await api.post("/user/withdraw/send-code");
+      setWdStep("pending");
+      setWdCode("");
+      setTimerKey((k) => k + 1);
+    } catch (err: unknown) { // [soojin] any → unknown
+      const _e = err as { response?: { data?: { message?: string } } };
+      setWdMsg({
+        text:
+          _e?.response?.data?.message ??
+          "코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        ok: false,
+      });
+    } finally {
+      setWdLoading(false);
+    }
+  };
+
+  // ── 회원 탈퇴 최종 확인 ────────────────────────────────────────────────────
+  const handleWithdraw = async (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    if (!wdCode.trim()) {
+      setWdMsg({ text: "인증 코드를 입력해주세요.", ok: false });
+      return;
+    }
+    if (countdown === 0) {
+      setWdMsg({
+        text: "인증 코드가 만료되었습니다. 코드를 다시 발송해주세요.",
+        ok: false,
+      });
+      return;
+    }
+    setWdLoading(true);
+    setWdMsg(null);
+    try {
+      await api.post("/user/withdraw", { verificationCode: wdCode });
+      signOut();
+    } catch (err: unknown) { // [soojin] any → unknown
+      const msg: string =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "회원 탈퇴에 실패했습니다.";
+      setWdMsg({ text: msg, ok: false });
+      if (msg.includes("코드")) setWdStep("request");
+    } finally {
+      setWdLoading(false);
+    }
+  };
+
+  // ── 공통 스타일 ────────────────────────────────────────────────────────────
+  const rowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "13px 0",
+    borderBottom: "1px solid #f3f4f6",
+  };
+  const iconWrap: React.CSSProperties = {
+    width: 34,
+    height: 34,
+    borderRadius: "50%",
+    background: "#f3f4f6",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  };
+  const labelStyle: React.CSSProperties = { fontSize: 13, color: "#6b7280" };
+  const valueStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 500,
+    color: "#111827",
+  };
+  const primaryBtn: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 0",
+    borderRadius: 10,
+    border: "none",
+    background: "#25A194",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: 14,
+    cursor: "pointer",
+    textAlign: "center",
+  };
+
+  // ── 렌더 ──────────────────────────────────────────────────────────────────
+  return createPortal(
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 99999,
+        padding: "16px",
+      }}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 20,
+          width: "100%",
+          maxWidth: 440,
+          boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          maxHeight: "90vh",
+        }}
+      >
+        {/* 헤더 */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderBottom: "1px solid #e5e7eb",
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {(view === "password" ||
+              view === "link-email" ||
+              view === "withdraw") && (
+              <button
+                onClick={() => {
+                  if (view === "password" || view === "link-email") {
+                    setView("profile");
+                    resetPwFlow();
+                  } else {
+                    setView("profile");
+                    resetWdFlow();
+                  }
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#6b7280",
+                  padding: "2px 4px",
+                  marginRight: 2,
+                }}
+              >
+                <i className="ri-arrow-left-line" style={{ fontSize: 18 }} />
+              </button>
+            )}
+            <h6 style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>
+              {view === "profile"
+                ? "내 프로필"
+                : view === "password"
+                  ? "비밀번호 변경"
+                  : view === "link-email"
+                    ? "이메일 로그인 연동"
+                    : "회원 탈퇴"}
+            </h6>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 20,
+              cursor: "pointer",
+              color: "#9ca3af",
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* 본문 */}
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {view === "profile" && (
+            <>
+              {/* 프로필 이미지 영역 */}
+              <div
+                style={{
+                  background: "#25A194",
+                  padding: "28px 0 52px",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <div
+                    style={{
+                      width: 88,
+                      height: 88,
+                      borderRadius: "50%",
+                      border: "3px solid rgba(255,255,255,0.8)",
+                      background: "#e5e7eb",
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
+                    }}
+                  >
+                    {imgSrc ? (
+                      <img
+                        src={imgSrc}
+                        alt="프로필"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        onError={() => setImgSrc(null)}
+                      />
+                    ) : (
+                      <i
+                        className="ri-user-3-line"
+                        style={{ fontSize: 40, color: "#9ca3af" }}
+                      />
+                    )}
+                    {imgLoading && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "rgba(0,0,0,0.4)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "50%",
+                        }}
+                      >
+                        <div className="spinner-border spinner-border-sm text-light" />
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    disabled={imgLoading}
+                    title="프로필 이미지 변경"
+                    style={{
+                      position: "absolute",
+                      bottom: 1,
+                      right: 1,
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      background: "#fff",
+                      border: "2px solid #25A194",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <i
+                      className="ri-pencil-line"
+                      style={{ fontSize: 12, color: "#25A194" }}
+                    />
+                  </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleImageChange}
+                  />
+                </div>
+              </div>
+
+              {/* 정보 카드 — 이미지 아래 겹침 */}
+              <div
+                style={{
+                  margin: "-36px 20px 0",
+                  position: "relative",
+                  zIndex: 1,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 16,
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    padding: "16px 20px",
+                  }}
+                >
+                  {/* 이름 + 역할 */}
+                  <div style={{ textAlign: "center", marginBottom: 16 }}>
+                    <p
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 17,
+                        margin: "0 0 6px",
+                        color: "#111827",
+                      }}
+                    >
+                      {user?.name ?? "-"}
+                    </p>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        background: "#e6f7f6",
+                        color: "#25A194",
+                        borderRadius: 20,
+                        padding: "3px 14px",
+                      }}
+                    >
+                      {ROLE_LABEL[user?.role ?? ""] ?? user?.role ?? "-"}
+                    </span>
+                  </div>
+
+                  <div
+                    style={{ borderTop: "1px solid #f3f4f6", paddingTop: 4 }}
+                  >
+                    {/* 이메일 */}
+                    <div style={rowStyle}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <div style={iconWrap}>
+                          <i
+                            className="ri-mail-line"
+                            style={{ fontSize: 15, color: "#6b7280" }}
+                          />
+                        </div>
+                        <span style={labelStyle}>이메일</span>
+                      </div>
+                      <span style={valueStyle}>{user?.email ?? "-"}</span>
+                    </div>
+
+                    {/* 연동 계정 */}
+                    <div style={rowStyle}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <div style={iconWrap}>
+                          <i
+                            className="ri-links-line"
+                            style={{ fontSize: 15, color: "#6b7280" }}
+                          />
+                        </div>
+                        <span style={labelStyle}>연동 계정</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 5 }}>
+                        {PROVIDERS.map((p) => {
+                          const on =
+                            p.key === "email"
+                              ? (user?.hasPassword ?? false)
+                              : (user?.providers?.includes(p.key) ?? false);
+                          const badgeBase: React.CSSProperties = {
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            padding: "3px 8px",
+                            borderRadius: 20,
+                          };
+                          if (on) {
+                            return (
+                              <span
+                                key={p.key}
+                                style={{
+                                  ...badgeBase,
+                                  background: p.color + "18",
+                                  color: p.color,
+                                  border: `1px solid ${p.color}40`,
+                                }}
+                              >
+                                <i
+                                  className={p.icon}
+                                  style={{ fontSize: 12 }}
+                                />
+                                {p.label}
+                              </span>
+                            );
+                          }
+                          // 미연동 — 클릭 가능
+                          if (p.key === "email") {
+                            return (
+                              <button
+                                key={p.key}
+                                onClick={() => {
+                                  setView("link-email");
+                                  resetPwFlow();
+                                }}
+                                title="이메일 로그인 설정"
+                                style={{
+                                  ...badgeBase,
+                                  background: "#f9fafb",
+                                  color: "#9ca3af",
+                                  border: "1px dashed #d1d5db",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <i
+                                  className={p.icon}
+                                  style={{ fontSize: 12 }}
+                                />
+                                {p.label}
+                              </button>
+                            );
+                          }
+                          return (
+                            <a
+                              key={p.key}
+                              href={`/oauth2/authorization/${p.key}`}
+                              title={`${p.label} 계정 연동 (현재 계정과 같은 이메일의 소셜 계정만 연동됩니다)`}
+                              style={{
+                                ...badgeBase,
+                                background: "#f9fafb",
+                                color: "#9ca3af",
+                                border: "1px dashed #d1d5db",
+                                cursor: "pointer",
+                                textDecoration: "none",
+                              }}
+                            >
+                              <i className={p.icon} style={{ fontSize: 12 }} />
+                              {p.label}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* 위임 권한 — 교사·교직원만 표시 */}
+                    {(user?.role === "TEACHER" || user?.role === "STAFF") && (
+                      <div style={rowStyle}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <div style={iconWrap}>
+                            <i
+                              className="ri-shield-user-line"
+                              style={{ fontSize: 15, color: "#6b7280" }}
+                            />
+                          </div>
+                          <span style={labelStyle}>위임 권한</span>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 4,
+                            justifyContent: "flex-end",
+                            maxWidth: 240,
+                          }}
+                        >
+                          {(user?.grants ?? []).length === 0 ? (
+                            <span style={{ fontSize: 13, color: "#9ca3af" }}>
+                              없음
+                            </span>
+                          ) : (
+                            (user?.grants ?? []).map((g, i) => (
+                              <span
+                                key={i}
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  padding: "3px 9px",
+                                  borderRadius: 20,
+                                  background: "#e6f7f6",
+                                  color: "#25A194",
+                                  border: "1px solid #b2e8e4",
+                                }}
+                              >
+                                {GRANT_LABEL[g.grantedRole] ?? g.grantedRole}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 비밀번호 변경 */}
+                    <div style={rowStyle}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <div style={iconWrap}>
+                          <i
+                            className="ri-lock-2-line"
+                            style={{ fontSize: 15, color: "#6b7280" }}
+                          />
+                        </div>
+                        <span style={labelStyle}>비밀번호</span>
+                      </div>
+                      <button
+                        onClick={() => setView("password")}
+                        disabled={isSocial}
+                        title={
+                          isSocial
+                            ? "소셜 로그인 계정은 비밀번호 변경이 불가합니다"
+                            : undefined
+                        }
+                        style={{
+                          padding: "5px 14px",
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          border: "none",
+                          cursor: isSocial ? "not-allowed" : "pointer",
+                          background: isSocial
+                            ? "#f3f4f6"
+                            : "#25A194",
+                          color: isSocial ? "#9ca3af" : "#fff",
+                        }}
+                      >
+                        변경
+                      </button>
+                    </div>
+
+                    {/* 회원 탈퇴 */}
+                    <div
+                      style={{
+                        ...rowStyle,
+                        borderBottom: "none",
+                        paddingBottom: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <div style={iconWrap}>
+                          <i
+                            className="ri-user-unfollow-line"
+                            style={{ fontSize: 15, color: "#6b7280" }}
+                          />
+                        </div>
+                        <span style={labelStyle}>회원 탈퇴</span>
+                      </div>
+                      <button
+                        onClick={() => setView("withdraw")}
+                        style={{
+                          padding: "5px 14px",
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          border: "1px solid #fca5a5",
+                          cursor: "pointer",
+                          background: "#fff",
+                          color: "#ef4444",
+                          textAlign: "center",
+                        }}
+                      >
+                        탈퇴
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ height: 20 }} />
+            </>
+          )}
+
+          {view === "password" && (
+            <div style={{ padding: "24px 20px" }}>
+              {isSocial ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: "#6b7280",
+                    fontSize: 14,
+                    padding: "32px 0",
+                  }}
+                >
+                  <i
+                    className="ri-lock-2-line"
+                    style={{ fontSize: 40, display: "block", marginBottom: 12 }}
+                  />
+                  소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.
+                </div>
+              ) : (
+                <>
+                  {/* 단계 인디케이터 */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      marginBottom: 28,
+                    }}
+                  >
+                    {(["request", "pending", "change"] as PwStep[]).map(
+                      (step, i) => {
+                        const steps: PwStep[] = [
+                          "request",
+                          "pending",
+                          "change",
+                        ];
+                        const current = steps.indexOf(pwStep);
+                        const isDone = i < current;
+                        const isActive = i === current;
+                        return (
+                          <div
+                            key={step}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: "50%",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: isDone
+                                  ? "#25A194"
+                                  : isActive
+                                    ? "#25A194"
+                                    : "#e5e7eb",
+                                color: isDone || isActive ? "#fff" : "#9ca3af",
+                              }}
+                            >
+                              {isDone ? (
+                                <i
+                                  className="ri-check-line"
+                                  style={{ fontSize: 12 }}
+                                />
+                              ) : (
+                                i + 1
+                              )}
+                            </div>
+                            {i < 2 && (
+                              <div
+                                style={{
+                                  width: 32,
+                                  height: 2,
+                                  background: isDone ? "#25A194" : "#e5e7eb",
+                                  borderRadius: 2,
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+
+                  {/* 1단계: 코드 발송 */}
+                  {pwStep === "request" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 20,
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "#f0fdf4",
+                          border: "1px solid #bbf7d0",
+                          borderRadius: 10,
+                          padding: "14px 16px",
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 10,
+                        }}
+                      >
+                        <i
+                          className="ri-shield-keyhole-line"
+                          style={{
+                            fontSize: 18,
+                            color: "#16a34a",
+                            flexShrink: 0,
+                            marginTop: 1,
+                          }}
+                        />
+                        <div>
+                          <p
+                            style={{
+                              margin: "0 0 4px",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "#15803d",
+                            }}
+                          >
+                            이메일 인증 후 변경 가능합니다
+                          </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 12,
+                              color: "#166534",
+                            }}
+                          >
+                            <strong>{user?.email}</strong>으로 6자리 인증 코드를
+                            발송합니다.
+                          </p>
+                        </div>
+                      </div>
+                      {pwMsg && (
+                        <p
+                          style={{ margin: 0, fontSize: 13, color: "#ef4444" }}
+                        >
+                          {pwMsg.text}
+                        </p>
+                      )}
+                      <button
+                        onClick={handleSendCode}
+                        disabled={pwLoading}
+                        style={{
+                          ...primaryBtn,
+                          opacity: pwLoading ? 0.7 : 1,
+                          cursor: pwLoading ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        {pwLoading ? "발송 중..." : "인증 코드 발송"}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 2단계: 코드 입력 */}
+                  {pwStep === "pending" && (
+                    <form
+                      onSubmit={handleVerifyCode}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 16,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <label
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "#374151",
+                            }}
+                          >
+                            인증 코드
+                          </label>
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color:
+                                countdown > 0
+                                  ? countdown <= 60
+                                    ? "#ef4444"
+                                    : "#25A194"
+                                  : "#9ca3af",
+                            }}
+                          >
+                            {countdown > 0
+                              ? formatCountdown(countdown)
+                              : "만료됨"}
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="6자리 코드 입력"
+                          maxLength={6}
+                          value={verificationCode}
+                          onChange={(e) =>
+                            setVerificationCode(
+                              e.target.value.replace(/\D/g, ""),
+                            )
+                          }
+                          style={{
+                            letterSpacing: 6,
+                            textAlign: "center",
+                            fontSize: 18,
+                            fontWeight: 700,
+                          }}
+                          autoFocus
+                        />
+                      </div>
+                      {pwMsg && (
+                        <p
+                          style={{ margin: 0, fontSize: 13, color: "#ef4444" }}
+                        >
+                          {pwMsg.text}
+                        </p>
+                      )}
+                      <button
+                        type="submit"
+                        disabled={
+                          verificationCode.length !== 6 || countdown === 0
+                        }
+                        style={{
+                          ...primaryBtn,
+                          opacity:
+                            verificationCode.length !== 6 || countdown === 0
+                              ? 0.5
+                              : 1,
+                          cursor:
+                            verificationCode.length !== 6 || countdown === 0
+                              ? "not-allowed"
+                              : "pointer",
+                        }}
+                      >
+                        확인
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSendCode}
+                        disabled={pwLoading}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: pwLoading ? "not-allowed" : "pointer",
+                          fontSize: 13,
+                          color: "#6b7280",
+                          textDecoration: "underline",
+                          padding: 0,
+                        }}
+                      >
+                        {pwLoading ? "발송 중..." : "코드 재발송"}
+                      </button>
+                    </form>
+                  )}
+
+                  {/* 3단계: 새 비밀번호 입력 */}
+                  {pwStep === "change" &&
+                    (pwMsg?.ok ? (
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "32px 0",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 16,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: "50%",
+                            background: "#e6f7f6",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <i
+                            className="ri-check-line"
+                            style={{ fontSize: 28, color: "#25A194" }}
+                          />
+                        </div>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 15,
+                            fontWeight: 700,
+                            color: "#111827",
+                          }}
+                        >
+                          비밀번호 변경 완료!
+                        </p>
+                        <p
+                          style={{ margin: 0, fontSize: 13, color: "#6b7280" }}
+                        >
+                          잠시 후 프로필 화면으로 돌아갑니다.
+                        </p>
+                      </div>
+                    ) : (
+                      <form
+                        onSubmit={handlePwSubmit}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 16,
+                        }}
+                      >
+                        {(
+                          [
+                            { label: "새 비밀번호", key: "next" },
+                            { label: "새 비밀번호 확인", key: "confirm" },
+                          ] as { label: string; key: keyof typeof pw }[]
+                        ).map(({ label, key }) => (
+                          <div key={key}>
+                            <label
+                              style={{
+                                display: "block",
+                                fontSize: 13,
+                                fontWeight: 600,
+                                marginBottom: 6,
+                                color: "#374151",
+                              }}
+                            >
+                              {label}
+                            </label>
+                            <input
+                              type="password"
+                              className="form-control"
+                              required
+                              value={pw[key]}
+                              onChange={(e) =>
+                                setPw((p) => ({ ...p, [key]: e.target.value }))
+                              }
+                            />
+                          </div>
+                        ))}
+                        {pwMsg && (
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 13,
+                              color: "#ef4444",
+                            }}
+                          >
+                            {pwMsg.text}
+                          </p>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={pwLoading}
+                          style={{
+                            ...primaryBtn,
+                            opacity: pwLoading ? 0.7 : 1,
+                            cursor: pwLoading ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          {pwLoading ? "변경 중..." : "비밀번호 변경"}
+                        </button>
+                      </form>
+                    ))}
+                </>
+              )}
+            </div>
+          )}
+
+          {view === "link-email" && (
+            <div style={{ padding: "24px 20px" }}>
+              {/* 단계 인디케이터 */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  marginBottom: 28,
+                }}
+              >
+                {(["request", "pending", "change"] as PwStep[]).map(
+                  (step, i) => {
+                    const steps: PwStep[] = ["request", "pending", "change"];
+                    const current = steps.indexOf(pwStep);
+                    const isDone = i < current;
+                    const isActive = i === current;
+                    return (
+                      <div
+                        key={step}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background:
+                              isDone || isActive ? "#25A194" : "#e5e7eb",
+                            color: isDone || isActive ? "#fff" : "#9ca3af",
+                          }}
+                        >
+                          {isDone ? (
+                            <i
+                              className="ri-check-line"
+                              style={{ fontSize: 12 }}
+                            />
+                          ) : (
+                            i + 1
+                          )}
+                        </div>
+                        {i < 2 && (
+                          <div
+                            style={{
+                              width: 32,
+                              height: 2,
+                              background: isDone ? "#25A194" : "#e5e7eb",
+                              borderRadius: 2,
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  },
+                )}
+              </div>
+
+              {/* 1단계: 코드 발송 */}
+              {pwStep === "request" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 20 }}
+                >
+                  <div
+                    style={{
+                      background: "#f0fdf4",
+                      border: "1px solid #bbf7d0",
+                      borderRadius: 10,
+                      padding: "14px 16px",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                    }}
+                  >
+                    <i
+                      className="ri-shield-keyhole-line"
+                      style={{
+                        fontSize: 18,
+                        color: "#16a34a",
+                        flexShrink: 0,
+                        marginTop: 1,
+                      }}
+                    />
+                    <div>
+                      <p
+                        style={{
+                          margin: "0 0 4px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#15803d",
+                        }}
+                      >
+                        이메일 인증 후 비밀번호를 설정합니다
+                      </p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#166534" }}>
+                        <strong>{user?.email}</strong>으로 6자리 인증 코드를
+                        발송합니다.
+                      </p>
+                    </div>
+                  </div>
+                  {pwMsg && (
+                    <p style={{ margin: 0, fontSize: 13, color: "#ef4444" }}>
+                      {pwMsg.text}
+                    </p>
+                  )}
+                  <button
+                    onClick={handleSendLinkEmailCode}
+                    disabled={pwLoading}
+                    style={{
+                      ...primaryBtn,
+                      opacity: pwLoading ? 0.7 : 1,
+                      cursor: pwLoading ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {pwLoading ? "발송 중..." : "인증 코드 발송"}
+                  </button>
+                </div>
+              )}
+
+              {/* 2단계: 코드 입력 */}
+              {pwStep === "pending" && (
+                <form
+                  onSubmit={handleVerifyCode}
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#374151",
+                        }}
+                      >
+                        인증 코드
+                      </label>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color:
+                            countdown > 0
+                              ? countdown <= 60
+                                ? "#ef4444"
+                                : "#25A194"
+                              : "#9ca3af",
+                        }}
+                      >
+                        {countdown > 0 ? formatCountdown(countdown) : "만료됨"}
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="6자리 코드 입력"
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(e) =>
+                        setVerificationCode(e.target.value.replace(/\D/g, ""))
+                      }
+                      style={{
+                        letterSpacing: 6,
+                        textAlign: "center",
+                        fontSize: 18,
+                        fontWeight: 700,
+                      }}
+                      autoFocus
+                    />
+                  </div>
+                  {pwMsg && (
+                    <p style={{ margin: 0, fontSize: 13, color: "#ef4444" }}>
+                      {pwMsg.text}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={verificationCode.length !== 6 || countdown === 0}
+                    style={{
+                      ...primaryBtn,
+                      opacity:
+                        verificationCode.length !== 6 || countdown === 0
+                          ? 0.5
+                          : 1,
+                      cursor:
+                        verificationCode.length !== 6 || countdown === 0
+                          ? "not-allowed"
+                          : "pointer",
+                    }}
+                  >
+                    확인
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendLinkEmailCode}
+                    disabled={pwLoading}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: pwLoading ? "not-allowed" : "pointer",
+                      fontSize: 13,
+                      color: "#6b7280",
+                      textDecoration: "underline",
+                      padding: 0,
+                    }}
+                  >
+                    {pwLoading ? "발송 중..." : "코드 재발송"}
+                  </button>
+                </form>
+              )}
+
+              {/* 3단계: 비밀번호 설정 */}
+              {pwStep === "change" &&
+                (pwMsg?.ok ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "32px 0",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 16,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: "50%",
+                        background: "#e6f7f6",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <i
+                        className="ri-check-line"
+                        style={{ fontSize: 28, color: "#25A194" }}
+                      />
+                    </div>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: "#111827",
+                      }}
+                    >
+                      이메일 로그인 연동 완료!
+                    </p>
+                    <p style={{ margin: 0, fontSize: 13, color: "#6b7280" }}>
+                      이제 이메일과 비밀번호로도 로그인할 수 있습니다.
+                    </p>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={handleLinkEmailSubmit}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 16,
+                    }}
+                  >
+                    {(
+                      [
+                        { label: "새 비밀번호", key: "next" },
+                        { label: "새 비밀번호 확인", key: "confirm" },
+                      ] as { label: string; key: keyof typeof pw }[]
+                    ).map(({ label, key }) => (
+                      <div key={key}>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 13,
+                            fontWeight: 600,
+                            marginBottom: 6,
+                            color: "#374151",
+                          }}
+                        >
+                          {label}
+                        </label>
+                        <input
+                          type="password"
+                          className="form-control"
+                          required
+                          value={pw[key]}
+                          onChange={(e) =>
+                            setPw((p) => ({ ...p, [key]: e.target.value }))
+                          }
+                        />
+                      </div>
+                    ))}
+                    {pwMsg && (
+                      <p style={{ margin: 0, fontSize: 13, color: "#ef4444" }}>
+                        {pwMsg.text}
+                      </p>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={pwLoading}
+                      style={{
+                        ...primaryBtn,
+                        opacity: pwLoading ? 0.7 : 1,
+                        cursor: pwLoading ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {pwLoading ? "설정 중..." : "비밀번호 설정"}
+                    </button>
+                  </form>
+                ))}
+            </div>
+          )}
+
+          {view === "withdraw" && (
+            <div style={{ padding: "24px 20px" }}>
+              {/* 경고 배너 */}
+              <div
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: 10,
+                  padding: "14px 16px",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  marginBottom: 24,
+                }}
+              >
+                <i
+                  className="ri-error-warning-line"
+                  style={{
+                    fontSize: 18,
+                    color: "#ef4444",
+                    flexShrink: 0,
+                    marginTop: 1,
+                  }}
+                />
+                <div>
+                  <p
+                    style={{
+                      margin: "0 0 4px",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#b91c1c",
+                    }}
+                  >
+                    탈퇴 시 모든 정보가 비활성화됩니다
+                  </p>
+                  <p style={{ margin: 0, fontSize: 12, color: "#991b1b" }}>
+                    탈퇴 후에는 로그인이 불가하며 계정 복구가 어렵습니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 단계 인디케이터 */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  marginBottom: 28,
+                }}
+              >
+                {(["request", "pending"] as WdStep[]).map((step, i) => {
+                  const current = wdStep === "request" ? 0 : 1;
+                  const isDone = i < current;
+                  const isActive = i === current;
+                  return (
+                    <div
+                      key={step}
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
+                      <div
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: "50%",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: isDone
+                            ? "#ef4444"
+                            : isActive
+                              ? "#ef4444"
+                              : "#e5e7eb",
+                          color: isDone || isActive ? "#fff" : "#9ca3af",
+                        }}
+                      >
+                        {isDone ? (
+                          <i
+                            className="ri-check-line"
+                            style={{ fontSize: 12 }}
+                          />
+                        ) : (
+                          i + 1
+                        )}
+                      </div>
+                      {i < 1 && (
+                        <div
+                          style={{
+                            width: 32,
+                            height: 2,
+                            background: isDone ? "#ef4444" : "#e5e7eb",
+                            borderRadius: 2,
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 1단계: 코드 발송 */}
+              {wdStep === "request" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 20 }}
+                >
+                  <div
+                    style={{
+                      background: "#f9fafb",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 10,
+                      padding: "14px 16px",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                    }}
+                  >
+                    <i
+                      className="ri-shield-keyhole-line"
+                      style={{
+                        fontSize: 18,
+                        color: "#6b7280",
+                        flexShrink: 0,
+                        marginTop: 1,
+                      }}
+                    />
+                    <div>
+                      <p
+                        style={{
+                          margin: "0 0 4px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#374151",
+                        }}
+                      >
+                        이메일 인증 후 탈퇴가 진행됩니다
+                      </p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#6b7280" }}>
+                        <strong>{user?.email}</strong>으로 6자리 인증 코드를
+                        발송합니다.
+                      </p>
+                    </div>
+                  </div>
+                  {wdMsg && (
+                    <p style={{ margin: 0, fontSize: 13, color: "#ef4444" }}>
+                      {wdMsg.text}
+                    </p>
+                  )}
+                  <button
+                    onClick={handleSendWdCode}
+                    disabled={wdLoading}
+                    style={{
+                      width: "100%",
+                      padding: "10px 0",
+                      borderRadius: 10,
+                      border: "none",
+                      background: wdLoading
+                        ? "#fca5a5"
+                        : "#ef4444",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      cursor: wdLoading ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                    }}
+                  >
+                    {wdLoading ? "발송 중..." : "인증 코드 발송"}
+                  </button>
+                </div>
+              )}
+
+              {/* 2단계: 코드 입력 + 탈퇴 확인 */}
+              {wdStep === "pending" && (
+                <form
+                  onSubmit={handleWithdraw}
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#374151",
+                        }}
+                      >
+                        인증 코드
+                      </label>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color:
+                            countdown > 0
+                              ? countdown <= 60
+                                ? "#ef4444"
+                                : "#25A194"
+                              : "#9ca3af",
+                        }}
+                      >
+                        {countdown > 0 ? formatCountdown(countdown) : "만료됨"}
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="6자리 코드 입력"
+                      maxLength={6}
+                      value={wdCode}
+                      onChange={(e) =>
+                        setWdCode(e.target.value.replace(/\D/g, ""))
+                      }
+                      style={{
+                        letterSpacing: 6,
+                        textAlign: "center",
+                        fontSize: 18,
+                        fontWeight: 700,
+                      }}
+                      autoFocus
+                    />
+                  </div>
+                  {wdMsg && (
+                    <p style={{ margin: 0, fontSize: 13, color: "#ef4444" }}>
+                      {wdMsg.text}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={
+                      wdCode.length !== 6 || countdown === 0 || wdLoading
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 0",
+                      borderRadius: 10,
+                      border: "none",
+                      background: "#ef4444",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      opacity:
+                        wdCode.length !== 6 || countdown === 0 || wdLoading
+                          ? 0.5
+                          : 1,
+                      cursor:
+                        wdCode.length !== 6 || countdown === 0 || wdLoading
+                          ? "not-allowed"
+                          : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                    }}
+                  >
+                    {wdLoading ? "처리 중..." : "회원 탈퇴 확인"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendWdCode}
+                    disabled={wdLoading}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: wdLoading ? "not-allowed" : "pointer",
+                      fontSize: 13,
+                      color: "#6b7280",
+                      textDecoration: "underline",
+                      padding: 0,
+                    }}
+                  >
+                    {wdLoading ? "발송 중..." : "코드 재발송"}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
