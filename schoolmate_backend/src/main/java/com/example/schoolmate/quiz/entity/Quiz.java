@@ -7,6 +7,7 @@ import java.util.List;
 import com.example.schoolmate.common.entity.Classroom;
 import com.example.schoolmate.common.entity.info.TeacherInfo;
 import com.example.schoolmate.domain.school.entity.SchoolBaseEntity;
+import com.example.schoolmate.domain.term.entity.CourseSection;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -70,6 +71,11 @@ public class Quiz extends SchoolBaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classroom_id", nullable = false)
     private Classroom classroom;
+
+    // [woo] 수업 분반 (과목+학급 구분용, nullable → 기존 데이터 호환)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_section_id")
+    private CourseSection courseSection;
 
     // [woo] 마감일
     @Column(nullable = false)

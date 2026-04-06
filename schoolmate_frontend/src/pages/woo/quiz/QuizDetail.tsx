@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../../api/auth";
 import { useAuth } from "../../../contexts/AuthContext";
 import DashboardLayout from "../../../components/layout/DashboardLayout";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../../../api/auth";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 
@@ -194,7 +194,7 @@ export default function QuizCreate() {
         })),
       });
       alert("퀴즈가 출제되었습니다.");
-      navigate("/homework?tab=quiz");
+      navigate("/quiz");
     } catch (err: any) {
       alert(err.response?.data || "퀴즈 출제에 실패했습니다.");
     } finally {
@@ -421,7 +421,7 @@ export default function QuizCreate() {
         <button
           type="button"
           className="btn btn-outline-neutral-300 radius-8"
-          onClick={() => navigate("/homework?tab=quiz")}
+          onClick={() => navigate("/quiz")}
         >
           취소
         </button>

@@ -34,4 +34,13 @@ public interface QuizSubmissionRepository extends JpaRepository<QuizSubmission, 
     List<QuizSubmission> findByStudentIdAndClassroomId(
             @Param("studentId") Long studentId,
             @Param("classroomId") Long classroomId);
+
+    // [woo] 학생 성적 조회용: 퀴즈별 최고점 (학생+학급 기준)
+    @Query("SELECT qs FROM QuizSubmission qs " +
+           "WHERE qs.student.id = :studentId " +
+           "AND qs.quiz.classroom.cid = :classroomId " +
+           "AND qs.score = (SELECT MAX(qs2.score) FROM QuizSubmission qs2 WHERE qs2.quiz.id = qs.quiz.id AND qs2.student.id = :studentId)")
+    List<QuizSubmission> findBestScoresByStudentAndClassroom(
+            @Param("studentId") Long studentId,
+            @Param("classroomId") Long classroomId);
 }
