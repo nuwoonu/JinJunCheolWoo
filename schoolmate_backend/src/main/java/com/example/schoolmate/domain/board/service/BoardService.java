@@ -586,6 +586,16 @@ public class BoardService {
             notifySchoolMembers(writer, schoolId, saved.getTitle());
         }
 
+        // [woo] 가정통신문 작성 시 해당 학교 학부모 전원에게 알림 발송
+        if (request.getBoardType() == BoardType.PARENT_NOTICE && schoolId != null) {
+            notifyParentsOfSchool(writer, schoolId, saved.getTitle(), "새 가정통신문이 등록되었습니다");
+        }
+
+        // [woo] 알림장 작성 시 해당 학급 학생 + 학부모에게 알림 발송 → APP 푸시
+        if (request.getBoardType() == BoardType.CLASS_DIARY && saved.getTargetClassroom() != null) {
+            notifyClassParentsAndStudents(writer, saved.getTargetClassroom().getCid(), saved.getTitle());
+        }
+
         return BoardDTO.Response.fromEntity(saved);
     }
 
@@ -1109,6 +1119,41 @@ public class BoardService {
         result.put("pendingCount", relations.size() - consents.size());
         result.put("totalCount", relations.size());
         return result;
+    }
+
+    // [woo] 학교 전체 학부모에게 알림 (가정통신문 등)
+    private void notifyParentsOfSchool(User writer, Long schoolId, String noticeTitle, String titlePrefix) {
+        String title = titlePrefix;
+        String content = noticeTitle;
+        familyRelationRepository.findBySchoolId(schoolId).stream()
+                .map(rel -> rel.getParentInfo().getUser())
+                .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
+                .distinct()
+                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+    }
+
+    // [woo] 학급 학생 + 학부모에게 알림 (알림장 등)
+    // → schoolmate_app에서 학부모가 실시간 푸시로 받아보게 됨
+    private void notifyClassParentsAndStudents(User writer, Long classroomId, String diaryTitle) {
+        String title = "새 알림장이 등록되었습니다";
+        String content = diaryTitle;
+
+        // [woo] 학급 학부모에게 알림 — FamilyRelation JOIN FETCH로 한 번에 조회
+        List<FamilyRelation> relations = familyRelationRepository.findByStudentClassroom(classroomId);
+
+        // 학부모 알림
+        relations.stream()
+                .map(rel -> rel.getParentInfo().getUser())
+                .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
+                .distinct()
+                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+
+        // [woo] 학급 학생에게도 알림
+        relations.stream()
+                .map(rel -> rel.getStudentInfo().getUser())
+                .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
+                .distinct()
+                .forEach(u -> NotificationHelper.send(writer, u, title, content));
     }
 
     private void notifySchoolMembers(User writer, Long schoolId, String noticeTitle) {

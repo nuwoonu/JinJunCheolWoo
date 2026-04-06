@@ -75,7 +75,6 @@ public class TeacherService {
     private final TeacherInfoRepository teacherInfoRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final ClassroomRepository classroomRepository;
-    private final GradeRepository gradeRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -85,6 +84,7 @@ public class TeacherService {
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final CodeSequenceService codeSequenceService;
     private final AcademicTermRepository academicTermRepository;
+    private final GradeRepository gradeRepository;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========
@@ -487,86 +487,6 @@ public class TeacherService {
     }
 
     // ==================================================================================
-    // ========== [교사] 성적 관리 ==========
-    // ==================================================================================
-
-    /**
-     * 성적 입력
-     */
-    @Transactional
-    public void inputGrade(Long teacherId, GradeInputDTO gradeDTO) {
-        log.info("성적 입력 - 교사: {}, 학생: {}, 과목: {}",
-                teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectCode());
-
-        TeacherInfo teacherInfo = teacherInfoRepository.findById(teacherId)
-                .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
-
-        Subject subject = findSubjectByCode(gradeDTO.getSubjectCode())
-                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectCode()));
-
-        if (teacherInfo.getSubject() == null || !teacherInfo.getSubject().getCode().equals(subject.getCode())) {
-            log.warn("담당 과목이 아닙니다. 교사: {}, 요청 과목: {}", teacherId, subject.getCode());
-        }
-
-        StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-
-        // 동일 조건(학생/과목/시험종류/학기) 성적이 이미 있으면 점수만 덮어씀 (upsert)
-        gradeRepository.findDuplicate(
-                student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getAcademicTermId())
-                .ifPresentOrElse(
-                        existing -> {
-                            existing.changeScore(gradeDTO.getScore());
-                            log.info("성적 갱신 완료 - 학생: {}, 과목: {}, 점수: {}",
-                                    student.getId(), subject.getName(), gradeDTO.getScore());
-                        },
-                        () -> {
-                            com.example.schoolmate.domain.term.entity.AcademicTerm term =
-                                    academicTermRepository.findById(gradeDTO.getAcademicTermId())
-                                            .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
-                            gradeRepository.save(Grade.builder()
-                                    .student(student)
-                                    .subject(subject)
-                                    .testType(gradeDTO.getTestType())
-                                    .academicTerm(term)
-                                    .score(gradeDTO.getScore())
-                                    .build());
-                            log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
-                                    student.getId(), subject.getName(), gradeDTO.getScore());
-                        });
-    }
-
-    /**
-     * 성적 수정
-     */
-    @Transactional
-    public void updateGrade(Long teacherId, Long gradeId, Double newScore) {
-        log.info("성적 수정 - 교사: {}, 성적ID: {}, 새점수: {}", teacherId, gradeId, newScore);
-        Grade grade = gradeRepository.findById(gradeId)
-                .orElseThrow(() -> new IllegalArgumentException("성적을 찾을 수 없습니다."));
-        grade.changeScore(newScore);
-    }
-
-    /**
-     * 과목별 성적 조회
-     */
-    public List<GradeDTO> getMySubjectGrades(Long teacherId, String subjectCode) {
-        log.info("과목 성적 조회 - 교사: {}, 과목: {}", teacherId, subjectCode);
-        List<Grade> grades = gradeRepository.findBySubjectCodeWithSubject(subjectCode);
-        return grades.stream().map(this::entityToDto).collect(Collectors.toList());
-    }
-
-    /**
-     * 학생별 성적 조회
-     */
-    public List<GradeDTO> getStudentGrades(Long studentId) {
-        log.info("학생 성적 조회 - 학생 ID: {}", studentId);
-        List<Grade> grades = gradeRepository.findByStudentIdWithSubject(studentId);
-        return grades.stream().map(this::entityToDto).collect(Collectors.toList());
-    }
-
-    // ==================================================================================
     // ========== [교사] 담임 배정 확인 및 담당 학급 관리 ==========
     // ==================================================================================
 
@@ -799,8 +719,12 @@ public class TeacherService {
             homeroomName = classroom.getTeacher().getName();
         }
 
+        // [woo] 학교별 NEIS 시간표 조회를 위해 schoolId 포함
+        Long schoolId = classroom.getSchool() != null ? classroom.getSchool().getId() : null;
+
         return ClassStudentDTO.builder()
                 .classroomId(classroom.getCid())
+                .schoolId(schoolId)
                 .year(classroom.getYear())
                 .grade(classroom.getGrade())
                 .classNum(classroom.getClassNum())

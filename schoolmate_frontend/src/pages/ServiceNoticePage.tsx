@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "@/shared/api/authApi";
+import "react-quill-new/dist/quill.snow.css";
 
 interface ServiceNotice {
   id: number;
@@ -256,9 +257,11 @@ export default function ServiceNoticePage() {
                       </div>
                       <button type="button" className="btn-close" onClick={() => setSelectedNotice(null)} />
                     </div>
-                    <div className="modal-body" style={{ padding: "24px", whiteSpace: "pre-wrap", lineHeight: 1.9, color: "#374151", fontSize: "0.93rem" }}>
-                      {selectedNotice.content}
-                    </div>
+                    <div
+                      className="modal-body ql-editor"
+                      style={{ padding: "24px", lineHeight: 1.9, color: "#374151", fontSize: "0.93rem" }}
+                      dangerouslySetInnerHTML={{ __html: selectedNotice.content }}
+                    />
                     <div className="modal-footer" style={{ borderTop: "1px solid #f0f0f0", padding: "14px 24px" }}>
                       <button className="btn" style={{ background: "var(--teal)", color: "#fff", borderRadius: 50 }} onClick={() => setSelectedNotice(null)}>닫기</button>
                     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "@/shared/api/authApi";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 

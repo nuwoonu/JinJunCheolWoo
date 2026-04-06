@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import TimetableApp from "@/features/schedule/components/TimetableApp";
 

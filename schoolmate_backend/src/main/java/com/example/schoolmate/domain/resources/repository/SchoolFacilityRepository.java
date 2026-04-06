@@ -9,4 +9,5 @@ import com.example.schoolmate.domain.resources.entity.SchoolFacility;
 
 @Repository
 public interface SchoolFacilityRepository extends JpaRepository<SchoolFacility, Long>, SchoolFacilityRepositoryCustom {
+    boolean existsBySchool_Id(Long schoolId);
 }

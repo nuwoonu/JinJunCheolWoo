@@ -1,4 +1,4 @@
-const CACHE_NAME = 'schoolmate-v1';
+const CACHE_NAME = 'schoolmate-v2';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -14,12 +14,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+<<<<<<< HEAD
   if (event.request.url.includes('/api/')) return;
   // GET 요청만 처리 (POST 등은 서비스 워커가 간섭하지 않음)
   if (event.request.method !== 'GET') return;
   event.respondWith(
     fetch(event.request).catch(() =>
       caches.match(event.request).then((cached) => cached ?? fetch('/index.html'))
+=======
+  const url = new URL(event.request.url);
+  // API 요청 및 Vite 개발 서버 경로는 서비스 워커 개입 없이 통과
+  if (
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/node_modules/')
+  ) return;
+
+  event.respondWith(
+    fetch(event.request).catch(() =>
+      caches.match(event.request).then(
+        (cached) => cached || new Response('Service Unavailable', { status: 503 })
+      )
+>>>>>>> developMerge
     )
   );
 });

@@ -26,4 +26,12 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q WHERE q.classroom.cid = :classroomId AND q.isDeleted = false ORDER BY q.createDate DESC")
     List<Quiz> findAllByClassroomId(@Param("classroomId") Long classroomId);
 
+    // [woo] 분반 자동채우기용: 교사+학급 기준 퀴즈 목록 (courseSection 미설정 구버전 폴백용으로 유지)
+    @Query("SELECT q FROM Quiz q WHERE q.teacher.id = :teacherId AND q.classroom.cid = :classroomId AND q.isDeleted = false")
+    List<Quiz> findByTeacherAndClassroom(@Param("teacherId") Long teacherId, @Param("classroomId") Long classroomId);
+
+    // [woo] 분반 기준 퀴즈 목록 (과목 구분 정확)
+    @Query("SELECT q FROM Quiz q WHERE q.courseSection.id = :sectionId AND q.isDeleted = false")
+    List<Quiz> findByCourseSection(@Param("sectionId") Long sectionId);
+
 }

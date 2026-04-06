@@ -22,6 +22,7 @@ import com.example.schoolmate.domain.parent.repository.FamilyRelationRepository;
 import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
 import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
 import com.example.schoolmate.domain.teacher.service.TeacherService;
+import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.domain.attendance.dto.AttendanceDTO;
 import com.example.schoolmate.domain.attendance.entity.StudentAttendance;
 import com.example.schoolmate.domain.attendance.entity.TeacherAttendance;
@@ -129,6 +130,58 @@ public class AttendanceService {
                     .build();
             attendance.setSchool(student.getSchool());
             attendanceRepository.save(attendance);
+        }
+
+        // [woo] 출결 변경 시 학부모에게 푸시 알림 (출석 제외 — 결석/지각/조퇴/병결만)
+        if (newStatus != AttendanceStatus.PRESENT) {
+            notifyParentsOfAttendance(student, date, newStatus, reason);
+        }
+    }
+
+    /**
+     * [woo] 학생 출결 상태 변경 시 해당 학생의 모든 학부모에게 알림 발송
+     * FamilyRelation을 통해 학부모 조회 후 NotificationHelper로 푸시 + DB 저장
+     */
+    private void notifyParentsOfAttendance(StudentInfo student, LocalDate date, AttendanceStatus status, String reason) {
+        String studentName = student.getUser().getName();
+        String statusDesc = switch (status) {
+            case ABSENT      -> "결석";
+            case LATE         -> "지각";
+            case EARLY_LEAVE  -> "조퇴";
+            case SICK         -> "병결";
+            default           -> status.name();
+        };
+
+        String title = studentName + " 학생 출결 알림";
+        String content = String.format("%s(%s) %s 학생이 %s 처리되었습니다.",
+                date.getMonthValue() + "월 " + date.getDayOfMonth() + "일",
+                switch (date.getDayOfWeek()) {
+                    case MONDAY -> "월"; case TUESDAY -> "화"; case WEDNESDAY -> "수";
+                    case THURSDAY -> "목"; case FRIDAY -> "금"; case SATURDAY -> "토"; case SUNDAY -> "일";
+                },
+                studentName, statusDesc);
+        if (reason != null && !reason.isBlank()) {
+            content += " (사유: " + reason + ")";
+        }
+
+        // [woo] FamilyRelation을 통해 학부모 찾기
+        List<FamilyRelation> relations = familyRelationRepository
+                .findByStudentInfo_User_Uid(student.getUser().getUid());
+
+        for (FamilyRelation rel : relations) {
+            if (rel.getParentInfo() != null && rel.getParentInfo().getUser() != null) {
+                NotificationHelper.send(
+                        null, // 시스템 알림
+                        rel.getParentInfo().getUser(),
+                        title,
+                        content
+                );
+            }
+        }
+
+        if (!relations.isEmpty()) {
+            log.info("[woo] 출결 알림 발송 - student: {}, status: {}, parents: {}명",
+                    studentName, statusDesc, relations.size());
         }
     }
 
