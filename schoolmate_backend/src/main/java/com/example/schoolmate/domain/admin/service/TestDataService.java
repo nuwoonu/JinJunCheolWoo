@@ -843,6 +843,7 @@ public class TestDataService {
                         for (int i = 0; i < spec.broken(); i++) {
                                 saveAsset(school, model, assetSeq++, AssetStatus.BROKEN);
                         }
+                }
         }
 
         private void saveAsset(School school, AssetModel model, int seq, AssetStatus status) {
