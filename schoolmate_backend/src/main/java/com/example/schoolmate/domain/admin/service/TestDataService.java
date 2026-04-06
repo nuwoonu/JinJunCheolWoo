@@ -74,8 +74,8 @@ import java.util.*;
  * 테스트 데이터 시딩 서비스
  *
  * 발표용 데이터 세팅:
- * - 가거도초등학교 (id=9520): 1~6학년 각 2반 (12학급), 학생 24명, 교사 12명, 교직원 5명
- * - 가경중학교 (id=7487): 1~3학년 각 3반 (9학급), 학생 27명, 교사 10명, 교직원 5명
+ * - 가거도초등학교 : 1~6학년 각 2반 (12학급), 학생 24명, 교사 12명, 교직원 5명
+ * - 가경중학교 : 1~3학년 각 3반 (9학급), 학생 27명, 교사 10명, 교직원 5명
  * - 학사 일정, 교과목, 공지사항, 알림장, 학급 목표까지 대시보드에 보일 데이터 포함
  */
 @Slf4j
@@ -812,7 +812,6 @@ public class TestDataService {
                                 int available, int inUse, int broken) {
                 }
 
-<<<<<<< HEAD
                 List<ModelSpec> specs = List.of(
                                 new ModelSpec("갤럭시 북 4 Pro", "삼성전자", "노트북", "Intel Core Ultra 7, 16GB RAM, 512GB SSD",
                                                 8, 4, 1),
@@ -844,20 +843,6 @@ public class TestDataService {
                         for (int i = 0; i < spec.broken(); i++) {
                                 saveAsset(school, model, assetSeq++, AssetStatus.BROKEN);
                         }
-                }
-=======
-        for (Object[] d : data) {
-            SchoolFacility f = SchoolFacility.builder()
-                    .type((FacilityType) d[2])
-                    .status((FacilityStatus) d[3])
-                    .capacity((Integer) d[4])
-                    .amenities((String) d[5])
-                    .build();
-            f.setName((String) d[0]);
-            f.setLocationDesc((String) d[1]);
-            f.setSchool(school);
-            facilityRepository.save(f);
->>>>>>> developMerge
         }
 
         private void saveAsset(School school, AssetModel model, int seq, AssetStatus status) {
