@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
 import api from "@/api/auth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
@@ -62,8 +61,8 @@ export default function StudentAttendance() {
   const [myGrade, setMyGrade] = useState<number | null>(null);
   const [myClassNum, setMyClassNum] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [processedDays, setProcessedDays] = useState(0);
-  const [currentDay, setCurrentDay] = useState(0);
+  const [_processedDays, setProcessedDays] = useState(0);
+  const [_currentDay, setCurrentDay] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const [searchName, setSearchName] = useState("");
   // [woo] 상태 필터 (카드 클릭 시 해당 상태 학생만 표시, null이면 전체)
