@@ -496,6 +496,23 @@ function App() {
           </PrivateRoute>
         }
       />
+      {/* [woo] 학부모 학급 알림장 */}
+      <Route
+        path="/parent/class/notice"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ClassDiary />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/parent/class/notice/:id"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ClassDiaryDetail />
+          </PrivateRoute>
+        }
+      />
       {/* [woo] 우리반 알림장 */}
       <Route
         path="/board/class-diary"
