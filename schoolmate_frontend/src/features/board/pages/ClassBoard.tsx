@@ -481,10 +481,9 @@ export default function ClassBoard() {
                         )}
                         {/* [soojin] 신규 배지 + 제목 — 태그 아래 별도 줄 */}
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                          {/* [soojin] 새글 표시 - 가정통신문 위젯과 동일한 스타일로 통일 */}
                           {isNew && (
-                            <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 5px", borderRadius: 3, background: "#ef4444", color: "#fff", flexShrink: 0, lineHeight: "14px" }}>
-                              N
-                            </span>
+                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>새글</span>
                           )}
                           <span style={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>
                             {board.title}

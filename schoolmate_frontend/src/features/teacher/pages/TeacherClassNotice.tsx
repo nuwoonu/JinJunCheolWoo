@@ -231,8 +231,9 @@ export default function TeacherClassNotice() {
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 13, borderBottom: '1px solid #f3f4f6', verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         <span style={{ color: '#1d4ed8', fontWeight: 500 }}>{board.title}</span>
+                        {/* [soojin] 새글 표시 - 가정통신문 위젯과 동일한 스타일로 통일 */}
                         {isNew && (
-                          <span style={{ display: 'inline-block', background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, padding: '1px 4px', borderRadius: 2, lineHeight: '12px', marginLeft: 6 }}>N</span>
+                          <span style={{ color: '#25A194', fontSize: 11, fontWeight: 700, marginLeft: 6 }}>새글</span>
                         )}
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 13, color: '#6b7280', borderBottom: '1px solid #f3f4f6', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>{board.writerName}</td>

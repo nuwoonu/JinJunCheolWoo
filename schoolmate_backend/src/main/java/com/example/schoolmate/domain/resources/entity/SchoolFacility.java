@@ -8,18 +8,16 @@ import com.example.schoolmate.domain.resources.constant.FacilityType;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @DiscriminatorValue("FACILITY")
 public class SchoolFacility extends BaseResource {
     @Enumerated(EnumType.STRING)
