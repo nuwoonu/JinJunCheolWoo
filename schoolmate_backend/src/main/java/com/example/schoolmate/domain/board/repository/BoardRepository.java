@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.schoolmate.domain.board.entity.Board;
+import com.example.schoolmate.domain.board.entity.BoardType;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardRepositoryCustom {
@@ -16,4 +17,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardReposi
        @Query("SELECT b FROM Board b WHERE b.writer.uid = :writerId AND b.isDeleted = false " +
                      "ORDER BY b.createDate DESC")
        Page<Board> findByWriterId(@Param("writerId") Long writerId, Pageable pageable);
+
+       // ========== 시드 중복 방지 ==========
+       boolean existsBySchool_IdAndBoardTypeAndIsDeleted(Long schoolId, BoardType boardType, boolean isDeleted);
 }

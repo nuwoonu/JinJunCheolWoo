@@ -300,43 +300,6 @@ public class TeacherClassController {
         return ResponseEntity.ok(response);
     }
 
-    // ==================================================================================
-    // ========== 4. ★ 담당 학급 학생 성적 입력 (담임 전용) ==========
-    // ==================================================================================
-
-    /**
-     * ★ 담당 학급 학생 성적 입력 (담임 전용)
-     *
-     * POST /api/teacher/class/{teacherId}/students/grade?year=2025
-     *
-     * [요청 본문]
-     * {
-     *   "studentId": 10,
-     *   "subjectCode": "MATH101",
-     *   "testType": "MIDTERM",
-     *   "semester": 1,
-     *   "year": 2025,
-     *   "score": 95.0
-     * }
-     */
-    @PostMapping("/{teacherId}/students/grade")
-    public ResponseEntity<Map<String, Object>> inputGradeForMyClass(
-            @PathVariable Long teacherId,
-            @RequestParam int year,
-            @RequestBody GradeInputDTO gradeDTO) {
-
-        teacherService.inputGradeForMyClass(teacherId, year, gradeDTO);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "성적이 입력되었습니다.");
-        response.put("studentId", gradeDTO.getStudentId());
-        response.put("subjectCode", gradeDTO.getSubjectCode());
-        response.put("score", gradeDTO.getScore());
-
-        return ResponseEntity.ok(response);
-    }
-
     /**
      * ★ 특정 학생이 담당 학급 학생인지 확인
      *

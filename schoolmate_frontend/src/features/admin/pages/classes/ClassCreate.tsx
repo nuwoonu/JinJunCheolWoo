@@ -48,7 +48,13 @@ export default function ClassCreate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await admin.post("/classes", form);
+      const payload = {
+        year: form.year,
+        grade: Number(form.grade),
+        classNum: form.classNum,
+        teacherUid: form.teacherUid !== "" ? Number(form.teacherUid) : null,
+      };
+      await admin.post("/classes", payload);
       navigate(ADMIN_ROUTES.CLASSES.LIST);
     } catch (err: any) {
       setError(apiErrMsg(err, "학급 생성에 실패했습니다."));

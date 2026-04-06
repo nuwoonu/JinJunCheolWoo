@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import api from '@/shared/api/authApi'
 import { auth } from '@/shared/api/auth'
 import MainFooter from '@/shared/components/layout/MainFooter'

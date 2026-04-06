@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ReactQuill, QUILL_MODULES, QUILL_FORMATS, isQuillEmpty } from "@/shared/types/quillConfig";
 import "react-quill-new/dist/quill.snow.css";
 import api from "@/shared/api/authApi";
@@ -46,7 +46,7 @@ export default function ClassDiaryDetail() {
           api.post(`/board/${id}/view`).catch(() => {});
         }
       })
-      .catch(() => navigate("/board/class-diary"))
+      .catch(() => navigate(-1))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -85,7 +85,7 @@ export default function ClassDiaryDetail() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
       await api.delete(`/board/${id}`);
-      navigate("/board/class-diary");
+      navigate(-1);
     } catch {
       alert("삭제에 실패했습니다.");
     }
@@ -112,12 +112,13 @@ export default function ClassDiaryDetail() {
       {/* [woo] 상단 네비게이션 */}
       <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
         <div className="d-flex align-items-center gap-8">
-          <Link
-            to="/board/class-diary"
-            className="w-36-px h-36-px rounded-circle bg-neutral-100 d-flex align-items-center justify-content-center text-secondary-light"
+          <button
+            type="button"
+            className="w-36-px h-36-px rounded-circle bg-neutral-100 d-flex align-items-center justify-content-center text-secondary-light border-0"
+            onClick={() => navigate(-1)}
           >
             <i className="ri-arrow-left-line text-lg" />
-          </Link>
+          </button>
           <h5 className="fw-bold mb-0">우리반 알림장</h5>
         </div>
       </div>
@@ -188,14 +189,15 @@ export default function ClassDiaryDetail() {
             </button>
           </div>
         ) : <div />}
-        <Link
-          to="/board/class-diary"
+        <button
+          type="button"
           className="btn btn-outline-neutral-300 radius-8 d-flex align-items-center gap-6"
           style={{ fontSize: 14 }}
+          onClick={() => navigate(-1)}
         >
           <i className="ri-list-unordered" />
           목록으로
-        </Link>
+        </button>
       </div>
 
       {/* [woo 03-27] 수정 모달 — ReactQuill 에디터 */}

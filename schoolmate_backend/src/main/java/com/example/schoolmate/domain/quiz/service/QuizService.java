@@ -72,6 +72,7 @@ public class QuizService {
                 .week(request.getWeek())
                 .teacher(teacher)
                 .classroom(courseSection.getClassroom())
+                .courseSection(courseSection)
                 .dueDate(request.getDueDate())
                 .maxAttempts(request.getMaxAttempts())
                 // [soojin] 수정하는 이유: 출제 시 제한시간 저장값 반영
@@ -363,6 +364,7 @@ public class QuizService {
             CourseSection courseSection = courseSectionRepository.findById(request.getCourseSectionId())
                     .orElseThrow(() -> new IllegalArgumentException("수업 분반 정보를 찾을 수 없습니다."));
             quiz.setClassroom(courseSection.getClassroom());
+            quiz.setCourseSection(courseSection);
         }
 
         // [woo] 문제 수정 (in-place 업데이트 → 기존 응시 기록의 FK 유지)

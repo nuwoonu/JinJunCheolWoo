@@ -2,37 +2,21 @@ package com.example.schoolmate.domain.grade.dto;
 
 import com.example.schoolmate.domain.user.entity.constant.TestType;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// 교사가 학생 성적 입력할 때 쓰는 DTO
+// [woo] 성적 입력 DTO
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class GradeInputDTO {
-
-    @NotNull(message = "학생 ID는 필수입니다.")
-    private Long studentId;
-
-    @NotNull(message = "과목 코드는 필수입니다.")
-    private String subjectCode;
-
-    @NotNull(message = "시험 종류는 필수입니다.")
-    private TestType testType;  // 중간고사, 기말고사 등
-
-    @NotNull(message = "학기 ID는 필수입니다.")
-    private Long academicTermId; // AcademicTerm PK
-
-    @NotNull(message = "점수는 필수입니다.")
-    @Min(value = 0, message = "점수는 0점 이상이어야 합니다.")
-    @Max(value = 100, message = "점수는 100점 이하여야 합니다.")
-    private Double score;
+    private Long courseSectionId; // CourseSection PK (교사+과목+학급+학기)
+    private Long studentId;       // StudentInfo PK
+    private TestType testType;    // MIDTERMTEST | FINALTEST | QUIZ | HOMEWORK
+    private Double score;         // 0 ~ 100
+    private String subjectCode;   // 과목 코드 (TeacherService 교과교사 채점용)
+    private Long academicTermId;  // 학기 ID (TeacherService 성적 저장용)
 }

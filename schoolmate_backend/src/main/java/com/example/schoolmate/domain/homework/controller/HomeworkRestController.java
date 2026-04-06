@@ -212,6 +212,30 @@ public class HomeworkRestController {
         }
     }
 
+    // ========== [woo] 제출 수정 (학생) ==========
+
+    /**
+     * PUT /api/homework/submission/{submissionId}
+     * 학생이 본인 제출물 수정 (마감 전·미채점 한정)
+     */
+    @PutMapping("/submission/{submissionId}")
+    public ResponseEntity<?> updateSubmission(
+            @PathVariable Long submissionId,
+            @RequestPart(value = "data", required = false) HomeworkDTO.SubmitRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @AuthenticationPrincipal AuthUserDTO authUser) {
+        try {
+            if (request == null) request = new HomeworkDTO.SubmitRequest();
+            HomeworkDTO.SubmissionResponse response = homeworkService.updateSubmission(
+                    submissionId, request, file, authUser.getCustomUserDTO());
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // ========== [woo] 채점 (교사) ==========
 
     /**

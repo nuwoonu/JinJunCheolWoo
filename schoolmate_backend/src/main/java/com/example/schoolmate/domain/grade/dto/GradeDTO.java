@@ -6,24 +6,34 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor
+// [woo] 성적 DTO
 @Getter
-@ToString
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class GradeDTO {
     private Long id;
+
+    // 학생 정보
     private Long studentId;
+    private String studentName;
+    private Integer attendanceNum;
+
+    // 과목 정보
+    private Long subjectId;
     private String subjectName;
     private String subjectCode;
+
+    // 시험 정보
     private TestType examType;
     private Double score;
 
-    // AcademicTerm 기반
+    // 학기 정보
     private Long academicTermId;
     private int schoolYear;
     private int semester;
-    private String termDisplayName; // "2025학년도 1학기"
+    private String termDisplayName;
 }

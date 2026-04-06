@@ -29,7 +29,7 @@ function useSubmenu() {
     }
     if (p.startsWith("/board/class-board") || p.startsWith("/board/teacher")) r.board = true;
     if (p.startsWith("/homework") || p.startsWith("/quiz")) r.homework = true;
-    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes")) r.exam = true;
+    if (p.startsWith("/exam") || p.startsWith("/student/grades") || p.startsWith("/teacher/grades")) r.exam = true;
     if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.attendance = true;
     // [soojin] 학교 소식: gallery 제거, 가정통신문 추가
     if (p.startsWith("/school/schedule") || p.startsWith("/board/parent-notice")) r.parentNotice = true;
@@ -40,7 +40,12 @@ function useSubmenu() {
     if (p.startsWith("/homework") || p.startsWith("/quiz")) r.teacherHomework = true;
     if (p.startsWith("/homework")) r.teacherHomeworkAssign = true;
     if (p.startsWith("/quiz")) r.teacherHomeworkQuiz = true;
-    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes") || p.startsWith("/student/list"))
+    if (
+      p.startsWith("/exam") ||
+      p.startsWith("/teacher/grades") ||
+      p.startsWith("/teacher/grade-classes") ||
+      p.startsWith("/student/list")
+    )
       r.teacherExam = true;
     if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.teacherAttendance = true;
     if (p.startsWith("/board/school-notice") || p.startsWith("/school/schedule")) r.teacherNotice = true;
@@ -99,7 +104,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function Sidebar() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { open, toggle } = useSubmenu();
   const { isOpen, isCollapsed, closeSidebar, toggleCollapse } = useSidebar();
   const role = user?.role ?? "";
@@ -413,18 +418,13 @@ export default function Sidebar() {
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <SNavLink to="/teacher/grade-classes">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 채점
+                    <SNavLink to="/teacher/grades">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 입력
                     </SNavLink>
                   </li>
                   <li>
-                    <SNavLink to="/student/list?mode=view">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
-                    </SNavLink>
-                  </li>
-                  <li>
-                    <SNavLink to="/exam/schedule">
-                      <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
+                    <SNavLink to="/teacher/grades/summary">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 성적 현황
                     </SNavLink>
                   </li>
                 </ul>
@@ -836,12 +836,7 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <SNavLink to="/exam/schedule">
-                    <i className="ri-circle-fill circle-icon w-auto" /> 시험 일정
-                  </SNavLink>
-                </li>
-                <li>
-                  <SNavLink to="/exam/result">
+                  <SNavLink to="/student/grades">
                     <i className="ri-circle-fill circle-icon w-auto" /> 성적 조회
                   </SNavLink>
                 </li>
