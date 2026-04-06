@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from '@/shared/api/authApi';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import DashboardLayout from '@/shared/components/layout/DashboardLayout';
+import ParentBackButton from "@/shared/components/ParentBackButton";
 import {
   TIME_SLOTS,
   TIME_MAP,
@@ -337,6 +338,7 @@ export default function ConsultationList() {
               <i className="ri-add-line me-4" />새 신청
             </Link>
           )}
+          <ParentBackButton />
         </div>
 
         {/* 예약 목록 */}

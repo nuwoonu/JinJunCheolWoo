@@ -5,6 +5,7 @@ import 'react-quill-new/dist/quill.snow.css'
 import api from '@/shared/api/authApi'
 import { useAuth } from '@/shared/contexts/AuthContext'
 import DashboardLayout from '@/shared/components/layout/DashboardLayout'
+import ParentBackButton from '@/shared/components/ParentBackButton'
 
 // [woo] /board/school-notice - 학교 공지 목록 (Thymeleaf woo/teacher/board/school-notice/list.html 마이그레이션)
 
@@ -95,13 +96,16 @@ export default function SchoolNotice() {
       {/* [soojin] 화면 꽉 채우는 flex column 컨테이너 */}
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 4.5rem - 48px)' }}>
 
-        {/* [soojin] 제목 + 전체 건수 인라인 */}
-        <div style={{ marginBottom: 16, flexShrink: 0 }}>
-          <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            학교 공지
-            <span style={{ fontSize: 13, fontWeight: 400, color: '#6b7280' }}>전체 {totalAll ?? 0}건</span>
-          </h5>
-          <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>학교 전체 공지사항을 확인합니다.</p>
+        {/* [soojin] 제목 + 전체 건수 + 돌아가기 */}
+        <div style={{ marginBottom: 16, flexShrink: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4, display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              학교 공지
+              <span style={{ fontSize: 13, fontWeight: 400, color: '#6b7280' }}>전체 {totalAll ?? 0}건</span>
+            </h5>
+            <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>학교 전체 공지사항을 확인합니다.</p>
+          </div>
+          <ParentBackButton />
         </div>
 
         {/* [soojin] 컨트롤 바: 검색(좌) + 글쓰기(우, admin only) */}

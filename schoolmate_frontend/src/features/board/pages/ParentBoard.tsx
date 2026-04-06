@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "@/shared/api/authApi";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 
 // [soojin] /board/parent - 학부모 게시판 목록 (ClassBoard.tsx 형식으로 재작성)
 
@@ -192,16 +193,7 @@ export default function ParentBoard() {
     <DashboardLayout>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 24 }}>
         <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 0 }}>학부모 게시판</h6>
-        {canWrite && (
-          <button
-            type="button"
-            style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
-            onClick={() => navigate("/board/parent/write")}
-          >
-            <i className="ri-edit-line" />
-            글쓰기
-          </button>
-        )}
+        <ParentBackButton />
       </div>
 
       <div className="row" style={{ alignItems: "flex-start" }}>
@@ -256,6 +248,16 @@ export default function ParentBoard() {
                   </button>
                 )}
               </div>
+              {canWrite && (
+                <button
+                  type="button"
+                  style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0, marginRight: 8 }}
+                  onClick={() => navigate("/board/parent/write")}
+                >
+                  <i className="ri-edit-line" />
+                  글쓰기
+                </button>
+              )}
             </div>
 
             {/* 서브 헤더: 태그 탭 + 정렬 */}

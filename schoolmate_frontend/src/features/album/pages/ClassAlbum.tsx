@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "@/shared/api/authApi";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 
 interface PhotoItem {
   id: number;
@@ -186,21 +187,24 @@ export default function ClassAlbum() {
   return (
     <DashboardLayout>
       {/* 제목 */}
-      <div style={{ marginBottom: 16, flexShrink: 0 }}>
-        <h5
-          style={{
-            fontWeight: 700,
-            color: "#111827",
-            marginBottom: 4,
-            display: "flex",
-            alignItems: "baseline",
-            gap: 8,
-          }}
-        >
-          학급 앨범
-          <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {groups.length}건</span>
-        </h5>
-        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>우리 반의 소중한 순간들을 모아보세요.</p>
+      <div style={{ marginBottom: 16, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <h5
+            style={{
+              fontWeight: 700,
+              color: "#111827",
+              marginBottom: 4,
+              display: "flex",
+              alignItems: "baseline",
+              gap: 8,
+            }}
+          >
+            학급 앨범
+            <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {groups.length}건</span>
+          </h5>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>우리 반의 소중한 순간들을 모아보세요.</p>
+        </div>
+        <ParentBackButton />
       </div>
       <input
         ref={fileInputRef}

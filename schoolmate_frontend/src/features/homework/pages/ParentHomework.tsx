@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import api from "@/shared/api/authApi";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 
 // [woo] 학부모 - 자녀 과제/퀴즈 조회 페이지
 // - GET /dashboard/parent 로 자녀 목록 로드
@@ -116,6 +116,7 @@ export default function ParentHomework() {
           <h6 className="fw-semibold mb-0">과제 / 퀴즈</h6>
           <p className="text-neutral-600 mt-4 mb-0">자녀 과제·퀴즈 현황</p>
         </div>
+        <ParentBackButton />
       </div>
 
       {/* 자녀 선택 (자녀가 여러 명일 때) */}

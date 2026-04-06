@@ -232,7 +232,7 @@ export default function ParentChildrenStatus() {
                 {/* [woo] 출결 현황 서클 - API 연동 */}
                 <div className="border-top pt-20">
                   <h6 className="fw-bold mb-20 text-sm text-start">
-                    <i className="ri-checkbox-circle-line text-success-600 me-2" />
+                    <i className="ri-checkbox-circle-line text-primary-600 me-2" />
                     출결 현황
                   </h6>
                   {(() => {
@@ -318,19 +318,9 @@ export default function ParentChildrenStatus() {
                         <div className="d-flex align-items-center gap-12">
                           <i className="ri-file-text-line text-secondary-light" />
                           <span className="text-sm">{b.title}</span>
+                          {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
                           {b.createDate && isNew(b.createDate) && (
-                            <span
-                              style={{
-                                background: "#25A194",
-                                color: "white",
-                                borderRadius: 4,
-                                padding: "1px 7px",
-                                fontSize: 11,
-                                fontWeight: 600,
-                              }}
-                            >
-                              새글
-                            </span>
+                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700 }}>새글</span>
                           )}
                         </div>
                         {b.createDate && (
@@ -399,19 +389,9 @@ export default function ParentChildrenStatus() {
                         <div className="d-flex align-items-center gap-12">
                           <i className="ri-file-text-line text-secondary-light" />
                           <span className="text-sm">{b.title}</span>
+                          {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
                           {b.createDate && isNew(b.createDate) && (
-                            <span
-                              style={{
-                                background: "#25A194",
-                                color: "white",
-                                borderRadius: 4,
-                                padding: "1px 7px",
-                                fontSize: 11,
-                                fontWeight: 600,
-                              }}
-                            >
-                              새글
-                            </span>
+                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700 }}>새글</span>
                           )}
                         </div>
                         {b.createDate && (

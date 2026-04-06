@@ -188,16 +188,6 @@ export default function TeacherBoard() {
     <DashboardLayout>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 24 }}>
         <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 0 }}>교직원 게시판</h6>
-        {(isTeacher || isAdmin) && (
-          <button
-            type="button"
-            style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
-            onClick={() => navigate("/board/teacher/write")}
-          >
-            <i className="ri-edit-line" />
-            글쓰기
-          </button>
-        )}
       </div>
 
       <div className="row" style={{ alignItems: "flex-start" }}>
@@ -252,6 +242,16 @@ export default function TeacherBoard() {
                   </button>
                 )}
               </div>
+              {(isTeacher || isAdmin) && (
+                <button
+                  type="button"
+                  style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0, marginRight: 8 }}
+                  onClick={() => navigate("/board/teacher/write")}
+                >
+                  <i className="ri-edit-line" />
+                  글쓰기
+                </button>
+              )}
             </div>
 
             {/* 서브 헤더: 태그 탭 + 정렬 */}

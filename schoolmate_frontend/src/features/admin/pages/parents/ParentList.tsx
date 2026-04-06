@@ -112,7 +112,7 @@ export default function ParentList() {
 
   const totalRR = (rrCounts.ACTIVE ?? 0) + (rrCounts.PENDING ?? 0) + (rrCounts.SUSPENDED ?? 0) + (rrCounts.REJECTED ?? 0);
 
-  return (
+return (
     <ParentAdminLayout requireSchool={false}>
       {loading && (
         <div
@@ -153,11 +153,12 @@ export default function ParentList() {
       </div>
 
       {/* 본문: 좌측 통계 + 우측 목록 */}
-      <div className="row g-24 align-items-start">
+      <div className="row g-24 align-items-stretch">
 
-        {/* ── 좌측 통계 패널 (학부모 현황) — 유지 ── */}
+        {/* ── 좌측 통계 패널 (학부모 현황) ── */}
         <div className="col-lg-3">
-          <div className="card" style={{ borderTop: "3px solid #6366f1", marginBottom: 24 }}>
+          {/* [soojin] borderTop 색깔 띠 제거, 외곽선 추가 */}
+          <div className="card" style={{ marginBottom: 24, border: '1px solid #e5e7eb' }}>
             <div style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
               <h6 className="fw-semibold mb-1" style={{ fontSize: 14 }}>학부모 현황</h6>
               <p className="text-secondary-light mb-0" style={{ fontSize: 12 }}>
@@ -169,6 +170,7 @@ export default function ParentList() {
               </p>
             </div>
             <div className="card-body" style={{ padding: "16px 20px" }}>
+
               <p className="text-secondary-light mb-12" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 계정 승인 현황
               </p>
@@ -256,7 +258,8 @@ export default function ParentList() {
           </div>
 
           {/* [soojin] 테이블 카드 — ServiceNoticeList 카드 스타일 */}
-          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+          {/* [soojin] height: 100%로 세로 꽉 채움 */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden', height: '100%' }}>
             {/* [soojin] overflowX 래퍼 제거, tableLayout auto, colgroup 제거 → 브라우저 자동 컬럼 분배 */}
               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
                 <thead>

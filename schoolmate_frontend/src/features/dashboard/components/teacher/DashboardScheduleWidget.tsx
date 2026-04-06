@@ -217,7 +217,8 @@ export default function DashboardScheduleWidget() {
         {/* 헤더 */}
         <div className="d-flex align-items-center justify-content-between dash-card-header" style={css.cardHeaderExtra}>
           <div className="d-flex align-items-center gap-8">
-            <span style={{ fontSize: 18, lineHeight: 1 }}></span>
+            {/* [soojin] 이모지 → 아이콘으로 교체 */}
+            <i className="ri-calendar-schedule-line text-primary-600 text-lg" />
             <h6 className="fw-bold mb-0 text-sm">{label}</h6>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -310,10 +311,10 @@ function ScheduleCard({
       </div>
       <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
         <button onClick={onEdit} style={css.editIconBtn} title="수정">
-          ✏
+          <i className="ri-edit-line" style={{ fontSize: 14, color: "#25A194" }} />
         </button>
         <button onClick={onDelete} style={css.deleteIconBtn} title="삭제">
-          🗑
+          <i className="ri-delete-bin-line" style={{ fontSize: 14, color: "#ef4444" }} />
         </button>
       </div>
     </div>

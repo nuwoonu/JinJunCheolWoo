@@ -14,7 +14,8 @@ function useSubmenu() {
 
   function initOpen(p: string): Record<string, boolean> {
     const r: Record<string, boolean> = {};
-    if (p.startsWith("/teacher/myclass") || p.startsWith("/class/album") || p.startsWith("/board/class-board")) r.myclass = true;
+    if (p.startsWith("/teacher/myclass") || p.startsWith("/class/album") || p.startsWith("/board/class-board"))
+      r.myclass = true;
     if (p.startsWith("/student/list") || p.startsWith("/student/myinfo")) r.student = true;
     // [soojin] 자녀 현황: /parent/children 제거 (헤더 탭으로 이동 예정)
     if (p.startsWith("/attendance/parent") || p.startsWith("/parent/grades") || p.startsWith("/parent/homework"))
@@ -39,7 +40,8 @@ function useSubmenu() {
     if (p.startsWith("/homework") || p.startsWith("/quiz")) r.teacherHomework = true;
     if (p.startsWith("/homework")) r.teacherHomeworkAssign = true;
     if (p.startsWith("/quiz")) r.teacherHomeworkQuiz = true;
-    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes") || p.startsWith("/student/list")) r.teacherExam = true;
+    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes") || p.startsWith("/student/list"))
+      r.teacherExam = true;
     if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.teacherAttendance = true;
     if (p.startsWith("/board/school-notice") || p.startsWith("/school/schedule")) r.teacherNotice = true;
     if (p.startsWith("/teacher/list") || p.startsWith("/board/teacher")) r.teacherStaff = true;
@@ -958,6 +960,17 @@ export default function Sidebar() {
                   </SNavLink>
                 </li>
               </ul>
+            </li>
+          )}
+
+          {/* 학부모 게시판 - PARENT */}
+          {/* [soojin] 학부모 게시판 메뉴 추가 */}
+          {has("PARENT") && (
+            <li>
+              <SNavLink to="/board/parent">
+                <i className="ri-chat-3-line" />
+                <span>학부모 게시판</span>
+              </SNavLink>
             </li>
           )}
         </ul>

@@ -280,10 +280,8 @@ export default function TeacherDashboard() {
                                 {n.title}
                               </h6>
                               {!n.isRead && (
-                                <span
-                                  className="badge text-white text-xs px-6 py-2 radius-4 fw-semibold"
-                                  style={{ background: "#ef4444", fontSize: 10 }}
-                                >
+                                // [soojin] NEW 배지 배경/모양 제거, 글자색만 유지
+                                <span style={{ color: "#ef4444", fontSize: 10, fontWeight: 700 }}>
                                   NEW
                                 </span>
                               )}
@@ -358,8 +356,8 @@ export default function TeacherDashboard() {
                 </div>
                 {/* [woo] 우선도 필터 버튼 */}
                 <div
-                  className="d-flex align-items-center gap-6 px-16 py-8"
-                  style={{ flexShrink: 0, borderBottom: "1px solid #f3f4f6" }}
+                  className="d-flex align-items-center gap-6 px-16 py-12"
+                  style={{ flexShrink: 0 }}
                 >
                   {PRIORITY_OPTIONS.map((opt) => {
                     const isActive = todoPriorityFilter === opt.value;
