@@ -812,6 +812,7 @@ public class TestDataService {
                                 int available, int inUse, int broken) {
                 }
 
+<<<<<<< HEAD
                 List<ModelSpec> specs = List.of(
                                 new ModelSpec("갤럭시 북 4 Pro", "삼성전자", "노트북", "Intel Core Ultra 7, 16GB RAM, 512GB SSD",
                                                 8, 4, 1),
@@ -844,6 +845,19 @@ public class TestDataService {
                                 saveAsset(school, model, assetSeq++, AssetStatus.BROKEN);
                         }
                 }
+=======
+        for (Object[] d : data) {
+            SchoolFacility f = SchoolFacility.builder()
+                    .type((FacilityType) d[2])
+                    .status((FacilityStatus) d[3])
+                    .capacity((Integer) d[4])
+                    .amenities((String) d[5])
+                    .build();
+            f.setName((String) d[0]);
+            f.setLocationDesc((String) d[1]);
+            f.setSchool(school);
+            facilityRepository.save(f);
+>>>>>>> developMerge
         }
 
         private void saveAsset(School school, AssetModel model, int seq, AssetStatus status) {

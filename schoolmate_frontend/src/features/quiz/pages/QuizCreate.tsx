@@ -225,7 +225,7 @@ export default function QuizCreate() {
         })),
       });
       alert("퀴즈가 출제되었습니다.");
-      navigate("/homework?tab=quiz");
+      navigate("/quiz");
     } catch (err: any) {
       alert(err.response?.data || "퀴즈 출제에 실패했습니다.");
     } finally {
@@ -568,7 +568,7 @@ export default function QuizCreate() {
             fontSize: 13,
             cursor: "pointer",
           }}
-          onClick={() => navigate("/homework?tab=quiz")}
+          onClick={() => navigate("/quiz")}
         >
           취소
         </button>

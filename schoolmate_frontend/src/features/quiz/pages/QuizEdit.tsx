@@ -88,7 +88,7 @@ export default function QuizEdit() {
         }
       } catch {
         alert("퀴즈를 불러올 수 없습니다.");
-        navigate("/homework?tab=quiz");
+        navigate("/quiz");
       } finally {
         setLoading(false);
       }

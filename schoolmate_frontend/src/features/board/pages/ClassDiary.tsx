@@ -29,9 +29,11 @@ export default function ClassDiary() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  // [woo] 교사 사이드바 /teacher/myclass/notice 에서 진입 시 detail URL도 같은 prefix 사용
+  // [woo] 진입 경로별 detail URL prefix 결정
   const baseUrl = location.pathname.startsWith("/teacher/myclass/notice")
     ? "/teacher/myclass/notice"
+    : location.pathname.startsWith("/parent/class/notice")
+    ? "/parent/class/notice"
     : "/board/class-diary";
   const [boards, setBoards] = useState<Board[]>([]);
   const [loading, setLoading] = useState(true);
