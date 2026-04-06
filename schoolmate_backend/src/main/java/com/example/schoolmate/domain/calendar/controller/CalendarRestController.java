@@ -13,6 +13,7 @@ import com.example.schoolmate.domain.dashboard.dto.TimetableItemDTO;
 import com.example.schoolmate.domain.school.entity.School;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.calendar.service.NeisCalendarService;
+import com.example.schoolmate.global.config.school.SchoolContextHolder;
 
 import lombok.RequiredArgsConstructor;
 

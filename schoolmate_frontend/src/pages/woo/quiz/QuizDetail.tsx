@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../../../api/auth";
+import api from "@/shared/api/authApi";
 import { useAuth } from "../../../contexts/AuthContext";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 

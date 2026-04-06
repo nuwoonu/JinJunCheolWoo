@@ -2,6 +2,7 @@ package com.example.schoolmate.domain.user.controller;
 
 import com.example.schoolmate.domain.school.entity.SystemSettings;
 import com.example.schoolmate.global.entity.SchoolMemberInfo;
+import com.example.schoolmate.domain.parent.entity.ParentInfo;
 import com.example.schoolmate.domain.student.entity.StudentInfo;
 import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
 import com.example.schoolmate.domain.teacher.entity.constant.TeacherStatus;

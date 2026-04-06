@@ -1,14 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import {
   getSectionStudents,
   getSectionRatio,
   setSectionRatio,
   inputGradeBatch,
   TEST_TYPE_LABELS,
-} from "@/api/grade";
-import type { GradeResponseDTO, GradeInputDTO, SectionRatioDTO, TestType } from "@/api/grade";
+} from "@/shared/api/grade";
+import type { GradeResponseDTO, GradeInputDTO, SectionRatioDTO, TestType } from "@/shared/api/grade";
 
 // [woo] 교사 성적 입력 - TeacherList UI 패턴 적용 (화면 꽉 채움, inline style)
 // /teacher/grades/section/:sectionId

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import api from "@/api/auth";
-import { getChildGrades, getTerms, getChildClassInfo } from "@/api/grade";
-import type { GradeResponseDTO, TermDTO, TestType, ChildClassInfoDTO } from "@/api/grade";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import api from '@/shared/api/authApi';
+import { getChildGrades, getTerms, getChildClassInfo } from "@/shared/api/grade";
+import type { GradeResponseDTO, TermDTO, TestType, ChildClassInfoDTO } from "@/shared/api/grade";
 
 // [woo] 학부모 자녀 성적 조회 페이지
 // /parent/grades
@@ -83,7 +83,7 @@ export default function ParentGrades() {
     }).catch(() => {});
 
     getTerms().then((res) => {
-      setTerms(res.data);
+      setTerms(Array.isArray(res.data) ? res.data : []);
       const active = res.data.find((t) => t.active);
       if (active) setSelectedTermId(active.termId);
     }).catch(() => {});

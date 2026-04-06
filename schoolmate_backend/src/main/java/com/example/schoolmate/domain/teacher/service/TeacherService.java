@@ -84,6 +84,7 @@ public class TeacherService {
     private final SchoolAdminGrantRepository schoolAdminGrantRepository;
     private final CodeSequenceService codeSequenceService;
     private final AcademicTermRepository academicTermRepository;
+    private final GradeRepository gradeRepository;
 
     // ==================================================================================
     // ========== [관리자] 교사 관리 ==========

@@ -1,4 +1,4 @@
-import api from "./auth";
+import api from "./api";
 
 // [woo] 성적 API
 
@@ -65,43 +65,43 @@ export interface SectionRatioDTO {
 
 // [woo] 교사: 내 분반 목록
 export const getMyCourseSections = (termId?: number) =>
-  api.get<CourseSectionDTO[]>("/grades/my-sections", { params: { termId } });
+  api.get<CourseSectionDTO[]>("/api/grades/my-sections", { params: { termId } });
 
 // [woo] 교사: 분반 학생 목록 (성적 포함)
 export const getSectionStudents = (sectionId: number, testType: string) =>
-  api.get<GradeResponseDTO[]>(`/grades/section/${sectionId}/students`, {
+  api.get<GradeResponseDTO[]>(`/api/grades/section/${sectionId}/students`, {
     params: { testType },
   });
 
 // [woo] 교사: 성적 입력 (단건)
 export const inputGrade = (dto: GradeInputDTO) =>
-  api.post<GradeResponseDTO>("/grades", dto);
+  api.post<GradeResponseDTO>("/api/grades", dto);
 
 // [woo] 교사: 성적 일괄 입력
 export const inputGradeBatch = (dtos: GradeInputDTO[]) =>
-  api.post<GradeResponseDTO[]>("/grades/batch", dtos);
+  api.post<GradeResponseDTO[]>("/api/grades/batch", dtos);
 
 // [woo] 교사: 성적 수정
 export const updateGrade = (gradeId: number, score: number) =>
-  api.put<GradeResponseDTO>(`/grades/${gradeId}`, { score });
+  api.put<GradeResponseDTO>(`/api/grades/${gradeId}`, { score });
 
 
 // [woo] 학생: 본인 성적
 export const getMyGrades = (termId?: number) =>
-  api.get<GradeResponseDTO[]>("/grades/my", { params: { termId } });
+  api.get<GradeResponseDTO[]>("/api/grades/my", { params: { termId } });
 
 // [woo] 학부모: 자녀 성적
 export const getChildGrades = (studentInfoId: number, termId?: number) =>
-  api.get<GradeResponseDTO[]>(`/grades/child/${studentInfoId}`, {
+  api.get<GradeResponseDTO[]>(`/api/grades/child/${studentInfoId}`, {
     params: { termId },
   });
 
 // [woo] 학생: 본인 학급 평균 비교
 export const getMyClassInfo = (termId?: number) =>
-  api.get<ChildClassInfoDTO>("/grades/my/class-info", { params: { termId } });
+  api.get<ChildClassInfoDTO>("/api/grades/my/class-info", { params: { termId } });
 
 // [woo] 학기 목록
-export const getTerms = () => api.get<TermDTO[]>("/grades/terms");
+export const getTerms = () => api.get<TermDTO[]>("/api/grades/terms");
 
 // [woo] 학부모: 자녀 담임교사 + 학급 비교 정보
 export interface SubjectClassAvgDTO {
@@ -122,16 +122,16 @@ export interface ChildClassInfoDTO {
 }
 
 export const getChildClassInfo = (studentInfoId: number, termId?: number) =>
-  api.get<ChildClassInfoDTO>(`/grades/child/${studentInfoId}/class-info`, { params: { termId } });
+  api.get<ChildClassInfoDTO>(`/api/grades/child/${studentInfoId}/class-info`, { params: { termId } });
 
 
 // [woo] 분반 비율 설정 조회
 export const getSectionRatio = (sectionId: number) =>
-  api.get<SectionRatioDTO>(`/grades/section/${sectionId}/ratio`);
+  api.get<SectionRatioDTO>(`/api/grades/section/${sectionId}/ratio`);
 
 // [woo] 분반 비율 설정 저장
 export const setSectionRatio = (sectionId: number, dto: SectionRatioDTO) =>
-  api.put<SectionRatioDTO>(`/grades/section/${sectionId}/ratio`, dto);
+  api.put<SectionRatioDTO>(`/api/grades/section/${sectionId}/ratio`, dto);
 
 // [woo] 분반 성적 요약 타입
 export interface StudentSummaryDTO {
@@ -166,4 +166,4 @@ export interface SectionSummaryDTO {
 
 // [woo] 분반 성적 요약 대시보드 조회
 export const getSectionSummary = (sectionId: number) =>
-  api.get<SectionSummaryDTO>(`/grades/section/${sectionId}/summary`);
+  api.get<SectionSummaryDTO>(`/api/grades/section/${sectionId}/summary`);

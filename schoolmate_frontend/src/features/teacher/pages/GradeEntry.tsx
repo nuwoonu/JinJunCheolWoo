@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getSectionSummary } from "@/api/grade";
-import type { SectionSummaryDTO, StudentSummaryDTO } from "@/api/grade";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import { getSectionSummary } from "@/shared/api/grade";
+import type { SectionSummaryDTO, StudentSummaryDTO } from "@/shared/api/grade";
 
 // [woo] 교사 성적 요약 대시보드 (석차 9등급제)
 // /teacher/grades/section/:sectionId/summary

@@ -530,8 +530,9 @@ export default function TeacherDetail() {
                           await admin.post(`/teachers/${uid}/sections`, { classroomIds: selectedClassroomIds });
                           setSelectedClassroomIds([]);
                           loadSections();
-                        } catch {
-                          alert('분반 등록에 실패했습니다.');
+                        } catch (err: any) {
+                          const msg = err?.response?.data?.error || '분반 등록에 실패했습니다.';
+                          alert(msg);
                         } finally {
                           setSectionSaving(false);
                         }

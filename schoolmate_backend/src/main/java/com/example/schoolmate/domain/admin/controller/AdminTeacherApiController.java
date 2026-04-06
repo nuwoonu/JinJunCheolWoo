@@ -125,7 +125,7 @@ public class AdminTeacherApiController {
 
     /** 교사에게 수업 분반 일괄 등록 */
     @PostMapping("/{uid}/sections")
-    public ResponseEntity<List<Map<String, Object>>> createSections(
+    public ResponseEntity<?> createSections(
             @PathVariable Long uid,
             @RequestBody Map<String, List<Long>> body) {
         List<Long> classroomIds = body.get("classroomIds");
@@ -138,9 +138,9 @@ public class AdminTeacherApiController {
                     .map(s -> toSectionMap(s))
                     .collect(Collectors.toList());
             return ResponseEntity.ok(result);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             log.error("수업 분반 등록 실패: uid={}, msg={}", uid, e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getMyCourseSections, getTerms } from "@/api/grade";
-import type { CourseSectionDTO, TermDTO } from "@/api/grade";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import { getMyCourseSections, getTerms } from "@/shared/api/grade";
+import type { CourseSectionDTO, TermDTO } from "@/shared/api/grade";
 
 // [woo] 교사 성적 요약 - 분반 선택 후 대시보드로 이동
 // /teacher/grades/summary
@@ -12,13 +12,14 @@ export default function GradeSummaryList() {
   const [sections, setSections] = useState<CourseSectionDTO[]>([]);
   const [terms, setTerms] = useState<TermDTO[]>([]);
   const [selectedTermId, setSelectedTermId] = useState<number | undefined>();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getTerms()
       .then((res) => {
-        setTerms(res.data);
-        const active = res.data.find((t) => t.active);
+        const data = Array.isArray(res.data) ? res.data : [];
+        setTerms(data);
+        const active = data.find((t) => t.active) ?? data[0];
         if (active) setSelectedTermId(active.termId);
       })
       .catch(() => {});
@@ -28,7 +29,7 @@ export default function GradeSummaryList() {
     if (selectedTermId === undefined) return;
     setLoading(true);
     getMyCourseSections(selectedTermId)
-      .then((res) => setSections(res.data))
+      .then((res) => setSections(Array.isArray(res.data) ? res.data : []))
       .catch(() => setSections([]))
       .finally(() => setLoading(false));
   }, [selectedTermId]);

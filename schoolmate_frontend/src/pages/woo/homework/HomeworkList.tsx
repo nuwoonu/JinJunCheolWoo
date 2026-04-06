@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import api from '../../../api/auth'
+import api from "@/shared/api/authApi"
 import { useAuth } from '../../../contexts/AuthContext'
 import DashboardLayout from '../../../components/layout/DashboardLayout'
 

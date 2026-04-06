@@ -154,7 +154,7 @@ public class AcademicTermService {
     @Transactional(readOnly = true)
     public List<AcademicTerm> getTermHistory(Long schoolId) {
         if (schoolId == null) return List.of();
-        return academicTermRepository.findBySchoolIdOrderBySchoolYearDescSemesterDesc(schoolId);
+        return academicTermRepository.findBySchoolIdOrderBySchoolYear_YearDescSemesterDesc(schoolId);
     }
 
     /**

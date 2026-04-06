@@ -1,4 +1,4 @@
-package com.example.schoolmate.domain.grade.dto;
+package com.example.schoolmate.woo.dto;
 
 import com.example.schoolmate.domain.user.entity.constant.TestType;
 
@@ -17,6 +17,4 @@ public class GradeInputDTO {
     private Long studentId;       // StudentInfo PK
     private TestType testType;    // MIDTERMTEST | FINALTEST | QUIZ | HOMEWORK
     private Double score;         // 0 ~ 100
-    private String subjectCode;   // 과목 코드 (TeacherService 교과교사 채점용)
-    private Long academicTermId;  // 학기 ID (TeacherService 성적 저장용)
 }

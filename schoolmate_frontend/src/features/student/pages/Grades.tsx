@@ -65,7 +65,7 @@ export default function Grades() {
   useEffect(() => {
     getTerms()
       .then((res) => {
-        setTerms(res.data);
+        setTerms(Array.isArray(res.data) ? res.data : []);
         const active = res.data.find((t) => t.active);
         if (active) setSelectedTermId(active.termId);
       })

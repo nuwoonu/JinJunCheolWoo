@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../../api/auth";
+import api from "@/shared/api/authApi";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 // [woo] 퀴즈 출제 페이지 (교사 전용)

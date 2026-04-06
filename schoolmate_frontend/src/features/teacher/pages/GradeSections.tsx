@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { getMyCourseSections, getTerms } from "@/api/grade";
-import type { CourseSectionDTO, TermDTO } from "@/api/grade";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import { getMyCourseSections, getTerms } from "@/shared/api/grade";
+import type { CourseSectionDTO, TermDTO } from "@/shared/api/grade";
 
 // [woo] 교사 성적 입력 - 분반 목록 페이지
 // /teacher/grades
@@ -12,13 +12,14 @@ export default function GradeSections() {
   const [sections, setSections] = useState<CourseSectionDTO[]>([]);
   const [terms, setTerms] = useState<TermDTO[]>([]);
   const [selectedTermId, setSelectedTermId] = useState<number | undefined>();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getTerms()
       .then((res) => {
-        setTerms(res.data);
-        const active = res.data.find((t) => t.active);
+        const data = Array.isArray(res.data) ? res.data : [];
+        setTerms(data);
+        const active = data.find((t) => t.active) ?? data[0];
         if (active) setSelectedTermId(active.termId);
       })
       .catch(() => {});
@@ -29,7 +30,7 @@ export default function GradeSections() {
     setLoading(true);
     getMyCourseSections(selectedTermId)
       // [woo] 지필평가 입력은 본인 담당 분반만 (담임 열람 전용 분반 제외)
-      .then((res) => setSections(res.data.filter((s) => !s.homeroomAccess)))
+      .then((res) => setSections((Array.isArray(res.data) ? res.data : []).filter((s) => !s.homeroomAccess)))
       .catch(() => setSections([]))
       .finally(() => setLoading(false));
   }, [selectedTermId]);

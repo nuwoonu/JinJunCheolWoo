@@ -33,7 +33,7 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
             "SELECT DISTINCT s FROM StudentInfo s JOIN FETCH s.user " +
             "JOIN s.assignments sa " +
             "WHERE sa.classroom.cid = :classroomId " +
-            "AND sa.schoolYear = :schoolYear")
+            "AND sa.schoolYear.year = :schoolYear")
         List<StudentInfo> findByClassroomIdAndSchoolYear(
             @org.springframework.data.repository.query.Param("classroomId") Long classroomId,
             @org.springframework.data.repository.query.Param("schoolYear") int schoolYear);

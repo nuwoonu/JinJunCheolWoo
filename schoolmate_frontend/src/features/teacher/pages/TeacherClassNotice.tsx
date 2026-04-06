@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ReactQuill, QUILL_MODULES, QUILL_FORMATS, isQuillEmpty } from '@/shared/quillConfig'
+import { ReactQuill, QUILL_MODULES, QUILL_FORMATS, isQuillEmpty } from '@/shared/types/quillConfig'
 import 'react-quill-new/dist/quill.snow.css'
-import api from '@/api/auth'
-import { useAuth } from '@/contexts/AuthContext'
-import DashboardLayout from '@/components/layout/DashboardLayout'
+import api from '@/shared/api/authApi'
+import { useAuth } from '@/shared/contexts/AuthContext'
+import DashboardLayout from '@/shared/components/layout/DashboardLayout'
 
 // [woo] /teacher/myclass/notice - 우리반 알림장 (교사 전용, TeacherList 패턴)
 
