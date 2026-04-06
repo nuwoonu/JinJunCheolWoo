@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ReactQuill, QUILL_MODULES, QUILL_FORMATS, isQuillEmpty } from "@/shared/quillConfig";
 import "react-quill-new/dist/quill.snow.css";
 import api from "@/api/auth";
@@ -28,6 +28,11 @@ interface MyClassInfo {
 export default function ClassDiary() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // [woo] 교사 사이드바 /teacher/myclass/notice 에서 진입 시 detail URL도 같은 prefix 사용
+  const baseUrl = location.pathname.startsWith("/teacher/myclass/notice")
+    ? "/teacher/myclass/notice"
+    : "/board/class-diary";
   const [boards, setBoards] = useState<Board[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -198,7 +203,7 @@ export default function ClassDiary() {
                   <tr
                     key={board.id}
                     style={{ cursor: "pointer" }}
-                    onClick={() => navigate(`/board/class-diary/${board.id}`)}
+                    onClick={() => navigate(`${baseUrl}/${board.id}`)}
                   >
                     <td className="text-center td-num">{rowNum}</td>
                     <td className="td-title">

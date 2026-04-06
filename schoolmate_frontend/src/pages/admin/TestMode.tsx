@@ -226,7 +226,7 @@ export default function TestMode() {
                     gap: 8,
                   }}
                 >
-                  {data &&
+                  {!!data &&
                     typeof data === "object" &&
                     Object.entries(data as Record<string, unknown>).map(([k, v]) => (
                       <div

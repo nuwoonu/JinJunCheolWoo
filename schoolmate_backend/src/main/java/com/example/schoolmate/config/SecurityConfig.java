@@ -160,6 +160,9 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
                                                 .requestMatchers("/api/attendance/parent/**")
                                                 .hasAnyRole("PARENT", "ADMIN")
+                                                // [woo] 성적 API - 인증된 사용자 (세부 권한은 Service에서 처리)
+                                                .requestMatchers("/api/grades/**")
+                                                .authenticated()
                                                 // [woo] 학급 앨범 — 업로드는 교사/관리자, 조회는 모든 인증 사용자
                                                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/class/photos")
                                                 .hasAnyRole("TEACHER", "ADMIN")

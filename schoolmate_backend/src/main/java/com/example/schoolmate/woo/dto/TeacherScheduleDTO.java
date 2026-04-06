@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.example.schoolmate.soojin.entity.constant.DayOfWeek;
 import com.example.schoolmate.woo.entity.TeacherSchedule;
@@ -27,10 +28,10 @@ public class TeacherScheduleDTO {
     public static class Request {
         private DayOfWeek dayOfWeek;
         private Integer period;
-        // [woo] HTML <input type="time">이 "HH:mm" 형식으로 전송 → 바인딩 명시
-        @DateTimeFormat(pattern = "HH:mm")
+        // [woo] JSON "HH:mm" → LocalTime 역직렬화 (@DateTimeFormat은 form 전용, JSON은 @JsonFormat 필요)
+        @JsonFormat(pattern = "HH:mm")
         private LocalTime startTime;
-        @DateTimeFormat(pattern = "HH:mm")
+        @JsonFormat(pattern = "HH:mm")
         private LocalTime endTime;
         private String subjectName;
         private String className;
@@ -55,7 +56,10 @@ public class TeacherScheduleDTO {
         private DayOfWeek dayOfWeek;
         private String dayOfWeekDescription;
         private Integer period;
+        // [woo] 응답도 "HH:mm" 형식으로 직렬화
+        @JsonFormat(pattern = "HH:mm")
         private LocalTime startTime;
+        @JsonFormat(pattern = "HH:mm")
         private LocalTime endTime;
         private String subjectName;
         private String className;
