@@ -145,19 +145,29 @@ export default function StaffDetail() {
 
   const addGrant = async () => {
     if (!newGrantRole || !selectedSchool?.id) return;
-    await admin.post("/grants", {
-      userId: Number(uid),
-      schoolId: selectedSchool.id,
-      grantedRole: newGrantRole,
-    });
-    setNewGrantRole("");
-    loadGrants();
+    try {
+      await admin.post("/grants", {
+        userId: Number(uid),
+        schoolId: selectedSchool.id,
+        grantedRole: newGrantRole,
+      });
+      setNewGrantRole("");
+      setMsg("권한이 부여되었습니다.");
+      loadGrants();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "권한 부여에 실패했습니다."));
+    }
   };
 
   const removeGrant = async (grantId: number) => {
     if (!confirm("이 위임 권한을 회수하시겠습니까?")) return;
-    await admin.delete(`/grants/${grantId}`);
-    loadGrants();
+    try {
+      await admin.delete(`/grants/${grantId}`);
+      setMsg("권한이 회수되었습니다.");
+      loadGrants();
+    } catch (err: any) {
+      setError(apiErrMsg(err, "권한 회수에 실패했습니다."));
+    }
   };
 
   if (!staff)

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SchoolMate 발표 시나리오</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --teacher: #7c3aed;
+      --teacher-light: #ede9fe;
+      --student: #0891b2;
+      --student-light: #cffafe;
+      --parent: #059669;
+      --parent-light: #d1fae5;
+      --admin: #d97706;
+      --admin-light: #fef3c7;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --radius: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      line-height: 1.6;
+    }
+
+    .page-header {
+      background: var(--primary);
+      color: white;
+      padding: 36px 40px 28px;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 36px 24px;
+    }
+
+    /* 핵심 메시지 박스 */
+    .key-message {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 36px;
+      font-size: 15px;
+    }
+
+    .key-message strong {
+      display: block;
+      font-size: 16px;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    /* 준비 사항 */
+    .prep-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .prep-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .prep-card .role-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+
+    .prep-card.teacher .role-badge { background: var(--teacher-light); color: var(--teacher); }
+    .prep-card.student .role-badge { background: var(--student-light); color: var(--student); }
+    .prep-card.parent  .role-badge { background: var(--parent-light);  color: var(--parent);  }
+    .prep-card.admin   .role-badge { background: var(--admin-light);   color: var(--admin);   }
+
+    .prep-card .account-id {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 4px;
+    }
+
+    .prep-card .account-note {
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+
+    /* 단계 섹션 */
+    .stage {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      cursor: default;
+    }
+
+    .stage-header.intro   { border-left: 5px solid var(--primary); }
+    .stage-header.teacher { border-left: 5px solid var(--teacher); }
+    .stage-header.student { border-left: 5px solid var(--student); }
+    .stage-header.parent  { border-left: 5px solid var(--parent);  }
+    .stage-header.admin   { border-left: 5px solid var(--admin);   }
+
+    .stage-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .intro   .stage-number { background: var(--primary-light); color: var(--primary); }
+    .teacher .stage-number { background: var(--teacher-light); color: var(--teacher); }
+    .student .stage-number { background: var(--student-light); color: var(--student); }
+    .parent  .stage-number { background: var(--parent-light);  color: var(--parent);  }
+    .admin   .stage-number { background: var(--admin-light);   color: var(--admin);   }
+
+    .stage-title-wrap h2 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .stage-title-wrap .time-badge {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    .stage-body {
+      padding: 0 20px 20px;
+    }
+
+    /* 스텝 테이블 */
+    .step-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .step-table th {
+      text-align: left;
+      padding: 8px 10px;
+      background: var(--gray-50);
+      color: var(--gray-500);
+      font-size: 12px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .step-table td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: top;
+    }
+
+    .step-table tr:last-child td { border-bottom: none; }
+
+    .step-num {
+      font-weight: 700;
+      color: var(--gray-500);
+      white-space: nowrap;
+    }
+
+    .step-action {
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .step-point {
+      color: var(--gray-700);
+      font-size: 13px;
+    }
+
+    .step-optional {
+      font-size: 11px;
+      color: var(--gray-500);
+      background: var(--gray-100);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 6px;
+    }
+
+    /* 트랜지션 멘트 */
+    .transition-box {
+      margin: 16px 0 0;
+      background: var(--gray-50);
+      border: 1px dashed var(--gray-300);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--gray-700);
+    }
+
+    .transition-box::before {
+      content: '💬 전환 멘트 ';
+      font-weight: 700;
+      color: var(--gray-500);
+    }
+
+    /* 포인트 배너 */
+    .flow-arrow {
+      text-align: center;
+      font-size: 13px;
+      color: var(--gray-500);
+      margin: -12px 0 0;
+      padding-bottom: 12px;
+    }
+
+    /* QA 섹션 */
+    .qa-section {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .qa-section h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--gray-900);
+    }
+
+    .qa-item {
+      margin-bottom: 14px;
+    }
+
+    .qa-q {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .qa-a {
+      font-size: 13px;
+      color: var(--gray-700);
+      padding-left: 12px;
+      border-left: 2px solid var(--gray-200);
+    }
+
+    /* 흐름 요약 바 */
+    .flow-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .flow-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .flow-chip.intro   { background: var(--primary-light); color: var(--primary); }
+    .flow-chip.teacher { background: var(--teacher-light); color: var(--teacher); }
+    .flow-chip.student { background: var(--student-light); color: var(--student); }
+    .flow-chip.parent  { background: var(--parent-light);  color: var(--parent);  }
+    .flow-chip.admin   { background: var(--admin-light);   color: var(--admin);   }
+
+    .flow-arrow-icon {
+      color: var(--gray-400);
+      font-size: 16px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>SchoolMate 발표 시나리오</h1>
+  <p>처음 보는 사람도 흐름을 따라갈 수 있도록 작성된 시연 가이드</p>
+</div>
+
+<div class="container">
+
+  <!-- 핵심 메시지 -->
+  <div class="key-message">
+    <strong>발표의 핵심 메시지</strong>
+    교사가 만든 정보(과제, 알림장, 출결)가 학생과 학부모에게 실시간으로 전달되는 흐름을 한 시연에서 끊김 없이 보여준다.
+    단순 기능 나열이 아니라 <strong>교사 → 학생 → 학부모로 이어지는 연결성</strong>이 이 서비스의 핵심 가치다.
+  </div>
+
+  <!-- 전체 흐름 요약 -->
+  <div class="section-label">전체 흐름 요약</div>
+  <div class="flow-summary">
+    <div class="flow-chip intro">0. 서비스 소개 · 로그인</div>
+    <span class="flow-arrow-icon">→</span>
+    <div class="flow-chip teacher">1. 교사</div>
+    <span class="flow-arrow-icon">→</span>
+    <div class="flow-chip student">2. 학생</div>
+    <span class="flow-arrow-icon">→</span>
+    <div class="flow-chip parent">3. 학부모</div>
+    <span class="flow-arrow-icon">→</span>
+    <div class="flow-chip admin">4. 관리자</div>
+  </div>
+
+  <!-- 사전 준비 -->
+  <div class="section-label">사전 준비 — 발표 전 확인</div>
+  <div class="prep-grid">
+    <div class="prep-card teacher">
+      <span class="role-badge">교사</span>
+      <div class="account-id">teacher@schoolmate.kr</div>
+      <div class="account-note">담임 반 학생/학부모 계정과 연결된 계정 사용</div>
+    </div>
+    <div class="prep-card student">
+      <span class="role-badge">학생</span>
+      <div class="account-id">student@schoolmate.kr</div>
+      <div class="account-note">위 교사의 담임 반 소속 학생 계정</div>
+    </div>
+    <div class="prep-card parent">
+      <span class="role-badge">학부모</span>
+      <div class="account-id">parent@schoolmate.kr</div>
+      <div class="account-note">위 학생의 학부모 계정</div>
+    </div>
+    <div class="prep-card admin">
+      <span class="role-badge">관리자</span>
+      <div class="account-id">admin@schoolmate.kr</div>
+      <div class="account-note">학교 전체 관리 권한 보유</div>
+    </div>
+  </div>
+  <div class="key-message" style="margin-bottom: 24px; font-size:13px;">
+    <strong>브라우저 탭 준비 팁</strong>
+    브라우저 탭 4개에 각 계정을 미리 로그인해두고, 탭 전환으로 역할을 빠르게 바꾼다.
+    교사 계정에서는 발표 직전에 출결을 미입력 상태로 초기화해두고, 과제·알림장도 미완성 초안 상태로 준비해둔다.
+  </div>
+
+  <!-- 0단계 -->
+  <div class="stage">
+    <div class="stage-header intro">
+      <div class="stage-number">0</div>
+      <div class="stage-title-wrap">
+        <h2>서비스 소개 &amp; 로그인</h2>
+        <div class="time-badge">예상 시간: 1~2분</div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <table class="step-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:200px">행동</th>
+            <th>설명 포인트</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="step-num">①</td>
+            <td class="step-action">메인 페이지 열기</td>
+            <td class="step-point">서비스 소개 화면, 학교 검색 기능 간단 소개. "교사·학생·학부모·관리자가 하나의 플랫폼에서 연결됩니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">②</td>
+            <td class="step-action">소셜 로그인 화면 보여주기</td>
+            <td class="step-point">로그인/회원가입 흐름이 이렇게 생겼다는 것만 보여주고 패스. 실제 인증은 미리 준비된 계정 사용.</td>
+          </tr>
+          <tr>
+            <td class="step-num">③</td>
+            <td class="step-action">교사 계정으로 로그인 후 허브 화면</td>
+            <td class="step-point">역할 선택 허브(Hub) 화면 — "로그인하면 본인의 역할에 맞는 대시보드로 이동합니다." → 교사 선택.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 1단계: 교사 -->
+  <div class="stage">
+    <div class="stage-header teacher">
+      <div class="stage-number">1</div>
+      <div class="stage-title-wrap">
+        <h2>교사 시점 — 정보를 만들고 전달한다</h2>
+        <div class="time-badge">예상 시간: 5~7분 | 가장 핵심 파트</div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <table class="step-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:200px">행동</th>
+            <th>설명 포인트</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="step-num">①</td>
+            <td class="step-action">교사 대시보드 확인</td>
+            <td class="step-point">담임 학급 학생 목록, 공지사항, 할 일(TODO) 위젯. "교사가 오늘 처리할 일들을 한눈에 파악합니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">②</td>
+            <td class="step-action">출결 관리 → 오늘 출결 입력</td>
+            <td class="step-point">학생 목록에서 출석·지각·결석 체크. "교사가 입력하면 학생과 학부모 화면에 즉시 반영됩니다." (후반부에 학생/학부모 탭에서 확인)</td>
+          </tr>
+          <tr>
+            <td class="step-num">③</td>
+            <td class="step-action">과제 생성</td>
+            <td class="step-point">제목, 마감일, 첨부파일 포함해서 과제 하나 생성. "방금 생성한 과제가 학생에게 바로 보입니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">④</td>
+            <td class="step-action">알림장 작성 (에디터)</td>
+            <td class="step-point">React Quill 리치 에디터로 알림장 작성 및 등록. "학부모에게도 바로 공유됩니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">⑤</td>
+            <td class="step-action">상담 예약 현황 확인 <span class="step-optional">선택</span></td>
+            <td class="step-point">학부모가 신청한 상담 예약 목록. 시간 여유 있을 때만.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="transition-box">
+        "방금 교사가 입력한 출결, 과제, 알림장이 학생 화면에서 어떻게 보이는지 확인해보겠습니다."
+        → 학생 탭으로 전환
+      </div>
+    </div>
+  </div>
+
+  <!-- 2단계: 학생 -->
+  <div class="stage">
+    <div class="stage-header student">
+      <div class="stage-number">2</div>
+      <div class="stage-title-wrap">
+        <h2>학생 시점 — 대시보드에서 모든 정보를 한눈에</h2>
+        <div class="time-badge">예상 시간: 4~5분</div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <table class="step-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:200px">행동</th>
+            <th>설명 포인트</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="step-num">①</td>
+            <td class="step-action">학생 대시보드 확인</td>
+            <td class="step-point">오늘 시간표, 급식, 알림장, 학급 게시판 등이 위젯으로 배치됨. "로그인하면 오늘 필요한 정보가 모두 여기 있습니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">②</td>
+            <td class="step-action">알림장 확인</td>
+            <td class="step-point">교사가 방금 작성한 알림장이 대시보드 위젯 및 알림장 메뉴에 바로 표시됨.</td>
+          </tr>
+          <tr>
+            <td class="step-num">③</td>
+            <td class="step-action">과제 목록 → 과제 제출</td>
+            <td class="step-point">교사가 생성한 과제가 목록에 나타남. 파일 첨부 후 제출. "제출 현황은 교사와 학부모도 확인할 수 있습니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">④</td>
+            <td class="step-action">성적 / 시험 일정 조회</td>
+            <td class="step-point">시험 일정 캘린더, 과목별 성적 확인.</td>
+          </tr>
+          <tr>
+            <td class="step-num">⑤</td>
+            <td class="step-action">퀴즈 풀기 <span class="step-optional">선택</span></td>
+            <td class="step-point">퀴즈 목록에서 하나 선택해 1~2문제 풀기. 시간 여유 있을 때만.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="transition-box">
+        "이번엔 학부모 입장에서 자녀 상황을 어떻게 파악하는지 보겠습니다."
+        → 학부모 탭으로 전환
+      </div>
+    </div>
+  </div>
+
+  <!-- 3단계: 학부모 -->
+  <div class="stage">
+    <div class="stage-header parent">
+      <div class="stage-number">3</div>
+      <div class="stage-title-wrap">
+        <h2>학부모 시점 — 자녀 현황을 언제 어디서든</h2>
+        <div class="time-badge">예상 시간: 3~4분</div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <table class="step-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:200px">행동</th>
+            <th>설명 포인트</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="step-num">①</td>
+            <td class="step-action">학부모 대시보드 확인</td>
+            <td class="step-point">자녀 프로필 카드, 자녀 정보 요약. 자녀가 여러 명이면 탭으로 전환 가능.</td>
+          </tr>
+          <tr>
+            <td class="step-num">②</td>
+            <td class="step-action">자녀 출결 현황 확인</td>
+            <td class="step-point">교사가 입력한 오늘 출결 상태가 여기 반영됨. "교사가 체크한 순간 학부모도 확인할 수 있습니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">③</td>
+            <td class="step-action">자녀 과제 조회</td>
+            <td class="step-point">학생이 제출한 과제 현황을 학부모도 확인. "자녀가 과제를 제출했는지 학부모가 직접 챙길 수 있습니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">④</td>
+            <td class="step-action">상담 예약 신청</td>
+            <td class="step-point">캘린더에서 날짜·시간대 선택 후 상담 신청. "교사와 학부모가 앱 안에서 상담 일정을 조율합니다."</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="transition-box">
+        "마지막으로 학교 전체를 관리하는 관리자 화면을 보겠습니다."
+        → 관리자 탭으로 전환
+      </div>
+    </div>
+  </div>
+
+  <!-- 4단계: 관리자 -->
+  <div class="stage">
+    <div class="stage-header admin">
+      <div class="stage-number">4</div>
+      <div class="stage-title-wrap">
+        <h2>관리자 시점 — 학교 전체를 한 화면에서 관리</h2>
+        <div class="time-badge">예상 시간: 3~4분</div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <table class="step-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:200px">행동</th>
+            <th>설명 포인트</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="step-num">①</td>
+            <td class="step-action">관리자 대시보드</td>
+            <td class="step-point">전체 학생 수, 교사 수, 승인 대기 현황, 학급별 통계 차트. "학교 전체 현황을 수치로 파악합니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">②</td>
+            <td class="step-action">학생 관리 목록</td>
+            <td class="step-point">검색·필터링·정렬 기능. 학생 상세 정보 클릭해서 보여주기.</td>
+          </tr>
+          <tr>
+            <td class="step-num">③</td>
+            <td class="step-action">학급 관리</td>
+            <td class="step-point">학급 목록, 담임 배정 현황. "학급 생성부터 담임 배정까지 관리자가 처리합니다."</td>
+          </tr>
+          <tr>
+            <td class="step-num">④</td>
+            <td class="step-action">공지사항 작성 <span class="step-optional">선택</span></td>
+            <td class="step-point">에디터로 공지사항 작성. 시간 여유 있을 때만.</td>
+          </tr>
+          <tr>
+            <td class="step-num">⑤</td>
+            <td class="step-action">접속 로그 / 변경 이력 <span class="step-optional">선택</span></td>
+            <td class="step-point">감사(Audit) 기능. "누가 언제 어떤 데이터를 변경했는지 추적합니다." 시간 여유 있을 때만.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 예상 질문 대응 -->
+  <div class="section-label" style="margin-top: 8px;">예상 질문 대응 메모</div>
+  <div class="qa-section">
+    <h3>Q&amp;A 준비</h3>
+    <div class="qa-item">
+      <div class="qa-q">Q. 실시간 알림은 어떻게 구현했나요?</div>
+      <div class="qa-a">WebSocket(Socket.js) 기반으로 서버에서 이벤트를 푸시합니다. 새 과제, 공지사항, 상담 예약 확정 등을 상단 알림 드롭다운에서 실시간으로 받습니다.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">Q. 역할 권한 관리는 어떻게 되나요?</div>
+      <div class="qa-a">STUDENT / TEACHER / PARENT / STAFF / ADMIN 역할별로 접근 가능한 라우트가 분리되어 있으며, 관리자는 세부 권한(학생관리자, 시설관리자 등)을 위임받을 수 있습니다.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">Q. 한 사람이 여러 역할을 가질 수 있나요?</div>
+      <div class="qa-a">네, 허브(Hub) 화면에서 역할을 선택해 전환할 수 있습니다. 예를 들어 교사이면서 학부모인 경우도 지원합니다.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">Q. PWA 지원이 있나요?</div>
+      <div class="qa-a">Service Worker와 Web App Manifest를 통해 모바일에서 홈 화면에 설치해 앱처럼 사용할 수 있습니다. 메인 페이지 접속 시 설치 안내가 표시됩니다.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">Q. 기술 스택이 무엇인가요?</div>
+      <div class="qa-a">프론트엔드: React 19 + TypeScript + Vite, UI: Tailwind CSS + Radix UI, 라우팅: React Router v7, 차트: Recharts, 에디터: React Quill, 상태관리: Context API.</div>
+    </div>
+  </div>
+
+  <div style="text-align:center; font-size:12px; color:var(--gray-500); padding-bottom: 20px;">
+    SchoolMate 발표 시나리오 — 발표 당일 이 문서를 옆에 펼쳐두고 흐름 확인용으로 사용하세요.
+  </div>
+
+</div>
+</body>
+</html>

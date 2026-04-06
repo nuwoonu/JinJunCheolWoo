@@ -1,5 +1,6 @@
 package com.example.schoolmate.domain.admin.controller;
 
+import com.example.schoolmate.domain.notification.service.NotificationService;
 import com.example.schoolmate.domain.user.entity.SchoolAdminGrant;
 import com.example.schoolmate.domain.user.entity.User;
 import com.example.schoolmate.domain.user.entity.constant.GrantedRole;
@@ -38,6 +39,7 @@ public class AdminGrantApiController {
     private final UserRepository userRepository;
     private final SchoolRepository schoolRepository;
     private final SchoolAdminGrantRepository grantRepository;
+    private final NotificationService notificationService;
 
     /** 현재 로그인한 ADMIN 유저 조회 */
     private User getCurrentUser() {
@@ -94,6 +96,13 @@ public class AdminGrantApiController {
         if (!grantRepository.existsByUserAndSchool_IdAndGrantedRole(user, schoolId, role)) {
             grantRepository.save(new SchoolAdminGrant(user, school, role, getCurrentUser()));
             log.info("관리자 권한 부여: userId={}, schoolId={}, role={}", userId, schoolId, role);
+            notificationService.notifyUser(
+                    getCurrentUser(),
+                    user,
+                    "[권한 부여] " + role.getDescription(),
+                    school.getName() + "의 " + role.getDescription() + " 권한이 부여되었습니다.",
+                    "/admin/dashboard"
+            );
         }
         return ResponseEntity.ok().build();
     }
@@ -102,11 +111,20 @@ public class AdminGrantApiController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> removeGrant(@PathVariable Long id) {
-        if (!grantRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "권한을 찾을 수 없습니다.");
-        }
-        grantRepository.deleteById(id);
+        SchoolAdminGrant grant = grantRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "권한을 찾을 수 없습니다."));
+        User receiver = grant.getUser();
+        String schoolName = grant.getSchool().getName();
+        String roleDesc = grant.getGrantedRole().getDescription();
+        grantRepository.delete(grant);
         log.info("관리자 권한 회수: grantId={}", id);
+        notificationService.notifyUser(
+                getCurrentUser(),
+                receiver,
+                "[권한 회수] " + roleDesc,
+                schoolName + "의 " + roleDesc + " 권한이 회수되었습니다.",
+                null
+        );
         return ResponseEntity.ok().build();
     }
 }

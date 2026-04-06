@@ -106,9 +106,10 @@ function getDday(start: string) {
   return diff < 0 ? `D+${Math.abs(diff)}` : `D-${diff}`;
 }
 
-function fmtDate(start: string, end: string) {
-  const s = start.split("T")[0],
-    e = end.split("T")[0];
+function fmtDate(start: string, end: string | null) {
+  const s = start.split("T")[0];
+  if (!end) return s;
+  const e = end.split("T")[0];
   return s === e ? s : `${s} ~ ${e}`;
 }
 

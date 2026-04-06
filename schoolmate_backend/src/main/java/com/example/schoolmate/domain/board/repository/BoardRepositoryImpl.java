@@ -12,7 +12,7 @@ import com.example.schoolmate.domain.board.entity.BoardType;
 import com.example.schoolmate.domain.board.entity.QBoard;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.jpa.impl.JPAQueryFactory;   
 
 import lombok.RequiredArgsConstructor;
 
