@@ -233,12 +233,7 @@ function App() {
         <Route path="building/:buildingId" element={<DormitoryFloorList />} />
         <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
-<<<<<<< HEAD
-      {/* [cheol] 교사 성적 채점 - 학급 선택 */}
-=======
-
       {/* [woo] 교사 성적 입력 - 분반 목록 */}
->>>>>>> developMerge
       <Route
         path="/teacher/grades"
         element={
@@ -247,7 +242,6 @@ function App() {
           </PrivateRoute>
         }
       />
-<<<<<<< HEAD
       {/* [cheol] 교사 세부능력 - 학급 선택 */}
       <Route
         path="/teacher/ability-classes"
@@ -267,7 +261,6 @@ function App() {
         }
       />
       {/* [cheol] 성적/시험 */}
-=======
       {/* [woo] 교사 성적 요약 - 분반 목록 */}
       <Route
         path="/teacher/grades/summary"
@@ -305,7 +298,6 @@ function App() {
         }
       />
       {/* [cheol] 성적/시험 — 기존 /exam 경로 호환 */}
->>>>>>> developMerge
       <Route
         path="/exam"
         element={
@@ -621,8 +613,6 @@ function App() {
           </PrivateRoute>
         }
       />
-<<<<<<< HEAD
-=======
       {/* [woo] 학부모 자녀 성적 조회 */}
       <Route
         path="/parent/grades"
@@ -632,8 +622,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
->>>>>>> developMerge
       {/* [woo] 교직원 게시판 */}
       <Route
         path="/board/teacher"

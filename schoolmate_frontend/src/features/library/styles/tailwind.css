@@ -1,8 +1,5 @@
-/* [cheol] important: true → Tailwind utility에 !important 적용
-   CSS Cascade Lv5: @layer 안의 !important > unlayered !important (Bootstrap)
-   따라서 Bootstrap의 p-4, px-4, gap-3 등 유틸리티를 Tailwind가 덮어씀 */
-@config "../tailwind.config.js";
-
+/* [cheol] 도서관 전용 Tailwind v4 CSS
+   source(none) + @source 로 라이브러리 파일만 스캔하여 불필요한 클래스 생성 방지 */
 @import "tailwindcss" source(none);
 @source '../**/*.{js,ts,jsx,tsx}';
 
