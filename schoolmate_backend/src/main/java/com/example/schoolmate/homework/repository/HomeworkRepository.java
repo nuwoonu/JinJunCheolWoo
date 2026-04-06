@@ -32,4 +32,12 @@ public interface HomeworkRepository extends JpaRepository<Homework, Long> {
     @Query("SELECT h FROM Homework h WHERE h.courseSection.classroom.cid = :classroomId AND h.isDeleted = false ORDER BY h.createDate DESC")
     List<Homework> findAllByClassroomId(@Param("classroomId") Long classroomId);
 
+    // [woo] 분반 기준 전체 과제 목록 (성적 요약 제출률 계산용)
+    @Query("SELECT h FROM Homework h WHERE h.courseSection.id = :sectionId AND h.isDeleted = false")
+    List<Homework> findBySectionId(@Param("sectionId") Long sectionId);
+
+    // [woo] 분반 기준 마감된 과제 목록 (0점 처리 계산용)
+    @Query("SELECT h FROM Homework h WHERE h.courseSection.id = :sectionId AND h.isDeleted = false AND h.dueDate < CURRENT_TIMESTAMP")
+    List<Homework> findPastDueBySectionId(@Param("sectionId") Long sectionId);
+
 }

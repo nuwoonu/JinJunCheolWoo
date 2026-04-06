@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../../api/auth";
 import { useAuth } from "../../../contexts/AuthContext";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
@@ -67,10 +67,30 @@ export default function HomeworkDetailPage() {
   const [homework, setHomework] = useState<HomeworkDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // [woo] 토스트 알림
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error"; key: number } | null>(null);
+  const [toastLeaving, setToastLeaving] = useState(false);
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToastLeaving(false);
+    setToast({ message, type, key: Date.now() });
+  };
+  useEffect(() => {
+    if (!toast) return;
+    const fadeOut = setTimeout(() => setToastLeaving(true), 2400);
+    const remove = setTimeout(() => setToast(null), 3000);
+    return () => { clearTimeout(fadeOut); clearTimeout(remove); };
+  }, [toast?.key]);
+
   // [woo] 학생 제출 폼
   const [submitContent, setSubmitContent] = useState("");
   const [submitFile, setSubmitFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // [woo] 학생 제출 수정 모드
+  const [editingSubmission, setEditingSubmission] = useState(false);
+  const [editContent, setEditContent] = useState("");
+  const [editFile, setEditFile] = useState<File | null>(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   // [woo] 교사 채점 폼
   const [gradeTarget, setGradeTarget] = useState<number | null>(null);
@@ -87,7 +107,7 @@ export default function HomeworkDetailPage() {
     api
       .get(`/homework/${id}`)
       .then((res) => setHomework(res.data))
-      .catch(() => alert("과제를 불러올 수 없습니다."))
+      .catch(() => showToast("과제를 불러올 수 없습니다.", "error"))
       .finally(() => setLoading(false));
   };
 
@@ -106,7 +126,8 @@ export default function HomeworkDetailPage() {
   // [woo] 학생 과제 제출
   const handleSubmit = async () => {
     if (!submitContent.trim() && !submitFile) {
-      return alert("내용 또는 파일을 첨부해주세요.");
+      showToast("내용 또는 파일을 첨부해주세요.", "error");
+      return;
     }
     setSubmitting(true);
     try {
@@ -118,12 +139,38 @@ export default function HomeworkDetailPage() {
       await api.post(`/homework/${id}/submit`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      alert("과제가 제출되었습니다.");
+      showToast("과제가 제출되었습니다.");
       fetchHomework();
     } catch (err: any) {
-      alert(err.response?.data || "제출에 실패했습니다.");
+      showToast(err.response?.data || "제출에 실패했습니다.", "error");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // [woo] 학생 제출 수정
+  const handleEditSubmit = async () => {
+    if (!editContent.trim() && !editFile) {
+      showToast("내용 또는 파일을 첨부해주세요.", "error");
+      return;
+    }
+    setEditSubmitting(true);
+    try {
+      const formData = new FormData();
+      const jsonBlob = new Blob([JSON.stringify({ content: editContent })], { type: "application/json" });
+      formData.append("data", jsonBlob);
+      if (editFile) formData.append("file", editFile);
+
+      await api.put(`/homework/submission/${homework!.mySubmission!.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      showToast("제출물이 수정되었습니다.");
+      setEditingSubmission(false);
+      fetchHomework();
+    } catch (err: any) {
+      showToast(err.response?.data || "수정에 실패했습니다.", "error");
+    } finally {
+      setEditSubmitting(false);
     }
   };
 
@@ -135,13 +182,13 @@ export default function HomeworkDetailPage() {
         score: gradeScore ? Number(gradeScore) : null,
         feedback: gradeFeedback || null,
       });
-      alert("채점이 완료되었습니다.");
+      showToast("채점이 완료되었습니다.");
       setGradeTarget(null);
       setGradeScore("");
       setGradeFeedback("");
       fetchHomework();
     } catch (err: any) {
-      alert(err.response?.data || "채점에 실패했습니다.");
+      showToast(err.response?.data || "채점에 실패했습니다.", "error");
     } finally {
       setGrading(false);
     }
@@ -149,7 +196,7 @@ export default function HomeworkDetailPage() {
 
   // [woo] 마감일 수정
   const handleUpdateDueDate = async () => {
-    if (!newDueDate) return alert("마감일을 선택해주세요.");
+    if (!newDueDate) { showToast("마감일을 선택해주세요.", "error"); return; }
     try {
       const formData = new FormData();
       const jsonBlob = new Blob(
@@ -169,11 +216,11 @@ export default function HomeworkDetailPage() {
       await api.put(`/homework/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      alert("마감일이 수정되었습니다.");
+      showToast("마감일이 수정되었습니다.");
       setEditingDueDate(false);
       fetchHomework();
     } catch (err: any) {
-      alert(err.response?.data || "마감일 수정에 실패했습니다.");
+      showToast(err.response?.data || "마감일 수정에 실패했습니다.", "error");
     }
   };
 
@@ -182,10 +229,10 @@ export default function HomeworkDetailPage() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
       await api.delete(`/homework/${id}`);
-      alert("삭제되었습니다.");
+      showToast("삭제되었습니다.");
       navigate("/homework");
     } catch {
-      alert("삭제에 실패했습니다.");
+      showToast("삭제에 실패했습니다.", "error");
     }
   };
 
@@ -197,7 +244,7 @@ export default function HomeworkDetailPage() {
       await api.post(`/homework/${id}/status?status=${newStatus}`);
       fetchHomework();
     } catch {
-      alert("상태 변경에 실패했습니다.");
+      showToast("상태 변경에 실패했습니다.", "error");
     }
   };
 
@@ -222,6 +269,40 @@ export default function HomeworkDetailPage() {
 
   return (
     <DashboardLayout>
+      {/* [woo] 토스트 알림 */}
+      <style>{`
+        @keyframes _toast-in  { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes _toast-out { from { opacity:1; transform:translateY(0); }   to { opacity:0; transform:translateY(8px); } }
+        ._hw-toast-enter { animation: _toast-in  0.28s cubic-bezier(.22,1,.36,1) forwards; }
+        ._hw-toast-leave { animation: _toast-out 0.35s ease forwards; }
+      `}</style>
+      {toast && (
+        <div
+          className={toastLeaving ? "_hw-toast-leave" : "_hw-toast-enter"}
+          style={{
+            position: "fixed",
+            bottom: 36,
+            right: 32,
+            zIndex: 9999,
+            minWidth: 240,
+            maxWidth: 360,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "14px 18px",
+            borderRadius: 12,
+            boxShadow: "0 8px 28px rgba(0,0,0,0.13)",
+            backgroundColor: toast.type === "success" ? "#f0fdf4" : "#fff5f5",
+            borderLeft: `4px solid ${toast.type === "success" ? "#22c55e" : "#ef4444"}`,
+          }}
+        >
+          <iconify-icon
+            icon={toast.type === "success" ? "mdi:check-circle-outline" : "mdi:alert-circle-outline"}
+            style={{ fontSize: 22, color: toast.type === "success" ? "#22c55e" : "#ef4444", flexShrink: 0 }}
+          />
+          <span style={{ fontSize: 14, fontWeight: 500, color: "#374151" }}>{toast.message}</span>
+        </div>
+      )}
       {/* 브레드크럼 */}
       <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
         <div>
@@ -513,47 +594,103 @@ export default function HomeworkDetailPage() {
             {homework.mySubmission ? (
               // [woo] 이미 제출한 경우 - 제출 내용 + 채점 결과 표시
               <div>
-                <div className="mb-16">
-                  <span className="fw-semibold text-sm d-block mb-8">제출 내용</span>
-                  <div className="p-16 bg-neutral-50 radius-8" style={{ whiteSpace: "pre-wrap" }}>
-                    {homework.mySubmission.content || "(내용 없음)"}
+                {editingSubmission ? (
+                  // [woo] 수정 폼
+                  <div>
+                    <div className="mb-16">
+                      <label className="form-label fw-semibold text-sm">제출 내용 수정</label>
+                      <textarea
+                        className="form-control radius-8"
+                        rows={6}
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                      />
+                    </div>
+                    <div className="mb-20">
+                      <label className="form-label fw-semibold text-sm">
+                        첨부파일 교체 <span className="text-secondary-light fw-normal">(선택, 비우면 기존 파일 유지)</span>
+                      </label>
+                      <input
+                        type="file"
+                        className="form-control radius-8"
+                        onChange={(e) => setEditFile(e.target.files?.[0] ?? null)}
+                      />
+                    </div>
+                    <div className="d-flex justify-content-end gap-8">
+                      <button
+                        className="btn btn-outline-neutral-300 radius-8"
+                        onClick={() => setEditingSubmission(false)}
+                      >
+                        취소
+                      </button>
+                      <button
+                        className="btn btn-primary-600 radius-8"
+                        onClick={handleEditSubmit}
+                        disabled={editSubmitting}
+                      >
+                        {editSubmitting ? "저장 중..." : "저장"}
+                      </button>
+                    </div>
                   </div>
-                </div>
-                {homework.mySubmission.attachmentUrl && (
-                  <div className="mb-16">
-                    <span className="fw-semibold text-sm d-block mb-8">첨부파일</span>
-                    <a
-                      href={`/uploads/homework/${homework.mySubmission.attachmentUrl}`}
-                      download={homework.mySubmission.attachmentOriginalName}
-                      className="text-primary-600"
-                    >
-                      <iconify-icon icon="mdi:attachment" className="me-4" />
-                      {homework.mySubmission.attachmentOriginalName}
-                    </a>
-                  </div>
-                )}
-                <div className="d-flex gap-16 text-sm">
-                  <span>제출일: {homework.mySubmission.submittedAt?.slice(0, 10)}</span>
-                  <span>
-                    상태:{" "}
-                    <span className={`badge ${(SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).cls}`}>
-                      {(SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).text}
-                    </span>
-                  </span>
-                  {homework.mySubmission.score !== null && (
-                    <span>
-                      점수:{" "}
-                      <strong>
-                        {homework.mySubmission.score}/{homework.maxScore ?? 100}
-                      </strong>
-                    </span>
-                  )}
-                </div>
-                {homework.mySubmission.feedback && (
-                  <div className="mt-16 p-16 bg-primary-50 radius-8">
-                    <span className="fw-semibold text-sm d-block mb-4">교사 피드백</span>
-                    <div style={{ whiteSpace: "pre-wrap" }}>{homework.mySubmission.feedback}</div>
-                  </div>
+                ) : (
+                  // [woo] 제출 내용 보기
+                  <>
+                    <div className="mb-16">
+                      <span className="fw-semibold text-sm d-block mb-8">제출 내용</span>
+                      <div className="p-16 bg-neutral-50 radius-8" style={{ whiteSpace: "pre-wrap" }}>
+                        {homework.mySubmission.content || "(내용 없음)"}
+                      </div>
+                    </div>
+                    {homework.mySubmission.attachmentUrl && (
+                      <div className="mb-16">
+                        <span className="fw-semibold text-sm d-block mb-8">첨부파일</span>
+                        <a
+                          href={`/uploads/homework/${homework.mySubmission.attachmentUrl}`}
+                          download={homework.mySubmission.attachmentOriginalName}
+                          className="text-primary-600"
+                        >
+                          <iconify-icon icon="mdi:attachment" className="me-4" />
+                          {homework.mySubmission.attachmentOriginalName}
+                        </a>
+                      </div>
+                    )}
+                    <div className="d-flex align-items-center gap-16 text-sm">
+                      <span>제출일: {homework.mySubmission.submittedAt?.slice(0, 10)}</span>
+                      <span>
+                        상태:{" "}
+                        <span className={`badge ${(SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).cls}`}>
+                          {(SUB_STATUS[homework.mySubmission.status] ?? SUB_STATUS.SUBMITTED).text}
+                        </span>
+                      </span>
+                      {homework.mySubmission.score !== null && (
+                        <span>
+                          점수:{" "}
+                          <strong>
+                            {homework.mySubmission.score}/{homework.maxScore ?? 100}
+                          </strong>
+                        </span>
+                      )}
+                      {/* [woo] 마감 전 + 미채점인 경우에만 수정 버튼 표시 */}
+                      {homework.status !== "CLOSED" && !isOverdue && homework.mySubmission.status !== "GRADED" && (
+                        <button
+                          className="btn btn-sm btn-outline-primary-600 radius-8 ms-auto"
+                          onClick={() => {
+                            setEditContent(homework.mySubmission!.content ?? "");
+                            setEditFile(null);
+                            setEditingSubmission(true);
+                          }}
+                        >
+                          수정
+                        </button>
+                      )}
+                    </div>
+                    {homework.mySubmission.feedback && (
+                      <div className="mt-16 p-16 bg-primary-50 radius-8">
+                        <span className="fw-semibold text-sm d-block mb-4">교사 피드백</span>
+                        <div style={{ whiteSpace: "pre-wrap" }}>{homework.mySubmission.feedback}</div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ) : homework.status === "CLOSED" ? (

@@ -124,7 +124,13 @@ export default function HomeworkList() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    setStatus('')
+    setKeyword('')
+    setCurrentPage(0)
+    isInitialLoad.current = true
+    load(0, '', '')
+  }, [activeTab])
 
   const search = (e: React.FormEvent) => { e.preventDefault(); load(0) }
   const reset = () => { setStatus(''); setKeyword(''); load(0, '', '') }
