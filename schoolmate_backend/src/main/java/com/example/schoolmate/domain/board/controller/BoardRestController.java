@@ -88,6 +88,29 @@ public class BoardRestController {
     }
 
     /**
+     * 학부모용 학교 공지 목록 (React /parent/school-notice)
+     * GET /api/board/parent-school-notice?schoolId=1&keyword=&searchType=&page=0&size=10
+     * schoolId를 직접 파라미터로 받아 필터링 (SchoolContextHolder 미사용)
+     */
+    @GetMapping("/parent-school-notice")
+    public ResponseEntity<Map<String, Object>> getParentSchoolNotices(
+            @RequestParam Long schoolId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String searchType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<BoardDTO.Response> result = boardService.getSchoolNoticesForParent(
+                schoolId, keyword, searchType,
+                PageRequest.of(page, size));
+        return ResponseEntity.ok(Map.of(
+                "content", result.getContent(),
+                "totalElements", result.getTotalElements(),
+                "totalPages", result.getTotalPages(),
+                "currentPage", result.getNumber()));
+    }
+
+    /**
      * 학급 공지 목록 (React /board/class-notice/:classroomId)
      * GET /api/board/class-notice/{classroomId}?page=0&size=10
      */

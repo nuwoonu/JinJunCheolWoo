@@ -155,6 +155,27 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     }
 
     @Override
+    public Page<Board> findSchoolNoticeBySchoolId(Long schoolId, String keyword, String searchType, Pageable pageable) {
+        QBoard board = QBoard.board;
+
+        BooleanExpression where = board.boardType.eq(BoardType.SCHOOL_NOTICE)
+                .and(board.isDeleted.isFalse())
+                .and(schoolId != null ? board.school.id.eq(schoolId) : null)
+                .and(keywordFilterByType(board, keyword, searchType != null ? searchType.toUpperCase() : null));
+
+        JPAQuery<Board> contentQuery = query.selectFrom(board)
+                .where(where)
+                .orderBy(board.isImportant.desc(), board.id.desc());
+
+        if (pageable.isPaged()) {
+            contentQuery.offset(pageable.getOffset()).limit(pageable.getPageSize());
+        }
+
+        JPAQuery<Long> countQuery = query.select(board.count()).from(board).where(where);
+        return PageableExecutionUtils.getPage(contentQuery.fetch(), pageable, countQuery::fetchOne);
+    }
+
+    @Override
     public List<Board> findRecentByType(BoardType type, int limit) {
         QBoard board = QBoard.board;
         return query.selectFrom(board)
