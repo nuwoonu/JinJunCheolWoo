@@ -738,13 +738,13 @@ public class TestDataService {
 
         for (Object[] d : data) {
             SchoolFacility f = SchoolFacility.builder()
-                    .name((String) d[0])
-                    .locationDesc((String) d[1])
                     .type((FacilityType) d[2])
                     .status((FacilityStatus) d[3])
                     .capacity((Integer) d[4])
                     .amenities((String) d[5])
                     .build();
+            f.setName((String) d[0]);
+            f.setLocationDesc((String) d[1]);
             f.setSchool(school);
             facilityRepository.save(f);
         }
