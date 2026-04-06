@@ -7,6 +7,15 @@ import com.example.schoolmate.domain.calendar.entity.SchoolCalendar;
 import com.example.schoolmate.domain.calendar.entity.constant.EventType;
 import com.example.schoolmate.domain.calendar.repository.SchoolCalendarRepository;
 import com.example.schoolmate.domain.classgoal.entity.ClassGoal;
+import com.example.schoolmate.domain.resources.constant.AssetStatus;
+import com.example.schoolmate.domain.resources.constant.FacilityStatus;
+import com.example.schoolmate.domain.resources.constant.FacilityType;
+import com.example.schoolmate.domain.resources.entity.AssetModel;
+import com.example.schoolmate.domain.resources.entity.SchoolAsset;
+import com.example.schoolmate.domain.resources.entity.SchoolFacility;
+import com.example.schoolmate.domain.resources.repository.AssetModelRepository;
+import com.example.schoolmate.domain.resources.repository.SchoolAssetRepository;
+import com.example.schoolmate.domain.resources.repository.SchoolFacilityRepository;
 import com.example.schoolmate.domain.classgoal.repository.ClassGoalRepository;
 import com.example.schoolmate.domain.classroom.entity.Classroom;
 import com.example.schoolmate.domain.classroom.entity.constant.ClassroomStatus;
@@ -99,6 +108,9 @@ public class TestDataService {
     private final SchoolCalendarRepository calendarRepository;
     private final BoardRepository boardRepository;
     private final ClassGoalRepository classGoalRepository;
+    private final SchoolFacilityRepository facilityRepository;
+    private final SchoolAssetRepository assetRepository;
+    private final AssetModelRepository assetModelRepository;
 
     // ── 학교 ID 상수 ──────────────────────────────────────────────────────────
     private static final long ELEM_SCHOOL_ID = 9520L; // 가거도초등학교
@@ -254,6 +266,15 @@ public class TestDataService {
         seedClassGoals(elemClasses, year);
         seedClassGoals(midClasses,  year);
         summary.put("classGoals", "각 학급 이달의 목표 등록");
+
+        // ── 시설 & 기자재 ─────────────────────────────────────────────────────
+        seedFacilities(elemSchool);
+        seedFacilities(midSchool);
+        summary.put("facilities", "각 학교 시설 10종 등록");
+
+        seedAssets(elemSchool);
+        seedAssets(midSchool);
+        summary.put("assets", "각 학교 기자재 모델 5종·자산 46건 등록");
 
         // ── 기숙사 ───────────────────────────────────────────────────────────
         seedDormitories(elemSchool);
@@ -696,6 +717,95 @@ public class TestDataService {
         if (!schoolAdminGrantRepository.existsByUserAndSchool_IdAndGrantedRole(user, school.getId(), role)) {
             schoolAdminGrantRepository.save(new SchoolAdminGrant(user, school, role, null));
         }
+    }
+
+    private void seedFacilities(School school) {
+        if (facilityRepository.existsBySchool_Id(school.getId())) return;
+
+        Object[][] data = {
+            // name, locationDesc, FacilityType, FacilityStatus, capacity, amenities
+            {"과학실",       "3층 301호",  FacilityType.SPECIAL_ROOM,  FacilityStatus.AVAILABLE,    30,  "실험대 15개, 싱크대, 환기시설"},
+            {"컴퓨터실",     "3층 302호",  FacilityType.COMPUTER_LAB,  FacilityStatus.AVAILABLE,    30,  "PC 30대, 빔프로젝터, 화이트보드"},
+            {"강당",         "1층",        FacilityType.AUDITORIUM,    FacilityStatus.AVAILABLE,   300,  "무대, 음향시스템, 냉난방"},
+            {"체육관",       "별관 1층",   FacilityType.GYM,           FacilityStatus.AVAILABLE,   200,  "농구골대, 배드민턴 네트, 스코어보드"},
+            {"음악실",       "2층 201호",  FacilityType.SPECIAL_ROOM,  FacilityStatus.AVAILABLE,    30,  "피아노 1대, 전자피아노 10대, 음향장비"},
+            {"미술실",       "2층 202호",  FacilityType.SPECIAL_ROOM,  FacilityStatus.MAINTENANCE,  30,  "작업대 15개, 세면대, 도예가마 (보수중)"},
+            {"도서관",       "2층 203호",  FacilityType.ETC,           FacilityStatus.AVAILABLE,    50,  "장서 5000권, PC 10대, 열람 좌석 40석"},
+            {"교직원 회의실","4층 401호",  FacilityType.MEETING_ROOM,  FacilityStatus.AVAILABLE,    20,  "대형 모니터, 화상회의 장비, 화이트보드"},
+            {"보건실",       "1층 102호",  FacilityType.ETC,           FacilityStatus.AVAILABLE,    10,  "침대 3개, 의약품 보관함, AED"},
+            {"운동장",       "본관 앞",    FacilityType.PLAYGROUND,    FacilityStatus.AVAILABLE,   500,  "축구골대, 농구코트, 트랙 200m"},
+        };
+
+        for (Object[] d : data) {
+            SchoolFacility f = SchoolFacility.builder()
+                    .name((String) d[0])
+                    .locationDesc((String) d[1])
+                    .type((FacilityType) d[2])
+                    .status((FacilityStatus) d[3])
+                    .capacity((Integer) d[4])
+                    .amenities((String) d[5])
+                    .build();
+            f.setSchool(school);
+            facilityRepository.save(f);
+        }
+    }
+
+    private void seedAssets(School school) {
+        if (!assetModelRepository.findBySchoolId(school.getId()).isEmpty()) return;
+
+        // ── 기자재 모델 정의 ──────────────────────────────────────────��──────
+        record ModelSpec(String name, String manufacturer, String category, String desc,
+                         int available, int inUse, int broken) {}
+
+        List<ModelSpec> specs = List.of(
+            new ModelSpec("갤럭시 북 4 Pro",     "삼성전자",  "노트북",   "Intel Core Ultra 7, 16GB RAM, 512GB SSD", 8, 4, 1),
+            new ModelSpec("LG 그램 17",           "LG전자",    "노트북",   "Intel i7 13세대, 16GB RAM, 1TB SSD",       6, 2, 0),
+            new ModelSpec("엡손 EB-X51",          "엡손",      "빔프로젝터","3800루멘, XGA, HDMI/VGA",                  5, 2, 1),
+            new ModelSpec("갤럭시 탭 A9+",        "삼성전자",  "태블릿",   "11인치, 8GB RAM, 128GB, Wi-Fi",            12, 5, 1),
+            new ModelSpec("캐논 MF453dw",         "캐논",      "복합기",   "흑백 레이저, 자동양면, 네트워크 지원",      2, 0, 1)
+        );
+
+        int assetSeq = 1;
+        for (ModelSpec spec : specs) {
+            AssetModel model = AssetModel.builder()
+                    .name(spec.name())
+                    .manufacturer(spec.manufacturer())
+                    .category(spec.category())
+                    .description(spec.desc())
+                    .build();
+            model.setSchool(school);
+            assetModelRepository.save(model);
+
+            // AVAILABLE 자산
+            for (int i = 0; i < spec.available(); i++) {
+                saveAsset(school, model, assetSeq++, AssetStatus.AVAILABLE);
+            }
+            // IN_USE 자산
+            for (int i = 0; i < spec.inUse(); i++) {
+                saveAsset(school, model, assetSeq++, AssetStatus.IN_USE);
+            }
+            // BROKEN 자산
+            for (int i = 0; i < spec.broken(); i++) {
+                saveAsset(school, model, assetSeq++, AssetStatus.BROKEN);
+            }
+        }
+    }
+
+    private void saveAsset(School school, AssetModel model, int seq, AssetStatus status) {
+        String code = String.format("ASSET-%d-%03d", school.getId(), seq);
+        if (assetRepository.existsByAssetCodeAndSchool_Id(code, school.getId())) return;
+
+        SchoolAsset asset = SchoolAsset.builder()
+                .assetCode(code)
+                .serialNumber("SN-" + school.getId() + "-" + String.format("%05d", seq))
+                .model(model)
+                .purchaseDate(LocalDate.of(2024, 3, 1).plusMonths(seq % 12))
+                .status(status)
+                .build();
+        asset.setSchool(school);
+        asset.setName(model.getName());
+        asset.setLocationDesc(model.getCategory() + " 보관실");
+        assetRepository.save(asset);
     }
 
     private String randomName(Gender gender) {
