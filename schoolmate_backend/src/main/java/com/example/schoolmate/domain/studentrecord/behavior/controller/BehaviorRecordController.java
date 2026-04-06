@@ -35,7 +35,7 @@ public class BehaviorRecordController {
 
     // 등록/수정 (학년+학기 기준 upsert)
     // PUT /api/behavior-records/student/{studentId}
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     @PutMapping("/student/{studentId}")
     public ResponseEntity<BehaviorRecordDTO> save(
             @PathVariable Long studentId,

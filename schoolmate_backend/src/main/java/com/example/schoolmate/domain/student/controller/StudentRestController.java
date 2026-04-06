@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -169,6 +170,26 @@ public class StudentRestController {
             @PathVariable Long uid,
             @Validated @RequestBody StudentUpdateDTO updateDTO) {
         StudentResponseDTO response = studentService.updateStudentByUserUid(uid, updateDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    // 담임교사가 학생 상세 정보 조회 (studentInfoId 기준)
+    // GET /api/students/info/{studentInfoId}
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @GetMapping("/info/{studentInfoId}")
+    public ResponseEntity<StudentResponseDTO> getStudentByInfoId(@PathVariable Long studentInfoId) {
+        StudentResponseDTO response = studentService.getStudentById(studentInfoId);
+        return ResponseEntity.ok(response);
+    }
+
+    // 담임교사가 학생 기본 정보 수정 (studentInfoId 기준)
+    // PUT /api/students/info/{studentInfoId}
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PutMapping("/info/{studentInfoId}")
+    public ResponseEntity<StudentResponseDTO> updateStudentByInfoId(
+            @PathVariable Long studentInfoId,
+            @Validated @RequestBody StudentUpdateDTO updateDTO) {
+        StudentResponseDTO response = studentService.updateStudent(studentInfoId, updateDTO);
         return ResponseEntity.ok(response);
     }
 

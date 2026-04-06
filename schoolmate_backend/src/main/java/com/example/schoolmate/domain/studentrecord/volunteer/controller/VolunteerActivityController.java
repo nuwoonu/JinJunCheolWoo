@@ -30,7 +30,7 @@ public class VolunteerActivityController {
 
     // 학생별 전체 봉사활동 조회
     // GET /api/volunteer-activities/student/{studentId}
-    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.customUserDTO.studentInfoId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or #studentId == authentication.principal.customUserDTO.studentInfoId")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<VolunteerActivityResponseDTO>> getByStudent(@PathVariable Long studentId) {
         return ResponseEntity.ok(volunteerActivityService.getByStudentId(studentId));

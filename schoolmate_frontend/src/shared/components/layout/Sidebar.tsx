@@ -15,7 +15,7 @@ function useSubmenu() {
   function initOpen(p: string): Record<string, boolean> {
     const r: Record<string, boolean> = {};
     if (p.startsWith("/teacher/myclass") || p.startsWith("/class/album") || p.startsWith("/board/class-board")) r.myclass = true;
-    if (p.startsWith("/student/list") || p.startsWith("/student/myinfo")) r.student = true;
+    if (p.startsWith("/student/list") || p.startsWith("/student/myinfo") || p.startsWith("/student/dormitory") || p.startsWith("/library")) r.student = true;
     // [soojin] 자녀 현황: /parent/children 제거 (헤더 탭으로 이동 예정)
     if (p.startsWith("/attendance/parent") || p.startsWith("/parent/grades") || p.startsWith("/parent/homework"))
       r.parent = true;
@@ -39,11 +39,7 @@ function useSubmenu() {
     if (p.startsWith("/homework") || p.startsWith("/quiz")) r.teacherHomework = true;
     if (p.startsWith("/homework")) r.teacherHomeworkAssign = true;
     if (p.startsWith("/quiz")) r.teacherHomeworkQuiz = true;
-<<<<<<< HEAD:schoolmate_frontend/src/components/layout/Sidebar.tsx
-    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes") || p.startsWith("/teacher/ability-classes") || p.startsWith("/teacher/ability-students")) r.teacherExam = true;
-=======
-    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes") || p.startsWith("/student/list")) r.teacherExam = true;
->>>>>>> developMerge:schoolmate_frontend/src/shared/components/layout/Sidebar.tsx
+    if (p.startsWith("/exam") || p.startsWith("/teacher/grade-classes") || p.startsWith("/teacher/ability-classes") || p.startsWith("/teacher/ability-students") || p.startsWith("/student/list")) r.teacherExam = true;
     if (p.startsWith("/attendance/student") || p.startsWith("/attendance/teacher")) r.teacherAttendance = true;
     if (p.startsWith("/board/school-notice") || p.startsWith("/school/schedule")) r.teacherNotice = true;
     if (p.startsWith("/teacher/list") || p.startsWith("/board/teacher")) r.teacherStaff = true;
@@ -516,6 +512,22 @@ export default function Sidebar() {
                   </li>
                 </ul>
               </li>
+
+              {/* 도서관 */}
+              <li>
+                <SNavLink to="/library">
+                  <i className="ri-book-open-line" />
+                  <span>도서관</span>
+                </SNavLink>
+              </li>
+
+              {/* 기숙사 관리 */}
+              <li>
+                <SNavLink to="/teacher/dormitory">
+                  <i className="ri-building-line" />
+                  <span>기숙사 관리</span>
+                </SNavLink>
+              </li>
             </>
           )}
 
@@ -549,6 +561,11 @@ export default function Sidebar() {
                   <Link to="/student/dormitory">
                     <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
+                </li>
+                <li>
+                  <SNavLink to="/library">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 도서관
+                  </SNavLink>
                 </li>
               </ul>
             </li>

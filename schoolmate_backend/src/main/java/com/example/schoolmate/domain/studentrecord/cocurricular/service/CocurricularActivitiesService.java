@@ -75,6 +75,7 @@ public class CocurricularActivitiesService {
                 .id(c.getId())
                 .studentId(c.getStudent() != null ? c.getStudent().getId() : null)
                 .academicTermId(c.getAcademicTerm() != null ? c.getAcademicTerm().getId() : null)
+                .schoolYear(c.getSchoolYearInt())
                 .termDisplayName(c.getAcademicTerm() != null ? c.getAcademicTerm().getDisplayName() : null)
                 .category(c.getCategory())
                 .specifics(c.getSpecifics())

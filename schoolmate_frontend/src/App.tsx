@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import "@/shared/styles/dashboard-card.css"; // [soojin] 대시보드 카드 공통 스타일
+import "@/features/library/styles/index.css"; // [cheol] 도서관 Tailwind 스타일
 import { useEffect } from "react";
 import PrivateRoute from "@/shared/components/PrivateRoute";
 import PageLoader from "@/shared/components/PageLoader";
@@ -130,6 +131,14 @@ import JoonTransfer from "@/features/admin/pages/Transfer";
 import JoonTestMode from "@/features/admin/pages/TestMode";
 import AbilityClasses from "./pages/cheol/teacher/AbilityClasses";
 import AbilityStudents from "./pages/cheol/teacher/AbilityStudents";
+// [cheol] 도서관
+import LibraryPage from "@/features/library/app/components/Library";
+import LibraryBookDetail from "@/features/library/app/components/BookDetail";
+import LibraryBorrowedBooks from "@/features/library/app/components/BorrowedBooks";
+import LibraryOverdueBooks from "@/features/library/app/components/OverdueBooks";
+import LibraryReadingStats from "@/features/library/app/components/ReadingStats";
+// [cheol] 기숙사 관리 (교사)
+import DormitoryManagement from "@/features/dormitory/pages/DormitoryManagement";
 
 function SchoolSelectGuard() {
   const { selectedSchool, setSelectedSchool } = useSchool();
@@ -961,6 +970,56 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <ClassAlbum />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 도서관 */}
+      <Route
+        path="/library"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/book/:bookId"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryBookDetail />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/borrowed"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryBorrowedBooks />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/overdue"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryOverdueBooks />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/stats"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryReadingStats />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 기숙사 관리 (교사) */}
+      <Route
+        path="/teacher/dormitory"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <DormitoryManagement />
           </PrivateRoute>
         }
       />

@@ -145,6 +145,9 @@ interface StudentInfo {
   phone?: string;
   gender?: string;
   status?: string;
+  previousSchoolName?: string;
+  admissionDate?: string;
+  schoolName?: string;
   bloodGroup?: string;
   height?: number;
   weight?: number;
@@ -162,8 +165,9 @@ interface Grade {
   subjectCode?: string;
   examType: string;
   score?: number;
-  semester: string;
-  year: string;
+  schoolYear: number;
+  semester: number;
+  termDisplayName: string;
 }
 
 // ───────────────────────────────────────────────
@@ -226,8 +230,8 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
 
   // 필터 적용
   const filtered = grades.filter((g) => {
-    if (filterYear !== "ALL" && g.year !== filterYear) return false;
-    if (filterSemester !== "ALL" && g.semester !== filterSemester) return false;
+    if (filterYear !== "ALL" && String(g.schoolYear) !== filterYear) return false;
+    if (filterSemester !== "ALL" && String(g.semester) !== filterSemester) return false;
     return true;
   });
 
@@ -239,25 +243,21 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
       : "-";
   const subjectCount = new Set(filtered.map((g) => g.subjectName)).size;
 
-  // grade.js renderAllGrades → 학년/학기별 그룹핑 (Grades.tsx 방식 적용)
-  // key 형식: "FIRST_FIRST" (year_semester)
+  // 학년도/학기별 그룹핑 — key 형식: "2026_1"
   const grouped = filtered.reduce<Record<string, Grade[]>>((acc, g) => {
-    const key = `${g.year}_${g.semester}`;
+    const key = `${g.schoolYear}_${g.semester}`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(g);
     return acc;
   }, {});
 
-  // 학년/학기 순서대로 정렬
-  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
-  const SEM_ORDER = ["FIRST", "FALL"];
   const sortedKeys = Object.keys(grouped).sort((a, b) => {
-    const [ay, as_] = a.split("_");
-    const [by, bs] = b.split("_");
-    const yearDiff = YEAR_ORDER.indexOf(ay) - YEAR_ORDER.indexOf(by);
-    if (yearDiff !== 0) return yearDiff;
-    return SEM_ORDER.indexOf(as_) - SEM_ORDER.indexOf(bs);
+    const [ay, as_] = a.split("_").map(Number);
+    const [by, bs] = b.split("_").map(Number);
+    return ay !== by ? ay - by : as_ - bs;
   });
+
+  const gradeYears = Array.from(new Set(grades.map((g) => g.schoolYear))).sort((a, b) => a - b);
 
   if (loading) {
     return (
@@ -309,24 +309,26 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
           <div className="d-flex gap-12 align-items-center flex-wrap">
             <select
               className="form-select form-select-sm"
-              style={{ width: 120 }}
+              style={{ width: 130 }}
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
             >
-              <option value="ALL">전체 학년</option>
-              <option value="FIRST">1학년</option>
-              <option value="SECOND">2학년</option>
-              <option value="THIRD">3학년</option>
+              <option value="ALL">전체 학년도</option>
+              {gradeYears.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}학년도
+                </option>
+              ))}
             </select>
             <select
               className="form-select form-select-sm"
-              style={{ width: 120 }}
+              style={{ width: 110 }}
               value={filterSemester}
               onChange={(e) => setFilterSemester(e.target.value)}
             >
               <option value="ALL">전체 학기</option>
-              <option value="FIRST">1학기</option>
-              <option value="FALL">2학기</option>
+              <option value="1">1학기</option>
+              <option value="2">2학기</option>
             </select>
           </div>
         </div>
@@ -344,7 +346,7 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
             sortedKeys.map((key) => {
               const items = grouped[key];
               const [yearKey, semKey] = key.split("_");
-              const groupLabel = `${YEAR_LABEL[yearKey] ?? yearKey} ${SEMESTER_LABEL[semKey] ?? semKey}`;
+              const groupLabel = items[0]?.termDisplayName ?? `${yearKey}학년도 ${semKey}학기`;
 
               // grade.js → updateTableFooter 이관: 그룹 푸터 통계
               const scoredItems = items.filter((i) => i.score != null);
@@ -440,14 +442,16 @@ function GradesTab({ studentInfoId }: GradesTabProps) {
 // ───────────────────────────────────────────────
 interface BehaviorRecord {
   id: number;
-  year: string;
-  semester: string;
+  schoolYear: number;
+  semester: number;
   specialNotes?: string;
 }
 
 interface CocurricularActivity {
   id: number;
-  year: string;
+  academicTermId: number;
+  schoolYear: number;
+  termDisplayName: string;
   category: string;
   specifics?: string;
 }
@@ -467,19 +471,16 @@ function BehaviorRecordsTab({ studentInfoId }: { studentInfoId: number }) {
   }, [studentInfoId]);
 
   const filtered = records.filter((r) => {
-    if (filterYear !== "ALL" && r.year !== filterYear) return false;
-    if (filterSemester !== "ALL" && r.semester !== filterSemester) return false;
+    if (filterYear !== "ALL" && String(r.schoolYear) !== filterYear) return false;
+    if (filterSemester !== "ALL" && String(r.semester) !== filterSemester) return false;
     return true;
   });
 
-  // 학년/학기 순서 정렬
-  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
-  const SEM_ORDER = ["FIRST", "FALL"];
-  const sorted = [...filtered].sort((a, b) => {
-    const yearDiff = YEAR_ORDER.indexOf(a.year) - YEAR_ORDER.indexOf(b.year);
-    if (yearDiff !== 0) return yearDiff;
-    return SEM_ORDER.indexOf(a.semester) - SEM_ORDER.indexOf(b.semester);
-  });
+  const sorted = [...filtered].sort((a, b) =>
+    a.schoolYear !== b.schoolYear ? a.schoolYear - b.schoolYear : a.semester - b.semester,
+  );
+
+  const existingYears = Array.from(new Set(records.map((r) => r.schoolYear))).sort((a, b) => a - b);
 
   if (loading) {
     return (
@@ -499,24 +500,26 @@ function BehaviorRecordsTab({ studentInfoId }: { studentInfoId: number }) {
           <div className="d-flex gap-12 align-items-center flex-wrap">
             <select
               className="form-select form-select-sm"
-              style={{ width: 120 }}
+              style={{ width: 130 }}
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
             >
-              <option value="ALL">전체 학년</option>
-              <option value="FIRST">1학년</option>
-              <option value="SECOND">2학년</option>
-              <option value="THIRD">3학년</option>
+              <option value="ALL">전체 학년도</option>
+              {existingYears.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}학년도
+                </option>
+              ))}
             </select>
             <select
               className="form-select form-select-sm"
-              style={{ width: 120 }}
+              style={{ width: 110 }}
               value={filterSemester}
               onChange={(e) => setFilterSemester(e.target.value)}
             >
               <option value="ALL">전체 학기</option>
-              <option value="FIRST">1학기</option>
-              <option value="FALL">2학기</option>
+              <option value="1">1학기</option>
+              <option value="2">2학기</option>
             </select>
           </div>
         </div>
@@ -529,8 +532,8 @@ function BehaviorRecordsTab({ studentInfoId }: { studentInfoId: number }) {
             </div>
           ) : (
             sorted.map((r) => {
-              const yearLabel = YEAR_LABEL[r.year] ?? r.year;
-              const semLabel = SEMESTER_LABEL[r.semester] ?? r.semester;
+              const yearLabel = `${r.schoolYear}학년도`;
+              const semLabel = `${r.semester}학기`;
               return (
                 <div key={r.id} className="border-bottom">
                   <div className="px-24 py-12 bg-neutral-50 d-flex align-items-center">
@@ -575,7 +578,6 @@ function StudentAbilityTab({ studentInfoId }: { studentInfoId: number }) {
   const [abilities, setAbilities] = useState<StudentAbility[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterYear, setFilterYear] = useState<number | "ALL">("ALL");
-  const [filterSemester, setFilterSemester] = useState<number | "ALL">("ALL");
 
   useEffect(() => {
     api
@@ -588,11 +590,7 @@ function StudentAbilityTab({ studentInfoId }: { studentInfoId: number }) {
   // 존재하는 학년도 목록 (오름차순)
   const years = Array.from(new Set(abilities.map((a) => a.schoolYear))).sort((a, b) => a - b);
 
-  const filtered = abilities.filter((a) => {
-    if (filterYear !== "ALL" && a.schoolYear !== filterYear) return false;
-    if (filterSemester !== "ALL" && a.semester !== filterSemester) return false;
-    return true;
-  });
+  const filtered = abilities.filter((a) => filterYear === "ALL" || a.schoolYear === filterYear);
 
   if (loading) {
     return (
@@ -629,17 +627,6 @@ function StudentAbilityTab({ studentInfoId }: { studentInfoId: number }) {
                 </button>
               ))}
             </div>
-            {/* 학기 필터 */}
-            <select
-              className="form-select form-select-sm"
-              style={{ width: 110 }}
-              value={String(filterSemester)}
-              onChange={(e) => setFilterSemester(e.target.value === "ALL" ? "ALL" : Number(e.target.value))}
-            >
-              <option value="ALL">전체 학기</option>
-              <option value="1">1학기</option>
-              <option value="2">2학기</option>
-            </select>
           </div>
         </div>
         <div className="card-body p-0">
@@ -653,9 +640,17 @@ function StudentAbilityTab({ studentInfoId }: { studentInfoId: number }) {
               <div key={a.id} className="border-bottom">
                 <div className="px-24 py-12 bg-neutral-50 d-flex align-items-center gap-12">
                   <span className="badge bg-primary-100 text-primary-600 px-10 py-4 radius-4 text-xs fw-medium">
-                    {a.termDisplayName}
+                    {a.schoolYear}학년도
                   </span>
-                  <span className="fw-bold text-sm">{a.subjectName}</span>
+                  <span
+                    className="fw-semibold text-sm px-10 py-4 radius-4"
+                    style={{
+                      background: "var(--primary-200, #bfdbfe)",
+                      color: "var(--primary-700, #1d4ed8)",
+                    }}
+                  >
+                    {a.subjectName}
+                  </span>
                 </div>
                 <div className="p-24">
                   <p className="text-secondary-light mb-0" style={{ whiteSpace: "pre-wrap" }}>
@@ -687,14 +682,13 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
       .finally(() => setLoading(false));
   }, [studentInfoId]);
 
-  // 학년별로 그룹핑
-  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
-  const existingYears = YEAR_ORDER.filter((y) => activities.some((a) => a.year === y));
-  const grouped = YEAR_ORDER
-    .filter((yearKey) => filterYear === "ALL" || yearKey === filterYear)
-    .map((yearKey) => ({
-      yearKey,
-      items: activities.filter((a) => a.year === yearKey),
+  // 학년도 기준 그룹핑
+  const schoolYears = Array.from(new Set(activities.map((a) => a.schoolYear))).sort((a, b) => a - b);
+  const grouped = schoolYears
+    .filter((y) => filterYear === "ALL" || String(y) === filterYear)
+    .map((y) => ({
+      schoolYear: y,
+      items: activities.filter((a) => a.schoolYear === y),
     }))
     .filter((g) => g.items.length > 0);
 
@@ -728,14 +722,14 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
           >
             전체
           </button>
-          {existingYears.map((y) => (
+          {schoolYears.map((y) => (
             <button
               key={y}
               type="button"
-              className={`btn btn-sm radius-8 ${filterYear === y ? "btn-primary-600" : "btn-outline-primary-600"}`}
-              onClick={() => setFilterYear(y)}
+              className={`btn btn-sm radius-8 ${filterYear === String(y) ? "btn-primary-600" : "btn-outline-primary-600"}`}
+              onClick={() => setFilterYear(String(y))}
             >
-              {YEAR_LABEL[y]}
+              {y}학년도
             </button>
           ))}
         </div>
@@ -745,8 +739,8 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
           <table className="table bordered-table mb-0">
             <thead>
               <tr>
-                <th className="text-center" style={{ width: 100 }}>
-                  학년
+                <th className="text-center" style={{ width: 140 }}>
+                  학기
                 </th>
                 <th className="text-center" style={{ width: 120 }}>
                   영역
@@ -764,7 +758,7 @@ function CocurricularActivitiesTab({ studentInfoId }: { studentInfoId: number })
                   <tr key={item.id}>
                     {idx === 0 && (
                       <td className="text-center fw-bold align-middle" rowSpan={categoryItems.length}>
-                        {YEAR_LABEL[group.yearKey] ?? group.yearKey}
+                        {group.schoolYear}학년도
                       </td>
                     )}
                     <td className="text-center align-middle">
@@ -883,14 +877,12 @@ function DormitoryTab({ studentInfoId }: { studentInfoId: number }) {
 // 진로희망 섹션 컴포넌트 (세부 정보 탭 내)
 // ───────────────────────────────────────────────
 interface CareerAspirationItem {
-  year: string;
-  semester: string;
+  schoolYear: number;
+  semester: number;
   specialtyOrInterest?: string;
   studentDesiredJob?: string;
   parentDesiredJob?: string;
 }
-
-const YEAR_NUM: Record<string, string> = { FIRST: "1", SECOND: "2", THIRD: "3" };
 
 function CareerAspirationSection({ studentInfoId }: { studentInfoId: number }) {
   const [items, setItems] = useState<CareerAspirationItem[]>([]);
@@ -904,13 +896,15 @@ function CareerAspirationSection({ studentInfoId }: { studentInfoId: number }) {
       .finally(() => setLoading(false));
   }, [studentInfoId]);
 
-  // 학년별로 그룹핑 — FALL 학기 우선, 없으면 FIRST 학기
-  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
-  const grouped = YEAR_ORDER.map((yearKey) => {
-    const yearItems = items.filter((i) => i.year === yearKey);
-    const record = yearItems.find((i) => i.semester === "FALL") ?? yearItems[0] ?? null;
-    return { yearKey, record };
-  }).filter((g) => g.record !== null);
+  // 학년도별 그룹핑 — 2학기 우선, 없으면 1학기
+  const years = Array.from(new Set(items.map((i) => i.schoolYear))).sort((a, b) => a - b);
+  const grouped = years
+    .map((y) => {
+      const yearItems = items.filter((i) => i.schoolYear === y);
+      const record = yearItems.find((i) => i.semester === 2) ?? yearItems[0] ?? null;
+      return { yearKey: y, record };
+    })
+    .filter((g) => g.record !== null);
 
   if (loading) {
     return <div className="p-20 text-secondary-light text-sm">불러오는 중...</div>;
@@ -922,10 +916,7 @@ function CareerAspirationSection({ studentInfoId }: { studentInfoId: number }) {
 
   return (
     <div className="table-responsive">
-      <table
-        className="table mb-0"
-        style={{ borderCollapse: "collapse", textAlign: "center", fontSize: 13 }}
-      >
+      <table className="table mb-0" style={{ borderCollapse: "collapse", textAlign: "center", fontSize: 13 }}>
         <thead>
           <tr>
             <th
@@ -944,22 +935,29 @@ function CareerAspirationSection({ studentInfoId }: { studentInfoId: number }) {
             </th>
             <th
               colSpan={2}
-              style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 12px", letterSpacing: "0.2em" }}
+              style={{
+                border: "1px solid #d1d5db",
+                background: "#f0f4ff",
+                padding: "8px 12px",
+                letterSpacing: "0.2em",
+              }}
             >
               진 로 희 망
             </th>
           </tr>
           <tr>
-            <th style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 16px", width: 140 }}>학생</th>
-            <th style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 16px", width: 140 }}>학부모</th>
+            <th style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 16px", width: 140 }}>
+              학생
+            </th>
+            <th style={{ border: "1px solid #d1d5db", background: "#f0f4ff", padding: "8px 16px", width: 140 }}>
+              학부모
+            </th>
           </tr>
         </thead>
         <tbody>
           {grouped.map(({ yearKey, record }) => (
             <tr key={yearKey}>
-              <td style={{ border: "1px solid #d1d5db", padding: "10px 12px", fontWeight: 600 }}>
-                {YEAR_NUM[yearKey]}
-              </td>
+              <td style={{ border: "1px solid #d1d5db", padding: "10px 12px", fontWeight: 600 }}>{yearKey}</td>
               <td style={{ border: "1px solid #d1d5db", padding: "10px 16px", color: "#374151" }}>
                 {record!.specialtyOrInterest ?? "-"}
               </td>
@@ -982,7 +980,7 @@ function CareerAspirationSection({ studentInfoId }: { studentInfoId: number }) {
 // ───────────────────────────────────────────────
 interface VolunteerActivity {
   id: number;
-  year: string;
+  schoolYear: number;
   startDate: string;
   endDate?: string;
   organizer: string;
@@ -1003,11 +1001,11 @@ function VolunteerActivityTab({ studentInfoId }: { studentInfoId: number }) {
       .finally(() => setLoading(false));
   }, [studentInfoId]);
 
-  const YEAR_ORDER = ["FIRST", "SECOND", "THIRD"];
-  const grouped = YEAR_ORDER.map((yearKey) => ({
-    yearKey,
-    items: activities.filter((a) => a.year === yearKey),
-  })).filter((g) => g.items.length > 0);
+  const volunteerYears = Array.from(new Set(activities.map((a) => a.schoolYear))).sort((a, b) => a - b);
+  const grouped = volunteerYears.map((y) => ({
+    yearKey: y,
+    items: activities.filter((a) => a.schoolYear === y),
+  }));
 
   const formatDate = (date: string) => date.replace(/-/g, ".") + ".";
   const formatPeriod = (start: string, end?: string) => {
@@ -1052,11 +1050,11 @@ function VolunteerActivityTab({ studentInfoId }: { studentInfoId: number }) {
                 <th className="text-center" style={{ width: 180 }}>
                   장소 또는 주관기관명
                 </th>
-                <th>활동내용</th>
+                <th>활동 내용</th>
                 <th className="text-center" style={{ width: 70 }}>
                   시간
                 </th>
-                <th className="text-center" style={{ width: 80 }}>
+                <th className="text-center" style={{ width: 90 }}>
                   누계시간
                 </th>
               </tr>
@@ -1067,7 +1065,7 @@ function VolunteerActivityTab({ studentInfoId }: { studentInfoId: number }) {
                   <tr key={item.id}>
                     {idx === 0 && (
                       <td className="text-center fw-bold align-middle" rowSpan={group.items.length}>
-                        {YEAR_LABEL[group.yearKey] ?? group.yearKey}
+                        {group.yearKey}학년도
                       </td>
                     )}
                     <td className="text-center align-middle" style={{ fontSize: 13 }}>
@@ -1401,18 +1399,28 @@ export default function StudentMyInfo() {
                 </SectionCard>
               </div>
 
-              {/* 이전 학교 정보 (col-md-6) */}
+              {/* 학적 사항 (col-md-6) */}
               <div className="col-md-6">
                 <SectionCard title="학적 사항">
                   <div className="p-20">
                     <div className="row gy-4">
+                      <div className="col-sm-6">
+                        <h6 className="text-md mb-2 fw-medium">학적 상태</h6>
+                        <span className={`badge px-10 py-4 radius-4 fw-medium text-xs ${STATUS_COLOR[student.status ?? ""] ?? "bg-neutral-100 text-secondary-light"}`}>
+                          {STATUS_LABEL[student.status ?? ""] ?? "-"}
+                        </span>
+                      </div>
+                      <div className="col-sm-6">
+                        <h6 className="text-md mb-2 fw-medium">입학일</h6>
+                        <span className="text-secondary-light">{student.admissionDate ? student.admissionDate.slice(0, 10) : "-"}</span>
+                      </div>
                       <div className="col-sm-12">
                         <h6 className="text-md mb-2 fw-medium">이전 학교명</h6>
-                        <span className="text-secondary-light">-</span>
+                        <span className="text-secondary-light">{student.previousSchoolName ?? "-"}</span>
                       </div>
                       <div className="col-sm-12">
                         <h6 className="text-md mb-2 fw-medium">재학 중인 학교명</h6>
-                        <span className="text-secondary-light">-</span>
+                        <span className="text-secondary-light">{student.schoolName ?? "-"}</span>
                       </div>
                     </div>
                   </div>

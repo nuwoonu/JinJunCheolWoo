@@ -39,4 +39,8 @@ public class StudentUpdateDTO {
     private Gender gender;
 
     private Status status;
+
+    private String previousSchoolName; // 이전 학교명
+
+    private LocalDate admissionDate;   // 입학일
 }

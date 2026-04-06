@@ -60,6 +60,7 @@ public class AdminSettingApiController {
     }
 
     /** 전체 학기 이력 조회 (최신순) */
+    @PreAuthorize("@grants.canAccessAdmin() or hasRole('TEACHER')")
     @GetMapping("/history")
     public ResponseEntity<List<Map<String, Object>>> history() {
         List<Map<String, Object>> result = academicTermService.getTermHistory().stream()

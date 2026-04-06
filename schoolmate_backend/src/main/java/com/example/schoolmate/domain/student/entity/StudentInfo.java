@@ -1,4 +1,5 @@
 package com.example.schoolmate.domain.student.entity;
+
 import com.example.schoolmate.domain.parent.entity.FamilyRelation;
 import com.example.schoolmate.global.entity.SchoolMemberInfo;
 
@@ -7,7 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.schoolmate.domain.student.entity.StudentAssignment;
 import com.example.schoolmate.domain.student.entity.constant.StudentStatus;
 import com.example.schoolmate.domain.term.entity.SchoolYearStatus;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
@@ -22,6 +22,7 @@ import com.example.schoolmate.domain.studentrecord.bookreport.entity.BookReport;
 import com.example.schoolmate.domain.studentrecord.medical.entity.MedicalDetails;
 import com.example.schoolmate.domain.studentrecord.volunteer.entity.VolunteerActivity;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -79,6 +80,13 @@ public class StudentInfo extends SchoolMemberInfo {
 
     @Enumerated(EnumType.STRING)
     private StudentStatus status = StudentStatus.ENROLLED;
+
+    // 학적사항 추가 필드
+    @Column(name = "previous_school_name")
+    private String previousSchoolName; // 이전 학교명
+
+    @Column(name = "admission_date")
+    private java.time.LocalDate admissionDate; // 입학일
 
     // school 필드는 SchoolMemberInfo에서 상속 (중복 선언 제거)
 

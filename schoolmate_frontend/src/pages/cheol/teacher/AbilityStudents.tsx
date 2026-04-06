@@ -81,7 +81,7 @@ export default function AbilityStudents() {
     setModalStudent(s);
     setSaveResult(null);
     if (!teacherInfo.subjectCode) {
-      setContent(`${teacherInfo.subjectName}: `);
+      setContent("");
       return;
     }
     setLoadingAbility(true);
@@ -93,11 +93,10 @@ export default function AbilityStudents() {
         if (res.status === 200 && res.data?.content) {
           setContent(res.data.content);
         } else {
-          // 기존 내용 없으면 과목명으로 시작
-          setContent(`${teacherInfo.subjectName}: `);
+          setContent("");
         }
       })
-      .catch(() => setContent(`${teacherInfo.subjectName}: `))
+      .catch(() => setContent(""))
       .finally(() => setLoadingAbility(false));
   };
 
@@ -281,9 +280,6 @@ export default function AbilityStudents() {
                   <div>
                     <label className="form-label fw-medium text-sm mb-6">
                       세부능력 및 특기사항
-                      <span className="text-secondary-light fw-normal ms-6 text-xs">
-                        (과목명으로 시작하도록 입력하세요)
-                      </span>
                     </label>
                     {loadingAbility ? (
                       <div className="text-center py-12 text-secondary-light text-sm">
@@ -293,7 +289,7 @@ export default function AbilityStudents() {
                       <textarea
                         className="form-control"
                         rows={8}
-                        placeholder={`${teacherInfo.subjectName}: `}
+                        placeholder="세부능력 및 특기사항을 입력하세요"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         style={{ resize: "vertical", minHeight: 180 }}

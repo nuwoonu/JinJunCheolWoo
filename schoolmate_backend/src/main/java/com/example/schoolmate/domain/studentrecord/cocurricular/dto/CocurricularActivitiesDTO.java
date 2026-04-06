@@ -16,6 +16,7 @@ public class CocurricularActivitiesDTO {
     private Long id;
     private Long studentId;
     private Long academicTermId;
+    private int schoolYear;
     private String termDisplayName;
     private ActivityCategory category;
     private String specifics;

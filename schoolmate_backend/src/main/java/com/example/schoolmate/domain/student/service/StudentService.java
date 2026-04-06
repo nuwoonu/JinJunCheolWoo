@@ -572,6 +572,12 @@ public class StudentService {
         if (updateDTO.getGender() != null) {
             student.setGender(updateDTO.getGender());
         }
+        if (updateDTO.getPreviousSchoolName() != null) {
+            student.setPreviousSchoolName(updateDTO.getPreviousSchoolName());
+        }
+        if (updateDTO.getAdmissionDate() != null) {
+            student.setAdmissionDate(updateDTO.getAdmissionDate());
+        }
 
         // @Transactional로 인해 변경 감지되어 자동 저장됨
         return convertToResponseDTO(student);

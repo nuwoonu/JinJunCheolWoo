@@ -44,7 +44,7 @@ const COCURRICULAR_CATEGORIES = [
 ];
 
 const EMPTY_COCURRICULAR_FORM = {
-  year: "FIRST",
+  academicTermId: null as number | null,
   category: "AUTONOMOUS",
   specifics: "",
 };
@@ -57,7 +57,7 @@ const EMPTY_AWARD_FORM = {
 };
 
 const EMPTY_VOLUNTEER_FORM = {
-  year: "FIRST",
+  academicTermId: null as number | null,
   startDate: "",
   endDate: "",
   organizer: "",
@@ -117,8 +117,28 @@ export default function TeacherMyClassStudents() {
   const [editingNum, setEditingNum] = useState<string>("");
   const [editSaving, setEditSaving] = useState(false);
 
-  // subView: 학생 정보 모달 내 서브 화면 ("volunteer" | "award" | "cocurricular" | null)
-  const [subView, setSubView] = useState<"volunteer" | "award" | "cocurricular" | null>(null);
+  // subView: 학생 정보 모달 내 서브 화면
+  const [subView, setSubView] = useState<"volunteer" | "award" | "cocurricular" | "behavior" | "activity-info" | "detail-edit" | null>(null);
+  const [detailEditTab, setDetailEditTab] = useState<"medical" | "career" | "enrollment">("medical");
+
+  const [medicalForm, setMedicalForm] = useState({ bloodGroup: "", height: "", weight: "" });
+  const [medicalSaving, setMedicalSaving] = useState(false);
+  const [medicalError, setMedicalError] = useState<string | null>(null);
+
+  const [careerForm, setCareerForm] = useState({ academicTermId: null as number | null, specialtyOrInterest: "", studentDesiredJob: "", parentDesiredJob: "" });
+  const [careerSaving, setCareerSaving] = useState(false);
+  const [careerError, setCareerError] = useState<string | null>(null);
+  const [careerRecords, setCareerRecords] = useState<{ schoolYear: number; semester: number; specialtyOrInterest?: string; studentDesiredJob?: string; parentDesiredJob?: string }[]>([]);
+
+  const [enrollmentForm, setEnrollmentForm] = useState({ address: "", phone: "", previousSchoolName: "", admissionDate: "" });
+  const [enrollmentSaving, setEnrollmentSaving] = useState(false);
+  const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
+
+  const [activityInfo, setActivityInfo] = useState<{
+    volunteers: { id: number; schoolYear: number; startDate: string; endDate?: string; organizer: string; activityContent: string; hours: number; cumulativeHours: number }[];
+    awards: { id: number; name: string; achievementsGrade?: string; achievementsGradeLabel?: string; day?: string; organization?: string }[];
+    loading: boolean;
+  }>({ volunteers: [], awards: [], loading: false });
 
   const [volunteerForm, setVolunteerForm] = useState(EMPTY_VOLUNTEER_FORM);
   const [volunteerSaving, setVolunteerSaving] = useState(false);
@@ -131,7 +151,13 @@ export default function TeacherMyClassStudents() {
   const [cocurricularForm, setCocurricularForm] = useState(EMPTY_COCURRICULAR_FORM);
   const [cocurricularSaving, setCocurricularSaving] = useState(false);
   const [cocurricularError, setCocurricularError] = useState<string | null>(null);
-  const [cocurricularActivities, setCocurricularActivities] = useState<{ year: string; category: string; specifics?: string }[]>([]);
+  const [cocurricularActivities, setCocurricularActivities] = useState<{ academicTermId: number; termDisplayName: string; category: string; specifics?: string }[]>([]);
+  const [academicTerms, setAcademicTerms] = useState<{ id: number; displayName: string; schoolYear: number; semester: number }[]>([]);
+
+  const [behaviorForm, setBehaviorForm] = useState({ academicTermId: null as number | null, specialNotes: "" });
+  const [behaviorRecords, setBehaviorRecords] = useState<{ schoolYear: number; semester: number; specialNotes?: string }[]>([]);
+  const [behaviorSaving, setBehaviorSaving] = useState(false);
+  const [behaviorError, setBehaviorError] = useState<string | null>(null);
 
   const fetchClassInfo = () => {
     api
@@ -174,9 +200,14 @@ export default function TeacherMyClassStudents() {
     if (!selectedStudent) return;
     setCocurricularSaving(true);
     setCocurricularError(null);
+    if (!cocurricularForm.academicTermId) {
+      setCocurricularError("학기를 선택해주세요.");
+      setCocurricularSaving(false);
+      return;
+    }
     try {
       await api.put(`/cocurricular-activities/student/${selectedStudent.studentId}`, {
-        year: cocurricularForm.year,
+        academicTermId: cocurricularForm.academicTermId,
         category: cocurricularForm.category,
         specifics: cocurricularForm.specifics,
       });
@@ -187,6 +218,32 @@ export default function TeacherMyClassStudents() {
       setCocurricularError(msg ?? "창의적 체험활동 저장에 실패했습니다.");
     } finally {
       setCocurricularSaving(false);
+    }
+  };
+
+  const handleSaveBehavior = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedStudent) return;
+    const selectedTerm = academicTerms.find((t) => t.id === behaviorForm.academicTermId);
+    if (!selectedTerm) {
+      setBehaviorError("학기를 선택해주세요.");
+      return;
+    }
+    setBehaviorSaving(true);
+    setBehaviorError(null);
+    try {
+      await api.put(`/behavior-records/student/${selectedStudent.studentId}`, {
+        schoolYear: selectedTerm.schoolYear,
+        semester: selectedTerm.semester,
+        specialNotes: behaviorForm.specialNotes,
+      });
+      setSubView(null);
+      setBehaviorForm({ academicTermId: null, specialNotes: "" });
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setBehaviorError(msg ?? "행동특성 및 종합의견 저장에 실패했습니다.");
+    } finally {
+      setBehaviorSaving(false);
     }
   };
 
@@ -219,9 +276,14 @@ export default function TeacherMyClassStudents() {
     setVolunteerSaving(true);
     setVolunteerError(null);
     try {
+      if (!volunteerForm.academicTermId) {
+        setVolunteerError("학년도를 선택해주세요.");
+        setVolunteerSaving(false);
+        return;
+      }
       await api.post("/volunteer-activities", {
         studentId: selectedStudent.studentId,
-        year: volunteerForm.year,
+        academicTermId: volunteerForm.academicTermId,
         startDate: volunteerForm.startDate,
         endDate: volunteerForm.endDate || null,
         organizer: volunteerForm.organizer,
@@ -1079,8 +1141,62 @@ export default function TeacherMyClassStudents() {
                       창의적 체험활동 — {selectedStudent.name}
                     </span>
                   )}
+                  {subView === "behavior" && (
+                    <span className="d-flex align-items-center gap-8">
+                      <iconify-icon icon="mdi:clipboard-text-outline" style={{ color: "#9333ea" }} />
+                      행동특성 및 종합의견 — {selectedStudent.name}
+                    </span>
+                  )}
+                  {subView === "activity-info" && (
+                    <span className="d-flex align-items-center gap-8">
+                      <iconify-icon icon="mdi:information-outline" style={{ color: "#0284c7" }} />
+                      활동 정보 — {selectedStudent.name}
+                    </span>
+                  )}
+                  {subView === "detail-edit" && (
+                    <span className="d-flex align-items-center gap-8">
+                      <iconify-icon icon="mdi:account-edit-outline" style={{ color: "#7c3aed" }} />
+                      세부 정보 수정 — {selectedStudent.name}
+                    </span>
+                  )}
                 </h6>
-                <button type="button" className="btn-close ms-auto" onClick={() => { setSelectedStudent(null); setSubView(null); }} />
+                {subView === null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivityInfo({ volunteers: [], awards: [], loading: true });
+                      setSubView("activity-info");
+                      Promise.all([
+                        api.get(`/volunteer-activities/student/${selectedStudent!.studentId}`),
+                        api.get(`/awards/student/${selectedStudent!.studentId}`),
+                      ])
+                        .then(([volRes, awardRes]) => {
+                          setActivityInfo({ volunteers: volRes.data ?? [], awards: awardRes.data ?? [], loading: false });
+                        })
+                        .catch(() => {
+                          setActivityInfo({ volunteers: [], awards: [], loading: false });
+                        });
+                    }}
+                    style={{
+                      padding: "5px 12px",
+                      background: "#f0f9ff",
+                      border: "1px solid #bae6fd",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#0284c7",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <iconify-icon icon="mdi:information-outline" style={{ fontSize: 14 }} />
+                    활동 정보
+                  </button>
+                )}
+                <button type="button" className="btn-close" onClick={() => { setSelectedStudent(null); setSubView(null); }} />
               </div>
 
               {/* 학생 정보 뷰 */}
@@ -1150,7 +1266,17 @@ export default function TeacherMyClassStudents() {
                         {/* 봉사활동 */}
                         <button
                           type="button"
-                          onClick={() => { setVolunteerForm(EMPTY_VOLUNTEER_FORM); setVolunteerError(null); setSubView("volunteer"); }}
+                          onClick={() => {
+                            setVolunteerError(null);
+                            api.get("/admin/settings/history")
+                              .then((res) => {
+                                const terms = (res.data ?? []).map((t: { id: number; displayName: string; schoolYear: number; semester: number }) => ({ id: t.id, displayName: t.displayName, schoolYear: t.schoolYear, semester: t.semester }));
+                                setAcademicTerms(terms);
+                                setVolunteerForm({ ...EMPTY_VOLUNTEER_FORM, academicTermId: terms[0]?.id ?? null });
+                              })
+                              .catch(() => setVolunteerForm(EMPTY_VOLUNTEER_FORM));
+                            setSubView("volunteer");
+                          }}
                           style={{ flex: 1, padding: "14px 8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
                           onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(22,163,74,0.18)")}
                           onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
@@ -1180,17 +1306,20 @@ export default function TeacherMyClassStudents() {
                           type="button"
                           onClick={() => {
                             setCocurricularError(null);
-                            api.get(`/cocurricular-activities/student/${selectedStudent!.studentId}`)
-                              .then((res) => {
-                                const activities = res.data ?? [];
+                            Promise.all([
+                              api.get("/admin/settings/history"),
+                              api.get(`/cocurricular-activities/student/${selectedStudent!.studentId}`),
+                            ])
+                              .then(([termsRes, activitiesRes]) => {
+                                const terms = (termsRes.data ?? []).map((t: { id: number; displayName: string; schoolYear: number; semester: number }) => ({ id: t.id, displayName: t.displayName, schoolYear: t.schoolYear, semester: t.semester }));
+                                const activities = activitiesRes.data ?? [];
+                                setAcademicTerms(terms);
                                 setCocurricularActivities(activities);
-                                const existing = activities.find(
-                                  (a: { year: string; category: string; specifics?: string }) =>
-                                    a.year === "FIRST" && a.category === "AUTONOMOUS"
-                                );
-                                setCocurricularForm({ year: "FIRST", category: "AUTONOMOUS", specifics: existing?.specifics ?? "" });
+                                const firstTermId = terms[0]?.id ?? null;
+                                const existing = activities.find((a: { academicTermId: number; category: string; specifics?: string }) => a.academicTermId === firstTermId && a.category === "AUTONOMOUS");
+                                setCocurricularForm({ academicTermId: firstTermId, category: "AUTONOMOUS", specifics: existing?.specifics ?? "" });
                               })
-                              .catch(() => { setCocurricularActivities([]); setCocurricularForm(EMPTY_COCURRICULAR_FORM); });
+                              .catch(() => { setAcademicTerms([]); setCocurricularActivities([]); setCocurricularForm(EMPTY_COCURRICULAR_FORM); });
                             setSubView("cocurricular");
                           }}
                           style={{ flex: 1, padding: "14px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
@@ -1201,6 +1330,79 @@ export default function TeacherMyClassStudents() {
                             <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 20, color: "#2563eb" }} />
                           </div>
                           <span style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", whiteSpace: "nowrap" }}>창의적 체험</span>
+                        </button>
+
+                        {/* 행동특성 및 종합의견 */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBehaviorError(null);
+                            Promise.all([
+                              api.get("/admin/settings/history"),
+                              api.get(`/behavior-records/student/${selectedStudent!.studentId}`),
+                            ])
+                              .then(([termsRes, recordsRes]) => {
+                                const terms = (termsRes.data ?? []).map((t: { id: number; displayName: string; schoolYear: number; semester: number }) => ({ id: t.id, displayName: t.displayName, schoolYear: t.schoolYear, semester: t.semester }));
+                                const records = recordsRes.data ?? [];
+                                setAcademicTerms(terms);
+                                setBehaviorRecords(records);
+                                const firstTermId = terms[0]?.id ?? null;
+                                const firstTerm = terms[0];
+                                const existing = firstTerm ? records.find((r: { schoolYear: number; semester: number; specialNotes?: string }) => r.schoolYear === firstTerm.schoolYear && r.semester === firstTerm.semester) : null;
+                                setBehaviorForm({ academicTermId: firstTermId, specialNotes: existing?.specialNotes ?? "" });
+                              })
+                              .catch(() => { setBehaviorRecords([]); setBehaviorForm({ academicTermId: null, specialNotes: "" }); });
+                            setSubView("behavior");
+                          }}
+                          style={{ flex: 1, padding: "14px 8px", background: "#fdf4ff", border: "1px solid #e9d5ff", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(147,51,234,0.15)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+                        >
+                          <div style={{ width: 40, height: 40, background: "#f3e8ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <iconify-icon icon="mdi:clipboard-text-outline" style={{ fontSize: 20, color: "#9333ea" }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#9333ea", whiteSpace: "nowrap" }}>행동특성</span>
+                        </button>
+
+                        {/* 세부 정보 */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMedicalError(null);
+                            setCareerError(null);
+                            setEnrollmentError(null);
+                            setMedicalForm({ bloodGroup: "", height: "", weight: "" });
+                            setEnrollmentForm({ address: "", phone: selectedStudent!.phone ?? "", previousSchoolName: "", admissionDate: "" });
+                            setDetailEditTab("medical");
+                            Promise.all([
+                              api.get("/admin/settings/history"),
+                              api.get(`/career-aspirations/students/${selectedStudent!.studentId}`),
+                              api.get(`/students/info/${selectedStudent!.studentId}`),
+                            ])
+                              .then(([termsRes, careerRes, studentRes]) => {
+                                const terms = (termsRes.data ?? []).map((t: { id: number; displayName: string; schoolYear: number; semester: number }) => ({ id: t.id, displayName: t.displayName, schoolYear: t.schoolYear, semester: t.semester }));
+                                const careers: { schoolYear: number; semester: number; specialtyOrInterest?: string; studentDesiredJob?: string; parentDesiredJob?: string }[] = careerRes.data ?? [];
+                                setAcademicTerms(terms);
+                                setCareerRecords(careers);
+                                const firstTerm = terms[0];
+                                const existing = firstTerm ? careers.find((c) => c.schoolYear === firstTerm.schoolYear && c.semester === firstTerm.semester) : null;
+                                setCareerForm({ academicTermId: firstTerm?.id ?? null, specialtyOrInterest: existing?.specialtyOrInterest ?? "", studentDesiredJob: existing?.studentDesiredJob ?? "", parentDesiredJob: existing?.parentDesiredJob ?? "" });
+                                // 기존 학생 정보 사전 입력
+                                const s = studentRes.data;
+                                setMedicalForm({ bloodGroup: s.BloodGroup ?? s.bloodGroup ?? "", height: s.Height ?? s.height ? String(s.Height ?? s.height) : "", weight: s.Weight ?? s.weight ? String(s.Weight ?? s.weight) : "" });
+                                setEnrollmentForm({ phone: s.phone ?? "", address: s.address ?? "", previousSchoolName: s.previousSchoolName ?? "", admissionDate: s.admissionDate ? String(s.admissionDate).slice(0, 10) : "" });
+                              })
+                              .catch(() => { setAcademicTerms([]); setCareerRecords([]); setCareerForm({ academicTermId: null, specialtyOrInterest: "", studentDesiredJob: "", parentDesiredJob: "" }); });
+                            setSubView("detail-edit");
+                          }}
+                          style={{ flex: 1, padding: "14px 8px", background: "#faf5ff", border: "1px solid #ddd6fe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(124,58,237,0.15)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+                        >
+                          <div style={{ width: 40, height: 40, background: "#ede9fe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <iconify-icon icon="mdi:account-edit-outline" style={{ fontSize: 20, color: "#7c3aed" }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#7c3aed", whiteSpace: "nowrap" }}>세부 정보</span>
                         </button>
                       </div>
                     </div>
@@ -1226,23 +1428,31 @@ export default function TeacherMyClassStudents() {
                     )}
                     <div className="row gy-16">
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">학년 *</label>
-                        <select
-                          className="form-select"
-                          value={cocurricularForm.year}
-                          onChange={(e) => {
-                            const newYear = e.target.value;
-                            const existing = cocurricularActivities.find(
-                              (a) => a.year === newYear && a.category === cocurricularForm.category
-                            );
-                            setCocurricularForm((f) => ({ ...f, year: newYear, specifics: existing?.specifics ?? "" }));
-                          }}
-                          required
-                        >
-                          <option value="FIRST">1학년</option>
-                          <option value="SECOND">2학년</option>
-                          <option value="THIRD">3학년</option>
-                        </select>
+                        <label className="form-label fw-semibold text-sm">학년도 *</label>
+                        {academicTerms.length === 0 ? (
+                          <div className="text-secondary-light text-sm py-8">
+                            <span className="spinner-border spinner-border-sm me-8" />
+                            학년도 목록 불러오는 중...
+                          </div>
+                        ) : (
+                          <select
+                            className="form-select"
+                            value={academicTerms.find((t) => t.id === cocurricularForm.academicTermId)?.schoolYear ?? ""}
+                            onChange={(e) => {
+                              const selectedYear = Number(e.target.value);
+                              const termId = academicTerms.find((t) => t.schoolYear === selectedYear)?.id ?? null;
+                              const existing = cocurricularActivities.find(
+                                (a) => a.academicTermId === termId && a.category === cocurricularForm.category
+                              );
+                              setCocurricularForm((f) => ({ ...f, academicTermId: termId, specifics: existing?.specifics ?? "" }));
+                            }}
+                            required
+                          >
+                            {Array.from(new Set(academicTerms.map((t) => t.schoolYear))).sort((a, b) => a - b).map((y) => (
+                              <option key={y} value={y}>{y}학년도</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
                       <div className="col-md-6">
                         <label className="form-label fw-semibold text-sm">영역 *</label>
@@ -1252,7 +1462,7 @@ export default function TeacherMyClassStudents() {
                           onChange={(e) => {
                             const newCat = e.target.value;
                             const existing = cocurricularActivities.find(
-                              (a) => a.year === cocurricularForm.year && a.category === newCat
+                              (a) => a.academicTermId === cocurricularForm.academicTermId && a.category === newCat
                             );
                             setCocurricularForm((f) => ({ ...f, category: newCat, specifics: existing?.specifics ?? "" }));
                           }}
@@ -1266,12 +1476,12 @@ export default function TeacherMyClassStudents() {
                       <div className="col-12">
                         <label className="form-label fw-semibold text-sm">특기사항 *</label>
                         <div className="text-xs text-secondary-light mb-6">
-                          학년+영역 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
+                          학년도+영역 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
                         </div>
                         <textarea
                           className="form-control"
                           rows={10}
-                          placeholder="특기사항을 입력하세요"
+                          placeholder="활동사항을 입력하세요"
                           value={cocurricularForm.specifics}
                           onChange={(e) => setCocurricularForm((f) => ({ ...f, specifics: e.target.value }))}
                           style={{ resize: "vertical", minHeight: 200 }}
@@ -1391,17 +1601,27 @@ export default function TeacherMyClassStudents() {
                     )}
                     <div className="row gy-16">
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">학년 *</label>
-                        <select
-                          className="form-select"
-                          value={volunteerForm.year}
-                          onChange={(e) => setVolunteerForm((f) => ({ ...f, year: e.target.value }))}
-                          required
-                        >
-                          <option value="FIRST">1학년</option>
-                          <option value="SECOND">2학년</option>
-                          <option value="THIRD">3학년</option>
-                        </select>
+                        <label className="form-label fw-semibold text-sm">학년도 *</label>
+                        {academicTerms.length === 0 ? (
+                          <div className="text-secondary-light text-sm py-8">
+                            <span className="spinner-border spinner-border-sm me-8" />
+                            학년도 목록 불러오는 중...
+                          </div>
+                        ) : (
+                          <select
+                            className="form-select"
+                            value={academicTerms.find((t) => t.id === volunteerForm.academicTermId)?.schoolYear ?? ""}
+                            onChange={(e) => {
+                              const termId = academicTerms.find((t) => t.schoolYear === Number(e.target.value))?.id ?? null;
+                              setVolunteerForm((f) => ({ ...f, academicTermId: termId }));
+                            }}
+                            required
+                          >
+                            {Array.from(new Set(academicTerms.map((t) => t.schoolYear))).sort((a, b) => a - b).map((y) => (
+                              <option key={y} value={y}>{y}학년도</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
                       <div className="col-md-6">
                         <label className="form-label fw-semibold text-sm">시간(h) *</label>
@@ -1474,6 +1694,455 @@ export default function TeacherMyClassStudents() {
                       disabled={volunteerSaving}
                     >
                       {volunteerSaving ? (
+                        <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
+                      ) : (
+                        <><iconify-icon icon="mdi:check" /> 저장</>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* 세부 정보 수정 뷰 */}
+              {subView === "detail-edit" && (
+                <div className="modal-body p-0">
+                  {/* 탭 헤더 */}
+                  <div className="d-flex border-bottom" style={{ background: "#fafafa" }}>
+                    {([
+                      { key: "medical", label: "의료 기록", icon: "mdi:medical-bag", color: "#0891b2" },
+                      { key: "career", label: "진로희망", icon: "mdi:briefcase-outline", color: "#16a34a" },
+                      { key: "enrollment", label: "학적사항", icon: "mdi:school-outline", color: "#7c3aed" },
+                    ] as const).map((tab) => (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setDetailEditTab(tab.key)}
+                        style={{
+                          flex: 1,
+                          padding: "10px 4px",
+                          border: "none",
+                          borderBottom: detailEditTab === tab.key ? `2px solid ${tab.color}` : "2px solid transparent",
+                          background: "transparent",
+                          fontSize: 12,
+                          fontWeight: detailEditTab === tab.key ? 700 : 500,
+                          color: detailEditTab === tab.key ? tab.color : "#9ca3af",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 4,
+                        }}
+                      >
+                        <iconify-icon icon={tab.icon} style={{ fontSize: 14 }} />
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 의료 기록 탭 */}
+                  {detailEditTab === "medical" && (
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!selectedStudent) return;
+                      setMedicalSaving(true);
+                      setMedicalError(null);
+                      try {
+                        await api.post(`/medical-details/student/${selectedStudent.studentId}`, {
+                          bloodGroup: medicalForm.bloodGroup || null,
+                          height: medicalForm.height ? Number(medicalForm.height) : null,
+                          weight: medicalForm.weight ? Number(medicalForm.weight) : null,
+                        });
+                        setSubView(null);
+                      } catch (err: unknown) {
+                        const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+                        setMedicalError(msg ?? "의료 기록 저장에 실패했습니다.");
+                      } finally {
+                        setMedicalSaving(false);
+                      }
+                    }}>
+                      <div className="p-20">
+                        {medicalError && <div className="alert alert-danger radius-8 mb-12 text-sm">{medicalError}</div>}
+                        <div className="row gy-14">
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">혈액형</label>
+                            <select
+                              className="form-select"
+                              value={medicalForm.bloodGroup}
+                              onChange={(e) => setMedicalForm((f) => ({ ...f, bloodGroup: e.target.value }))}
+                            >
+                              <option value="">선택 안 함</option>
+                              {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
+                                <option key={bg} value={bg}>{bg}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="col-6">
+                            <label className="form-label fw-semibold text-sm">신장 (cm)</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              placeholder="예: 170"
+                              min={100}
+                              max={250}
+                              step={0.1}
+                              value={medicalForm.height}
+                              onChange={(e) => setMedicalForm((f) => ({ ...f, height: e.target.value }))}
+                            />
+                          </div>
+                          <div className="col-6">
+                            <label className="form-label fw-semibold text-sm">체중 (kg)</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              placeholder="예: 65"
+                              min={20}
+                              max={200}
+                              step={0.1}
+                              value={medicalForm.weight}
+                              onChange={(e) => setMedicalForm((f) => ({ ...f, weight: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="px-20 pb-16 d-flex justify-content-end gap-8">
+                        <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setSubView(null)}>취소</button>
+                        <button type="submit" className="btn radius-8 d-flex align-items-center gap-6" style={{ background: "#0891b2", color: "#fff" }} disabled={medicalSaving}>
+                          {medicalSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><iconify-icon icon="mdi:check" /> 저장</>}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* 진로희망 탭 */}
+                  {detailEditTab === "career" && (
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!selectedStudent) return;
+                      if (!careerForm.academicTermId) { setCareerError("학기를 선택해주세요."); return; }
+                      setCareerSaving(true);
+                      setCareerError(null);
+                      try {
+                        await api.post("/career-aspirations/student", {
+                          studentId: selectedStudent.studentId,
+                          academicTermId: careerForm.academicTermId,
+                          specialtyOrInterest: careerForm.specialtyOrInterest,
+                          studentDesiredJob: careerForm.studentDesiredJob,
+                        });
+                        if (careerForm.parentDesiredJob) {
+                          await api.post("/career-aspirations/parent", {
+                            studentId: selectedStudent.studentId,
+                            academicTermId: careerForm.academicTermId,
+                            parentDesiredJob: careerForm.parentDesiredJob,
+                          });
+                        }
+                        setSubView(null);
+                      } catch (err: unknown) {
+                        const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+                        setCareerError(msg ?? "진로희망 저장에 실패했습니다.");
+                      } finally {
+                        setCareerSaving(false);
+                      }
+                    }}>
+                      <div className="p-20">
+                        {careerError && <div className="alert alert-danger radius-8 mb-12 text-sm">{careerError}</div>}
+                        <div className="row gy-14">
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">학기 *</label>
+                            {academicTerms.length === 0 ? (
+                              <div className="text-secondary-light text-sm py-6"><span className="spinner-border spinner-border-sm me-6" />불러오는 중...</div>
+                            ) : (
+                              <select
+                                className="form-select"
+                                value={careerForm.academicTermId ?? ""}
+                                onChange={(e) => {
+                                  const termId = Number(e.target.value);
+                                  const term = academicTerms.find((t) => t.id === termId);
+                                  const existing = term ? careerRecords.find((c) => c.schoolYear === term.schoolYear && c.semester === term.semester) : null;
+                                  setCareerForm({ academicTermId: termId, specialtyOrInterest: existing?.specialtyOrInterest ?? "", studentDesiredJob: existing?.studentDesiredJob ?? "", parentDesiredJob: existing?.parentDesiredJob ?? "" });
+                                }}
+                                required
+                              >
+                                {academicTerms.map((t) => <option key={t.id} value={t.id}>{t.displayName}</option>)}
+                              </select>
+                            )}
+                          </div>
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">특기 또는 흥미</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="예: 컴퓨터, 음악"
+                              value={careerForm.specialtyOrInterest}
+                              onChange={(e) => setCareerForm((f) => ({ ...f, specialtyOrInterest: e.target.value }))}
+                            />
+                          </div>
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">학생 희망직업</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="예: 소프트웨어 엔지니어"
+                              value={careerForm.studentDesiredJob}
+                              onChange={(e) => setCareerForm((f) => ({ ...f, studentDesiredJob: e.target.value }))}
+                            />
+                          </div>
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">부모 희망직업</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="예: 의사"
+                              value={careerForm.parentDesiredJob}
+                              onChange={(e) => setCareerForm((f) => ({ ...f, parentDesiredJob: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="px-20 pb-16 d-flex justify-content-end gap-8">
+                        <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setSubView(null)}>취소</button>
+                        <button type="submit" className="btn btn-success-600 radius-8 d-flex align-items-center gap-6" disabled={careerSaving}>
+                          {careerSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><iconify-icon icon="mdi:check" /> 저장</>}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* 학적사항 탭 */}
+                  {detailEditTab === "enrollment" && (
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!selectedStudent) return;
+                      setEnrollmentSaving(true);
+                      setEnrollmentError(null);
+                      try {
+                        await api.put(`/students/info/${selectedStudent.studentId}`, {
+                          phone: enrollmentForm.phone || null,
+                          address: enrollmentForm.address || null,
+                          previousSchoolName: enrollmentForm.previousSchoolName || null,
+                          admissionDate: enrollmentForm.admissionDate || null,
+                        });
+                        setSubView(null);
+                      } catch (err: unknown) {
+                        const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+                        setEnrollmentError(msg ?? "학적사항 저장에 실패했습니다.");
+                      } finally {
+                        setEnrollmentSaving(false);
+                      }
+                    }}>
+                      <div className="p-20">
+                        {enrollmentError && <div className="alert alert-danger radius-8 mb-12 text-sm">{enrollmentError}</div>}
+                        <div className="row gy-14">
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">연락처</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="010-0000-0000"
+                              value={enrollmentForm.phone}
+                              onChange={(e) => setEnrollmentForm((f) => ({ ...f, phone: e.target.value }))}
+                            />
+                          </div>
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">주소</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="주소를 입력하세요"
+                              value={enrollmentForm.address}
+                              onChange={(e) => setEnrollmentForm((f) => ({ ...f, address: e.target.value }))}
+                            />
+                          </div>
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">이전 학교명</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="이전에 재학한 학교명"
+                              value={enrollmentForm.previousSchoolName}
+                              onChange={(e) => setEnrollmentForm((f) => ({ ...f, previousSchoolName: e.target.value }))}
+                            />
+                          </div>
+                          <div className="col-12">
+                            <label className="form-label fw-semibold text-sm">입학일</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={enrollmentForm.admissionDate}
+                              onChange={(e) => setEnrollmentForm((f) => ({ ...f, admissionDate: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        <p className="text-xs text-secondary-light mt-10 mb-0">
+                          <i className="ri-information-line me-4" />
+                          입력하지 않은 항목은 변경되지 않습니다.
+                        </p>
+                      </div>
+                      <div className="px-20 pb-16 d-flex justify-content-end gap-8">
+                        <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setSubView(null)}>취소</button>
+                        <button type="submit" className="btn radius-8 d-flex align-items-center gap-6" style={{ background: "#7c3aed", color: "#fff" }} disabled={enrollmentSaving}>
+                          {enrollmentSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><iconify-icon icon="mdi:check" /> 저장</>}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {/* 활동 정보 뷰 */}
+              {subView === "activity-info" && (
+                <div className="modal-body p-0" style={{ maxHeight: "60vh", overflowY: "auto" }}>
+                  {activityInfo.loading ? (
+                    <div className="text-center py-24 text-secondary-light" style={{ fontSize: 13 }}>
+                      <span className="spinner-border spinner-border-sm me-8" />
+                      불러오는 중...
+                    </div>
+                  ) : (
+                    <>
+                      {/* 봉사활동 섹션 */}
+                      <div style={{ borderBottom: "1px solid #e5e7eb" }}>
+                        <div className="d-flex align-items-center gap-6 px-16 py-8" style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
+                          <iconify-icon icon="mdi:heart-plus" style={{ fontSize: 13, color: "#16a34a" }} />
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>봉사활동</span>
+                          <span style={{ fontSize: 11, color: "#9ca3af" }}>({activityInfo.volunteers.length}건)</span>
+                        </div>
+                        {activityInfo.volunteers.length === 0 ? (
+                          <div className="px-16 py-10 text-secondary-light" style={{ fontSize: 12 }}>등록된 봉사활동이 없습니다.</div>
+                        ) : (
+                          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                            <thead>
+                              <tr style={{ background: "#f9fafb" }}>
+                                {["학년도", "기간", "장소/기관", "내용", "시간", "누계"].map((h) => (
+                                  <th key={h} style={{ padding: "5px 10px", color: "#6b7280", fontWeight: 600, whiteSpace: "nowrap", borderBottom: "1px solid #e5e7eb", textAlign: "left" }}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {activityInfo.volunteers.map((v) => (
+                                <tr key={v.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                                  <td style={{ padding: "5px 10px", whiteSpace: "nowrap", color: "#374151" }}>{v.schoolYear}학년도</td>
+                                  <td style={{ padding: "5px 10px", whiteSpace: "nowrap", color: "#6b7280" }}>{String(v.startDate).slice(0, 10)}{v.endDate ? `~${String(v.endDate).slice(5, 10)}` : ""}</td>
+                                  <td style={{ padding: "5px 10px", color: "#6b7280", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.organizer}</td>
+                                  <td style={{ padding: "5px 10px", color: "#374151", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.activityContent}</td>
+                                  <td style={{ padding: "5px 10px", whiteSpace: "nowrap", color: "#16a34a", fontWeight: 600 }}>{v.hours}h</td>
+                                  <td style={{ padding: "5px 10px", whiteSpace: "nowrap", color: "#9ca3af" }}>{v.cumulativeHours}h</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+
+                      {/* 수상경력 섹션 */}
+                      <div>
+                        <div className="d-flex align-items-center gap-6 px-16 py-8" style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
+                          <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 13, color: "#ca8a04" }} />
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>수상경력</span>
+                          <span style={{ fontSize: 11, color: "#9ca3af" }}>({activityInfo.awards.length}건)</span>
+                        </div>
+                        {activityInfo.awards.length === 0 ? (
+                          <div className="px-16 py-10 text-secondary-light" style={{ fontSize: 12 }}>등록된 수상경력이 없습니다.</div>
+                        ) : (
+                          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                            <thead>
+                              <tr style={{ background: "#f9fafb" }}>
+                                {["수상명", "등급", "수상일", "수상기관"].map((h) => (
+                                  <th key={h} style={{ padding: "5px 10px", color: "#6b7280", fontWeight: 600, whiteSpace: "nowrap", borderBottom: "1px solid #e5e7eb", textAlign: "left" }}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {activityInfo.awards.map((a) => (
+                                <tr key={a.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                                  <td style={{ padding: "5px 10px", color: "#374151", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</td>
+                                  <td style={{ padding: "5px 10px", whiteSpace: "nowrap" }}>
+                                    <span style={{ fontSize: 11, color: "#ca8a04", background: "#fef9c3", borderRadius: 4, padding: "1px 6px", fontWeight: 600 }}>
+                                      {a.achievementsGradeLabel ?? (
+                                        a.achievementsGrade === "GOLD" ? "금상" :
+                                        a.achievementsGrade === "SILVER" ? "은상" :
+                                        a.achievementsGrade === "BRONZE" ? "동상" :
+                                        a.achievementsGrade === "HONORABLE_MENTION" ? "장려" :
+                                        a.achievementsGrade ?? "-"
+                                      )}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: "5px 10px", whiteSpace: "nowrap", color: "#6b7280" }}>{a.day ? String(a.day).slice(0, 10) : "-"}</td>
+                                  <td style={{ padding: "5px 10px", color: "#6b7280", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.organization ?? "-"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* 행동특성 및 종합의견 폼 */}
+              {subView === "behavior" && (
+                <form onSubmit={handleSaveBehavior}>
+                  <div className="modal-body p-24">
+                    {behaviorError && (
+                      <div className="alert alert-danger radius-8 mb-16 text-sm">{behaviorError}</div>
+                    )}
+                    <div className="row gy-16">
+                      <div className="col-12">
+                        <label className="form-label fw-semibold text-sm">학기 *</label>
+                        {academicTerms.length === 0 ? (
+                          <div className="text-secondary-light text-sm py-8">
+                            <span className="spinner-border spinner-border-sm me-8" />
+                            학기 목록 불러오는 중...
+                          </div>
+                        ) : (
+                          <select
+                            className="form-select"
+                            value={behaviorForm.academicTermId ?? ""}
+                            onChange={(e) => {
+                              const newTermId = Number(e.target.value);
+                              const term = academicTerms.find((t) => t.id === newTermId);
+                              const existing = term ? behaviorRecords.find((r) => r.schoolYear === term.schoolYear && r.semester === term.semester) : null;
+                              setBehaviorForm({ academicTermId: newTermId, specialNotes: existing?.specialNotes ?? "" });
+                            }}
+                            required
+                          >
+                            {academicTerms.map((t) => (
+                              <option key={t.id} value={t.id}>{t.displayName}</option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                      <div className="col-12">
+                        <label className="form-label fw-semibold text-sm">행동특성 및 종합의견 *</label>
+                        <div className="text-xs text-secondary-light mb-6">
+                          학년도+학기 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
+                        </div>
+                        <textarea
+                          className="form-control"
+                          rows={10}
+                          placeholder="행동특성 및 종합의견을 입력하세요"
+                          value={behaviorForm.specialNotes}
+                          onChange={(e) => setBehaviorForm((f) => ({ ...f, specialNotes: e.target.value }))}
+                          style={{ resize: "vertical", minHeight: 200 }}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                    <button
+                      type="button"
+                      className="btn btn-outline-neutral-300 radius-8"
+                      onClick={() => setSubView(null)}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn radius-8 d-flex align-items-center gap-6"
+                      style={{ background: "#9333ea", color: "#fff" }}
+                      disabled={behaviorSaving}
+                    >
+                      {behaviorSaving ? (
                         <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
                       ) : (
                         <><iconify-icon icon="mdi:check" /> 저장</>
