@@ -118,6 +118,15 @@ public class DormitoryController {
     }
 
     /**
+     * cheol: 현재 학기 전체 배정 현황 (학생ID → 기숙사 주소 맵)
+     * GET /api/dormitories/assignments/active
+     */
+    @GetMapping("/assignments/active")
+    public ResponseEntity<Map<Long, String>> getActiveAssignmentMap() {
+        return ResponseEntity.ok(dormitoryService.getActiveAssignmentMap());
+    }
+
+    /**
      * cheol: 학생 이름으로 건물 검색
      * GET /api/dormitories/search?name=xxx
      */

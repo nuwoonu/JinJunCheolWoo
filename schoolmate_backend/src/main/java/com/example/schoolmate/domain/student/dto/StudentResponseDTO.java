@@ -64,6 +64,10 @@ public class StudentResponseDTO {
 
     private StudentStatus status;
 
+    // 학적사항
+    private String previousSchoolName; // 이전 학교명
+    private LocalDate admissionDate;   // 입학일
+
     private LocalDateTime createdDate;
 
     private LocalDateTime modifiedDate;
@@ -305,7 +309,9 @@ public class StudentResponseDTO {
                 .addressDetail(student.getAddressDetail())
                 .phone(student.getPhone())
                 .gender(student.getGender())
-                .status(student.getStatus());
+                .status(student.getStatus())
+                .previousSchoolName(student.getPreviousSchoolName())
+                .admissionDate(student.getAdmissionDate());
 
         // 행동 특성 및 종합의견 매핑 (학년/학기 오름차순)
         if (student.getBehaviorRecords() != null && !student.getBehaviorRecords().isEmpty()) {

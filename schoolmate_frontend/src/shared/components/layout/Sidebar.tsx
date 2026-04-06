@@ -16,7 +16,13 @@ function useSubmenu() {
     const r: Record<string, boolean> = {};
     if (p.startsWith("/teacher/myclass") || p.startsWith("/class/album") || p.startsWith("/board/class-board"))
       r.myclass = true;
-    if (p.startsWith("/student/list") || p.startsWith("/student/myinfo")) r.student = true;
+    if (
+      p.startsWith("/student/list") ||
+      p.startsWith("/student/myinfo") ||
+      p.startsWith("/student/dormitory") ||
+      p.startsWith("/library")
+    )
+      r.student = true;
     // [soojin] 자녀 현황: /parent/children 제거 (헤더 탭으로 이동 예정)
     if (p.startsWith("/attendance/parent") || p.startsWith("/parent/grades") || p.startsWith("/parent/homework"))
       r.parent = true;
@@ -423,6 +429,11 @@ export default function Sidebar() {
                     </SNavLink>
                   </li>
                   <li>
+                    <SNavLink to="/teacher/ability-classes">
+                      <i className="ri-circle-fill circle-icon w-auto" /> 학생 세부능력
+                    </SNavLink>
+                  </li>
+                  <li>
                     <SNavLink to="/teacher/grades/summary">
                       <i className="ri-circle-fill circle-icon w-auto" /> 성적 현황
                     </SNavLink>
@@ -509,6 +520,22 @@ export default function Sidebar() {
                   </li>
                 </ul>
               </li>
+
+              {/* 도서관 */}
+              <li>
+                <SNavLink to="/library">
+                  <i className="ri-book-open-line" />
+                  <span>도서관</span>
+                </SNavLink>
+              </li>
+
+              {/* 기숙사 관리 */}
+              <li>
+                <SNavLink to="/teacher/dormitory">
+                  <i className="ri-building-line" />
+                  <span>기숙사 관리</span>
+                </SNavLink>
+              </li>
             </>
           )}
 
@@ -542,6 +569,11 @@ export default function Sidebar() {
                   <Link to="/student/dormitory">
                     <i className="ri-circle-fill circle-icon w-auto" /> 기숙사
                   </Link>
+                </li>
+                <li>
+                  <SNavLink to="/library">
+                    <i className="ri-circle-fill circle-icon w-auto" /> 도서관
+                  </SNavLink>
                 </li>
               </ul>
             </li>

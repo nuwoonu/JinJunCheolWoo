@@ -1,0 +1,611 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   [cheol] Bootstrap ↔ Tailwind v4 충돌 해결
+
+   원인: Bootstrap이 <link>로 로드되어 unlayered author styles가 됨.
+         Tailwind v4 유틸리티는 @layer utilities 안에 있어 layered styles.
+         CSS Cascade: unlayered > @layer → Bootstrap이 이김.
+
+   해결: .library-root 스코프 + !important 로 Bootstrap을 덮어씀.
+         - specificity: .library-root .p-4 (0,2,0) > Bootstrap .p-4 (0,1,0)
+         - !important: unlayered !important > @layer !important (Bootstrap util)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Bootstrap/style.css element reset (unlayered specificity 우위로 덮어씀) ── */
+/* Bootstrap: button { border-radius: 0 } → Tailwind rounded-* 이 먹히지 않음 */
+.library-root button,
+.library-root [role="button"] {
+  border-radius: unset;
+  background-color: unset;
+  border: unset;
+  padding: unset;
+  color: unset;
+  cursor: pointer;
+}
+/* style.css: span { display: inline-block } → Badge(inline-flex) 깨짐 */
+.library-root span {
+  display: revert;
+}
+/* style.css: a { display: inline-block } → Link(block) 깨짐
+   Bootstrap: a { color: #0d6efd; text-decoration: underline } */
+.library-root a {
+  color: inherit;
+  text-decoration: none;
+  display: revert;
+}
+/* style.css: a:hover { color: var(--primary) } → 카드 hover 색상 깨짐 */
+.library-root a:hover {
+  color: inherit;
+}
+/* style.css: h1~h6 { color: var(--text-primary-light); font-weight: 600 }
+   style.css: h1 { font-size: var(--h1) !important } → Tailwind text-* 무효화 */
+.library-root h1,
+.library-root h2,
+.library-root h3,
+.library-root h4,
+.library-root h5,
+.library-root h6 {
+  margin: 0;
+  font-size: inherit !important;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+/* Bootstrap: input, select, textarea padding/border
+   style.css: button,input,... { background:transparent; padding:0; border-radius:0 } */
+.library-root input,
+.library-root select,
+.library-root textarea {
+  background-color: unset;
+  border: unset;
+  padding: unset;
+  color: inherit;
+  font-size: inherit;
+}
+/* style.css: table td { color: var(--text-secondary-light) !important } */
+.library-root table td {
+  color: inherit !important;
+}
+.library-root table th {
+  color: inherit !important;
+  font-size: inherit;
+  font-weight: inherit;
+}
+/* Bootstrap: img { max-width: 100%; } — 유지 */
+.library-root * {
+  box-sizing: border-box;
+}
+
+/* ── 2. border-radius — Bootstrap button { border-radius:0 } 대응 ── */
+/* style.css: button,input,... { border-radius:0 } 도 포함 */
+/* !important는 동일 specificity에서 나중에 오는 rule이 이김
+   .library-root .rounded-md (0,2,0 + !important) > Bootstrap button (0,0,1, normal) */
+.library-root .rounded {
+  border-radius: calc(var(--radius) - 2px) !important;
+}
+.library-root .rounded-sm {
+  border-radius: calc(var(--radius) - 4px) !important;
+}
+.library-root .rounded-md {
+  border-radius: calc(var(--radius) - 2px) !important;
+}
+.library-root .rounded-lg {
+  border-radius: var(--radius) !important;
+}
+.library-root .rounded-xl {
+  border-radius: calc(var(--radius) + 4px) !important;
+}
+.library-root .rounded-2xl {
+  border-radius: calc(var(--radius) + 8px) !important;
+}
+.library-root .rounded-full {
+  border-radius: 9999px !important;
+}
+
+/* ── 3. display — style.css span/a { display:inline-block } 대응 ── */
+/* @layer 안의 Tailwind display 유틸리티가 unlayered element selector에 지므로 !important 필요 */
+.library-root .block {
+  display: block !important;
+}
+.library-root .inline-block {
+  display: inline-block !important;
+}
+.library-root .inline {
+  display: inline !important;
+}
+.library-root .flex {
+  display: flex !important;
+}
+.library-root .inline-flex {
+  display: inline-flex !important;
+}
+.library-root .grid {
+  display: grid !important;
+}
+.library-root .hidden {
+  display: none !important;
+}
+
+/* ── 4. text size — style.css .text-sm/.text-xs 등 !important 대응 ── */
+.library-root .text-xs {
+  font-size: 0.75rem !important;
+}
+.library-root .text-sm {
+  font-size: 0.875rem !important;
+}
+.library-root .text-base {
+  font-size: 1rem !important;
+}
+.library-root .text-lg {
+  font-size: 1.125rem !important;
+}
+.library-root .text-xl {
+  font-size: 1.25rem !important;
+}
+.library-root .text-2xl {
+  font-size: 1.5rem !important;
+}
+.library-root .text-3xl {
+  font-size: 1.875rem !important;
+}
+
+/* ── 5. spacing — Bootstrap spacing scale과 Tailwind v4 scale 불일치 보정 ── */
+/* Bootstrap: p-3=1rem, p-4=1.5rem / Tailwind: p-3=0.75rem, p-4=1rem */
+.library-root .p-0 {
+  padding: 0 !important;
+}
+.library-root .p-1 {
+  padding: 0.25rem !important;
+}
+.library-root .p-2 {
+  padding: 0.5rem !important;
+}
+.library-root .p-3 {
+  padding: 0.75rem !important;
+}
+.library-root .p-4 {
+  padding: 1rem !important;
+}
+.library-root .p-5 {
+  padding: 1.25rem !important;
+}
+.library-root .p-6 {
+  padding: 1.5rem !important;
+}
+.library-root .p-8 {
+  padding: 2rem !important;
+}
+.library-root .p-12 {
+  padding: 3rem !important;
+}
+
+.library-root .px-0 {
+  padding-inline: 0 !important;
+}
+.library-root .px-1 {
+  padding-inline: 0.25rem !important;
+}
+.library-root .px-2 {
+  padding-inline: 0.5rem !important;
+}
+.library-root .px-3 {
+  padding-inline: 0.75rem !important;
+}
+.library-root .px-4 {
+  padding-inline: 1rem !important;
+}
+.library-root .px-5 {
+  padding-inline: 1.25rem !important;
+}
+.library-root .px-6 {
+  padding-inline: 1.5rem !important;
+}
+.library-root .px-8 {
+  padding-inline: 2rem !important;
+}
+
+.library-root .py-0 {
+  padding-block: 0 !important;
+}
+.library-root .py-1 {
+  padding-block: 0.25rem !important;
+}
+.library-root .py-2 {
+  padding-block: 0.5rem !important;
+}
+.library-root .py-3 {
+  padding-block: 0.75rem !important;
+}
+.library-root .py-4 {
+  padding-block: 1rem !important;
+}
+.library-root .py-5 {
+  padding-block: 1.25rem !important;
+}
+.library-root .py-6 {
+  padding-block: 1.5rem !important;
+}
+.library-root .py-8 {
+  padding-block: 2rem !important;
+}
+
+.library-root .pt-0 {
+  padding-top: 0 !important;
+}
+.library-root .pt-1 {
+  padding-top: 0.25rem !important;
+}
+.library-root .pt-2 {
+  padding-top: 0.5rem !important;
+}
+.library-root .pt-3 {
+  padding-top: 0.75rem !important;
+}
+.library-root .pt-4 {
+  padding-top: 1rem !important;
+}
+.library-root .pb-0 {
+  padding-bottom: 0 !important;
+}
+.library-root .pb-4 {
+  padding-bottom: 1rem !important;
+}
+.library-root .pl-0 {
+  padding-left: 0 !important;
+}
+.library-root .pl-4 {
+  padding-left: 1rem !important;
+}
+.library-root .pl-10 {
+  padding-left: 2.5rem !important;
+}
+
+.library-root .m-0 {
+  margin: 0 !important;
+}
+.library-root .m-1 {
+  margin: 0.25rem !important;
+}
+.library-root .m-2 {
+  margin: 0.5rem !important;
+}
+.library-root .m-3 {
+  margin: 0.75rem !important;
+}
+.library-root .m-4 {
+  margin: 1rem !important;
+}
+.library-root .mx-auto {
+  margin-inline: auto !important;
+}
+.library-root .my-6 {
+  margin-block: 1.5rem !important;
+}
+.library-root .mt-0 {
+  margin-top: 0 !important;
+}
+.library-root .mt-2 {
+  margin-top: 0.5rem !important;
+}
+.library-root .mt-4 {
+  margin-top: 1rem !important;
+}
+.library-root .mt-6 {
+  margin-top: 1.5rem !important;
+}
+.library-root .mt-8 {
+  margin-top: 2rem !important;
+}
+.library-root .mb-0 {
+  margin-bottom: 0 !important;
+}
+.library-root .mb-1 {
+  margin-bottom: 0.25rem !important;
+}
+.library-root .mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+.library-root .mb-3 {
+  margin-bottom: 0.75rem !important;
+}
+.library-root .mb-4 {
+  margin-bottom: 1rem !important;
+}
+.library-root .mb-6 {
+  margin-bottom: 1.5rem !important;
+}
+.library-root .mb-8 {
+  margin-bottom: 2rem !important;
+}
+.library-root .mr-1 {
+  margin-right: 0.25rem !important;
+}
+.library-root .mr-2 {
+  margin-right: 0.5rem !important;
+}
+.library-root .ml-13 {
+  margin-left: 3.25rem !important;
+}
+
+/* ── 6. gap — Bootstrap gap-3=1rem, gap-4=1.5rem vs Tailwind gap-3=0.75rem, gap-4=1rem ── */
+.library-root .gap-1 {
+  gap: 0.25rem !important;
+}
+.library-root .gap-2 {
+  gap: 0.5rem !important;
+}
+.library-root .gap-3 {
+  gap: 0.75rem !important;
+}
+.library-root .gap-4 {
+  gap: 1rem !important;
+}
+.library-root .gap-6 {
+  gap: 1.5rem !important;
+}
+.library-root .gap-8 {
+  gap: 2rem !important;
+}
+
+.library-root .space-y-2 > * + * {
+  margin-top: 0.5rem !important;
+}
+.library-root .space-y-3 > * + * {
+  margin-top: 0.75rem !important;
+}
+.library-root .space-y-4 > * + * {
+  margin-top: 1rem !important;
+}
+.library-root .space-y-6 > * + * {
+  margin-top: 1.5rem !important;
+}
+
+/* ── 7. width/height — Bootstrap w-25=25%, w-50=50% vs Tailwind w-4=1rem 등 ── */
+.library-root .w-2 {
+  width: 0.5rem !important;
+}
+.library-root .w-3 {
+  width: 0.75rem !important;
+}
+.library-root .w-4 {
+  width: 1rem !important;
+}
+.library-root .w-5 {
+  width: 1.25rem !important;
+}
+.library-root .w-6 {
+  width: 1.5rem !important;
+}
+.library-root .w-8 {
+  width: 2rem !important;
+}
+.library-root .w-10 {
+  width: 2.5rem !important;
+}
+.library-root .w-12 {
+  width: 3rem !important;
+}
+.library-root .w-14 {
+  width: 3.5rem !important;
+}
+.library-root .w-16 {
+  width: 4rem !important;
+}
+.library-root .w-20 {
+  width: 5rem !important;
+}
+.library-root .w-24 {
+  width: 6rem !important;
+}
+.library-root .w-full {
+  width: 100% !important;
+}
+
+.library-root .h-2 {
+  height: 0.5rem !important;
+}
+.library-root .h-3 {
+  height: 0.75rem !important;
+}
+.library-root .h-4 {
+  height: 1rem !important;
+}
+.library-root .h-5 {
+  height: 1.25rem !important;
+}
+.library-root .h-6 {
+  height: 1.5rem !important;
+}
+.library-root .h-8 {
+  height: 2rem !important;
+}
+.library-root .h-10 {
+  height: 2.5rem !important;
+}
+.library-root .h-12 {
+  height: 3rem !important;
+}
+.library-root .h-14 {
+  height: 3.5rem !important;
+}
+.library-root .h-16 {
+  height: 4rem !important;
+}
+.library-root .h-20 {
+  height: 5rem !important;
+}
+.library-root .h-24 {
+  height: 6rem !important;
+}
+.library-root .h-28 {
+  height: 7rem !important;
+}
+.library-root .h-full {
+  height: 100% !important;
+}
+
+/* ── 8. 도서관 전용 base styles ── */
+.library-root {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: var(--font-size);
+  line-height: 1.5;
+}
+
+.library-root h1 {
+  font-size: var(--text-2xl, 1.5rem) !important;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+.library-root h2 {
+  font-size: var(--text-xl, 1.25rem) !important;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+.library-root h3 {
+  font-size: var(--text-lg, 1.125rem) !important;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+}
+.library-root h4 {
+  font-size: var(--text-base, 1rem) !important;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+.library-root label {
+  font-size: var(--text-base, 1rem);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+.library-root button {
+  font-size: var(--text-base, 1rem);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+.library-root input,
+.library-root select,
+.library-root textarea {
+  font-size: var(--text-base, 1rem);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+}

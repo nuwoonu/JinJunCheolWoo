@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import "@/shared/styles/dashboard-card.css"; // [soojin] 대시보드 카드 공통 스타일
+import "@/features/library/styles/index.css"; // [cheol] 도서관 Tailwind 스타일
 import { useEffect } from "react";
 import PrivateRoute from "@/shared/components/PrivateRoute";
 import PageLoader from "@/shared/components/PageLoader";
@@ -17,7 +18,6 @@ import OAuth2Callback from "@/features/auth/pages/OAuth2Callback";
 import SelectRole from "@/features/auth/pages/SelectRole";
 import SelectInfo from "@/features/auth/pages/SelectInfo";
 import RegisterSchoolSelect from "@/features/auth/pages/RegisterSchoolSelect";
-import Main from "@/pages/Main";
 import MainDesign from "@/pages/Main-design";
 import SchoolSearchPage from "@/pages/SchoolSearchPage"; // [soojin] 학교 찾기 독립 페이지
 import ServiceNoticePage from "@/pages/ServiceNoticePage"; // [soojin] 공지사항 독립 페이지
@@ -134,6 +134,16 @@ import ServiceNoticeForm from "@/features/admin/pages/servicenotices/ServiceNoti
 import ServiceNoticeDetail from "@/features/admin/pages/servicenotices/ServiceNoticeDetail";
 import JoonTransfer from "@/features/admin/pages/Transfer";
 import JoonTestMode from "@/features/admin/pages/TestMode";
+import AbilityClasses from "./pages/cheol/teacher/AbilityClasses";
+import AbilityStudents from "./pages/cheol/teacher/AbilityStudents";
+// [cheol] 도서관
+import LibraryPage from "@/features/library/app/components/Library";
+import LibraryBookDetail from "@/features/library/app/components/BookDetail";
+import LibraryBorrowedBooks from "@/features/library/app/components/BorrowedBooks";
+import LibraryOverdueBooks from "@/features/library/app/components/OverdueBooks";
+import LibraryReadingStats from "@/features/library/app/components/ReadingStats";
+// [cheol] 기숙사 관리 (교사)
+import DormitoryManagement from "@/features/dormitory/pages/DormitoryManagement";
 
 function SchoolSelectGuard() {
   const { selectedSchool, setSelectedSchool } = useSchool();
@@ -182,7 +192,6 @@ function App() {
       <Route path="/register/school-select" element={<RegisterSchoolSelect />} />
       {/* [woo] OAuth2 GUEST 유저 역할 선택 페이지 (하위 호환 유지) */}
       <Route path="/select-role" element={<SelectRole />} />
-
       {/* 학생 */}
       <Route
         path="/student/dashboard"
@@ -223,7 +232,6 @@ function App() {
         <Route path="building/:buildingId" element={<DormitoryFloorList />} />
         <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
-
       {/* [woo] 교사 성적 입력 - 분반 목록 */}
       <Route
         path="/teacher/grades"
@@ -233,6 +241,25 @@ function App() {
           </PrivateRoute>
         }
       />
+      {/* [cheol] 교사 세부능력 - 학급 선택 */}
+      <Route
+        path="/teacher/ability-classes"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER"]}>
+            <AbilityClasses />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 교사 세부능력 - 학생 목록 및 입력 */}
+      <Route
+        path="/teacher/ability-students"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER"]}>
+            <AbilityStudents />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 성적/시험 */}
       {/* [woo] 교사 성적 요약 - 분반 목록 */}
       <Route
         path="/teacher/grades/summary"
@@ -294,7 +321,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [woo] 과제 */}
       <Route
         path="/homework"
@@ -338,7 +364,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [soojin] 퀴즈 목록 전용 라우트 - 사이드바에서 직접 진입 */}
       <Route
         path="/quiz"
@@ -373,7 +398,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [woo] 교사 페이지 */}
       <Route
         path="/teacher/dashboard"
@@ -459,9 +483,7 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [woo 03-27] 학년 게시판 제거 — 학급 게시판(ClassBoard)으로 대체 */}
-
       {/* [woo] 게시판 */}
       <Route
         path="/board/school-notice"
@@ -493,6 +515,23 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["PARENT", "TEACHER", "ADMIN"]}>
             <ParentNoticeDetail />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 학부모 학급 알림장 */}
+      <Route
+        path="/parent/class/notice"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ClassDiary />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/parent/class/notice/:id"
+        element={
+          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+            <ClassDiaryDetail />
           </PrivateRoute>
         }
       />
@@ -572,7 +611,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* 학부모 */}
       <Route
         path="/parent/dashboard"
@@ -600,7 +638,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [woo] 교직원 게시판 */}
       <Route
         path="/board/teacher"
@@ -627,7 +664,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [woo] 수업 일정 추가/수정 (TimetableApp 링크) */}
       <Route
         path="/teacher/schedule/add"
@@ -645,7 +681,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [woo] 출결 관리 */}
       <Route
         path="/attendance/student"
@@ -672,7 +707,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [soojin] 상담 신청 예약 (캘린더) */}
       <Route
         path="/consultation/reservation"
@@ -691,7 +725,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] parkjoon 관리자 페이지 - /admin/... */}
       {/* requiredGrants: ADMIN role이면 항상 통과, GrantedRole 위임자는 해당 grant 보유 시 통과 */}
       <Route
@@ -718,7 +751,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 학생 관리 */}
       <Route
         path={ADMIN_ROUTES.STUDENTS.LIST}
@@ -744,7 +776,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 교사 관리 */}
       <Route
         path={ADMIN_ROUTES.TEACHERS.LIST}
@@ -770,7 +801,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 학부모 관리 */}
       <Route
         path={ADMIN_ROUTES.PARENTS.LIST}
@@ -796,7 +826,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 교직원 관리 */}
       <Route
         path={ADMIN_ROUTES.STAFFS.LIST}
@@ -822,7 +851,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 전입 처리 */}
       <Route
         path={ADMIN_ROUTES.TRANSFER}
@@ -832,7 +860,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 테스트 데이터 생성 (SUPER_ADMIN + testMode 활성화 시) */}
       <Route
         path={ADMIN_ROUTES.TEST_MODE}
@@ -842,7 +869,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 학급 관리 */}
       <Route
         path={ADMIN_ROUTES.CLASSES.LIST}
@@ -868,7 +894,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 공지사항 관리 */}
       <Route
         path={ADMIN_ROUTES.NOTICES.LIST}
@@ -902,7 +927,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 시설/기자재 관리 */}
       <Route
         path={ADMIN_ROUTES.FACILITIES}
@@ -933,7 +957,6 @@ function App() {
         <Route path="building/:buildingId" element={<DormitoryFloorList />} />
         <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
-
       {/* [joon] 기준 정보 관리 (SUPER_ADMIN 전용) */}
       <Route
         path={ADMIN_ROUTES.MASTER.SCHEDULE}
@@ -959,7 +982,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [joon] 감사 로그 (SUPER_ADMIN 전용) */}
       <Route
         path={ADMIN_ROUTES.AUDIT.ACCESS}
@@ -977,7 +999,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* 서비스 공지 관리 (SUPER_ADMIN 전용) */}
       <Route
         path={ADMIN_ROUTES.SERVICE_NOTICES.LIST}
@@ -1011,7 +1032,6 @@ function App() {
           </PrivateRoute>
         }
       />
-
       {/* [soojin] 학교 일정 / 갤러리 - PARENT, TEACHER, ADMIN, STUDENT */}
       <Route
         path="/school/schedule"
@@ -1038,7 +1058,56 @@ function App() {
           </PrivateRoute>
         }
       />
-
+      {/* [cheol] 도서관 */}
+      <Route
+        path="/library"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/book/:bookId"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryBookDetail />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/borrowed"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryBorrowedBooks />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/overdue"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryOverdueBooks />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/library/stats"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN"]}>
+            <LibraryReadingStats />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 기숙사 관리 (교사) */}
+      <Route
+        path="/teacher/dormitory"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <DormitoryManagement />
+          </PrivateRoute>
+        }
+      />
       {/* [woo] 에러 페이지 - Spring Boot error/403.html, error/404.html 참조 */}
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<NotFound />} />

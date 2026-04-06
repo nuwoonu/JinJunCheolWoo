@@ -293,7 +293,8 @@ public class DormitoryService {
      * 전체 건물 목록 및 통계 조회
      */
     public List<Map<String, Object>> getAllBuildings() {
-        List<Object[]> rows = dormitoryRepository.findBuildingSummaries(getRequiredSchoolId());
+        Long schoolId = getRequiredSchoolId();
+        List<Object[]> rows = dormitoryRepository.findBuildingSummaries(schoolId);
         List<Map<String, Object>> result = new ArrayList<>();
         for (Object[] row : rows) {
             Map<String, Object> map = new LinkedHashMap<>();
@@ -310,7 +311,8 @@ public class DormitoryService {
      * 특정 건물의 모든 방 조회 (층별·호수별 그룹화)
      */
     public Map<Integer, Map<String, List<DormitoryDTO>>> getBuildingRooms(String building) {
-        List<Dormitory> dormitories = dormitoryRepository.findByBuildingWithStudents(getRequiredSchoolId(), building);
+        Long schoolId = getRequiredSchoolId();
+        List<Dormitory> dormitories = dormitoryRepository.findByBuildingWithStudents(schoolId, building);
         return dormitories.stream()
                 .collect(Collectors.groupingBy(
                         Dormitory::getFloor,
@@ -323,7 +325,8 @@ public class DormitoryService {
      * 빈 침대 목록 조회
      */
     public List<DormitoryDTO> getEmptyBeds() {
-        return dormitoryRepository.findEmptyBeds(getRequiredSchoolId()).stream()
+        Long schoolId = getRequiredSchoolId();
+        return dormitoryRepository.findEmptyBeds(schoolId).stream()
                 .map(DormitoryDTO::from).collect(Collectors.toList());
     }
 
@@ -331,7 +334,8 @@ public class DormitoryService {
      * 특정 건물의 빈 침대 조회
      */
     public List<DormitoryDTO> getEmptyBedsByBuilding(String building) {
-        return dormitoryRepository.findEmptyBedsByBuilding(getRequiredSchoolId(), building).stream()
+        Long schoolId = getRequiredSchoolId();
+        return dormitoryRepository.findEmptyBedsByBuilding(schoolId, building).stream()
                 .map(DormitoryDTO::from).collect(Collectors.toList());
     }
 
@@ -393,9 +397,9 @@ public class DormitoryService {
         return dormitoryAssignmentRepository.findActiveByStudentInfoId(studentInfoId)
                 .map(da -> {
                     Dormitory myBed = da.getDormitory();
+                    Long schoolId = getRequiredSchoolId();
                     List<Dormitory> roomBeds = dormitoryRepository.findByRoomWithStudents(
-                            getRequiredSchoolId(),
-                            myBed.getBuilding(), myBed.getFloor(), myBed.getRoomNumber());
+                            schoolId, myBed.getBuilding(), myBed.getFloor(), myBed.getRoomNumber());
                     List<String> allStudentNames = roomBeds.stream()
                             .flatMap(bed -> bed.getDormitoryAssignments().stream())
                             .map(assignment -> assignment.getStudentInfo().getUser().getName())
@@ -443,7 +447,20 @@ public class DormitoryService {
     public List<String> getBuildingsByStudentName(String name) {
         if (name == null || name.trim().isEmpty())
             return List.of();
-        return dormitoryRepository.findBuildingsByStudentName(getRequiredSchoolId(), name.trim());
+        Long schoolId = getRequiredSchoolId();
+        return dormitoryRepository.findBuildingsByStudentName(schoolId, name.trim());
+    }
+
+    /**
+     * 현재 학기 기준 전체 배정 현황 (학생ID → 기숙사 주소 맵)
+     */
+    public Map<Long, String> getActiveAssignmentMap() {
+        Long schoolId = getRequiredSchoolId();
+        return dormitoryAssignmentRepository.findAllActiveBySchoolId(schoolId).stream()
+                .collect(Collectors.toMap(
+                        da -> da.getStudentInfo().getId(),
+                        da -> da.getDormitory().getFullAddress(),
+                        (a, b) -> a));
     }
 
     /**

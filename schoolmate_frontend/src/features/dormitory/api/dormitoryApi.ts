@@ -123,13 +123,24 @@ export async function searchBuildingsByStudent(name: string): Promise<string[]> 
   return res.data ?? [];
 }
 
-// 전체 학생 목록 (배정 시 선택용)
+// 현재 학기 전체 배정 현황 (studentInfoId → fullAddress 맵)
+export async function fetchActiveAssignments(): Promise<Record<number, string>> {
+  const res = await dormApi.get("/dormitories/assignments/active");
+  return res.data ?? {};
+}
+
+// 전체 학생 목록 (배정 시 선택용, 기숙사 배정 정보 포함)
 export async function fetchAllStudents(): Promise<StudentSummary[]> {
-  const res = await dormApi.get("/students");
-  return (res.data ?? []).map((s: any) => ({
+  const [studentsRes, assignmentsRes] = await Promise.all([
+    dormApi.get("/students"),
+    dormApi.get("/dormitories/assignments/active").catch(() => ({ data: {} })),
+  ]);
+  const assignmentMap: Record<number, string> = assignmentsRes.data ?? {};
+  return (studentsRes.data ?? []).map((s: any) => ({
     id: s.id,
     name: s.userName ?? s.name,
     studentNumber: s.studentNumber,
     fullStudentNumber: s.fullStudentNumber,
+    dormitoryInfo: assignmentMap[s.id] ?? undefined,
   }));
 }

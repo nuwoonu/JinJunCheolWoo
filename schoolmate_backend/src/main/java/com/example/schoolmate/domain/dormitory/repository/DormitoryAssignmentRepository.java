@@ -31,6 +31,14 @@ public interface DormitoryAssignmentRepository extends JpaRepository<DormitoryAs
     // 특정 학기의 모든 배정 조회
     List<DormitoryAssignment> findByAcademicTermId(Long academicTermId);
 
+    // 특정 학교의 현재(ACTIVE) 학기 전체 배정 조회
+    @Query("SELECT da FROM DormitoryAssignment da " +
+           "JOIN FETCH da.dormitory d " +
+           "JOIN FETCH da.studentInfo si " +
+           "JOIN da.academicTerm t " +
+           "WHERE d.school.id = :schoolId AND t.status = 'ACTIVE'")
+    List<DormitoryAssignment> findAllActiveBySchoolId(@Param("schoolId") Long schoolId);
+
     // 특정 학생의 배정 삭제
     void deleteByStudentInfoIdAndAcademicTermId(Long studentInfoId, Long academicTermId);
 }
