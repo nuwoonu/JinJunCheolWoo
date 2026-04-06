@@ -8,7 +8,6 @@ import com.example.schoolmate.common.entity.info.assignment.StudentAssignment;
 import com.example.schoolmate.common.entity.info.constant.StudentStatus;
 import com.example.schoolmate.cheol.entity.AwardsAndHonors;
 import com.example.schoolmate.cheol.entity.DormitoryAssignment;
-import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.MedicalDetails;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
@@ -81,10 +80,6 @@ public class StudentInfo extends SchoolMemberInfo {
     // 수상이력
     @OneToMany(mappedBy = "studentInfo")
     private List<AwardsAndHonors> awardsAndHonors = new ArrayList<>();
-
-    // 성적
-    @OneToMany(mappedBy = "student")
-    private List<Grade> grades = new ArrayList<>();
 
     // 학기별 기숙사 배정 이력
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -28,12 +28,21 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
 
         // [joon] @Query가 필요한 메서드는 모두 StudentInfoRepositoryCustom(QueryDSL)으로 이동됨
 
-        // [woo] 학급에 속한 학생 목록 (currentAssignment 기반)
+        // [woo] 학급에 속한 학생 목록 (학년도 필터)
         @org.springframework.data.jpa.repository.Query(
-            "SELECT s FROM StudentInfo s JOIN FETCH s.user " +
-            "JOIN FETCH s.currentAssignment sa " +
+            "SELECT DISTINCT s FROM StudentInfo s JOIN FETCH s.user " +
+            "JOIN s.assignments sa " +
             "WHERE sa.classroom.cid = :classroomId " +
-            "ORDER BY sa.attendanceNum ASC")
-        List<StudentInfo> findByCurrentClassroomId(
+            "AND sa.schoolYear = :schoolYear")
+        List<StudentInfo> findByClassroomIdAndSchoolYear(
+            @org.springframework.data.repository.query.Param("classroomId") Long classroomId,
+            @org.springframework.data.repository.query.Param("schoolYear") int schoolYear);
+
+        // [woo] 학급에 속한 학생 목록 (학년도 무관 — 폴백용)
+        @org.springframework.data.jpa.repository.Query(
+            "SELECT DISTINCT s FROM StudentInfo s JOIN FETCH s.user " +
+            "JOIN s.assignments sa " +
+            "WHERE sa.classroom.cid = :classroomId")
+        List<StudentInfo> findByClassroomId(
             @org.springframework.data.repository.query.Param("classroomId") Long classroomId);
 }

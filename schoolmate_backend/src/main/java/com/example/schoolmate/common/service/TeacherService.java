@@ -17,13 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.schoolmate.cheol.dto.GradeDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentCreateDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentResponseDTO;
 import com.example.schoolmate.cheol.dto.studentdto.StudentUpdateDTO;
-import com.example.schoolmate.cheol.entity.Grade;
 import com.example.schoolmate.cheol.entity.Subject;
-import com.example.schoolmate.cheol.repository.GradeRepository;
 import com.example.schoolmate.cheol.repository.SubjectRepository;
 import com.example.schoolmate.common.dto.NotificationDTO;
 import com.example.schoolmate.common.dto.TeacherDTO;
@@ -52,7 +49,6 @@ import com.example.schoolmate.config.school.SchoolContextHolder;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.term.repository.AcademicTermRepository;
 import com.example.schoolmate.woo.dto.ClassStudentDTO;
-import com.example.schoolmate.woo.dto.GradeInputDTO;
 import com.example.schoolmate.woo.dto.teacherdto.TeacherResponseDTO;
 import com.example.schoolmate.woo.dto.teacherdto.TeacherUpdateDTO;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -74,7 +70,6 @@ public class TeacherService {
     private final TeacherInfoRepository teacherInfoRepository;
     private final StudentInfoRepository studentInfoRepository;
     private final ClassroomRepository classroomRepository;
-    private final GradeRepository gradeRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -486,79 +481,6 @@ public class TeacherService {
     }
 
     // ==================================================================================
-    // ========== [교사] 성적 관리 ==========
-    // ==================================================================================
-
-    /**
-     * 성적 입력
-     */
-    @Transactional
-    public void inputGrade(Long teacherId, GradeInputDTO gradeDTO) {
-        log.info("성적 입력 - 교사: {}, 학생: {}, 과목ID: {}",
-                teacherId, gradeDTO.getStudentId(), gradeDTO.getSubjectId());
-
-        Subject subject = subjectRepository.findById(gradeDTO.getSubjectId())
-                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectId()));
-
-        StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-
-        // [woo] 동일 조건(학생/과목/시험종류/학기) 성적이 이미 있으면 점수만 덮어씀 (upsert)
-        gradeRepository.findDuplicate(
-                student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getAcademicTermId())
-                .ifPresentOrElse(
-                        existing -> {
-                            existing.changeScore(gradeDTO.getScore());
-                            log.info("성적 갱신 완료 - 학생: {}, 과목: {}, 점수: {}",
-                                    student.getId(), subject.getName(), gradeDTO.getScore());
-                        },
-                        () -> {
-                            com.example.schoolmate.domain.term.entity.AcademicTerm term =
-                                    academicTermRepository.findById(gradeDTO.getAcademicTermId())
-                                            .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
-                            gradeRepository.save(Grade.builder()
-                                    .student(student)
-                                    .subject(subject)
-                                    .testType(gradeDTO.getTestType())
-                                    .academicTerm(term)
-                                    .score(gradeDTO.getScore())
-                                    .build());
-                            log.info("성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
-                                    student.getId(), subject.getName(), gradeDTO.getScore());
-                        });
-    }
-
-    /**
-     * 성적 수정
-     */
-    @Transactional
-    public void updateGrade(Long teacherId, Long gradeId, Double newScore) {
-        log.info("성적 수정 - 교사: {}, 성적ID: {}, 새점수: {}", teacherId, gradeId, newScore);
-        Grade grade = gradeRepository.findById(gradeId)
-                .orElseThrow(() -> new IllegalArgumentException("성적을 찾을 수 없습니다."));
-        grade.changeScore(newScore);
-    }
-
-    /**
-     * 과목별 성적 조회
-     */
-    public List<GradeDTO> getMySubjectGrades(Long teacherId, String subjectCode) {
-        log.info("과목 성적 조회 - 교사: {}, 과목: {}", teacherId, subjectCode);
-        List<Grade> grades = gradeRepository.findBySubjectCodeWithSubject(subjectCode);
-        return grades.stream().map(this::entityToDto).collect(Collectors.toList());
-    }
-
-    /**
-     * 학생별 성적 조회
-     */
-    public List<GradeDTO> getStudentGrades(Long studentId) {
-        log.info("학생 성적 조회 - 학생 ID: {}", studentId);
-        List<Grade> grades = gradeRepository.findByStudentIdWithSubject(studentId);
-        return grades.stream().map(this::entityToDto).collect(Collectors.toList());
-    }
-
-    // ==================================================================================
     // ========== [교사] 담임 배정 확인 및 담당 학급 관리 ==========
     // ==================================================================================
 
@@ -680,53 +602,6 @@ public class TeacherService {
     }
 
     /**
-     * 담당 학급 학생 성적 입력 (담임 전용)
-     */
-    @Transactional
-    public void inputGradeForMyClass(Long teacherId, int schoolYear, GradeInputDTO gradeDTO) {
-        log.info("담당 학급 학생 성적 입력 - 교사: {}, 학생: {}", teacherId, gradeDTO.getStudentId());
-
-        Classroom myClassroom = getMyClassroomOrThrow(teacherId, schoolYear);
-
-        StudentInfo student = studentInfoRepository.findById(gradeDTO.getStudentId())
-                .orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
-
-        if (student.getCurrentAssignment() == null
-                || student.getCurrentAssignment().getClassroom() == null
-                || !student.getCurrentAssignment().getClassroom().getCid().equals(myClassroom.getCid())) {
-            throw new IllegalArgumentException("담당 학급 학생이 아닙니다. 본인 반 학생의 성적만 입력할 수 있습니다.");
-        }
-
-        Subject subject = subjectRepository.findById(gradeDTO.getSubjectId())
-                .orElseThrow(() -> new IllegalArgumentException("과목을 찾을 수 없습니다: " + gradeDTO.getSubjectId()));
-
-        // [woo] 동일 조건 성적이 이미 있으면 점수만 덮어씀 (upsert)
-        gradeRepository.findDuplicate(
-                student.getId(), subject.getCode(),
-                gradeDTO.getTestType(), gradeDTO.getAcademicTermId())
-                .ifPresentOrElse(
-                        existing -> {
-                            existing.changeScore(gradeDTO.getScore());
-                            log.info("담당 학급 성적 갱신 완료 - 학생: {}, 과목: {}, 점수: {}",
-                                    student.getId(), subject.getName(), gradeDTO.getScore());
-                        },
-                        () -> {
-                            com.example.schoolmate.domain.term.entity.AcademicTerm term =
-                                    academicTermRepository.findById(gradeDTO.getAcademicTermId())
-                                            .orElseThrow(() -> new IllegalArgumentException("학기를 찾을 수 없습니다."));
-                            gradeRepository.save(Grade.builder()
-                                    .student(student)
-                                    .subject(subject)
-                                    .testType(gradeDTO.getTestType())
-                                    .academicTerm(term)
-                                    .score(gradeDTO.getScore())
-                                    .build());
-                            log.info("담당 학급 학생 성적 입력 완료 - 학생: {}, 과목: {}, 점수: {}",
-                                    student.getId(), subject.getName(), gradeDTO.getScore());
-                        });
-    }
-
-    /**
      * 담당 학급 학생인지 확인
      */
     public boolean isMyClassStudent(Long teacherId, int schoolYear, Long studentId) {
@@ -820,20 +695,4 @@ public class TeacherService {
                 : subjectRepository.findAll().stream().filter(s -> s.getCode().equals(code)).findFirst();
     }
 
-    private GradeDTO entityToDto(Grade grade) {
-        GradeDTO.GradeDTOBuilder builder = GradeDTO.builder()
-                .id(grade.getId())
-                .studentId(grade.getStudent() != null ? grade.getStudent().getId() : null)
-                .subjectName(grade.getSubject() != null ? grade.getSubject().getName() : null)
-                .subjectCode(grade.getSubject() != null ? grade.getSubject().getCode() : null)
-                .examType(grade.getTestType())
-                .score(grade.getScore());
-        if (grade.getAcademicTerm() != null) {
-            builder.academicTermId(grade.getAcademicTerm().getId())
-                    .schoolYear(grade.getAcademicTerm().getSchoolYear())
-                    .semester(grade.getAcademicTerm().getSemester())
-                    .termDisplayName(grade.getAcademicTerm().getDisplayName());
-        }
-        return builder.build();
-    }
 }

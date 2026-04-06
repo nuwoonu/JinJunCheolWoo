@@ -114,6 +114,13 @@ public class AcademicTermService {
         return academicTermRepository.findBySchoolIdOrderBySchoolYearDescSemesterDesc(schoolId);
     }
 
+    // [woo] schoolId 직접 전달 — SchoolContextHolder 미설정 환경(교사/학생 API)용
+    @Transactional(readOnly = true)
+    public List<AcademicTerm> getTermHistory(Long schoolId) {
+        if (schoolId == null) return List.of();
+        return academicTermRepository.findBySchoolIdOrderBySchoolYearDescSemesterDesc(schoolId);
+    }
+
     /**
      * 특정 학년도·학기 조회
      */
