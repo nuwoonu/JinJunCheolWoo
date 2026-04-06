@@ -222,6 +222,9 @@ public class ClassroomService {
             User teacher = userRepository.findById(request.getTeacherUid())
                     .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
             classroom.setTeacher(teacher);
+            // [woo] homeroomTeacher(TeacherInfo)도 함께 설정
+            teacherInfoRepository.findByUserUid(request.getTeacherUid())
+                    .ifPresent(classroom::setHomeroomTeacher);
         }
 
         Long cid = classroomRepository.save(classroom).getCid();
@@ -282,6 +285,9 @@ public class ClassroomService {
             User teacher = userRepository.findById(request.getTeacherUid())
                     .orElseThrow(() -> new IllegalArgumentException("교사를 찾을 수 없습니다."));
             classroom.setTeacher(teacher);
+            // [woo] homeroomTeacher(TeacherInfo)도 함께 설정
+            teacherInfoRepository.findByUserUid(request.getTeacherUid())
+                    .ifPresent(classroom::setHomeroomTeacher);
             logChange(classroom.getCid(), "UPDATE", "담임 교사 변경: " + teacher.getName());
 
             // 새 담임 교사에게 알림
@@ -290,6 +296,7 @@ public class ClassroomService {
                     "/classroom");
         } else {
             classroom.setTeacher(null);
+            classroom.setHomeroomTeacher(null);
             logChange(classroom.getCid(), "UPDATE", "담임 교사 해제");
         }
     }

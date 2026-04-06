@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import MiniCalendar from "@/shared/components/MiniCalendar";
 // @ts-ignore [woo] 추후 사용 예정

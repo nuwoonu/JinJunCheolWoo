@@ -131,10 +131,6 @@ public class StudentInfo extends SchoolMemberInfo {
     @OneToMany(mappedBy = "studentInfo")
     private List<AwardsAndHonors> awardsAndHonors = new ArrayList<>();
 
-    // 성적
-    @OneToMany(mappedBy = "student")
-    private List<Grade> grades = new ArrayList<>();
-
     // 학기별 기숙사 배정 이력
     @OneToMany(mappedBy = "studentInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DormitoryAssignment> dormitoryAssignments = new ArrayList<>();

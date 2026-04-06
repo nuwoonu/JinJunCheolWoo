@@ -317,6 +317,43 @@ public class HomeworkService {
         return HomeworkDTO.SubmissionResponse.fromEntity(saved);
     }
 
+    // ========== [woo] 제출 수정 (학생, 마감 전·미채점 한정) ==========
+
+    @Transactional
+    public HomeworkDTO.SubmissionResponse updateSubmission(Long submissionId, HomeworkDTO.SubmitRequest request,
+            MultipartFile file, CustomUserDTO userDTO) {
+        HomeworkSubmission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new IllegalArgumentException("제출 정보를 찾을 수 없습니다."));
+
+        StudentInfo student = studentInfoRepository.findByUserUid(userDTO.getUid())
+                .orElseThrow(() -> new IllegalArgumentException("학생 정보를 찾을 수 없습니다."));
+
+        if (!submission.getStudent().getId().equals(student.getId())) {
+            throw new SecurityException("본인의 제출물만 수정할 수 있습니다.");
+        }
+
+        Homework homework = submission.getHomework();
+        if (homework.getStatus() == HomeworkStatus.CLOSED) {
+            throw new IllegalArgumentException("마감된 과제는 수정할 수 없습니다.");
+        }
+        if (homework.getDueDate() != null && LocalDateTime.now().isAfter(homework.getDueDate())) {
+            throw new IllegalArgumentException("마감일이 지난 과제는 수정할 수 없습니다.");
+        }
+        if (submission.getStatus() == HomeworkSubmission.SubmissionStatus.GRADED) {
+            throw new IllegalArgumentException("채점 완료된 제출물은 수정할 수 없습니다.");
+        }
+
+        submission.setContent(request.getContent());
+        if (file != null && !file.isEmpty()) {
+            submission.setAttachmentUrl(fileManager.replace(file, submission.getAttachmentUrl(), FileManager.UploadType.HOMEWORK));
+            submission.setAttachmentOriginalName(file.getOriginalFilename());
+        }
+        submission.setSubmittedAt(LocalDateTime.now());
+
+        log.info("[woo] 제출 수정: 제출={}, 학생={}", submissionId, student.getUser().getName());
+        return HomeworkDTO.SubmissionResponse.fromEntity(submission);
+    }
+
     // ========== [woo] 채점 (교사) ==========
 
     @Transactional

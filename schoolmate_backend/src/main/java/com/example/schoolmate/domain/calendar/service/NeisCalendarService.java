@@ -36,18 +36,15 @@ public class NeisCalendarService {
     @Value("${neis.api.key}")
     private String apiKey;
 
-    @Value("${neis.school.atpt-code}")
-    private String atptCode;
-
-    @Value("${neis.school.code}")
-    private String schulCode;
-
     // [woo] NEIS API는 Accept: application/json 헤더를 허용하지 않음 → 헤더 미설정
     private final RestClient restClient = RestClient.builder()
             .defaultHeader("User-Agent", "Mozilla/5.0")
             .build();
 
-    public List<SchoolCalendarDTO> getMonthlyEvents(int year, int month, Integer grade) {
+    // [woo] 학교별 학사일정 조회 — atptCode/schulCode는 호출부(CalendarRestController)가 School DB에서 조회해 전달
+    public List<SchoolCalendarDTO> getMonthlyEvents(int year, int month, Integer grade, String atptCode, String schulCode) {
+        if (atptCode == null || schulCode == null) return Collections.emptyList();
+
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
 
@@ -134,19 +131,17 @@ public class NeisCalendarService {
         return null;
     }
 
-    // [woo] NEIS 고등학교 시간표 조회 - 오늘 날짜 기준 특정 학년/반
-    public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum) {
-        return getTodayTimetable(grade, classNum, atptCode, schulCode);
-    }
-
-    // [soojin] schoolId로 동적 학교 코드 지원 (학부모 다자녀 다학교 케이스)
-    public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum, String atptCode, String schulCode) {
-        return getTodayTimetable(grade, classNum, atptCode, schulCode, null);
-    }
-
     // [soojin] schoolKind에 따라 올바른 NEIS 엔드포인트 선택 (고등학교=hisTimetable, 중학교=misTimetable, 초등학교=elsTimetable)
+    // [woo] atptCode/schulCode는 호출부(CalendarRestController)가 School DB에서 조회해 전달
     public List<TimetableItemDTO> getTodayTimetable(int grade, int classNum, String atptCode, String schulCode, String schoolKind) {
-        String today = LocalDate.now().format(NEIS_DATE_FMT);
+        if (atptCode == null || schulCode == null) return Collections.emptyList();
+
+        LocalDate now = LocalDate.now();
+        String today = now.format(NEIS_DATE_FMT);
+        // [woo] SEM 파라미터 없으면 NEIS가 1·2학기 데이터를 모두 반환해 교시 중복 발생
+        // 한국 학기: 3~8월 = 1학기, 9~2월 = 2학기
+        int sem = (now.getMonthValue() >= 3 && now.getMonthValue() <= 8) ? 1 : 2;
+
         String baseUrl;
         String responseKey;
         if (schoolKind != null && schoolKind.contains("중학")) {
@@ -165,7 +160,8 @@ public class NeisCalendarService {
                 + "&Type=json&pIndex=1&pSize=20"
                 + "&ATPT_OFCDC_SC_CODE=" + atptCode
                 + "&SD_SCHUL_CODE=" + schulCode
-                + "&AY=" + LocalDate.now().getYear()
+                + "&AY=" + now.getYear()
+                + "&SEM=" + sem
                 + "&GRADE=" + grade
                 + "&CLASS_NM=" + classNum
                 + "&ALL_TI_YMD=" + today;
@@ -189,11 +185,14 @@ public class NeisCalendarService {
             List<Map<String, String>> rows = (List<Map<String, String>>) wrapper.get(1).get("row");
             if (rows == null) return Collections.emptyList();
 
+            // [woo] 교시 기준 중복 제거 (SEM 파라미터 추가로 1차 방어, 여기서 2차 방어)
+            java.util.Set<Integer> seen = new java.util.HashSet<>();
             return rows.stream()
                     .map(r -> new TimetableItemDTO(
                             Integer.parseInt(r.getOrDefault("PERIO", "0")),
                             r.getOrDefault("ITRT_CNTNT", "")))
                     .sorted(Comparator.comparingInt(TimetableItemDTO::getPeriod))
+                    .filter(t -> seen.add(t.getPeriod()))
                     .collect(Collectors.toList());
 
         } catch (Exception e) {

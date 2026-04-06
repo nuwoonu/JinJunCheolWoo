@@ -2,6 +2,7 @@ package com.example.schoolmate.domain.user.controller;
 
 import com.example.schoolmate.domain.school.entity.SystemSettings;
 import com.example.schoolmate.global.entity.SchoolMemberInfo;
+import com.example.schoolmate.domain.parent.entity.ParentInfo;
 import com.example.schoolmate.domain.student.entity.StudentInfo;
 import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
 import com.example.schoolmate.domain.teacher.entity.constant.TeacherStatus;
@@ -315,6 +316,21 @@ public class AuthApiController {
         // hasAdminAccess: grants가 하나라도 있으면 어드민 페이지 접근 가능
         boolean hasAdminAccess = !grants.isEmpty();
 
+        // [woo] 전화번호 — 역할별 Info 엔티티에서 조회 (JWT에 미포함이므로 DB 직접 조회)
+        String phoneNumber = null;
+        if (dbUser != null) {
+            if (primaryRole == UserRole.TEACHER || primaryRole == UserRole.STAFF) {
+                TeacherInfo ti = dbUser.getInfo(TeacherInfo.class);
+                if (ti != null) phoneNumber = ti.getPhone();
+            } else if (primaryRole == UserRole.PARENT) {
+                ParentInfo pi = dbUser.getInfo(ParentInfo.class);
+                if (pi != null) phoneNumber = pi.getPhone();
+            } else if (primaryRole == UserRole.STUDENT) {
+                StudentInfo si = dbUser.getInfo(StudentInfo.class);
+                if (si != null) phoneNumber = si.getPhone();
+            }
+        }
+
         // 연동된 소셜 계정 목록 및 비밀번호 설정 여부
         List<String> providers = dbUser != null
                 ? socialAccountRepository.findByUser(dbUser).stream()
@@ -345,6 +361,7 @@ public class AuthApiController {
         response.put("providers", providers);
         response.put("hasPassword", hasPassword);
         response.put("profileImageUrl", profileImageUrl);
+        response.put("phoneNumber", phoneNumber);
 
         return ResponseEntity.ok(response);
     }

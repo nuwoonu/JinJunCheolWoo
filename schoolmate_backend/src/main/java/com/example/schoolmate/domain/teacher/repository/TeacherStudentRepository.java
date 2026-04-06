@@ -89,4 +89,13 @@ public interface TeacherStudentRepository extends JpaRepository<TeacherStudent, 
          */
         void deleteByTeacherInfoIdAndStudentInfoIdAndSchoolYear_YearAndRole(
                         Long teacherInfoId, Long studentInfoId, int year, TeacherRole role);
+
+        // [woo] 교사가 담당하는 학생들의 distinct 학급 목록 (과목 담당 교사용)
+        @Query("SELECT DISTINCT sa.classroom FROM TeacherStudent ts " +
+               "JOIN ts.studentInfo si " +
+               "JOIN si.assignments sa " +
+               "WHERE ts.teacherInfo.id = :teacherInfoId " +
+               "AND sa.classroom IS NOT NULL")
+        List<com.example.schoolmate.domain.classroom.entity.Classroom> findClassroomsByTeacherInfoId(
+                        @Param("teacherInfoId") Long teacherInfoId);
 }

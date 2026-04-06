@@ -209,7 +209,7 @@ export default function AdminDashboard() {
   // [soojin] 2행: RoleRequest 필터 탭 상태 (기본 대기)
   const [studentRRFilter, setStudentRRFilter] = useState<RRStatus>("PENDING");
   const [teacherRRFilter, setTeacherRRFilter] = useState<RRStatus>("PENDING");
-  const [studentFilterOpen, setStudentFilterOpen] = useState(false); // [soojin] 학생 필터 아코디언
+  // const [studentFilterOpen, setStudentFilterOpen] = useState(false); // [soojin] 학생 필터 아코디언 (미사용)
   const [teacherFilterOpen, setTeacherFilterOpen] = useState(false); // [soojin] 교사 필터 아코디언
   const [roleRequestCounts, setRoleRequestCounts] = useState<
     Record<string, Record<string, number>>
