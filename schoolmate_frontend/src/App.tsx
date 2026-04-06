@@ -18,7 +18,6 @@ import OAuth2Callback from "@/features/auth/pages/OAuth2Callback";
 import SelectRole from "@/features/auth/pages/SelectRole";
 import SelectInfo from "@/features/auth/pages/SelectInfo";
 import RegisterSchoolSelect from "@/features/auth/pages/RegisterSchoolSelect";
-import Main from "@/pages/Main";
 import MainDesign from "@/pages/Main-design";
 import SchoolSearchPage from "@/pages/SchoolSearchPage"; // [soojin] 학교 찾기 독립 페이지
 import ServiceNoticePage from "@/pages/ServiceNoticePage"; // [soojin] 공지사항 독립 페이지
