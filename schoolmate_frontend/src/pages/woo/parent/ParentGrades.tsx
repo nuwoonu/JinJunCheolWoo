@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { useAuth } from "@/contexts/AuthContext";
-import { getMyGrades, getMyClassInfo, getTerms } from "@/api/grade";
+import api from "@/api/auth";
+import { getChildGrades, getTerms, getChildClassInfo } from "@/api/grade";
 import type { GradeResponseDTO, TermDTO, TestType, ChildClassInfoDTO } from "@/api/grade";
 
-// [woo] 학생 성적 조회 페이지
-// /student/grades  또는  /exam
+// [woo] 학부모 자녀 성적 조회 페이지
+// /parent/grades
+
+interface Child {
+  studentInfoId: number;
+  name: string;
+  grade?: number;
+  classNum?: number;
+}
 
 // const ALL_TYPES: TestType[] = ["MIDTERMTEST", "FINALTEST", "QUIZ", "HOMEWORK"];
 
-// [woo] 한국 교육과정 과목 정렬 순서 — 긴 이름(기술가정)을 짧은 접두어(기술)보다 앞에 두어야 startsWith 오매칭 방지
+// [woo] 한국 교육과정 과목 정렬 순서
 const SUBJECT_ORDER = [
   "국어", "수학", "영어",
   "사회", "역사", "한국사", "도덕",
@@ -54,82 +61,75 @@ function avg(scores: (number | null)[]): number | null {
   return Math.round((valid.reduce((a, b) => a + b, 0) / valid.length) * 10) / 10;
 }
 
-export default function Grades() {
-  const { user } = useAuth();
+export default function ParentGrades() {
+  const [children, setChildren] = useState<Child[]>([]);
+  const [selectedChild, setSelectedChild] = useState<number | undefined>();
   const [terms, setTerms] = useState<TermDTO[]>([]);
   const [selectedTermId, setSelectedTermId] = useState<number | undefined>();
   const [grades, setGrades] = useState<GradeResponseDTO[]>([]);
   const [classInfo, setClassInfo] = useState<ChildClassInfoDTO | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedSubject, setExpandedSubject] = useState<string | null>(null);
+  // [woo] 학업 평균 토글
+  const [statsTab, setStatsTab] = useState<"class" | "grade">("class");
 
   useEffect(() => {
-    getTerms()
-      .then((res) => {
-        setTerms(res.data);
-        const active = res.data.find((t) => t.active);
-        if (active) setSelectedTermId(active.termId);
-      })
-      .catch(() => {});
+    api.get("/grades/my-children").then((res) => {
+      const list: Child[] = res.data.map((c: any) => ({
+        studentInfoId: c.studentInfoId, name: c.name, grade: c.grade, classNum: c.classNum,
+      }));
+      setChildren(list);
+      if (list.length > 0) setSelectedChild(list[0].studentInfoId);
+    }).catch(() => {});
+
+    getTerms().then((res) => {
+      setTerms(res.data);
+      const active = res.data.find((t) => t.active);
+      if (active) setSelectedTermId(active.termId);
+    }).catch(() => {});
   }, []);
 
-  // [woo] 현재 학기 성적 + 학급 비교 로드
+  // [woo] 현재 학기 성적 + 담임/학급 정보
   useEffect(() => {
-    if (selectedTermId === undefined) return;
+    if (!selectedChild || !selectedTermId) { setLoading(false); return; }
     setLoading(true);
+    setExpandedSubject(null);
     Promise.all([
-      getMyGrades(selectedTermId),
-      getMyClassInfo(selectedTermId),
+      getChildGrades(selectedChild, selectedTermId),
+      getChildClassInfo(selectedChild, selectedTermId),
     ])
       .then(([gradesRes, classRes]) => {
         setGrades(gradesRes.data);
         setClassInfo(classRes.data);
       })
-      .catch(() => {
-        setGrades([]);
-        setClassInfo(null);
-      })
+      .catch(() => { setGrades([]); setClassInfo(null); })
       .finally(() => setLoading(false));
-  }, [selectedTermId]);
+  }, [selectedChild, selectedTermId]);
 
-  // [woo] 과목별 × 시험유형 피벗 ("퀴즈" 가상 과목 제외)
+  // [woo] 과목별 피벗 — "퀴즈" 가상 과목 제외
   const subjectMap = new Map<string, Record<TestType, number | null>>();
   for (const g of grades) {
     if (g.subjectName === "퀴즈") continue;
     if (!subjectMap.has(g.subjectName)) {
-      subjectMap.set(g.subjectName, {
-        MIDTERMTEST: null, FINALTEST: null, QUIZ: null, HOMEWORK: null,
-      });
+      subjectMap.set(g.subjectName, { MIDTERMTEST: null, FINALTEST: null, QUIZ: null, HOMEWORK: null });
     }
     subjectMap.get(g.subjectName)![g.testType] = g.score;
   }
-  const subjectRows = [...subjectMap.entries()].sort(([a], [b]) =>
-    subjectSortKey(a) - subjectSortKey(b)
-  );
+  const subjectRows = [...subjectMap.entries()].sort(([a], [b]) => subjectSortKey(a) - subjectSortKey(b));
 
-  // [woo] 통계 계산
-  const allScores = grades.filter((g) => g.subjectName !== "퀴즈").map((g) => g.score);
-  const overallAvg = avg(allScores);
-
-  // [woo] 중간·기말 평균
-  const midtermAvg = avg(grades.filter((g) => g.testType === "MIDTERMTEST" && g.subjectName !== "퀴즈").map((g) => g.score));
-  const finalAvg = avg(grades.filter((g) => g.testType === "FINALTEST" && g.subjectName !== "퀴즈").map((g) => g.score));
+  // [woo] 통계
+  const overallAvg = avg(grades.filter(g => g.subjectName !== "퀴즈").map((g) => g.score));
+  const midtermAvg = avg(grades.filter(g => g.testType === "MIDTERMTEST" && g.subjectName !== "퀴즈").map(g => g.score));
+  const finalAvg = avg(grades.filter(g => g.testType === "FINALTEST" && g.subjectName !== "퀴즈").map(g => g.score));
   const change = midtermAvg != null && finalAvg != null
     ? Math.round((finalAvg - midtermAvg) * 10) / 10
     : null;
 
-
-  // [woo] 과목별 대표 점수 (있는 점수들의 평균)
   function subjectAvg(scores: Record<TestType, number | null>): number | null {
     return avg(Object.values(scores));
   }
 
-  const [expandedSubject, setExpandedSubject] = useState<string | null>(null);
-  // [woo] 학업 평균 토글: "class" = 학급 비교, "grade" = 학년 비교 (추후)
-  const [statsTab, setStatsTab] = useState<"class" | "grade">("class");
-
-  const studentName = user?.name ?? "학생";
-
-  // [woo] 성취도 요약용 — 과목 그룹 (areaData 차트 추가 시 활성화)
+  // [woo] 성취도 요약 (areaData 차트 추가 시 활성화)
   // const langScores = subjectRows.filter(([n]) => ["국어","영어","한문","제2외국어"].some(s => n.startsWith(s))).map(([,s]) => subjectAvg(s));
   // const mathSciScores = subjectRows.filter(([n]) => ["수학","과학","정보"].some(s => n.startsWith(s))).map(([,s]) => subjectAvg(s));
   // const socialScores = subjectRows.filter(([n]) => ["사회","역사","한국사","도덕"].some(s => n.startsWith(s))).map(([,s]) => subjectAvg(s));
@@ -141,7 +141,7 @@ export default function Grades() {
   //   { label: "예체능·기타", avg: avg(etcScores), color: "#06b6d4" },
   // ].filter((a) => a.avg != null);
 
-  // [woo] 학습 현황 자동 생성
+  // [woo] 학습 현황
   const insights: string[] = [];
   if (subjectRows.length > 0) {
     const best = [...subjectRows].sort(([,a], [,b]) => (subjectAvg(b) ?? 0) - (subjectAvg(a) ?? 0))[0];
@@ -152,25 +152,42 @@ export default function Grades() {
     if (change != null && change < 0) insights.push(`중간고사 대비 기말고사에서 ${Math.abs(change)}점 하락했습니다.`);
   }
 
+  const currentChild = children.find((c) => c.studentInfoId === selectedChild);
+  const termName = terms.find((t) => t.termId === selectedTermId)?.displayName ?? "";
+
   return (
     <DashboardLayout>
-      {/* [woo] 브레드크럼 */}
+      {/* [woo] 상단 */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h6 style={{ fontWeight: 600, margin: 0 }}>평가</h6>
-          <p style={{ color: "#6b7280", margin: "4px 0 0", fontSize: 13 }}>성적 조회</p>
+          <h6 style={{ fontWeight: 600, margin: 0 }}>자녀 성적 조회</h6>
         </div>
-        <select
-          style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 14, maxWidth: 220, background: "#fff" }}
-          value={selectedTermId ?? ""}
-          onChange={(e) => setSelectedTermId(Number(e.target.value))}
-        >
-          {terms.map((t) => (
-            <option key={t.termId} value={t.termId}>
-              {t.displayName} {t.active ? "(현재)" : ""}
-            </option>
-          ))}
-        </select>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {children.length > 1 && (
+            <select
+              style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 14, background: "#fff" }}
+              value={selectedChild ?? ""}
+              onChange={(e) => setSelectedChild(Number(e.target.value))}
+            >
+              {children.map((c) => (
+                <option key={c.studentInfoId} value={c.studentInfoId}>
+                  {c.name}{c.grade && c.classNum ? ` (${c.grade}학년 ${c.classNum}반)` : ""}
+                </option>
+              ))}
+            </select>
+          )}
+          <select
+            style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 14, background: "#fff" }}
+            value={selectedTermId ?? ""}
+            onChange={(e) => setSelectedTermId(Number(e.target.value))}
+          >
+            {terms.map((t) => (
+              <option key={t.termId} value={t.termId}>
+                {t.displayName} {t.active ? "(현재)" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* [woo] 헤더 카드 */}
@@ -188,9 +205,9 @@ export default function Grades() {
             <i className="ri-graduation-cap-line" style={{ fontSize: 24, color: "#25a194" }} />
           </div>
           <div>
-            <div style={{ color: "#0F2B3C", fontWeight: 700, fontSize: 20, lineHeight: 1.3 }}>{studentName}</div>
+            <div style={{ color: "#0F2B3C", fontWeight: 700, fontSize: 20, lineHeight: 1.3 }}>{currentChild?.name ?? "자녀"}</div>
             <div style={{ color: "#3A5568", fontSize: 13, marginTop: 3 }}>
-              {classInfo?.className ?? ""} · {terms.find((t) => t.termId === selectedTermId)?.displayName ?? ""}
+              {classInfo?.className ?? ""} · {termName}
               {classInfo?.homeroomTeacherName && (
                 <span style={{ color: "#6B7B8D", marginLeft: 8 }}>
                   담임 {classInfo.homeroomTeacherName} 선생님
@@ -222,14 +239,15 @@ export default function Grades() {
         <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20, alignItems: "stretch" }}>
           {/* ===== [woo] 왼쪽: 통계 패널 ===== */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* [woo] 학업 평균 + 시험비교/학급비교 토글 */}
+
+            {/* 학업 평균 + 학급/학년 비교 토글 */}
             <div style={{ background: "#fff", borderRadius: 16, padding: 24 }}>
               <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 8, fontWeight: 500 }}>학업 평균</p>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 16 }}>
                 <span style={{ fontSize: 32, fontWeight: 800, color: "#1f2937" }}>{overallAvg ?? "-"}</span>
                 <span style={{ color: "#9ca3af", fontSize: 14 }}>점</span>
               </div>
-              {/* [woo] 토글 버튼: 학급 비교 / 학년 비교 — pill 스타일 */}
+              {/* [woo] pill 토글: 학급 비교 / 학년 비교 */}
               <div style={{ display: "flex", gap: 6, marginBottom: 16, background: "#f3f4f6", borderRadius: 20, padding: 3 }}>
                 {(["class", "grade"] as const).map((tab) => (
                   <button
@@ -247,7 +265,7 @@ export default function Grades() {
                   </button>
                 ))}
               </div>
-              {/* [woo] 학급/학년 비교: 내 평균 vs 비교 대상 평균 프로그레스 바 */}
+              {/* [woo] 학급/학년 비교 바 — statsTab에 따라 전환 */}
               {(() => {
                 const compareAvgs = statsTab === "class" ? classInfo?.classAvgs : classInfo?.gradeAvgs;
                 const compareOverall = compareAvgs?.length
@@ -258,7 +276,7 @@ export default function Grades() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                        <span style={{ fontSize: 12, color: "#9ca3af" }}>내 평균</span>
+                        <span style={{ fontSize: 12, color: "#9ca3af" }}>자녀 평균</span>
                         <span style={{ fontSize: 12, fontWeight: 600, color: "#1f2937" }}>{overallAvg != null ? `${overallAvg}점` : "-"}</span>
                       </div>
                       <div style={{ height: 8, background: "#f3f4f6", borderRadius: 4, overflow: "hidden" }}>
@@ -359,7 +377,7 @@ export default function Grades() {
               );
             })()}
 
-            {/* [woo] 학습 현황 */}
+            {/* 학습 현황 */}
             {insights.length > 0 && (
               <div style={{ background: "#fff", borderRadius: 16, padding: 24 }}>
                 <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 12, fontWeight: 500 }}>학습 현황</p>
@@ -391,7 +409,6 @@ export default function Grades() {
               const compareLabel = statsTab === "class" ? "학급" : "학년";
               const isOpen = expandedSubject === subjectName;
 
-              // [woo] 각 시험유형 점수
               const mid = scores.MIDTERMTEST;
               const fin = scores.FINALTEST;
               const quiz = scores.QUIZ;
@@ -402,7 +419,7 @@ export default function Grades() {
 
               return (
                 <div key={subjectName}>
-                  {/* [woo] 과목 행 — 클릭으로 펼침 */}
+                  {/* 과목 행 */}
                   <div
                     onClick={() => setExpandedSubject(isOpen ? null : subjectName)}
                     style={{
@@ -412,7 +429,7 @@ export default function Grades() {
                       background: isOpen ? "#fafaff" : "transparent",
                     }}
                     onMouseEnter={(e) => { if (!isOpen) e.currentTarget.style.background = "#fafafa"; }}
-                    onMouseLeave={(e) => { if (!isOpen) e.currentTarget.style.background = "transparent"; }}
+                    onMouseLeave={(e) => { if (!isOpen) e.currentTarget.style.background = isOpen ? "#fafaff" : "transparent"; }}
                   >
                     <div style={{
                       width: 44, height: 44, borderRadius: 12, background: "#f0fafa",
@@ -421,9 +438,7 @@ export default function Grades() {
                       <i className={icon} style={{ fontSize: 20, color: "#25a194" }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 15, color: "#1f2937" }}>
-                        {subjectName}
-                      </div>
+                      <div style={{ fontWeight: 600, fontSize: 15, color: "#1f2937" }}>{subjectName}</div>
                       <span style={{ fontSize: 12, color: "#9ca3af" }}>
                         {compareAvgScore != null ? `${compareLabel} 평균 ${compareAvgScore}점` : "상세보기"}
                       </span>
@@ -436,7 +451,6 @@ export default function Grades() {
                         {gradeLabel(sAvg)}등급
                       </span>
                     </div>
-                    {/* [woo] 펼침 화살표 */}
                     <span style={{
                       fontSize: 18, color: "#9ca3af", flexShrink: 0,
                       transition: "transform 0.2s",
@@ -464,7 +478,6 @@ export default function Grades() {
                               background: "#fff", borderRadius: 12, padding: "14px 14px 12px",
                               border: "1px solid #f0f0f5", display: "flex", flexDirection: "column", gap: 6,
                             }}>
-                              {/* 유형명 + 차이 뱃지 */}
                               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                                 <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 500 }}>{item.label}</span>
                                 {scoreDiff != null && (
@@ -477,12 +490,10 @@ export default function Grades() {
                                   </span>
                                 )}
                               </div>
-                              {/* 내 점수 */}
                               <div style={{ fontSize: 26, fontWeight: 800, color: item.score != null ? item.color : "#d1d5db", lineHeight: 1 }}>
                                 {item.score ?? "-"}
                                 {item.score != null && <span style={{ fontSize: 12, fontWeight: 400, color: "#9ca3af" }}>점</span>}
                               </div>
-                              {/* 프로그레스 바 */}
                               <div style={{ position: "relative", height: 6, background: "#f3f4f6", borderRadius: 3, overflow: "hidden" }}>
                                 {item.cmpAvg != null && (
                                   <div style={{ position: "absolute", top: 0, left: 0, width: `${item.cmpAvg}%`, height: "100%", background: "#e5e7eb", borderRadius: 3 }} />
@@ -491,7 +502,6 @@ export default function Grades() {
                                   <div style={{ position: "absolute", top: 0, left: 0, width: `${item.score}%`, height: "100%", background: item.color, borderRadius: 3, opacity: 0.85 }} />
                                 )}
                               </div>
-                              {/* 비교 대상 평균 */}
                               <div style={{ fontSize: 11, color: "#b0b0b0" }}>
                                 {compareLabel} <b style={{ color: "#6b7280" }}>{item.cmpAvg ?? "-"}</b>
                               </div>
@@ -500,14 +510,12 @@ export default function Grades() {
                         })}
                       </div>
 
-                      {/* [woo] 비교 코멘트 */}
                       {sAvg != null && compareAvgScore != null && (
                         <div style={{
-                          fontSize: 13, padding: "10px 14px", borderRadius: 10,
+                          fontSize: 13, padding: "10px 14px", borderRadius: 10, fontWeight: 500,
                           background: sAvg >= compareAvgScore ? "#f0fdf4" : "#fef2f2",
                           color: sAvg >= compareAvgScore ? "#16a34a" : "#dc2626",
                           border: `1px solid ${sAvg >= compareAvgScore ? "#bbf7d0" : "#fecaca"}`,
-                          fontWeight: 500,
                         }}>
                           {sAvg >= compareAvgScore ? (
                             <><i className="ri-arrow-up-line" /> {compareLabel} 평균({compareAvgScore}점)보다 {Math.round((sAvg - compareAvgScore) * 10) / 10}점 높아요</>

@@ -40,10 +40,13 @@ import TeacherScheduleAdd from "@/pages/woo/teacher/ScheduleAdd";
 import TeacherScheduleEdit from "@/pages/woo/teacher/ScheduleEdit";
 import TeacherList from "@/pages/woo/teacher/TeacherList";
 import ParentList from "@/pages/woo/teacher/ParentList";
-import TeacherGradeClasses from "@/pages/woo/teacher/GradeClasses";
-import GradeInput from "@/pages/woo/teacher/GradeInput";
-// [woo] 학부모 성적 조회
-import ParentGrades from "@/pages/jin/parent/ParentGrades";
+import TeacherClassNotice from "@/pages/woo/teacher/TeacherClassNotice";
+// [woo] 성적
+import GradeSections from "@/pages/woo/teacher/GradeSections";
+import GradeEntry from "@/pages/woo/teacher/GradeEntry";
+import GradeEntryInput from "@/pages/woo/teacher/GradeEntryInput";
+import GradeSummaryList from "@/pages/woo/teacher/GradeSummaryList";
+import ParentGrades from "@/pages/woo/parent/ParentGrades";
 
 // [woo] 게시판
 import SchoolNotice from "@/pages/woo/board/SchoolNotice";
@@ -213,25 +216,52 @@ function App() {
         <Route path="building/:buildingId/room/:roomNumber" element={<DormitoryRoomView />} />
       </Route>
 
-      {/* [cheol] 교사 성적 채점 - 학급 선택 */}
+      {/* [woo] 교사 성적 입력 - 분반 목록 */}
       <Route
-        path="/teacher/grade-classes"
-        element={
-          <PrivateRoute allowedRoles={["TEACHER"]}>
-            <TeacherGradeClasses />
-          </PrivateRoute>
-        }
-      />
-      {/* [woo] 교사 성적 입력 - 학급별 성적 관리 */}
-      <Route
-        path="/teacher/grade-input/:classroomId"
+        path="/teacher/grades"
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
-            <GradeInput />
+            <GradeSections />
           </PrivateRoute>
         }
       />
-      {/* [cheol] 성적/시험 */}
+      {/* [woo] 교사 성적 요약 - 분반 목록 */}
+      <Route
+        path="/teacher/grades/summary"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <GradeSummaryList />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 교사 성적 입력 - 분반별 점수 입력 */}
+      <Route
+        path="/teacher/grades/section/:sectionId"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <GradeEntryInput />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 교사 성적 대시보드 - 분반별 요약 */}
+      <Route
+        path="/teacher/grades/section/:sectionId/summary"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <GradeEntry />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 학생 성적 조회 */}
+      <Route
+        path="/student/grades"
+        element={
+          <PrivateRoute allowedRoles={["STUDENT", "ADMIN"]}>
+            <StudentGrades />
+          </PrivateRoute>
+        }
+      />
+      {/* [cheol] 성적/시험 — 기존 /exam 경로 호환 */}
       <Route
         path="/exam"
         element={
@@ -367,6 +397,23 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherMyClassDashboard />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 우리반 알림장 (교사 사이드바 연결) */}
+      <Route
+        path="/teacher/myclass/notice"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <TeacherClassNotice />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/teacher/myclass/notice/:id"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <ClassDiaryDetail />
           </PrivateRoute>
         }
       />
