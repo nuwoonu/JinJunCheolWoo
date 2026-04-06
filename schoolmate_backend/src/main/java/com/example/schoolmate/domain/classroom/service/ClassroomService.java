@@ -246,7 +246,7 @@ public class ClassroomService {
             if (assignedTeacher != null) {
                 NotificationHelper.send(assignedTeacher, "담임 학급 배정",
                         request.getGrade() + "학년 " + request.getClassNum() + "반 담임으로 배정되었습니다.",
-                        "/classroom");
+                        "/teacher/myclass/students");
             }
         }
 
@@ -293,7 +293,7 @@ public class ClassroomService {
             // 새 담임 교사에게 알림
             NotificationHelper.send(teacher, "담임 학급 배정",
                     classroom.getGrade() + "학년 " + classroom.getClassNum() + "반 담임으로 배정되었습니다.",
-                    "/classroom");
+                    "/teacher/myclass/students");
         } else {
             classroom.setTeacher(null);
             classroom.setHomeroomTeacher(null);
@@ -598,7 +598,7 @@ public class ClassroomService {
             // 담임 교사에게 알림
             NotificationHelper.send(teacher, "담임 학급 배정",
                     classroom.getGrade() + "학년 " + classroom.getClassNum() + "반 담임으로 배정되었습니다.",
-                    "/classroom");
+                    "/teacher/myclass/students");
         } else {
             classroom.setTeacher(null);
         }
