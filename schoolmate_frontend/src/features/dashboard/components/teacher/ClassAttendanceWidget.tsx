@@ -176,18 +176,10 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
         </div>
         <Link
           to="/attendance/student"
-          style={{
-            background: "#25A194",
-            color: "white",
-            border: "none",
-            borderRadius: 6,
-            padding: "5px 14px",
-            fontSize: 13,
-            fontWeight: 500,
-            textDecoration: "none",
-          }}
+          className="text-primary-600 text-sm"
+          style={{ lineHeight: 1, textDecoration: "none" }}
         >
-          출결 관리
+          출결관리
         </Link>
       </div>
 

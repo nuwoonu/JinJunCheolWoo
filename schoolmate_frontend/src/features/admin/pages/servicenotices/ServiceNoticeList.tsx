@@ -126,7 +126,7 @@ export default function ServiceNoticeList() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
           <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-              <i className="bi bi-search" style={{ position: 'absolute', left: '8px', color: '#9ca3af', fontSize: '13px', pointerEvents: 'none' }} />
+              <i className="ri-search-line" style={{ position: 'absolute', left: '8px', color: '#9ca3af', fontSize: '13px', pointerEvents: 'none' }} />
               <input
                 type="text"
                 placeholder="제목 검색"

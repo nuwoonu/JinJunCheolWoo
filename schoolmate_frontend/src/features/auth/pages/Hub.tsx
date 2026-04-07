@@ -6,16 +6,40 @@ import { ADMIN_ROUTES } from "@/shared/constants/routes";
 import type { RoleRequestInfo, GrantInfo, RoleContext, AuthUser } from "@/shared/api/authApi";
 import { getRoleContexts, switchContext, setPrimaryRole } from "@/shared/api/authApi";
 import { auth } from "@/shared/api/auth";
-import NotificationDropdown from "@/features/notification/components/NotificationDropdown";
-import ProfileDropdown from "@/features/profile/components/ProfileDropdown";
+import AdminTopBar from "@/shared/components/layout/admin/AdminTopBar";
 
 function useTheme() {
-  const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const [isDark, setIsDark] = useState(() => {
+    const attrTheme = document.documentElement.getAttribute("data-theme");
+    const savedTheme = localStorage.getItem("theme");
+    return (attrTheme ?? savedTheme) === "dark";
+  });
+
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
-  return { isDark, toggle: () => setIsDark((p) => !p) };
+    const root = document.documentElement;
+    const syncTheme = () => {
+      const attrTheme = root.getAttribute("data-theme");
+      const savedTheme = localStorage.getItem("theme");
+      setIsDark((attrTheme ?? savedTheme) === "dark");
+    };
+
+    syncTheme();
+
+    const observer = new MutationObserver((mutations) => {
+      if (mutations.some((m) => m.type === "attributes" && m.attributeName === "data-theme")) {
+        syncTheme();
+      }
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+    window.addEventListener("storage", syncTheme);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("storage", syncTheme);
+    };
+  }, []);
+
+  return { isDark };
 }
 
 interface RoleConfig {
@@ -86,11 +110,10 @@ interface StatusScreenProps {
   user: AuthUser;
   roleRequests: RoleRequestInfo[];
   isDark: boolean;
-  onToggleTheme: () => void;
   onRefresh: () => void;
 }
 
-function HubStatusScreen({ user, roleRequests, isDark, onToggleTheme, onRefresh }: StatusScreenProps) {
+function HubStatusScreen({ user, roleRequests, isDark, onRefresh }: StatusScreenProps) {
   const allNonActive = roleRequests.filter((r) => r.status !== "ACTIVE");
   const dominant =
     allNonActive.find((r) => r.status === "PENDING") ??
@@ -153,50 +176,7 @@ function HubStatusScreen({ user, roleRequests, isDark, onToggleTheme, onRefresh 
   return (
     <div style={{ minHeight: "100vh", background: bg, display: "flex", flexDirection: "column" }}>
       {/* 헤더 */}
-      <div
-        style={{
-          height: 60,
-          flexShrink: 0,
-          background: surface,
-          borderBottom: `1px solid ${isDark ? "#334155" : "#e5e7eb"}`,
-          padding: "0 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <a href="/main" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img
-            src="/images/schoolmateLogo.png"
-            alt="SchoolMate"
-            width="160"
-            height="37"
-            style={{ objectFit: "contain" }}
-          />
-        </a>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button
-            onClick={onToggleTheme}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: isDark ? "#334155" : "#f3f4f6",
-              border: "none",
-              cursor: "pointer",
-              color: "#6b7280",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            aria-label="다크모드 전환"
-          >
-            <i className={isDark ? "ri-sun-line" : "ri-moon-line"} style={{ fontSize: 18 }} />
-          </button>
-          <NotificationDropdown />
-          <ProfileDropdown />
-        </div>
-      </div>
+      <AdminTopBar position="sticky" showBackButton={false} showLogo logoTo="/main" />
 
       {/* 본문 */}
       <div
@@ -611,7 +591,6 @@ export default function Hub() {
         user={user}
         roleRequests={roleRequests}
         isDark={theme.isDark}
-        onToggleTheme={theme.toggle}
         onRefresh={refetch}
       />
     );
@@ -676,55 +655,8 @@ export default function Hub() {
 
   return (
     <div style={{ minHeight: "100vh", background: bg }}>
-      {/* ── 전체 너비 상단 바 ── */}
-      <div
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          background: surface,
-          borderBottom: `1px solid ${border}`,
-          padding: "0 24px",
-          height: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        {/* 좌측: 로고 */}
-        <a href="/main" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img
-            src="/images/schoolmateLogo.png"
-            alt="SchoolMate"
-            width="160"
-            height="37"
-            style={{ objectFit: "contain" }}
-          />
-        </a>
-        {/* 우측: 다크모드 / 알림 / 프로필 */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button
-            onClick={theme.toggle}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: isDark ? "#334155" : "#f3f4f6",
-              border: "none",
-              cursor: "pointer",
-              color: textSecondary,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            aria-label="다크모드 전환"
-          >
-            <i className={isDark ? "ri-sun-line" : "ri-moon-line"} style={{ fontSize: 18 }} />
-          </button>
-          <NotificationDropdown />
-          <ProfileDropdown />
-        </div>
-      </div>
+      {/* [soojin] 관리자 메뉴 페이지와 상단 높이/구성 통일 */}
+      <AdminTopBar position="sticky" showBackButton={false} showLogo logoTo="/main" />
 
       {/* ── 본문 ── */}
       <main style={{ maxWidth: 960, margin: "0 auto", padding: "40px 24px" }}>

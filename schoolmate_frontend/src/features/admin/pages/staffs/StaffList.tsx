@@ -174,7 +174,7 @@ export default function StaffList() {
               <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: '4px', pointerEvents: 'none', fontSize: '16px', color: '#6b7280' }} />
             </div>
             <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-              <i className="bi bi-search" style={{ position: 'absolute', left: '8px', color: '#9ca3af', fontSize: '13px', pointerEvents: 'none' }} />
+              <i className="ri-search-line" style={{ position: 'absolute', left: '8px', color: '#9ca3af', fontSize: '13px', pointerEvents: 'none' }} />
               <input
                 style={{ padding: '5px 8px 5px 28px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, minWidth: 150, background: '#fff' }}
                 placeholder="검색어 입력"

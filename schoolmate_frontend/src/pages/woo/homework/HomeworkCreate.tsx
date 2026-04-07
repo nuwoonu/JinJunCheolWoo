@@ -172,7 +172,7 @@ export default function HomeworkCreate() {
             {file && (
               <div className="mt-8 d-flex align-items-center gap-8">
                 <span className="text-sm text-secondary-light">
-                  <iconify-icon icon="mdi:attachment" className="me-4" />
+                  <i className="ri-attachment-line me-4"></i>
                   {file.name} ({(file.size / 1024).toFixed(1)} KB)
                 </span>
                 <button

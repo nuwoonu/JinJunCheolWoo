@@ -335,23 +335,16 @@ export default function TeacherDashboard() {
               <div className="card-body p-0 d-flex flex-column" style={{ height: "100%" }}>
                 <div className="d-flex align-items-center justify-content-between dash-card-header">
                   <div className="d-flex align-items-center gap-8">
-                    <i className="bi bi-check2-square text-primary-600 text-lg" />
+                    <i className="ri-checkbox-circle-line text-primary-600 text-lg" />
                     <h6 className="fw-bold mb-0 text-sm">오늘 할 일</h6>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setShowTodoModal(true)}
-                    style={{
-                      background: "#25A194",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 6,
-                      padding: "5px 14px",
-                      fontSize: 13,
-                      fontWeight: 500,
-                      cursor: "pointer",
-                    }}
+                    className="text-primary-600 text-sm"
+                    style={{ lineHeight: 1, background: "none", border: "none", padding: 0, cursor: "pointer" }}
                   >
-                    + 할 일 추가
+                    할 일 추가
                   </button>
                 </div>
                 {/* [woo] 우선도 필터 버튼 */}
@@ -405,7 +398,7 @@ export default function TeacherDashboard() {
                             justifyContent: "center",
                           }}
                         >
-                          {todo.done && <i className="bi bi-check" style={{ color: "white", fontSize: 11 }} />}
+                          {todo.done && <i className="ri-check-line" style={{ color: "white", fontSize: 11 }} />}
                         </button>
                         {/* [woo] 할 일 텍스트 — 클릭 시 인라인 수정 */}
                         {editingTodoId === todo.id ? (
@@ -550,7 +543,7 @@ export default function TeacherDashboard() {
             <div className="card h-100 dash-card">
               <div className="card-body p-0">
                 <div className="d-flex align-items-center gap-8 dash-card-header">
-                  <i className="bi bi-calendar3 text-primary-600 text-lg" />
+                  <i className="ri-calendar-line text-primary-600 text-lg" />
                   <h6 className="fw-bold mb-0 text-sm">일정</h6>
                 </div>
                 <div className="p-20">
@@ -595,7 +588,7 @@ export default function TeacherDashboard() {
             <div className="card h-100 dash-card">
               <div className="card-body p-0 d-flex flex-column">
                 <div className="d-flex align-items-center gap-8 dash-card-header">
-                  <i className="bi bi-grid" style={{ fontSize: 16, color: "#25A194", lineHeight: 1 }} />
+                  <i className="ri-layout-grid-line" style={{ fontSize: 16, color: "#25A194", lineHeight: 1 }} />
                   <h6 className="fw-bold mb-0 text-sm">바로 가기</h6>
                 </div>
                 <div className="p-16" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
@@ -612,7 +605,7 @@ export default function TeacherDashboard() {
                     {[
                       {
                         label: "학급 관리",
-                        icon: "bi-people-fill",
+                        icon: "ri-team-fill",
                         bg: "#f0fdf4",
                         iconBg: "#bbf7d0",
                         iconColor: "#15803d",
@@ -671,7 +664,10 @@ export default function TeacherDashboard() {
                             justifyContent: "center",
                           }}
                         >
-                          <i className={`bi ${menu.icon}`} style={{ color: menu.iconColor, fontSize: 22 }} />
+                          <i
+                            className={menu.icon.startsWith("ri-") ? menu.icon : `bi ${menu.icon}`}
+                            style={{ color: menu.iconColor, fontSize: 22 }}
+                          />
                         </div>
                         <span style={{ color: "#374151", fontWeight: 600, fontSize: 14 }}>{menu.label}</span>
                       </a>

@@ -141,13 +141,13 @@ return (
             onClick={() => csvRef.current?.click()}
             style={{ padding: '5px 12px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
-            <i className="bi bi-file-earmark-spreadsheet" style={{ marginRight: 4 }} />CSV 등록
+            <i className="ri-file-excel-2-line" style={{ marginRight: 4 }} />CSV 등록
           </button>
           <Link
             to={ADMIN_ROUTES.PARENTS.CREATE}
             style={{ padding: '5px 12px', background: '#25A194', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}
           >
-            <i className="bi bi-person-plus-fill" style={{ marginRight: 4 }} />신규 학부모 등록
+            <i className="ri-user-add-line" style={{ marginRight: 4 }} />신규 학부모 등록
           </Link>
         </div>
       </div>
@@ -229,10 +229,10 @@ return (
                   <option value="phone">연락처</option>
                   <option value="email">이메일</option>
                 </select>
-                <i className="bi bi-chevron-down" style={{ position: 'absolute', right: '8px', color: '#9ca3af', fontSize: '12px', pointerEvents: 'none' }} />
+                <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: '8px', color: '#9ca3af', fontSize: '12px', pointerEvents: 'none' }} />
               </div>
               <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                <i className="bi bi-search" style={{ position: 'absolute', left: '8px', color: '#9ca3af', fontSize: '13px', pointerEvents: 'none' }} />
+                <i className="ri-search-line" style={{ position: 'absolute', left: '8px', color: '#9ca3af', fontSize: '13px', pointerEvents: 'none' }} />
                 <input
                   type="text"
                   placeholder="검색어 입력"

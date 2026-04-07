@@ -296,10 +296,10 @@ export default function HomeworkDetailPage() {
             borderLeft: `4px solid ${toast.type === "success" ? "#22c55e" : "#ef4444"}`,
           }}
         >
-          <iconify-icon
-            icon={toast.type === "success" ? "mdi:check-circle-outline" : "mdi:alert-circle-outline"}
+          <i
+            className={toast.type === "success" ? "ri-checkbox-circle-line" : "ri-error-warning-line"}
             style={{ fontSize: 22, color: toast.type === "success" ? "#22c55e" : "#ef4444", flexShrink: 0 }}
-          />
+          ></i>
           <span style={{ fontSize: 14, fontWeight: 500, color: "#374151" }}>{toast.message}</span>
         </div>
       )}
@@ -359,7 +359,7 @@ export default function HomeworkDetailPage() {
                 title={isTeacher ? "클릭하여 마감일 수정" : undefined}
               >
                 마감: {homework.dueDate?.slice(0, 10)}
-                {isTeacher && <iconify-icon icon="mdi:pencil" className="ms-4 text-xs" />}
+                {isTeacher && <i className="ri-edit-line ms-4 text-xs"></i>}
               </span>
             )}
           </div>
@@ -379,7 +379,7 @@ export default function HomeworkDetailPage() {
                 download={homework.attachmentOriginalName ?? homework.attachmentUrl}
                 className="text-primary-600 hover-text-primary-700 d-flex align-items-center gap-4"
               >
-                <iconify-icon icon="mdi:attachment" />
+                <i className="ri-attachment-line"></i>
                 {homework.attachmentOriginalName ?? homework.attachmentUrl}
               </a>
             </div>
@@ -490,7 +490,7 @@ export default function HomeworkDetailPage() {
                                 download={sub.attachmentOriginalName ?? sub.attachmentUrl}
                                 className="text-primary-600"
                               >
-                                <iconify-icon icon="mdi:download" />
+                                <i className="ri-download-line"></i>
                               </a>
                             ) : (
                               "-"
@@ -649,7 +649,7 @@ export default function HomeworkDetailPage() {
                           download={homework.mySubmission.attachmentOriginalName}
                           className="text-primary-600"
                         >
-                          <iconify-icon icon="mdi:attachment" className="me-4" />
+                          <i className="ri-attachment-line me-4"></i>
                           {homework.mySubmission.attachmentOriginalName}
                         </a>
                       </div>
@@ -718,7 +718,7 @@ export default function HomeworkDetailPage() {
                   />
                   {submitFile && (
                     <div className="mt-8 text-sm text-secondary-light">
-                      <iconify-icon icon="mdi:attachment" className="me-4" />
+                      <i className="ri-attachment-line me-4"></i>
                       {submitFile.name} ({(submitFile.size / 1024).toFixed(1)} KB)
                     </div>
                   )}

@@ -14,7 +14,7 @@ const ALL_NAV_LINKS = [
   { to: ADMIN_ROUTES.STUDENTS.LIST, icon: "ri-graduation-cap-line", label: "학생 관리",  grants: ADMIN_GRANTS.STUDENTS  },
   { to: ADMIN_ROUTES.TEACHERS.LIST, icon: "ri-user-follow-line",    label: "교사 관리",  grants: ADMIN_GRANTS.TEACHERS  },
   { to: ADMIN_ROUTES.STAFFS.LIST,   icon: "ri-user-2-line",         label: "교직원 관리", grants: ADMIN_GRANTS.STAFFS   },
-  { to: ADMIN_ROUTES.CLASSES.LIST,  icon: "ri-building-2-line",     label: "학급 관리",  grants: ADMIN_GRANTS.CLASSES  },
+  { to: ADMIN_ROUTES.CLASSES.LIST,  icon: "ri-school-line",          label: "학급 관리",  grants: ADMIN_GRANTS.CLASSES  },
   { to: ADMIN_ROUTES.NOTICES.LIST,  icon: "ri-megaphone-line",      label: "공지 관리",  grants: ADMIN_GRANTS.NOTICES  },
 ] as const;
 

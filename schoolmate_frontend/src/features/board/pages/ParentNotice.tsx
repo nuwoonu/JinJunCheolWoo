@@ -255,7 +255,7 @@ export default function ParentNotice() {
             </div>
             <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
               <i
-                className="bi bi-search"
+                className="ri-search-line"
                 style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
               />
               <input
@@ -737,18 +737,21 @@ export default function ParentNotice() {
                     type="file"
                     className="form-control"
                     accept=".pdf,.docx,.doc,.hwp"
+                    style={{ cursor: "pointer", padding: "6px 12px" }}
                     onChange={(e) => setWriteFile(e.target.files?.[0] ?? null)}
                   />
                 </div>
-                <div className="form-check">
+                {/* [soojin] form-check 대신 flex 정렬로 변경 - Bootstrap 클래스 충돌 방지 */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <input
                     type="checkbox"
                     className="form-check-input"
                     id="pinCheck"
                     checked={writeForm.isPinned}
                     onChange={(e) => setWriteForm((f) => ({ ...f, isPinned: e.target.checked }))}
+                    style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#25a194", flexShrink: 0, marginTop: 0 }}
                   />
-                  <label className="form-check-label text-sm" htmlFor="pinCheck">
+                  <label htmlFor="pinCheck" style={{ fontSize: 13, color: "#374151", cursor: "pointer", marginBottom: 0 }}>
                     상단 고정
                   </label>
                 </div>

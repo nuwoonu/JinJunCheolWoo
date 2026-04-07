@@ -234,24 +234,6 @@ export default function ParentAttendance() {
         </div>
       ) : (
         <>
-          {/* [woo] 다자녀 탭 - 전체 레이아웃 위, 2명 이상일 때만 */}
-          {summaries.length > 1 && (
-            <div className="d-flex gap-8 mb-16">
-              {summaries.map((child, idx) => (
-                <button
-                  key={child.studentInfoId}
-                  type="button"
-                  className={`btn btn-sm radius-8 px-16 py-8 fw-medium ${
-                    activeChildIdx === idx ? "btn-primary-600 text-white" : "btn-outline-neutral-500"
-                  }`}
-                  onClick={() => handleTabChange(idx)}
-                >
-                  {child.childName} ({child.grade}-{child.classNum})
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* [soojin] 좌우 2패널 레이아웃 - StudentAttendance 동일 구조 */}
           <div style={{ height: "calc(100vh - 4.5rem - 180px)" }}>
             <div className="row g-4" style={{ height: "100%", alignItems: "stretch" }}>
@@ -276,7 +258,7 @@ export default function ParentAttendance() {
                           flexShrink: 0,
                         }}
                       >
-                        <iconify-icon icon="mdi:account-school" style={{ fontSize: 22, color: "#0284c7" }} />
+                        <i className="ri-graduation-cap-line" style={{ fontSize: 22, color: "#0284c7" }}></i>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 2 }}>

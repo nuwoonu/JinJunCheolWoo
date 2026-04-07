@@ -216,7 +216,7 @@ export default function StudentCreate() {
                   cursor: "pointer",
                 }}
               >
-                <i className="bi bi-search me-1" /> 보호자 검색
+                <i className="ri-search-line me-1" /> 보호자 검색
               </button>
             </div>
             <div

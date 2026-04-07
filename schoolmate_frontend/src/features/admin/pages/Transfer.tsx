@@ -178,10 +178,10 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
                 <option key={k} value={k}>{k || "전체 학교 종류"}</option>
               ))}
             </select>
-            <i className="bi bi-chevron-down" style={{ position: "absolute", right: 8, color: "#9ca3af", fontSize: 12, pointerEvents: "none" }} />
+            <i className="ri-arrow-down-s-line" style={{ position: "absolute", right: 8, color: "#9ca3af", fontSize: 12, pointerEvents: "none" }} />
           </div>
           <div style={{ position: "relative", display: "inline-flex", alignItems: "center", flex: 1, minWidth: 160 }}>
-            <i className="bi bi-search" style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }} />
+            <i className="ri-search-line" style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }} />
             <input
               style={{ ...inputStyle, paddingLeft: 28 }}
               placeholder={`${title} 이름 (예) 서울중학교`}
@@ -206,7 +206,7 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
           <div style={{ border: `1px solid ${border}`, borderRadius: 8, overflow: "hidden" }}>
             {schools.length === 0 ? (
               <div style={{ padding: "48px 24px", textAlign: "center", color: "#9ca3af" }}>
-                <i className="bi bi-search" style={{ fontSize: 36, display: "block", marginBottom: 12, opacity: 0.3 }} />
+                <i className="ri-search-line" style={{ fontSize: 36, display: "block", marginBottom: 12, opacity: 0.3 }} />
                 <p style={{ margin: 0, fontSize: 14 }}>검색 결과가 없습니다.</p>
               </div>
             ) : (
@@ -295,7 +295,7 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
 
       {!searched && (
         <div style={{ marginTop: 12, background: "#fff", borderRadius: 8, border: `1px solid ${border}`, padding: "32px 24px", textAlign: "center", color: "#9ca3af" }}>
-          <i className="bi bi-search" style={{ fontSize: 32, display: "block", marginBottom: 10, opacity: 0.3 }} />
+          <i className="ri-search-line" style={{ fontSize: 32, display: "block", marginBottom: 10, opacity: 0.3 }} />
           <p style={{ margin: 0, fontSize: 13 }}>학교명 또는 종류로 검색하세요.</p>
         </div>
       )}
@@ -450,10 +450,10 @@ export default function Transfer() {
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
                 </select>
-                <i className="bi bi-chevron-down" style={{ position: "absolute", right: 8, color: "#9ca3af", fontSize: 12, pointerEvents: "none" }} />
+                <i className="ri-arrow-down-s-line" style={{ position: "absolute", right: 8, color: "#9ca3af", fontSize: 12, pointerEvents: "none" }} />
               </div>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center", flex: 1, minWidth: 160 }}>
-                <i className="bi bi-search" style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }} />
+                <i className="ri-search-line" style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }} />
                 <input
                   style={{ ...inputStyle, paddingLeft: 28 }}
                   placeholder="이름 또는 코드 검색 (비워두면 전체)"
@@ -470,14 +470,14 @@ export default function Transfer() {
             {/* 구성원 목록 */}
             {!memberSearched && (
               <div style={{ border: `1px solid ${border}`, borderRadius: 8, padding: "32px 24px", textAlign: "center", color: "#9ca3af" }}>
-                <i className="bi bi-person-search" style={{ fontSize: 32, display: "block", marginBottom: 10, opacity: 0.3 }} />
+                <i className="ri-user-search-line" style={{ fontSize: 32, display: "block", marginBottom: 10, opacity: 0.3 }} />
                 <p style={{ margin: 0, fontSize: 13 }}>역할과 검색어를 입력하고 검색하세요.</p>
               </div>
             )}
 
             {memberSearched && members.length === 0 && (
               <div style={{ border: `1px solid ${border}`, borderRadius: 8, padding: "48px 24px", textAlign: "center", color: "#9ca3af" }}>
-                <i className="bi bi-search" style={{ fontSize: 36, display: "block", marginBottom: 12, opacity: 0.3 }} />
+                <i className="ri-search-line" style={{ fontSize: 36, display: "block", marginBottom: 12, opacity: 0.3 }} />
                 <p style={{ margin: 0, fontSize: 14 }}>검색 결과가 없습니다.</p>
               </div>
             )}

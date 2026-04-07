@@ -167,27 +167,6 @@ export default function ParentChildrenStatus() {
         <h6 className="fw-semibold mb-0">자녀 현황</h6>
       </div> */}
 
-      {/* [soojin] 자녀 탭 (여러 명일 때) */}
-      {children.length > 1 && (
-        <div className="d-flex flex-wrap gap-12 mb-24">
-          {children.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`btn px-24 py-10 rounded-pill fw-bold shadow-sm ${selectedChildId === c.id ? "btn-primary" : "btn-white text-secondary-light border border-neutral-200"}`}
-              onClick={() => {
-                setSelectedChildId(c.id);
-                sessionStorage.setItem("selectedChildId", String(c.id));
-                // [woo] studentInfoId, classroomId도 함께 저장 (학급 앨범/게시판 필터용)
-                if (c.studentInfoId) sessionStorage.setItem("selectedStudentInfoId", String(c.studentInfoId));
-              }}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-      )}
-
       {selectedChild && (
         <>
           {/* 상단 3컬럼 */}

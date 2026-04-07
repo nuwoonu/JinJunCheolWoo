@@ -74,7 +74,7 @@ export default function TeacherGradeClasses() {
             className="w-56-px h-56-px rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
             style={{ background: "rgba(255,255,255,0.2)" }}
           >
-            <iconify-icon icon="mdi:pencil-box-outline" className="text-white text-3xl" />
+            <i className="ri-edit-line text-white text-3xl"></i>
           </div>
           <div>
             <h5 className="fw-bold text-white mb-4">
@@ -92,12 +92,12 @@ export default function TeacherGradeClasses() {
         <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
       ) : error ? (
         <div className="card radius-12 p-40 text-center">
-          <iconify-icon icon="mdi:alert-circle-outline" className="text-4xl text-danger-600 d-block mb-12" />
+          <i className="ri-error-warning-line text-4xl text-danger-600 d-block mb-12"></i>
           <p className="text-secondary-light">{error}</p>
         </div>
       ) : classes.length === 0 ? (
         <div className="card radius-12 p-40 text-center">
-          <iconify-icon icon="mdi:school-outline" className="text-4xl text-secondary-light d-block mb-12" />
+          <i className="ri-building-2-line text-4xl text-secondary-light d-block mb-12"></i>
           <p className="text-secondary-light">해당 학년에 등록된 학급이 없습니다.</p>
         </div>
       ) : (
@@ -130,7 +130,7 @@ export default function TeacherGradeClasses() {
                     className="radius-12 d-flex align-items-center justify-content-center"
                     style={{ background: color, height: 80, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}
                   >
-                    <iconify-icon icon="mdi:google-classroom" className="text-white" style={{ fontSize: 40 }} />
+                    <i className="ri-graduation-cap-line text-white" style={{ fontSize: 40 }}></i>
                   </div>
 
                   {/* 학급 정보 */}
@@ -150,7 +150,7 @@ export default function TeacherGradeClasses() {
                       className="d-flex align-items-center gap-6 fw-medium text-sm"
                       style={{ color }}
                     >
-                      <iconify-icon icon="mdi:pencil-outline" />
+                      <i className="ri-edit-line"></i>
                       채점하기
                     </div>
                   </div>

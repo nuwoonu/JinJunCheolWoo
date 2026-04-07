@@ -75,6 +75,86 @@ const EMPTY_ADD_FORM = {
   birthDate: "",
 };
 
+const SUB_MODAL_TITLE_STYLE = {
+  fontSize: 20,
+  fontWeight: 600,
+};
+
+const MODAL_CONTENT_BODY_STYLE = {
+  fontSize: 14,
+  color: "#374151",
+};
+
+const MODAL_CONTENT_LABEL_STYLE = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#374151",
+  marginBottom: 6,
+  display: "block",
+};
+
+const MODAL_CONTENT_HELPER_STYLE = {
+  fontSize: 12,
+  color: "#6b7280",
+  marginBottom: 6,
+  lineHeight: 1.4,
+};
+
+const MODAL_CONTENT_LOADING_STYLE = {
+  fontSize: 13,
+  color: "#6b7280",
+  padding: "8px 0",
+};
+
+const MODAL_CONTENT_CONTROL_STYLE = {
+  fontSize: 14,
+  color: "#111827",
+  borderColor: "#d1d5db",
+  height: 40,
+  padding: "8px 12px",
+  lineHeight: 1.4,
+};
+
+const MODAL_CONTENT_ROW_STYLE = {
+  rowGap: 14,
+};
+
+const MODAL_CONTENT_ACTIONS_STYLE = {
+  display: "flex",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  gap: 8,
+  padding: "16px 24px",
+  borderTop: "1px solid #e5e7eb",
+};
+
+const MODAL_CONTENT_CANCEL_BUTTON_STYLE = {
+  minWidth: 72,
+  height: 36,
+  padding: "0 14px",
+  border: "1px solid #d1d5db",
+  borderRadius: 8,
+  background: "#fff",
+  color: "#374151",
+  fontSize: 13,
+  fontWeight: 500,
+};
+
+const MODAL_CONTENT_SAVE_BUTTON_STYLE = {
+  minWidth: 86,
+  height: 36,
+  padding: "0 14px",
+  border: "none",
+  borderRadius: 8,
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: 600,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+};
+
 // [soojin] 성별 한글 변환
 const genderLabel = (gender?: string) => {
   if (gender === "MALE") return "남";
@@ -477,11 +557,7 @@ export default function TeacherMyClassStudents() {
       {!loading && errorMessage && (
         <div className="card">
           <div className="card-body text-center py-48">
-            <iconify-icon
-              icon="mdi:account-group-outline"
-              className="text-neutral-400 mb-16"
-              style={{ fontSize: 64 }}
-            />
+            <i className="ri-group-line text-neutral-400 mb-16" style={{ fontSize: 64 }}></i>
             <h5 className="text-neutral-600 mb-8">담당 학급이 없습니다</h5>
             <p className="text-neutral-500 mb-0">{errorMessage}</p>
           </div>
@@ -514,7 +590,7 @@ export default function TeacherMyClassStudents() {
                     className="d-flex justify-content-center align-items-center rounded-circle bg-primary-100"
                     style={{ width: 44, height: 44, flexShrink: 0 }}
                   >
-                    <iconify-icon icon="mdi:google-classroom" className="text-primary-600" style={{ fontSize: 22 }} />
+                    <i className="ri-graduation-cap-line text-primary-600" style={{ fontSize: 22 }}></i>
                   </div>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: "#15803d" }}>
@@ -527,11 +603,11 @@ export default function TeacherMyClassStudents() {
                 {/* 정보 항목 리스트 */}
                 <div className="d-flex flex-column gap-10">
                   {[
-                    { icon: "mdi:account-tie", label: "담임 교사", value: classInfo.homeroomTeacherName ?? "-" },
-                    { icon: "mdi:account-group", label: "총 학생 수", value: `${classInfo.totalStudents}명` },
+                    { icon: "ri-user-settings-line", label: "담임 교사", value: classInfo.homeroomTeacherName ?? "-" },
+                    { icon: "ri-group-line", label: "총 학생 수", value: `${classInfo.totalStudents}명` },
                     // [soojin] 승인 대기 수 - pendingStudents 이미 fetching 중이라 추가 API 불필요
                     {
-                      icon: "mdi:account-clock",
+                      icon: "ri-time-line",
                       label: "승인 대기",
                       value: `${pendingStudents.length}명`,
                       highlight: pendingStudents.length > 0,
@@ -539,7 +615,7 @@ export default function TeacherMyClassStudents() {
                   ].map(({ icon, label, value, highlight }) => (
                     <div key={label} className="d-flex align-items-center justify-content-between">
                       <span className="text-secondary-light text-sm d-flex align-items-center gap-6">
-                        <iconify-icon icon={icon} style={{ fontSize: 15 }} />
+                        <i className={icon} style={{ fontSize: 15 }}></i>
                         {label}
                       </span>
                       <span className="fw-semibold text-sm" style={{ color: highlight ? "#d97706" : "#111827" }}>
@@ -760,7 +836,7 @@ export default function TeacherMyClassStudents() {
                   ) : (
                     <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                       <i
-                        className="bi bi-search"
+                        className="ri-search-line"
                         style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
                       />
                       <input
@@ -931,22 +1007,22 @@ export default function TeacherMyClassStudents() {
             <div className="modal-content radius-12">
               <div className="modal-header border-bottom py-16 px-24">
                 <h6 className="modal-title d-flex align-items-center gap-8">
-                  <iconify-icon icon="mdi:account-plus" className="text-success-600" />
+                  <i className="ri-user-add-line text-success-600"></i>
                   학급 배정
                 </h6>
                 <button type="button" className="btn-close" onClick={() => setShowAssignModal(false)} />
               </div>
               <div className="modal-body p-24">
                 <div className="text-center mb-16">
-                  <div className="w-56-px h-56-px bg-warning-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-12">
-                    <iconify-icon icon="mdi:account-clock" className="text-warning-600 text-2xl" />
+                  <div className="bg-warning-100 d-flex justify-content-center align-items-center mx-auto mb-12" style={{ width: 56, height: 56, borderRadius: "50%", flexShrink: 0 }}>
+                    <i className="ri-time-line text-warning-600" style={{ fontSize: "2.5rem" }}></i>
                   </div>
                   <h6 className="mb-4">{assignTarget.name}</h6>
                   <span className="text-secondary-light text-sm">{assignTarget.email}</span>
                 </div>
                 {/* [woo] 배정 정보 */}
                 <div className="bg-neutral-50 radius-8 p-12 mb-16 text-sm text-center">
-                  <iconify-icon icon="mdi:google-classroom" className="text-primary-600 me-4" />
+                  <i className="ri-graduation-cap-line text-primary-600 me-4"></i>
                   {classInfo?.grade}학년 {classInfo?.classNum}반에 배정됩니다
                 </div>
                 {/* [woo] 반번호 입력 */}
@@ -983,7 +1059,7 @@ export default function TeacherMyClassStudents() {
                     </>
                   ) : (
                     <>
-                      <iconify-icon icon="mdi:check" /> 배정하기
+                      <i className="ri-check-line"></i> 배정하기
                     </>
                   )}
                 </button>
@@ -1115,47 +1191,47 @@ export default function TeacherMyClassStudents() {
                   <button
                     type="button"
                     onClick={() => setSubView(null)}
-                    className="btn btn-sm btn-outline-neutral-300 radius-8 d-flex align-items-center gap-4 flex-shrink-0"
-                    style={{ padding: "4px 10px" }}
+                    className="d-inline-flex align-items-center justify-content-center flex-shrink-0 border-0 bg-transparent p-0"
+                    aria-label="뒤로 가기"
                   >
-                    <iconify-icon icon="mdi:arrow-left" /> 뒤로
+                    <i className="ri-arrow-left-line" style={{ fontSize: 20, color: "#6b7280" }}></i>
                   </button>
                 )}
                 <h6 className="modal-title mb-0 flex-grow-1">
                   {subView === null && "학생 정보"}
                   {subView === "volunteer" && (
-                    <span className="d-flex align-items-center gap-8">
-                      <iconify-icon icon="mdi:heart-plus" className="text-success-600" />
+                    <span className="d-flex align-items-center gap-8" style={SUB_MODAL_TITLE_STYLE}>
+                      <i className="ri-user-heart-line text-success-600"></i>
                       봉사활동 — {selectedStudent.name}
                     </span>
                   )}
                   {subView === "award" && (
-                    <span className="d-flex align-items-center gap-8">
-                      <iconify-icon icon="mdi:trophy-outline" className="text-warning-600" />
+                    <span className="d-flex align-items-center gap-8" style={SUB_MODAL_TITLE_STYLE}>
+                      <i className="ri-trophy-line text-warning-600"></i>
                       수상 경력 — {selectedStudent.name}
                     </span>
                   )}
                   {subView === "cocurricular" && (
-                    <span className="d-flex align-items-center gap-8">
-                      <iconify-icon icon="mdi:lightbulb-outline" className="text-primary-600" />
+                    <span className="d-flex align-items-center gap-8" style={SUB_MODAL_TITLE_STYLE}>
+                      <i className="ri-lightbulb-line text-primary-600"></i>
                       창의적 체험활동 — {selectedStudent.name}
                     </span>
                   )}
                   {subView === "behavior" && (
-                    <span className="d-flex align-items-center gap-8">
-                      <iconify-icon icon="mdi:clipboard-text-outline" style={{ color: "#9333ea" }} />
+                    <span className="d-flex align-items-center gap-8" style={SUB_MODAL_TITLE_STYLE}>
+                      <i className="ri-survey-line" style={{ color: "#9333ea" }}></i>
                       행동특성 및 종합의견 — {selectedStudent.name}
                     </span>
                   )}
                   {subView === "activity-info" && (
-                    <span className="d-flex align-items-center gap-8">
-                      <iconify-icon icon="mdi:information-outline" style={{ color: "#0284c7" }} />
+                    <span className="d-flex align-items-center gap-8" style={SUB_MODAL_TITLE_STYLE}>
+                      <i className="ri-information-line" style={{ color: "#0284c7" }}></i>
                       활동 정보 — {selectedStudent.name}
                     </span>
                   )}
                   {subView === "detail-edit" && (
-                    <span className="d-flex align-items-center gap-8">
-                      <iconify-icon icon="mdi:account-edit-outline" style={{ color: "#7c3aed" }} />
+                    <span className="d-flex align-items-center gap-8" style={SUB_MODAL_TITLE_STYLE}>
+                      <i className="ri-edit-line" style={{ color: "#7c3aed" }}></i>
                       세부 정보 수정 — {selectedStudent.name}
                     </span>
                   )}
@@ -1192,7 +1268,7 @@ export default function TeacherMyClassStudents() {
                       flexShrink: 0,
                     }}
                   >
-                    <iconify-icon icon="mdi:information-outline" style={{ fontSize: 14 }} />
+                    <i className="ri-information-line" style={{ fontSize: 14 }}></i>
                     활동 정보
                   </button>
                 )}
@@ -1204,8 +1280,8 @@ export default function TeacherMyClassStudents() {
                 <>
                   <div className="modal-body p-24">
                     <div className="text-center mb-24">
-                      <div className="w-80-px h-80-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-16">
-                        <iconify-icon icon="mdi:account" className="text-primary-600 text-4xl" />
+                      <div className="bg-primary-100 d-flex justify-content-center align-items-center mx-auto mb-16" style={{ width: 80, height: 80, borderRadius: "50%", flexShrink: 0 }}>
+                        <i className="ri-user-line text-primary-600" style={{ fontSize: "3rem" }}></i>
                       </div>
                       <h5 className="mb-4">{selectedStudent.name}</h5>
                       <span className="text-secondary-light">{selectedStudent.studentNumber}번</span>
@@ -1214,7 +1290,7 @@ export default function TeacherMyClassStudents() {
                       {/* [woo] 반번호 수정 */}
                       <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
                         <span className="text-secondary-light">
-                          <iconify-icon icon="mdi:numeric" className="me-8" />
+                          <i className="ri-hashtag me-8"></i>
                           반번호
                         </span>
                         <div className="d-flex align-items-center gap-8">
@@ -1235,7 +1311,7 @@ export default function TeacherMyClassStudents() {
                             {editSaving ? (
                               <span className="spinner-border spinner-border-sm" />
                             ) : (
-                              <iconify-icon icon="mdi:check" />
+                              <i className="ri-check-line"></i>
                             )}
                             변경
                           </button>
@@ -1243,14 +1319,14 @@ export default function TeacherMyClassStudents() {
                       </div>
                       <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
                         <span className="text-secondary-light">
-                          <iconify-icon icon="mdi:phone" className="me-8" />
+                          <i className="ri-phone-line me-8"></i>
                           연락처
                         </span>
                         <span className="fw-medium">{selectedStudent.phone ?? "-"}</span>
                       </div>
                       <div className="d-flex justify-content-between align-items-center py-12 border-bottom">
                         <span className="text-secondary-light">
-                          <iconify-icon icon="mdi:email" className="me-8" />
+                          <i className="ri-mail-line me-8"></i>
                           이메일
                         </span>
                         <span className="fw-medium">{selectedStudent.email ?? "-"}</span>
@@ -1258,11 +1334,11 @@ export default function TeacherMyClassStudents() {
                     </div>
 
                     {/* 기록 추가 섹션 */}
-                    <div className="mt-20 pt-16 border-top">
+                    <div className="mt-20 pt-16">
                       <p className="text-xs fw-semibold text-secondary-light mb-12" style={{ letterSpacing: "0.06em", textTransform: "uppercase" }}>
                         기록 추가
                       </p>
-                      <div className="d-flex gap-10">
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 10 }}>
                         {/* 봉사활동 */}
                         <button
                           type="button"
@@ -1277,28 +1353,28 @@ export default function TeacherMyClassStudents() {
                               .catch(() => setVolunteerForm(EMPTY_VOLUNTEER_FORM));
                             setSubView("volunteer");
                           }}
-                          style={{ flex: 1, padding: "14px 8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          style={{ minHeight: 108, padding: "14px 8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "box-shadow 0.15s" }}
                           onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(22,163,74,0.18)")}
                           onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
                         >
                           <div style={{ width: 40, height: 40, background: "#dcfce7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <iconify-icon icon="mdi:heart-plus" style={{ fontSize: 20, color: "#16a34a" }} />
+                            <i className="ri-user-heart-line" style={{ fontSize: 20, color: "#16a34a" }}></i>
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", whiteSpace: "nowrap" }}>봉사활동</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", whiteSpace: "nowrap", lineHeight: 1.2 }}>봉사활동</span>
                         </button>
 
                         {/* 수상 경력 */}
                         <button
                           type="button"
                           onClick={() => { setAwardForm(EMPTY_AWARD_FORM); setAwardError(null); setSubView("award"); }}
-                          style={{ flex: 1, padding: "14px 8px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          style={{ minHeight: 108, padding: "14px 8px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "box-shadow 0.15s" }}
                           onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(202,138,4,0.18)")}
                           onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
                         >
                           <div style={{ width: 40, height: 40, background: "#fef9c3", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 20, color: "#ca8a04" }} />
+                            <i className="ri-trophy-line" style={{ fontSize: 20, color: "#ca8a04" }}></i>
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#ca8a04", whiteSpace: "nowrap" }}>수상 경력</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#ca8a04", whiteSpace: "nowrap", lineHeight: 1.2 }}>수상경력</span>
                         </button>
 
                         {/* 창의적 체험활동 */}
@@ -1322,14 +1398,14 @@ export default function TeacherMyClassStudents() {
                               .catch(() => { setAcademicTerms([]); setCocurricularActivities([]); setCocurricularForm(EMPTY_COCURRICULAR_FORM); });
                             setSubView("cocurricular");
                           }}
-                          style={{ flex: 1, padding: "14px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          style={{ minHeight: 108, padding: "14px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "box-shadow 0.15s" }}
                           onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(37,99,235,0.15)")}
                           onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
                         >
                           <div style={{ width: 40, height: 40, background: "#dbeafe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 20, color: "#2563eb" }} />
+                            <i className="ri-lightbulb-line" style={{ fontSize: 20, color: "#2563eb" }}></i>
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", whiteSpace: "nowrap" }}>창의적 체험</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", whiteSpace: "nowrap", lineHeight: 1.2 }}>창의적 체험</span>
                         </button>
 
                         {/* 행동특성 및 종합의견 */}
@@ -1354,14 +1430,14 @@ export default function TeacherMyClassStudents() {
                               .catch(() => { setBehaviorRecords([]); setBehaviorForm({ academicTermId: null, specialNotes: "" }); });
                             setSubView("behavior");
                           }}
-                          style={{ flex: 1, padding: "14px 8px", background: "#fdf4ff", border: "1px solid #e9d5ff", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          style={{ minHeight: 108, padding: "14px 8px", background: "#fdf4ff", border: "1px solid #e9d5ff", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "box-shadow 0.15s" }}
                           onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(147,51,234,0.15)")}
                           onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
                         >
                           <div style={{ width: 40, height: 40, background: "#f3e8ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <iconify-icon icon="mdi:clipboard-text-outline" style={{ fontSize: 20, color: "#9333ea" }} />
+                            <i className="ri-survey-line" style={{ fontSize: 20, color: "#9333ea" }}></i>
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#9333ea", whiteSpace: "nowrap" }}>행동특성</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#9333ea", whiteSpace: "nowrap", lineHeight: 1.2 }}>행동특성</span>
                         </button>
 
                         {/* 세부 정보 */}
@@ -1395,14 +1471,14 @@ export default function TeacherMyClassStudents() {
                               .catch(() => { setAcademicTerms([]); setCareerRecords([]); setCareerForm({ academicTermId: null, specialtyOrInterest: "", studentDesiredJob: "", parentDesiredJob: "" }); });
                             setSubView("detail-edit");
                           }}
-                          style={{ flex: 1, padding: "14px 8px", background: "#faf5ff", border: "1px solid #ddd6fe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "box-shadow 0.15s" }}
+                          style={{ minHeight: 108, padding: "14px 8px", background: "#faf5ff", border: "1px solid #ddd6fe", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "box-shadow 0.15s" }}
                           onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(124,58,237,0.15)")}
                           onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
                         >
                           <div style={{ width: 40, height: 40, background: "#ede9fe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <iconify-icon icon="mdi:account-edit-outline" style={{ fontSize: 20, color: "#7c3aed" }} />
+                            <i className="ri-edit-line" style={{ fontSize: 20, color: "#7c3aed" }}></i>
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#7c3aed", whiteSpace: "nowrap" }}>세부 정보</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#7c3aed", whiteSpace: "nowrap", lineHeight: 1.2 }}>세부 정보 입력</span>
                         </button>
                       </div>
                     </div>
@@ -1422,21 +1498,22 @@ export default function TeacherMyClassStudents() {
               {/* 창의적 체험활동 폼 */}
               {subView === "cocurricular" && (
                 <form onSubmit={handleSaveCocurricular}>
-                  <div className="modal-body p-24">
+                  <div className="modal-body p-24" style={MODAL_CONTENT_BODY_STYLE}>
                     {cocurricularError && (
                       <div className="alert alert-danger radius-8 mb-16 text-sm">{cocurricularError}</div>
                     )}
-                    <div className="row gy-16">
+                    <div className="row gy-16" style={MODAL_CONTENT_ROW_STYLE}>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">학년도 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>학년도 *</label>
                         {academicTerms.length === 0 ? (
-                          <div className="text-secondary-light text-sm py-8">
+                          <div className="text-secondary-light text-sm py-8" style={MODAL_CONTENT_LOADING_STYLE}>
                             <span className="spinner-border spinner-border-sm me-8" />
                             학년도 목록 불러오는 중...
                           </div>
                         ) : (
                           <select
                             className="form-select"
+                            style={MODAL_CONTENT_CONTROL_STYLE}
                             value={academicTerms.find((t) => t.id === cocurricularForm.academicTermId)?.schoolYear ?? ""}
                             onChange={(e) => {
                               const selectedYear = Number(e.target.value);
@@ -1455,9 +1532,10 @@ export default function TeacherMyClassStudents() {
                         )}
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">영역 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>영역 *</label>
                         <select
                           className="form-select"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           value={cocurricularForm.category}
                           onChange={(e) => {
                             const newCat = e.target.value;
@@ -1474,8 +1552,8 @@ export default function TeacherMyClassStudents() {
                         </select>
                       </div>
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">특기사항 *</label>
-                        <div className="text-xs text-secondary-light mb-6">
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>특기사항 *</label>
+                        <div className="text-xs text-secondary-light mb-6" style={MODAL_CONTENT_HELPER_STYLE}>
                           학년도+영역 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
                         </div>
                         <textarea
@@ -1484,29 +1562,31 @@ export default function TeacherMyClassStudents() {
                           placeholder="활동사항을 입력하세요"
                           value={cocurricularForm.specifics}
                           onChange={(e) => setCocurricularForm((f) => ({ ...f, specifics: e.target.value }))}
-                          style={{ resize: "vertical", minHeight: 200 }}
+                          style={{ ...MODAL_CONTENT_CONTROL_STYLE, height: "auto", resize: "vertical", minHeight: 200, lineHeight: 1.5 }}
                           required
                         />
                       </div>
                     </div>
                   </div>
-                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                  <div className="modal-footer" style={MODAL_CONTENT_ACTIONS_STYLE}>
                     <button
                       type="button"
-                      className="btn btn-outline-neutral-300 radius-8"
+                      className="btn"
+                      style={MODAL_CONTENT_CANCEL_BUTTON_STYLE}
                       onClick={() => setSubView(null)}
                     >
                       취소
                     </button>
                     <button
                       type="submit"
-                      className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
+                      className="btn"
+                      style={{ ...MODAL_CONTENT_SAVE_BUTTON_STYLE, background: "#2563eb" }}
                       disabled={cocurricularSaving}
                     >
                       {cocurricularSaving ? (
                         <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
                       ) : (
-                        <><iconify-icon icon="mdi:check" /> 저장</>
+                        <><i className="ri-check-line"></i> 저장</>
                       )}
                     </button>
                   </div>
@@ -1516,16 +1596,17 @@ export default function TeacherMyClassStudents() {
               {/* 수상 경력 폼 */}
               {subView === "award" && (
                 <form onSubmit={handleSaveAward}>
-                  <div className="modal-body p-24">
+                  <div className="modal-body p-24" style={MODAL_CONTENT_BODY_STYLE}>
                     {awardError && (
                       <div className="alert alert-danger radius-8 mb-16 text-sm">{awardError}</div>
                     )}
-                    <div className="row gy-16">
+                    <div className="row gy-16" style={MODAL_CONTENT_ROW_STYLE}>
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">수상명 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>수상명 *</label>
                         <input
                           type="text"
                           className="form-control"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           placeholder="예: 교내 과학 경진대회"
                           value={awardForm.name}
                           onChange={(e) => setAwardForm((f) => ({ ...f, name: e.target.value }))}
@@ -1533,9 +1614,10 @@ export default function TeacherMyClassStudents() {
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">등급 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>등급 *</label>
                         <select
                           className="form-select"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           value={awardForm.achievementsGrade}
                           onChange={(e) => setAwardForm((f) => ({ ...f, achievementsGrade: e.target.value }))}
                           required
@@ -1547,20 +1629,22 @@ export default function TeacherMyClassStudents() {
                         </select>
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">수상일 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>수상일 *</label>
                         <input
                           type="date"
                           className="form-control"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           value={awardForm.day}
                           onChange={(e) => setAwardForm((f) => ({ ...f, day: e.target.value }))}
                           required
                         />
                       </div>
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">수상 기관 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>수상 기관 *</label>
                         <input
                           type="text"
                           className="form-control"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           placeholder="예: 부여고등학교"
                           value={awardForm.awardingOrganization}
                           onChange={(e) => setAwardForm((f) => ({ ...f, awardingOrganization: e.target.value }))}
@@ -1569,23 +1653,25 @@ export default function TeacherMyClassStudents() {
                       </div>
                     </div>
                   </div>
-                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                  <div className="modal-footer" style={MODAL_CONTENT_ACTIONS_STYLE}>
                     <button
                       type="button"
-                      className="btn btn-outline-neutral-300 radius-8"
+                      className="btn"
+                      style={MODAL_CONTENT_CANCEL_BUTTON_STYLE}
                       onClick={() => setSubView(null)}
                     >
                       취소
                     </button>
                     <button
                       type="submit"
-                      className="btn btn-warning-600 radius-8 d-flex align-items-center gap-6"
+                      className="btn"
+                      style={{ ...MODAL_CONTENT_SAVE_BUTTON_STYLE, background: "#ca8a04" }}
                       disabled={awardSaving}
                     >
                       {awardSaving ? (
                         <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
                       ) : (
-                        <><iconify-icon icon="mdi:check" /> 저장</>
+                        <><i className="ri-check-line"></i> 저장</>
                       )}
                     </button>
                   </div>
@@ -1595,21 +1681,22 @@ export default function TeacherMyClassStudents() {
               {/* 봉사활동 폼 */}
               {subView === "volunteer" && (
                 <form onSubmit={handleSaveVolunteer}>
-                  <div className="modal-body p-24">
+                  <div className="modal-body p-24" style={MODAL_CONTENT_BODY_STYLE}>
                     {volunteerError && (
                       <div className="alert alert-danger radius-8 mb-16 text-sm">{volunteerError}</div>
                     )}
-                    <div className="row gy-16">
+                    <div className="row gy-16" style={MODAL_CONTENT_ROW_STYLE}>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">학년도 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>학년도 *</label>
                         {academicTerms.length === 0 ? (
-                          <div className="text-secondary-light text-sm py-8">
+                          <div className="text-secondary-light text-sm py-8" style={MODAL_CONTENT_LOADING_STYLE}>
                             <span className="spinner-border spinner-border-sm me-8" />
                             학년도 목록 불러오는 중...
                           </div>
                         ) : (
                           <select
                             className="form-select"
+                            style={MODAL_CONTENT_CONTROL_STYLE}
                             value={academicTerms.find((t) => t.id === volunteerForm.academicTermId)?.schoolYear ?? ""}
                             onChange={(e) => {
                               const termId = academicTerms.find((t) => t.schoolYear === Number(e.target.value))?.id ?? null;
@@ -1624,10 +1711,11 @@ export default function TeacherMyClassStudents() {
                         )}
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">시간(h) *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>시간(h) *</label>
                         <input
                           type="number"
                           className="form-control"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           min={0.5}
                           step={0.5}
                           placeholder="예: 2"
@@ -1637,30 +1725,33 @@ export default function TeacherMyClassStudents() {
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">시작일 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>시작일 *</label>
                         <input
                           type="date"
                           className="form-control"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           value={volunteerForm.startDate}
                           onChange={(e) => setVolunteerForm((f) => ({ ...f, startDate: e.target.value }))}
                           required
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label fw-semibold text-sm">종료일</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>종료일</label>
                         <input
                           type="date"
                           className="form-control"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           value={volunteerForm.endDate}
                           min={volunteerForm.startDate}
                           onChange={(e) => setVolunteerForm((f) => ({ ...f, endDate: e.target.value }))}
                         />
                       </div>
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">장소 또는 주관기관명 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>장소 또는 주관기관명 *</label>
                         <input
                           type="text"
                           className="form-control"
+                          style={MODAL_CONTENT_CONTROL_STYLE}
                           placeholder="예: (학교)부여고등학교"
                           value={volunteerForm.organizer}
                           onChange={(e) => setVolunteerForm((f) => ({ ...f, organizer: e.target.value }))}
@@ -1668,9 +1759,10 @@ export default function TeacherMyClassStudents() {
                         />
                       </div>
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">활동내용 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>활동내용 *</label>
                         <textarea
                           className="form-control"
+                          style={{ ...MODAL_CONTENT_CONTROL_STYLE, height: "auto", lineHeight: 1.5 }}
                           rows={3}
                           placeholder="봉사활동 내용을 입력하세요"
                           value={volunteerForm.activityContent}
@@ -1680,23 +1772,25 @@ export default function TeacherMyClassStudents() {
                       </div>
                     </div>
                   </div>
-                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                  <div className="modal-footer" style={MODAL_CONTENT_ACTIONS_STYLE}>
                     <button
                       type="button"
-                      className="btn btn-outline-neutral-300 radius-8"
+                      className="btn"
+                      style={MODAL_CONTENT_CANCEL_BUTTON_STYLE}
                       onClick={() => setSubView(null)}
                     >
                       취소
                     </button>
                     <button
                       type="submit"
-                      className="btn btn-success-600 radius-8 d-flex align-items-center gap-6"
+                      className="btn"
+                      style={{ ...MODAL_CONTENT_SAVE_BUTTON_STYLE, background: "#16a34a" }}
                       disabled={volunteerSaving}
                     >
                       {volunteerSaving ? (
                         <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
                       ) : (
-                        <><iconify-icon icon="mdi:check" /> 저장</>
+                        <><i className="ri-check-line"></i> 저장</>
                       )}
                     </button>
                   </div>
@@ -1709,9 +1803,9 @@ export default function TeacherMyClassStudents() {
                   {/* 탭 헤더 */}
                   <div className="d-flex border-bottom" style={{ background: "#fafafa" }}>
                     {([
-                      { key: "medical", label: "의료 기록", icon: "mdi:medical-bag", color: "#0891b2" },
-                      { key: "career", label: "진로희망", icon: "mdi:briefcase-outline", color: "#16a34a" },
-                      { key: "enrollment", label: "학적사항", icon: "mdi:school-outline", color: "#7c3aed" },
+                      { key: "medical", label: "의료 기록", icon: "ri-heart-3-line", color: "#0891b2" },
+                      { key: "career", label: "진로희망", icon: "ri-briefcase-line", color: "#16a34a" },
+                      { key: "enrollment", label: "학적사항", icon: "ri-building-2-line", color: "#7c3aed" },
                     ] as const).map((tab) => (
                       <button
                         key={tab.key}
@@ -1733,7 +1827,7 @@ export default function TeacherMyClassStudents() {
                           gap: 4,
                         }}
                       >
-                        <iconify-icon icon={tab.icon} style={{ fontSize: 14 }} />
+                        <i className={tab.icon} style={{ fontSize: 14 }}></i>
                         {tab.label}
                       </button>
                     ))}
@@ -1760,13 +1854,14 @@ export default function TeacherMyClassStudents() {
                         setMedicalSaving(false);
                       }
                     }}>
-                      <div className="p-20">
+                      <div className="p-20" style={MODAL_CONTENT_BODY_STYLE}>
                         {medicalError && <div className="alert alert-danger radius-8 mb-12 text-sm">{medicalError}</div>}
-                        <div className="row gy-14">
+                        <div className="row gy-14" style={MODAL_CONTENT_ROW_STYLE}>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">혈액형</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>혈액형</label>
                             <select
                               className="form-select"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               value={medicalForm.bloodGroup}
                               onChange={(e) => setMedicalForm((f) => ({ ...f, bloodGroup: e.target.value }))}
                             >
@@ -1777,10 +1872,11 @@ export default function TeacherMyClassStudents() {
                             </select>
                           </div>
                           <div className="col-6">
-                            <label className="form-label fw-semibold text-sm">신장 (cm)</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>신장 (cm)</label>
                             <input
                               type="number"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="예: 170"
                               min={100}
                               max={250}
@@ -1790,10 +1886,11 @@ export default function TeacherMyClassStudents() {
                             />
                           </div>
                           <div className="col-6">
-                            <label className="form-label fw-semibold text-sm">체중 (kg)</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>체중 (kg)</label>
                             <input
                               type="number"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="예: 65"
                               min={20}
                               max={200}
@@ -1804,10 +1901,10 @@ export default function TeacherMyClassStudents() {
                           </div>
                         </div>
                       </div>
-                      <div className="px-20 pb-16 d-flex justify-content-end gap-8">
-                        <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setSubView(null)}>취소</button>
-                        <button type="submit" className="btn radius-8 d-flex align-items-center gap-6" style={{ background: "#0891b2", color: "#fff" }} disabled={medicalSaving}>
-                          {medicalSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><iconify-icon icon="mdi:check" /> 저장</>}
+                      <div style={MODAL_CONTENT_ACTIONS_STYLE}>
+                        <button type="button" className="btn" style={MODAL_CONTENT_CANCEL_BUTTON_STYLE} onClick={() => setSubView(null)}>취소</button>
+                        <button type="submit" className="btn" style={{ ...MODAL_CONTENT_SAVE_BUTTON_STYLE, background: "#0891b2" }} disabled={medicalSaving}>
+                          {medicalSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><i className="ri-check-line"></i> 저장</>}
                         </button>
                       </div>
                     </form>
@@ -1843,16 +1940,17 @@ export default function TeacherMyClassStudents() {
                         setCareerSaving(false);
                       }
                     }}>
-                      <div className="p-20">
+                      <div className="p-20" style={MODAL_CONTENT_BODY_STYLE}>
                         {careerError && <div className="alert alert-danger radius-8 mb-12 text-sm">{careerError}</div>}
-                        <div className="row gy-14">
+                        <div className="row gy-14" style={MODAL_CONTENT_ROW_STYLE}>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">학기 *</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>학기 *</label>
                             {academicTerms.length === 0 ? (
-                              <div className="text-secondary-light text-sm py-6"><span className="spinner-border spinner-border-sm me-6" />불러오는 중...</div>
+                              <div className="text-secondary-light text-sm py-6" style={MODAL_CONTENT_LOADING_STYLE}><span className="spinner-border spinner-border-sm me-6" />불러오는 중...</div>
                             ) : (
                               <select
                                 className="form-select"
+                                style={MODAL_CONTENT_CONTROL_STYLE}
                                 value={careerForm.academicTermId ?? ""}
                                 onChange={(e) => {
                                   const termId = Number(e.target.value);
@@ -1867,30 +1965,33 @@ export default function TeacherMyClassStudents() {
                             )}
                           </div>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">특기 또는 흥미</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>특기 또는 흥미</label>
                             <input
                               type="text"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="예: 컴퓨터, 음악"
                               value={careerForm.specialtyOrInterest}
                               onChange={(e) => setCareerForm((f) => ({ ...f, specialtyOrInterest: e.target.value }))}
                             />
                           </div>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">학생 희망직업</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>학생 희망직업</label>
                             <input
                               type="text"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="예: 소프트웨어 엔지니어"
                               value={careerForm.studentDesiredJob}
                               onChange={(e) => setCareerForm((f) => ({ ...f, studentDesiredJob: e.target.value }))}
                             />
                           </div>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">부모 희망직업</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>부모 희망직업</label>
                             <input
                               type="text"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="예: 의사"
                               value={careerForm.parentDesiredJob}
                               onChange={(e) => setCareerForm((f) => ({ ...f, parentDesiredJob: e.target.value }))}
@@ -1898,10 +1999,10 @@ export default function TeacherMyClassStudents() {
                           </div>
                         </div>
                       </div>
-                      <div className="px-20 pb-16 d-flex justify-content-end gap-8">
-                        <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setSubView(null)}>취소</button>
-                        <button type="submit" className="btn btn-success-600 radius-8 d-flex align-items-center gap-6" disabled={careerSaving}>
-                          {careerSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><iconify-icon icon="mdi:check" /> 저장</>}
+                      <div style={MODAL_CONTENT_ACTIONS_STYLE}>
+                        <button type="button" className="btn" style={MODAL_CONTENT_CANCEL_BUTTON_STYLE} onClick={() => setSubView(null)}>취소</button>
+                        <button type="submit" className="btn" style={{ ...MODAL_CONTENT_SAVE_BUTTON_STYLE, background: "#16a34a" }} disabled={careerSaving}>
+                          {careerSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><i className="ri-check-line"></i> 저장</>}
                         </button>
                       </div>
                     </form>
@@ -1929,58 +2030,62 @@ export default function TeacherMyClassStudents() {
                         setEnrollmentSaving(false);
                       }
                     }}>
-                      <div className="p-20">
+                      <div className="p-20" style={MODAL_CONTENT_BODY_STYLE}>
                         {enrollmentError && <div className="alert alert-danger radius-8 mb-12 text-sm">{enrollmentError}</div>}
-                        <div className="row gy-14">
+                        <div className="row gy-14" style={MODAL_CONTENT_ROW_STYLE}>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">연락처</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>연락처</label>
                             <input
                               type="text"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="010-0000-0000"
                               value={enrollmentForm.phone}
                               onChange={(e) => setEnrollmentForm((f) => ({ ...f, phone: e.target.value }))}
                             />
                           </div>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">주소</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>주소</label>
                             <input
                               type="text"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="주소를 입력하세요"
                               value={enrollmentForm.address}
                               onChange={(e) => setEnrollmentForm((f) => ({ ...f, address: e.target.value }))}
                             />
                           </div>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">이전 학교명</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>이전 학교명</label>
                             <input
                               type="text"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               placeholder="이전에 재학한 학교명"
                               value={enrollmentForm.previousSchoolName}
                               onChange={(e) => setEnrollmentForm((f) => ({ ...f, previousSchoolName: e.target.value }))}
                             />
                           </div>
                           <div className="col-12">
-                            <label className="form-label fw-semibold text-sm">입학일</label>
+                            <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>입학일</label>
                             <input
                               type="date"
                               className="form-control"
+                              style={MODAL_CONTENT_CONTROL_STYLE}
                               value={enrollmentForm.admissionDate}
                               onChange={(e) => setEnrollmentForm((f) => ({ ...f, admissionDate: e.target.value }))}
                             />
                           </div>
                         </div>
-                        <p className="text-xs text-secondary-light mt-10 mb-0">
+                        <p className="text-xs text-secondary-light mt-10 mb-0" style={{ ...MODAL_CONTENT_HELPER_STYLE, marginBottom: 0, marginTop: 10 }}>
                           <i className="ri-information-line me-4" />
                           입력하지 않은 항목은 변경되지 않습니다.
                         </p>
                       </div>
-                      <div className="px-20 pb-16 d-flex justify-content-end gap-8">
-                        <button type="button" className="btn btn-outline-neutral-300 radius-8" onClick={() => setSubView(null)}>취소</button>
-                        <button type="submit" className="btn radius-8 d-flex align-items-center gap-6" style={{ background: "#7c3aed", color: "#fff" }} disabled={enrollmentSaving}>
-                          {enrollmentSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><iconify-icon icon="mdi:check" /> 저장</>}
+                      <div style={MODAL_CONTENT_ACTIONS_STYLE}>
+                        <button type="button" className="btn" style={MODAL_CONTENT_CANCEL_BUTTON_STYLE} onClick={() => setSubView(null)}>취소</button>
+                        <button type="submit" className="btn" style={{ ...MODAL_CONTENT_SAVE_BUTTON_STYLE, background: "#7c3aed" }} disabled={enrollmentSaving}>
+                          {enrollmentSaving ? <><span className="spinner-border spinner-border-sm" /> 저장 중...</> : <><i className="ri-check-line"></i> 저장</>}
                         </button>
                       </div>
                     </form>
@@ -2001,7 +2106,7 @@ export default function TeacherMyClassStudents() {
                       {/* 봉사활동 섹션 */}
                       <div style={{ borderBottom: "1px solid #e5e7eb" }}>
                         <div className="d-flex align-items-center gap-6 px-16 py-8" style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
-                          <iconify-icon icon="mdi:heart-plus" style={{ fontSize: 13, color: "#16a34a" }} />
+                          <i className="ri-user-heart-line" style={{ fontSize: 13, color: "#16a34a" }}></i>
                           <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>봉사활동</span>
                           <span style={{ fontSize: 11, color: "#9ca3af" }}>({activityInfo.volunteers.length}건)</span>
                         </div>
@@ -2035,7 +2140,7 @@ export default function TeacherMyClassStudents() {
                       {/* 수상경력 섹션 */}
                       <div>
                         <div className="d-flex align-items-center gap-6 px-16 py-8" style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
-                          <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 13, color: "#ca8a04" }} />
+                          <i className="ri-trophy-line" style={{ fontSize: 13, color: "#ca8a04" }}></i>
                           <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>수상경력</span>
                           <span style={{ fontSize: 11, color: "#9ca3af" }}>({activityInfo.awards.length}건)</span>
                         </div>
@@ -2081,21 +2186,22 @@ export default function TeacherMyClassStudents() {
               {/* 행동특성 및 종합의견 폼 */}
               {subView === "behavior" && (
                 <form onSubmit={handleSaveBehavior}>
-                  <div className="modal-body p-24">
+                  <div className="modal-body p-24" style={MODAL_CONTENT_BODY_STYLE}>
                     {behaviorError && (
                       <div className="alert alert-danger radius-8 mb-16 text-sm">{behaviorError}</div>
                     )}
-                    <div className="row gy-16">
+                    <div className="row gy-16" style={MODAL_CONTENT_ROW_STYLE}>
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">학기 *</label>
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>학기 *</label>
                         {academicTerms.length === 0 ? (
-                          <div className="text-secondary-light text-sm py-8">
+                          <div className="text-secondary-light text-sm py-8" style={MODAL_CONTENT_LOADING_STYLE}>
                             <span className="spinner-border spinner-border-sm me-8" />
                             학기 목록 불러오는 중...
                           </div>
                         ) : (
                           <select
                             className="form-select"
+                            style={MODAL_CONTENT_CONTROL_STYLE}
                             value={behaviorForm.academicTermId ?? ""}
                             onChange={(e) => {
                               const newTermId = Number(e.target.value);
@@ -2112,8 +2218,8 @@ export default function TeacherMyClassStudents() {
                         )}
                       </div>
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">행동특성 및 종합의견 *</label>
-                        <div className="text-xs text-secondary-light mb-6">
+                        <label className="form-label fw-semibold text-sm" style={MODAL_CONTENT_LABEL_STYLE}>행동특성 및 종합의견 *</label>
+                        <div className="text-xs text-secondary-light mb-6" style={MODAL_CONTENT_HELPER_STYLE}>
                           학년도+학기 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
                         </div>
                         <textarea
@@ -2122,30 +2228,31 @@ export default function TeacherMyClassStudents() {
                           placeholder="행동특성 및 종합의견을 입력하세요"
                           value={behaviorForm.specialNotes}
                           onChange={(e) => setBehaviorForm((f) => ({ ...f, specialNotes: e.target.value }))}
-                          style={{ resize: "vertical", minHeight: 200 }}
+                          style={{ ...MODAL_CONTENT_CONTROL_STYLE, height: "auto", resize: "vertical", minHeight: 200, lineHeight: 1.5 }}
                           required
                         />
                       </div>
                     </div>
                   </div>
-                  <div className="modal-footer border-top py-16 px-24 gap-8">
+                  <div className="modal-footer" style={MODAL_CONTENT_ACTIONS_STYLE}>
                     <button
                       type="button"
-                      className="btn btn-outline-neutral-300 radius-8"
+                      className="btn"
+                      style={MODAL_CONTENT_CANCEL_BUTTON_STYLE}
                       onClick={() => setSubView(null)}
                     >
                       취소
                     </button>
                     <button
                       type="submit"
-                      className="btn radius-8 d-flex align-items-center gap-6"
-                      style={{ background: "#9333ea", color: "#fff" }}
+                      className="btn"
+                      style={{ ...MODAL_CONTENT_SAVE_BUTTON_STYLE, background: "#9333ea" }}
                       disabled={behaviorSaving}
                     >
                       {behaviorSaving ? (
                         <><span className="spinner-border spinner-border-sm" /> 저장 중...</>
                       ) : (
-                        <><iconify-icon icon="mdi:check" /> 저장</>
+                        <><i className="ri-check-line"></i> 저장</>
                       )}
                     </button>
                   </div>

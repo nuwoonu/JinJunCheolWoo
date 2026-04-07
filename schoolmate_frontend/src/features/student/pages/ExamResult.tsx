@@ -87,7 +87,7 @@ export default function ExamResult() {
         <ul className="d-flex align-items-center gap-2">
           <li className="fw-medium">
             <Link to="/student/dashboard" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
+              <i className="ri-home-4-line icon text-lg"></i>
               홈
             </Link>
           </li>

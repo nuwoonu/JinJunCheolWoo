@@ -396,7 +396,7 @@ export default function ParentDetail() {
                       onClick={() => setShowModal(true)}
                       style={{ padding: "5px 12px", background: "#25A194", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
                     >
-                      <i className="bi bi-plus-lg" /> 자녀 추가
+                      <i className="ri-add-line" /> 자녀 추가
                     </button>
                   </div>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -503,7 +503,7 @@ export default function ParentDetail() {
               {/* 알림 이력 탭 */}
               {activeTab === "noti" && (
                 <div style={{ textAlign: "center", padding: "48px 0", color: "#9ca3af" }}>
-                  <i className="bi bi-bell" style={{ fontSize: 48, display: "block", marginBottom: 12 }} />
+                  <i className="ri-notification-3-line" style={{ fontSize: 48, display: "block", marginBottom: 12 }} />
                   <p style={{ fontSize: 14 }}>알림 이력 기능은 준비 중입니다.</p>
                 </div>
               )}

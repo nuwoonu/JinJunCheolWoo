@@ -984,11 +984,11 @@ export default function Main() {
             </div>
             <div className="d-flex gap-3 align-items-center">
               <a href="/login" className="btn-login-nav">
-                <i className="fa-solid fa-arrow-right-to-bracket me-1" />
+                <i className="ri-login-box-line me-1" />
                 로그인
               </a>
               <a href="/register" className="btn-register-nav">
-                <i className="fa-solid fa-user-plus me-1" />
+                <i className="ri-user-add-line me-1" />
                 회원가입
               </a>
             </div>
@@ -1392,12 +1392,13 @@ export default function Main() {
           <div className="sm-inner" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div className="reveal" style={{ textAlign: "center" }}>
               <div className="section-label">COMPARISON</div>
-              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
-                <span style={{ color: "#000" }}>기존 시스템 </span> vs{" "}
+              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", flexWrap: "nowrap" }}>
+                <span style={{ color: "#000" }}>기존 시스템</span>
+                <span>vs</span>
                 <img
                   src="/images/schoolmate_logo.png"
                   alt="School Mate"
-                  style={{ height: "5.5rem", verticalAlign: "middle" }}
+                  style={{ height: "5.5rem" }}
                 />
               </h2>
               <p
@@ -1501,17 +1502,17 @@ export default function Main() {
           <div className="sm-inner" style={{ position: "relative", zIndex: 1 }}>
             <div className="reveal">
               <h2 className="cta-title">
-                <img
-                  src="/images/schoolmateLogo.png"
-                  alt="SchoolMate"
-                  style={{
-                    height: "1.5em",
-                    verticalAlign: "middle",
-                    filter: "brightness(0) invert(1)",
-                    marginBottom: "4px",
-                  }}
-                />
-                와 함께
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25em" }}>
+                  <img
+                    src="/images/schoolmateLogo.png"
+                    alt="SchoolMate"
+                    style={{
+                      height: "1.5em",
+                      filter: "brightness(0) invert(1)",
+                    }}
+                  />
+                  <span>와 함께</span>
+                </span>
                 <br />
                 학사 관리의 변화를 경험하세요
               </h2>

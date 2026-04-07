@@ -481,7 +481,7 @@ export default function Schedule() {
             }}
             onClick={exportCsv}
           >
-            <i className="bi bi-file-earmark-arrow-down" style={{ marginRight: 4 }} /> CSV 내보내기
+            <i className="ri-download-line" style={{ marginRight: 4 }} /> CSV 내보내기
           </button>
           <button
             style={{
@@ -496,7 +496,7 @@ export default function Schedule() {
             }}
             onClick={() => csvRef.current?.click()}
           >
-            <i className="bi bi-file-earmark-spreadsheet" style={{ marginRight: 4 }} /> CSV 일괄 등록
+            <i className="ri-file-excel-2-line" style={{ marginRight: 4 }} /> CSV 일괄 등록
           </button>
           <button
             style={{
@@ -512,7 +512,7 @@ export default function Schedule() {
             }}
             onClick={() => openCreate()}
           >
-            <i className="bi bi-plus-lg" /> 일정 등록
+            <i className="ri-add-line" /> 일정 등록
           </button>
         </div>
       </div>
@@ -523,10 +523,10 @@ export default function Schedule() {
           {/* 1. 좌측 (월 이동 및 오늘 버튼) */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
             <button style={arrowBtnStyle} onClick={() => goMonth(-1)}>
-              <i className="bi bi-chevron-left" style={{ fontSize: 18 }} />
+              <i className="ri-arrow-left-s-line" style={{ fontSize: 18 }} />
             </button>
             <button style={arrowBtnStyle} onClick={() => goMonth(1)}>
-              <i className="bi bi-chevron-right" style={{ fontSize: 18 }} />
+              <i className="ri-arrow-right-s-line" style={{ fontSize: 18 }} />
             </button>
             <button style={navBtnStyle} onClick={goToday}>
               오늘

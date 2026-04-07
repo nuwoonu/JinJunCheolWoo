@@ -387,7 +387,7 @@ export default function StudentDetail() {
                       onClick={() => setShowParentModal(true)}
                       style={{ padding: "5px 12px", background: "#25A194", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
                     >
-                      <i className="bi bi-plus-lg" /> 보호자 추가
+                      <i className="ri-add-line" /> 보호자 추가
                     </button>
                   </div>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>

@@ -84,21 +84,14 @@ export default function ClassGoalEditor({ classroomId }: Props) {
         {/* 카드 헤더 */}
         <div className="d-flex justify-content-between align-items-center dash-card-header">
           <div className="d-flex align-items-center gap-8">
-            <iconify-icon icon="ri:focus-3-line" className="text-primary-600 text-xl" />
+            <i className="ri-focus-3-line text-primary-600 text-xl"></i>
             <h6 className="fw-bold mb-0 text-sm">이달의 학급 목표</h6>
           </div>
           <button
+            type="button"
             onClick={openModal}
-            style={{
-              background: "#25A194",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              padding: "5px 14px",
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
+            className="text-primary-600 text-sm"
+            style={{ lineHeight: 1, background: "none", border: "none", padding: 0, cursor: "pointer" }}
           >
             작성
           </button>

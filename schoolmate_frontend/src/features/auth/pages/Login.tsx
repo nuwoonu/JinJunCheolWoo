@@ -96,7 +96,7 @@ export default function Login() {
                 {/* 에러 메시지 */}
                 {error && (
                   <div className="error-message">
-                    <i className="fa-solid fa-triangle-exclamation"></i>
+                    <i className="ri-error-warning-line"></i>
                     <span>{error}</span>
                   </div>
                 )}
@@ -137,7 +137,7 @@ export default function Login() {
                         className="password-toggle"
                         onClick={() => setShowPassword((prev) => !prev)}
                       >
-                        <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                        <i className={showPassword ? "ri-eye-off-line" : "ri-eye-line"}></i>
                       </button>
                     </div>
                   </div>

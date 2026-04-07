@@ -518,11 +518,11 @@ function App() {
           </PrivateRoute>
         }
       />
-      {/* [woo] 학부모 학급 알림장 */}
+      {/* [woo] 학부모 학급 알림장 / [soojin] STUDENT 추가 - 학생 사이드바 학급 알림장 메뉴 연결 */}
       <Route
         path="/parent/class/notice"
         element={
-          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+          <PrivateRoute allowedRoles={["PARENT", "STUDENT", "ADMIN"]}>
             <ClassDiary />
           </PrivateRoute>
         }
@@ -530,7 +530,7 @@ function App() {
       <Route
         path="/parent/class/notice/:id"
         element={
-          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+          <PrivateRoute allowedRoles={["PARENT", "STUDENT", "ADMIN"]}>
             <ClassDiaryDetail />
           </PrivateRoute>
         }

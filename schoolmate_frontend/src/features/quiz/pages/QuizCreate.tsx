@@ -496,7 +496,7 @@ export default function QuizCreate() {
                         onClick={() => removeOption(qIdx, oIdx)}
                         title="선택지 삭제"
                       >
-                        <iconify-icon icon="mdi:close" />
+                        <i className="ri-close-line"></i>
                       </button>
                     )}
                   </div>
@@ -591,7 +591,7 @@ export default function QuizCreate() {
           onClick={handleSubmit}
           disabled={saving}
         >
-          <iconify-icon icon="mdi:clipboard-list-outline" />
+          <i className="ri-list-check"></i>
           {saving ? "저장 중..." : "퀴즈 출제"}
         </button>
       </div>

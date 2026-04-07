@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import api from "@/shared/api/authApi";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
@@ -39,6 +39,7 @@ const YEAR_LABEL: Record<string, string> = {
 const SEMESTER_LABEL: Record<string, string> = {
   FIRST: "1학기", FALL: "2학기",
 };
+const PAGE_SIZE = 10;
 
 // ── 타입 ────────────────────────────────────────────────────
 interface Student {
@@ -93,6 +94,7 @@ export default function StudentList() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
 
   // 교사 정보 (채점 모드에서만 사용)
   const [teacherInfo, setTeacherInfo] = useState<TeacherInfo>({
@@ -186,6 +188,17 @@ export default function StudentList() {
       s.userEmail?.toLowerCase().includes(q)
     );
   });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const visibleStudents = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [search, classroomId, isViewMode]);
+
+  useEffect(() => {
+    const maxPage = Math.max(0, totalPages - 1);
+    if (currentPage > maxPage) setCurrentPage(maxPage);
+  }, [currentPage, totalPages]);
 
   const openGrading = (s: Student) => {
     setGradingStudent(s);
@@ -239,145 +252,158 @@ export default function StudentList() {
 
   return (
     <DashboardLayout>
-      {/* 브레드크럼 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h6 className="fw-semibold mb-0">{isViewMode ? "성적 결과" : "학생"}</h6>
+      {/* [soojin] 학교 공지 페이지와 동일한 상단/컨트롤/카드/페이지네이션 구조 */}
+      <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 4.5rem - 48px)" }}>
+        <div style={{ marginBottom: 16, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div>
-            {isViewMode ? (
-              <span className="text-neutral-600">자기 반 전 과목 성적 확인</span>
-            ) : (
-              <>
-                <Link to="/teacher/grade-classes" className="text-secondary-light hover-text-primary hover-underline">
-                  학급 선택
-                </Link>
-                <span className="text-neutral-600"> / 학생 리스트</span>
-              </>
-            )}
+            <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4, display: "flex", alignItems: "baseline", gap: 8 }}>
+              {isViewMode ? "학생 성적 목록" : "학생 목록"}
+              <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {students.length}건</span>
+            </h5>
+            <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+              {isViewMode ? "학생별 전 과목 성적을 확인합니다." : "학급 학생 목록과 기본 정보를 확인합니다."}
+            </p>
           </div>
         </div>
-        <ul className="d-flex align-items-center gap-2">
-          <li className="fw-medium">
-            <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />홈
-            </Link>
-          </li>
-          <li>-</li>
-          <li className="fw-medium">{isViewMode ? "성적 결과" : "학생 리스트"}</li>
-        </ul>
-      </div>
 
-      <div className="card radius-12">
-        <div className="card-header py-16 px-24 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-12">
-          <div className="d-flex align-items-center gap-12">
-            <h6 className="mb-0">{isViewMode ? "학생 성적 목록" : "학생 목록"}</h6>
-            {/* [cheol] 채점 모드: 담당 과목 배지 표시 */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
+          <form
+            style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}
+            onSubmit={(e) => { e.preventDefault(); setCurrentPage(0); }}
+          >
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <i className="ri-search-line" style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }} />
+              <input
+                style={{ padding: "5px 8px 5px 28px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, minWidth: 220, background: "#fff" }}
+                placeholder="이름, 학번, 이메일 검색"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <button
+              style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", whiteSpace: "nowrap" }}
+              type="submit"
+            >
+              검색
+            </button>
+            <button
+              style={{ padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, cursor: "pointer", color: "#374151", whiteSpace: "nowrap" }}
+              type="button"
+              onClick={() => setSearch("")}
+            >
+              초기화
+            </button>
+            {search && (
+              <span style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
+                <span style={{ fontWeight: 600, color: "#111827" }}>{filtered.length}건</span> / 전체 {students.length}건
+              </span>
+            )}
+          </form>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {isTeacher && !isViewMode && teacherInfo.subjectName && (
-              <span className="badge bg-primary-100 text-primary-600 px-10 py-4 radius-4 text-sm">
+              <span style={{ padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 600, background: "rgba(37,161,148,0.1)", color: "#0f766e" }}>
                 담당 과목: {teacherInfo.subjectName}
               </span>
             )}
-            {/* [cheol] 성적 확인 모드: 안내 배지 */}
             {isViewMode && (
-              <span className="badge bg-success-100 text-success-600 px-10 py-4 radius-4 text-sm">
+              <span style={{ padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 600, background: "rgba(34,197,94,0.1)", color: "#15803d" }}>
                 전 과목 성적 조회 모드
               </span>
             )}
           </div>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="이름, 학번, 이메일 검색"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 240 }}
-          />
         </div>
 
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table bordered-table mb-0">
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+              <colgroup>
+                <col style={{ width: "16%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "16%" }} />
+                <col style={{ width: "18%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "8%" }} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th scope="col">학번</th>
-                  <th scope="col">이름</th>
-                  <th scope="col">학년/반</th>
-                  <th scope="col">연락처</th>
-                  <th scope="col">이메일</th>
-                  <th scope="col" className="text-center">
-                    {/* [cheol] 모드에 따라 컬럼 헤더 변경 */}
-                    {isTeacher && !isViewMode ? "점수" : "성별"}
-                  </th>
-                  <th scope="col" className="text-center">
-                    {isTeacher ? (isViewMode ? "성적 확인" : "채점") : "상세"}
-                  </th>
+                  {["학번", "이름", "학년/반", "연락처", "이메일", isTeacher && !isViewMode ? "점수" : "성별", isTeacher ? (isViewMode ? "성적 확인" : "채점") : "상세"].map((h, i) => (
+                    <th
+                      key={`${h}-${i}`}
+                      style={{ padding: "12px 16px", fontSize: 13, fontWeight: 600, color: "#6b7280", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", textAlign: i >= 5 ? "center" : "left", whiteSpace: "nowrap" }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-24 text-secondary-light">
+                    <td colSpan={7} style={{ padding: "48px 16px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
                       불러오는 중...
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-24 text-secondary-light">
+                    <td colSpan={7} style={{ padding: "48px 16px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
                       등록된 학생이 없습니다.
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((s) => (
+                  visibleStudents.map((s) => (
                     <tr key={s.id}>
-                      <td className="fw-medium">{s.fullStudentNumber ?? s.studentCode ?? "-"}</td>
-                      <td>
-                        <div className="d-flex align-items-center gap-10">
-                          <div className="w-36-px h-36-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                            <iconify-icon icon="mdi:account" className="text-primary-600" />
+                      <td style={{ padding: "14px 16px", fontSize: 13, borderBottom: "1px solid #f3f4f6", color: "#374151", whiteSpace: "nowrap" }}>
+                        {s.fullStudentNumber ?? s.studentCode ?? "-"}
+                      </td>
+                      <td style={{ padding: "14px 16px", fontSize: 13, borderBottom: "1px solid #f3f4f6", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#e0f2f1", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <i className="ri-user-line" style={{ color: "#0f766e" }} />
                           </div>
-                          <span className="fw-medium">{s.userName ?? "-"}</span>
+                          <span style={{ fontWeight: 500 }}>{s.userName ?? "-"}</span>
                         </div>
                       </td>
-                      <td className="text-secondary-light">
+                      <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280", borderBottom: "1px solid #f3f4f6", whiteSpace: "nowrap" }}>
                         {s.year && s.classNum ? `${s.year}학년 ${s.classNum}반` : "-"}
                       </td>
-                      <td className="text-secondary-light">{s.phone ?? "-"}</td>
-                      <td className="text-secondary-light">{s.userEmail ?? "-"}</td>
-                      <td className="text-center">
-                        {/* [cheol] 채점 모드: 담당 과목 점수 표시 / 성적 확인 모드: 성별 표시 */}
+                      <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280", borderBottom: "1px solid #f3f4f6", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {s.phone ?? "-"}
+                      </td>
+                      <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280", borderBottom: "1px solid #f3f4f6", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.userEmail ?? "-"}
+                      </td>
+                      <td style={{ padding: "14px 16px", fontSize: 13, color: "#6b7280", borderBottom: "1px solid #f3f4f6", textAlign: "center", whiteSpace: "nowrap" }}>
                         {isTeacher && !isViewMode ? (
                           scoreMap[s.id] != null ? (
                             <span className={`fw-bold ${scoreMap[s.id] >= 90 ? "text-success-600" : scoreMap[s.id] >= 70 ? "text-primary-600" : "text-danger-600"}`}>
                               {scoreMap[s.id]}점
                             </span>
                           ) : (
-                            <span className="text-secondary-light">-</span>
+                            "-"
                           )
                         ) : (
-                          <span className="text-secondary-light">
-                            {s.gender === "MALE" ? "남" : s.gender === "FEMALE" ? "여" : "-"}
-                          </span>
+                          s.gender === "MALE" ? "남" : s.gender === "FEMALE" ? "여" : "-"
                         )}
                       </td>
-                      <td className="text-center">
+                      <td style={{ padding: "14px 16px", fontSize: 13, borderBottom: "1px solid #f3f4f6", textAlign: "center", whiteSpace: "nowrap" }}>
                         {isTeacher ? (
                           isViewMode ? (
-                            // [cheol] 성적 확인 모드: 전 과목 성적 보기 버튼
                             <button
                               type="button"
                               className="btn btn-sm btn-success-600 radius-4"
                               onClick={() => openViewGrades(s)}
                             >
-                              <iconify-icon icon="mdi:chart-bar" /> 성적 확인
+                              <i className="ri-bar-chart-line"></i> 성적 확인
                             </button>
                           ) : (
-                            // 채점 모드: 채점 버튼
                             <button
                               type="button"
                               className="btn btn-sm btn-primary-600 radius-4"
                               onClick={() => openGrading(s)}
                             >
-                              <iconify-icon icon="mdi:pencil-outline" /> 채점
+                              <i className="ri-edit-line"></i> 채점
                             </button>
                           )
                         ) : (
@@ -386,7 +412,7 @@ export default function StudentList() {
                             className="btn btn-sm btn-outline-primary-600 radius-4"
                             onClick={() => {}}
                           >
-                            <iconify-icon icon="mdi:eye-outline" />
+                            <i className="ri-eye-line"></i>
                           </button>
                         )}
                       </td>
@@ -397,6 +423,34 @@ export default function StudentList() {
             </table>
           </div>
         </div>
+
+        {!loading && (
+          <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 0", gap: 4, flexShrink: 0 }}>
+            <button
+              onClick={() => setCurrentPage((p) => p - 1)}
+              disabled={currentPage === 0}
+              style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", cursor: currentPage === 0 ? "not-allowed" : "pointer", color: currentPage === 0 ? "#d1d5db" : "#374151", fontSize: 12 }}
+            >
+              ‹
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i)}
+                style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: `1px solid ${i === currentPage ? "#25A194" : "#e5e7eb"}`, borderRadius: 6, background: i === currentPage ? "#25A194" : "#fff", color: i === currentPage ? "#fff" : "#374151", cursor: "pointer", fontSize: 12, fontWeight: i === currentPage ? 600 : 400 }}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={currentPage >= totalPages - 1}
+              style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", cursor: currentPage >= totalPages - 1 ? "not-allowed" : "pointer", color: currentPage >= totalPages - 1 ? "#d1d5db" : "#374151", fontSize: 12 }}
+            >
+              ›
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── [cheol] 성적 확인 모달 (mode=view 전용) ── */}
@@ -418,7 +472,7 @@ export default function StudentList() {
                   <div className="text-center py-24 text-secondary-light">불러오는 중...</div>
                 ) : studentGrades.length === 0 ? (
                   <div className="text-center py-24 text-secondary-light">
-                    <iconify-icon icon="mdi:file-search-outline" className="text-3xl d-block mb-8" />
+                    <i className="ri-file-search-line text-3xl d-block mb-8"></i>
                     등록된 성적이 없습니다.
                   </div>
                 ) : (

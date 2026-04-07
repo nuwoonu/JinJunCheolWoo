@@ -486,7 +486,7 @@ export default function GradeEntry() {
                                     title="점수 입력으로 이동"
                                     onClick={() => navigate(`/teacher/grades/section/${sectionId}`)}
                                   >
-                                    <i className="ri-pencil-line" style={{ fontSize: 14 }} />
+                                    <i className="ri-edit-line" style={{ fontSize: 14 }} />
                                   </button>
                                 </td>
                               </tr>

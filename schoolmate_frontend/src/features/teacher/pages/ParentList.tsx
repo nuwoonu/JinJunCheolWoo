@@ -206,7 +206,7 @@ export default function ParentList() {
             </div>
             <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
               <i
-                className="bi bi-search"
+                className="ri-search-line"
                 style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
               />
               <input
@@ -286,7 +286,7 @@ export default function ParentList() {
             }}
             onClick={openRegisterModal}
           >
-            <iconify-icon icon="mdi:account-plus" />
+            <i className="ri-user-add-line"></i>
             학부모 간편등록
           </button>
         </div>
@@ -413,8 +413,8 @@ export default function ParentList() {
                               borderRadius: 4,
                               fontSize: 11,
                               fontWeight: 600,
-                              background: "rgba(22,163,74,0.1)",
-                              color: "#16a34a",
+                              background: "rgba(37,161,148,0.1)",
+                              color: "#25a194",
                             }}
                           >
                             연동됨
@@ -449,8 +449,8 @@ export default function ParentList() {
                               borderRadius: 4,
                               fontSize: 11,
                               fontWeight: 600,
-                              background: "rgba(22,163,74,0.1)",
-                              color: "#16a34a",
+                              background: "rgba(37,161,148,0.1)",
+                              color: "#25a194",
                             }}
                           >
                             {p.statusName}
@@ -492,7 +492,7 @@ export default function ParentList() {
                           }}
                           onClick={() => setSelectedParent(p)}
                         >
-                          <iconify-icon icon="mdi:eye-outline" />
+                          <i className="ri-eye-line"></i>
                         </button>
                       </td>
                     </tr>
@@ -584,12 +584,13 @@ export default function ParentList() {
               </div>
               <div className="modal-body p-24">
                 <div className="text-center mb-24">
-                  <div className="w-80-px h-80-px bg-success-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-16">
-                    <iconify-icon icon="mdi:account-heart" className="text-success-600 text-4xl" />
+                  <div className="d-flex justify-content-center align-items-center mx-auto mb-16" style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(37,161,148,0.1)", flexShrink: 0 }}>
+                    <i className="ri-user-heart-line" style={{ color: "#25a194", fontSize: "3rem" }}></i>
                   </div>
                   <h5 className="mb-4">{selectedParent.name}</h5>
                   <span
-                    className={`badge px-10 py-4 radius-4 text-xs fw-medium ${selectedParent.linked ? "bg-success-100 text-success-600" : "bg-neutral-100 text-secondary-light"}`}
+                    className={`badge px-10 py-4 radius-4 text-xs fw-medium ${selectedParent.linked ? "" : "bg-neutral-100 text-secondary-light"}`}
+                    style={selectedParent.linked ? { background: "rgba(37,161,148,0.1)", color: "#25a194" } : undefined}
                   >
                     {selectedParent.linked ? "연동됨" : "미연동"}
                   </span>
@@ -642,7 +643,7 @@ export default function ParentList() {
             <div className="modal-content radius-12">
               <div className="modal-header border-bottom py-16 px-24">
                 <h6 className="modal-title d-flex align-items-center gap-8">
-                  <iconify-icon icon="mdi:account-plus" className="text-success-600" />
+                  <i className="ri-user-add-line" style={{ color: "#25a194" }}></i>
                   학부모 간편등록
                 </h6>
                 <button type="button" className="btn-close" onClick={() => setShowRegisterModal(false)} />
@@ -650,8 +651,8 @@ export default function ParentList() {
               <div className="modal-body p-24">
                 {registerResult ? (
                   <div className="text-center">
-                    <div className="w-80-px h-80-px bg-success-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-16">
-                      <iconify-icon icon="mdi:check-circle" className="text-success-600 text-4xl" />
+                    <div className="d-flex justify-content-center align-items-center mx-auto mb-16" style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(37,161,148,0.1)", flexShrink: 0 }}>
+                      <i className="ri-checkbox-circle-line" style={{ color: "#25a194", fontSize: "3rem" }}></i>
                     </div>
                     <h6 className="mb-16">등록 완료!</h6>
                     <div className="bg-neutral-50 radius-8 p-16 text-start">
@@ -760,7 +761,8 @@ export default function ParentList() {
                 ) : (
                   <button
                     type="button"
-                    className="btn btn-success-600 radius-8 d-flex align-items-center gap-6"
+                    className="btn radius-8 d-flex align-items-center gap-6"
+                    style={{ background: "#25a194", color: "#fff", border: "none" }}
                     onClick={handleRegister}
                     disabled={registerLoading}
                   >
@@ -771,7 +773,7 @@ export default function ParentList() {
                       </>
                     ) : (
                       <>
-                        <iconify-icon icon="mdi:check" />
+                        <i className="ri-check-line"></i>
                         등록하기
                       </>
                     )}

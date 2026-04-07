@@ -272,7 +272,7 @@ export default function Register() {
                   marginBottom: 16,
                 }}
               >
-                <i className="fa-solid fa-arrow-left" />
+                <i className="ri-arrow-left-line" />
                 이전으로
               </button>
 
@@ -291,12 +291,12 @@ export default function Register() {
                   textAlign: "center",
                 }}
               >
-                <i className="fa-solid fa-circle-check me-1" />
+                <i className="ri-checkbox-circle-fill me-1" />
                 사용자 유형 : {roleLabels[role] ?? role}
                 {schoolName && (
                   <>
                     &nbsp; &nbsp;
-                    <i className="fa-solid fa-building me-1" />
+                    <i className="ri-building-line me-1" />
                     {schoolName}
                   </>
                 )}
@@ -375,7 +375,7 @@ export default function Register() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        <i className="fa-solid fa-circle-check" />
+                        <i className="ri-checkbox-circle-fill" />
                         인증 완료
                       </span>
                     )}

@@ -9,6 +9,7 @@
 //   4행: 우리 반 알림장 (col-4)    | 학급 앨범 (col-8)
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "@/shared/api/authApi";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
@@ -31,6 +32,7 @@ interface ClassInfo {
 }
 
 export default function TeacherMyClassDashboard() {
+  const navigate = useNavigate();
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -60,7 +62,7 @@ export default function TeacherMyClassDashboard() {
     return (
       <DashboardLayout>
         <div className="card shadow-sm p-80 text-center" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
-          <iconify-icon icon="mdi:google-classroom" className="text-secondary-light mb-16" style={{ fontSize: 48 }} />
+          <i className="ri-graduation-cap-line text-secondary-light mb-16" style={{ fontSize: 48 }}></i>
           <h5 className="text-secondary-light">담당 학급 정보를 불러올 수 없습니다.</h5>
         </div>
       </DashboardLayout>
@@ -68,16 +70,41 @@ export default function TeacherMyClassDashboard() {
   }
 
   const { classroomId, schoolId, grade, classNum } = classInfo;
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/teacher/dashboard");
+  };
 
   return (
     <DashboardLayout>
       {/* 브레드크럼 */}
       <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
         <div>
-          <h6 className="fw-semibold mb-0">
-            {" "}
-            {grade}학년 {classNum}반 학급 대시보드
-          </h6>
+          <div className="d-flex align-items-center gap-8">
+            <button
+              type="button"
+              onClick={handleBack}
+              aria-label="이전 페이지로"
+              style={{
+                width: 28,
+                height: 28,
+                border: "none",
+                borderRadius: 999,
+                background: "transparent",
+                color: "#6b7280",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              <i className="ri-arrow-left-line" style={{ fontSize: 22, lineHeight: 1 }} />
+            </button>
+            <h6 className="fw-semibold mb-0">
+              {grade}학년 {classNum}반 학급 대시보드
+            </h6>
+          </div>
         </div>
       </div>
 

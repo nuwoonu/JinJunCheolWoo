@@ -368,7 +368,7 @@ export default function ClassAlbum() {
           </div>
           <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
             <i
-              className="bi bi-search"
+              className="ri-search-line"
               style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
             />
             <input
@@ -454,7 +454,7 @@ export default function ClassAlbum() {
             }}
             onClick={() => fileInputRef.current?.click()}
           >
-            <i className="ri-upload-2-line" />
+            <i className="ri-upload-line" />
             사진 추가
           </button>
         )}

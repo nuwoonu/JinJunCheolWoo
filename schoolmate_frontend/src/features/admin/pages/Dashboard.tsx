@@ -210,7 +210,6 @@ export default function AdminDashboard() {
   const [studentRRFilter, setStudentRRFilter] = useState<RRStatus>("PENDING");
   const [teacherRRFilter, setTeacherRRFilter] = useState<RRStatus>("PENDING");
   // const [studentFilterOpen, setStudentFilterOpen] = useState(false); // [soojin] 학생 필터 아코디언 (미사용)
-  const [teacherFilterOpen, setTeacherFilterOpen] = useState(false); // [soojin] 교사 필터 아코디언
   const [roleRequestCounts, setRoleRequestCounts] = useState<
     Record<string, Record<string, number>>
   >({});
@@ -896,98 +895,34 @@ export default function AdminDashboard() {
                 <i className="ri-user-star-line text-primary-600" style={{ fontSize: 18 }} />
                 <h6 className="fw-bold mb-0 text-sm">교사 계정 승인 현황</h6>
               </div>
-              {/* [soojin] 현재 선택 필터만 표시, 클릭 시 드롭다운으로 나머지 옵션 노출 */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ position: "relative" }}>
-                  <button
-                    onClick={() => setTeacherFilterOpen((o) => !o)}
-                    style={{
-                      background: RR_STATUS_SOFT_BG[teacherRRFilter],
-                      color: RR_STATUS_COLOR[teacherRRFilter],
-                      border: "none",
-                      borderRadius: 14,
-                      padding: "4px 10px",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 3,
-                    }}
-                  >
-                    {RR_STATUS_LABEL[teacherRRFilter]}
-                    {(roleRequestCounts.TEACHER?.[teacherRRFilter] ?? 0) > 0
-                      ? ` ${roleRequestCounts.TEACHER?.[teacherRRFilter]}`
-                      : ""}
-                    <i
-                      className={
-                        teacherFilterOpen
-                          ? "ri-arrow-up-s-line"
-                          : "ri-arrow-down-s-line"
-                      }
-                      style={{ fontSize: 12 }}
-                    />
-                  </button>
-                  {teacherFilterOpen && (
-                    <div
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {(
+                  ["ACTIVE", "PENDING", "SUSPENDED", "REJECTED"] as RRStatus[]
+                ).map((status) => {
+                  const count = roleRequestCounts.TEACHER?.[status] ?? 0;
+                  const isActive = teacherRRFilter === status;
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => setTeacherRRFilter(status)}
                       style={{
-                        position: "absolute",
-                        top: "calc(100% + 4px)",
-                        right: 0,
-                        zIndex: 100,
-                        background: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: 10,
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.10)",
-                        padding: "6px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                        minWidth: 80,
+                        background: "none",
+                        border: "none",
+                        borderBottom: isActive
+                          ? `2px solid ${RR_STATUS_COLOR[status]}`
+                          : "2px solid transparent",
+                        color: isActive ? RR_STATUS_COLOR[status] : "#9ca3af",
+                        padding: "2px 0",
+                        fontSize: 11,
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: "pointer",
                       }}
                     >
-                      {(
-                        [
-                          "ACTIVE",
-                          "PENDING",
-                          "SUSPENDED",
-                          "REJECTED",
-                        ] as RRStatus[]
-                      ).map((status) => {
-                        const count = roleRequestCounts.TEACHER?.[status] ?? 0;
-                        const isActive = teacherRRFilter === status;
-                        return (
-                          <button
-                            key={status}
-                            onClick={() => {
-                              setTeacherRRFilter(status);
-                              setTeacherFilterOpen(false);
-                            }}
-                            style={{
-                              background: isActive
-                                ? RR_STATUS_SOFT_BG[status]
-                                : "transparent",
-                              color: isActive
-                                ? RR_STATUS_COLOR[status]
-                                : "#374151",
-                              border: "none",
-                              borderRadius: 6,
-                              padding: "5px 10px",
-                              fontSize: 11,
-                              fontWeight: 600,
-                              cursor: "pointer",
-                              textAlign: "left",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {RR_STATUS_LABEL[status]}
-                            {count > 0 ? ` ${count}` : ""}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                      {RR_STATUS_LABEL[status]}
+                      {count > 0 ? ` ${count}` : ""}
+                    </button>
+                  );
+                })}
                 <Link
                   to={ADMIN_ROUTES.TEACHERS.LIST}
                   style={{

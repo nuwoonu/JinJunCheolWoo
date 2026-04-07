@@ -30,6 +30,20 @@ export default function TodayMealWidget({ schoolId }: Props) {
       .catch(() => setLoading(false))
   }, [schoolId])
 
+  // [soojin] 알레르기 모달 열림 시 배경 스크롤 잠금
+  useEffect(() => {
+    if (!showAllergy) return
+    const prevOverflow = document.body.style.overflow
+    const prevOverscroll = document.body.style.overscrollBehavior
+    document.body.style.overflow = 'hidden'
+    document.body.style.overscrollBehavior = 'none'
+
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.body.style.overscrollBehavior = prevOverscroll
+    }
+  }, [showAllergy])
+
   // [soojin] menuItems가 있으면 알레르기 포함 목록 사용, 없으면 기존 menu 문자열 폴백
   const menuItems = meal?.menuItems ?? meal?.menu?.split('\n').map(name => ({ name, allergies: [] })) ?? []
 

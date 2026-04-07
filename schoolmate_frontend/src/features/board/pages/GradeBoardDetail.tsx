@@ -107,7 +107,7 @@ export default function GradeBoardDetail() {
         <ul className="d-flex align-items-center gap-2">
           <li className="fw-medium">
             <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
+              <i className="ri-home-4-line icon text-lg"></i>
               홈
             </Link>
           </li>
@@ -131,19 +131,19 @@ export default function GradeBoardDetail() {
               )}
               <h5 className="mb-8">{board.title}</h5>
               <div className="d-flex gap-16 text-secondary-light text-sm">
-                <span><iconify-icon icon="mdi:account" className="me-4" />{board.writerName}</span>
-                <span><iconify-icon icon="mdi:calendar" className="me-4" />{board.createDate?.slice(0, 16).replace('T', ' ')}</span>
-                <span><iconify-icon icon="mdi:eye" className="me-4" />{board.viewCount}</span>
+                <span><i className="ri-user-line me-4"></i>{board.writerName}</span>
+                <span><i className="ri-calendar-line me-4"></i>{board.createDate?.slice(0, 16).replace('T', ' ')}</span>
+                <span><i className="ri-eye-line me-4"></i>{board.viewCount}</span>
               </div>
             </div>
             {/* [cheol] TEACHER/ADMIN만 수정/삭제 표시 */}
             {canEdit && (
               <div className="d-flex gap-8">
                 <button type="button" className="btn btn-outline-primary-600 radius-8" onClick={() => setShowEditModal(true)}>
-                  <iconify-icon icon="mdi:pencil" className="me-4" />수정
+                  <i className="ri-edit-line me-4"></i>수정
                 </button>
                 <button type="button" className="btn btn-outline-danger radius-8" onClick={handleDelete}>
-                  <iconify-icon icon="mdi:delete" className="me-4" />삭제
+                  <i className="ri-delete-bin-line me-4"></i>삭제
                 </button>
               </div>
             )}
@@ -156,7 +156,7 @@ export default function GradeBoardDetail() {
         </div>
         <div className="card-footer py-16 px-24 border-top">
           <Link to={`/board/grade/${gradeNum}`} className="btn btn-secondary-600 radius-8">
-            <iconify-icon icon="mdi:arrow-left" className="me-4" />목록으로
+            <i className="ri-arrow-left-line me-4"></i>목록으로
           </Link>
         </div>
       </div>

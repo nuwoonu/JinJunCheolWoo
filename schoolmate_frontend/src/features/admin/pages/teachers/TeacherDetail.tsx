@@ -555,7 +555,7 @@ export default function TeacherDetail() {
                 ) : (
                   <div style={{ padding: '16px', borderRadius: 8, background: '#fffbeb', border: '1px solid #fde68a' }}>
                     <p style={{ margin: 0, fontSize: 13, color: '#92400e' }}>
-                      <i className="bi bi-exclamation-triangle me-2" />
+                      <i className="ri-error-warning-line me-2" />
                       담당 과목이 설정되지 않았습니다. 기본 정보 탭에서 담당 과목을 먼저 설정해주세요.
                     </p>
                   </div>
@@ -565,7 +565,7 @@ export default function TeacherDetail() {
 
             {activeTab === "noti" && (
               <div style={{ padding: '48px 24px', textAlign: 'center', color: '#9ca3af' }}>
-                <i className="bi bi-bell" style={{ fontSize: 48, display: 'block', marginBottom: 12 }} />
+                <i className="ri-notification-3-line" style={{ fontSize: 48, display: 'block', marginBottom: 12 }} />
                 <p>알림 이력 기능은 준비 중입니다.</p>
               </div>
             )}

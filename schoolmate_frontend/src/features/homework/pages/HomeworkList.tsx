@@ -170,11 +170,6 @@ export default function HomeworkList() {
     e.preventDefault();
     load(0);
   };
-  const reset = () => {
-    setStatus("");
-    setKeyword("");
-    load(0, "", "");
-  };
   const isOverdue = (dueDate: string) => new Date(dueDate) < new Date();
   const formatDateTime = (date: string) => {
     if (!date) return "-";
@@ -226,6 +221,28 @@ export default function HomeworkList() {
       return total > 0 && submitted >= total;
     }).length,
   };
+  const teacherHomeworkStats = {
+    total: totalAll ?? totalElements ?? homeworks.length,
+    openCount: homeworks.filter((h) => h.status === "OPEN").length,
+    closedCount: homeworks.filter((h) => h.status === "CLOSED").length,
+    completedCount: homeworks.filter((h) => h.status === "GRADED").length,
+  };
+  const completedHomeworks = homeworks.filter((h) => h.submitted);
+  const gradedHomeworks = homeworks.filter(
+    (h) => h.submitted && h.score !== null && h.score !== undefined && (h.maxScore ?? 0) > 0,
+  );
+  const studentHomeworkStats = {
+    total: totalAll ?? totalElements ?? homeworks.length,
+    unsubmitted: homeworks.filter((h) => !h.submitted).length,
+    completed: completedHomeworks.length,
+    avgScore:
+      gradedHomeworks.length > 0
+        ? Math.round(
+            gradedHomeworks.reduce((sum, h) => sum + getPercent(h.score ?? 0, h.maxScore ?? 100), 0) /
+              gradedHomeworks.length,
+          )
+        : 0,
+  };
   const completedQuizzes = quizzes.filter((q) => (q.myAttemptCount ?? 0) > 0);
   const studentQuizStats = {
     total: totalAll ?? totalElements ?? quizzes.length,
@@ -252,17 +269,6 @@ export default function HomeworkList() {
           { v: "CLOSED", l: "마감" },
         ];
 
-  const selSt: React.CSSProperties = {
-    padding: "5px 24px 5px 8px",
-    border: "1px solid #d1d5db",
-    borderRadius: 6,
-    fontSize: 13,
-    background: "#fff",
-    appearance: "none",
-    WebkitAppearance: "none",
-    cursor: "pointer",
-  };
-
   return (
     <DashboardLayout>
       {/* [soojin] 화면 꽉 채우기 - TeacherList 동일 패턴 */}
@@ -283,57 +289,79 @@ export default function HomeworkList() {
             </>
           ) : (
             <>
-              <div
-                style={{
-                  fontWeight: 700,
-                  fontSize: 20,
-                  lineHeight: 1.3,
-                  color: "#111827",
-                  marginBottom: 4,
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 8,
-                }}
-              >
-                과제 목록
-                <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalAll ?? 0}건</span>
-              </div>
-              <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
-                {isTeacher ? "출제한 과제 목록입니다." : "과제 목록입니다."}
-              </p>
+              {isTeacher ? (
+                <>
+                  <div style={{ fontWeight: 700, fontSize: 24, color: "#111827", marginBottom: 4 }}>과제 관리</div>
+                  <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px 0" }}>과제 출제 및 제출 현황 관리</p>
+                  <hr style={{ border: "none", borderTop: "1px solid #e5e7eb", margin: 0 }} />
+                </>
+              ) : (
+                <div style={{ fontWeight: 700, fontSize: 24, color: "#111827", marginBottom: 4 }}>과제 목록</div>
+              )}
             </>
           )}
         </div>
 
         {/* [soojin] 탭 - 클릭 시 전용 라우트로 이동 */}
-        <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb", marginBottom: 12, flexShrink: 0 }}>
-          {(["homework", "quiz"] as const).map((tab) => (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid #e5e7eb",
+            marginBottom: 12,
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex" }}>
+            {(["homework", "quiz"] as const).map((tab) => (
+              <button
+                key={tab}
+                style={{
+                  padding: "8px 20px",
+                  fontSize: 14,
+                  fontWeight: activeTab === tab ? 600 : 400,
+                  color: activeTab === tab ? "#25A194" : "#6b7280",
+                  background: "none",
+                  border: "none",
+                  borderBottom: activeTab === tab ? "2px solid #25A194" : "2px solid transparent",
+                  cursor: "pointer",
+                  marginBottom: -1,
+                }}
+                onClick={() => navigate(tab === "homework" ? "/homework" : "/quiz")}
+              >
+                <i
+                  className={tab === "homework" ? "ri-draft-line" : "ri-question-answer-line"}
+                  style={{ marginRight: 4 }}
+                />
+                {tab === "homework" ? "과제" : "퀴즈"}
+              </button>
+            ))}
+          </div>
+          {isTeacher && (
             <button
-              key={tab}
+              type="button"
               style={{
-                padding: "8px 20px",
-                fontSize: 14,
-                fontWeight: activeTab === tab ? 600 : 400,
-                color: activeTab === tab ? "#25A194" : "#6b7280",
-                background: "none",
+                marginBottom: 8,
+                padding: "5px 12px",
+                background: "#25A194",
                 border: "none",
-                borderBottom: activeTab === tab ? "2px solid #25A194" : "2px solid transparent",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#fff",
                 cursor: "pointer",
-                marginBottom: -1,
+                whiteSpace: "nowrap",
               }}
-              onClick={() => navigate(tab === "homework" ? "/homework" : "/quiz")}
+              onClick={() => navigate(activeTab === "quiz" ? "/quiz/create" : "/homework/create")}
             >
-              <i
-                className={tab === "homework" ? "ri-draft-line" : "ri-question-answer-line"}
-                style={{ marginRight: 4 }}
-              />
-              {tab === "homework" ? "과제" : "퀴즈"}
+              {activeTab === "quiz" ? "퀴즈 출제" : "과제 출제"}
             </button>
-          ))}
+          )}
         </div>
 
         {/* [soojin] 퀴즈 통계: 카드 그리드 → 가로 구분선 스타일 */}
-        {activeTab === "quiz" && (
+        {(activeTab === "quiz" || activeTab === "homework") && (
           <div
             style={{
               display: "flex",
@@ -346,12 +374,20 @@ export default function HomeworkList() {
           >
             {isTeacher ? (
               <>
-                {[
-                  { label: "전체 퀴즈", value: teacherQuizStats.total, color: "#111827" },
-                  { label: "진행중", value: teacherQuizStats.openCount, color: "#16a34a" },
-                  { label: "완료", value: teacherQuizStats.completedCount, color: "#1d4ed8" },
-                  { label: "마감", value: teacherQuizStats.closedCount, color: "#374151" },
-                ].map((stat, idx) => (
+                {(activeTab === "quiz"
+                  ? [
+                      { label: "전체 퀴즈", value: teacherQuizStats.total, color: "#111827" },
+                      { label: "진행중", value: teacherQuizStats.openCount, color: "#16a34a" },
+                      { label: "완료", value: teacherQuizStats.completedCount, color: "#1d4ed8" },
+                      { label: "마감", value: teacherQuizStats.closedCount, color: "#374151" },
+                    ]
+                  : [
+                      { label: "전체 과제", value: teacherHomeworkStats.total, color: "#111827" },
+                      { label: "진행중", value: teacherHomeworkStats.openCount, color: "#16a34a" },
+                      { label: "완료", value: teacherHomeworkStats.completedCount, color: "#1d4ed8" },
+                      { label: "마감", value: teacherHomeworkStats.closedCount, color: "#374151" },
+                    ]
+                ).map((stat, idx) => (
                   <Fragment key={stat.label}>
                     {idx > 0 && (
                       <div style={{ width: 1, height: 36, background: "#e5e7eb", margin: "0 20px", flexShrink: 0 }} />
@@ -368,12 +404,20 @@ export default function HomeworkList() {
               </>
             ) : (
               <>
-                {[
-                  { label: "전체 퀴즈", value: `${studentQuizStats.total}`, color: "#111827" },
-                  { label: "미응시", value: `${studentQuizStats.unattempted}`, color: "#c2410c" },
-                  { label: "완료", value: `${studentQuizStats.completed}`, color: "#16a34a" },
-                  { label: "평균 점수", value: `${studentQuizStats.avgScore}%`, color: "#1d4ed8" },
-                ].map((stat, idx) => (
+                {(activeTab === "quiz"
+                  ? [
+                      { label: "전체 퀴즈", value: `${studentQuizStats.total}`, color: "#111827" },
+                      { label: "미응시", value: `${studentQuizStats.unattempted}`, color: "#c2410c" },
+                      { label: "완료", value: `${studentQuizStats.completed}`, color: "#16a34a" },
+                      { label: "평균 점수", value: `${studentQuizStats.avgScore}%`, color: "#1d4ed8" },
+                    ]
+                  : [
+                      { label: "전체 과제", value: `${studentHomeworkStats.total}`, color: "#111827" },
+                      { label: "미제출", value: `${studentHomeworkStats.unsubmitted}`, color: "#c2410c" },
+                      { label: "완료", value: `${studentHomeworkStats.completed}`, color: "#16a34a" },
+                      { label: "평균 점수", value: `${studentHomeworkStats.avgScore}%`, color: "#1d4ed8" },
+                    ]
+                ).map((stat, idx) => (
                   <Fragment key={stat.label}>
                     {idx > 0 && (
                       <div style={{ width: 1, height: 36, background: "#e5e7eb", margin: "0 20px", flexShrink: 0 }} />
@@ -394,7 +438,7 @@ export default function HomeworkList() {
           </div>
         )}
 
-        {/* [soojin] 필터/검색 - 퀴즈탭: 큰 검색창 + pill 드롭다운, 과제탭: 기존 스타일 */}
+        {/* [soojin] 필터/검색 - 과제/퀴즈 동일 검색 UI */}
         <div
           style={{
             display: "flex",
@@ -406,147 +450,68 @@ export default function HomeworkList() {
             flexShrink: 0,
           }}
         >
-          {activeTab === "quiz" ? (
-            <form style={{ display: "flex", gap: 8, alignItems: "center", flex: 1 }} onSubmit={search}>
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center", flexShrink: 0 }}>
-                <select
-                  style={{
-                    padding: "9px 24px 9px 8px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    background: "#fff",
-                    appearance: "none",
-                    WebkitAppearance: "none",
-                    cursor: "pointer",
-                    fontWeight: 500,
-                    color: "#374151",
-                    minWidth: 100,
-                  }}
-                  value={status}
-                  onChange={(e) => { setStatus(e.target.value); load(0, e.target.value, keyword); }}
-                >
-                  <option value="">전체 상태</option>
-                  {statusOptions.map((o) => (
-                    <option key={o.v} value={o.v}>{o.l}</option>
-                  ))}
-                </select>
-                <i
-                  className="ri-arrow-down-s-line"
-                  style={{ position: "absolute", right: 4, pointerEvents: "none", fontSize: 16, color: "#6b7280" }}
-                />
-              </div>
-              <div style={{ position: "relative", display: "flex", alignItems: "center", flex: 1 }}>
-                <i
-                  className="bi bi-search"
-                  style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
-                />
-                <input
-                  style={{
-                    padding: "9px 8px 9px 28px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    width: "100%",
-                    background: "#fff",
-                  }}
-                  placeholder={isTeacher ? "퀴즈 제목, 학년, 반으로 검색..." : "퀴즈 제목, 과목으로 검색..."}
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                />
-              </div>
-            </form>
-          ) : (
-            <form style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }} onSubmit={search}>
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <select style={selSt} value={status} onChange={(e) => setStatus(e.target.value)}>
-                  <option value="">모든 상태</option>
-                  {statusOptions.map((o) => (
-                    <option key={o.v} value={o.v}>{o.l}</option>
-                  ))}
-                </select>
-                <i
-                  className="ri-arrow-down-s-line"
-                  style={{ position: "absolute", right: 4, pointerEvents: "none", fontSize: 16, color: "#6b7280" }}
-                />
-              </div>
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <i
-                  className="bi bi-search"
-                  style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
-                />
-                <input
-                  style={{
-                    padding: "5px 8px 5px 28px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    minWidth: 150,
-                    background: "#fff",
-                  }}
-                  placeholder="제목 검색"
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                />
-              </div>
-              <button
-                type="submit"
+          <form style={{ display: "flex", gap: 8, alignItems: "center", flex: 1 }} onSubmit={search}>
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center", flexShrink: 0 }}>
+              <select
                 style={{
-                  padding: "5px 12px",
-                  background: "#25A194",
-                  border: "none",
-                  borderRadius: 6,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#fff",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                검색
-              </button>
-              <button
-                type="button"
-                onClick={reset}
-                style={{
-                  padding: "5px 10px",
-                  background: "#fff",
+                  padding: "9px 24px 9px 8px",
                   border: "1px solid #d1d5db",
                   borderRadius: 6,
                   fontSize: 13,
+                  background: "#fff",
+                  appearance: "none",
+                  WebkitAppearance: "none",
                   cursor: "pointer",
+                  fontWeight: 500,
                   color: "#374151",
-                  whiteSpace: "nowrap",
+                  minWidth: 100,
+                }}
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  load(0, e.target.value, keyword);
                 }}
               >
-                초기화
-              </button>
-              {(status || keyword) && (
-                <span style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
-                  <span style={{ fontWeight: 600, color: "#111827" }}>{totalElements}건</span> / 전체 {totalAll ?? 0}건
-                </span>
-              )}
-            </form>
-          )}
-          {isTeacher && (
-            <button
-              type="button"
-              style={{
-                padding: "5px 12px",
-                background: "#25A194",
-                border: "none",
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#fff",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-              onClick={() => navigate(activeTab === "homework" ? "/homework/create" : "/quiz/create")}
-            >
-              + {activeTab === "homework" ? "과제 출제" : "퀴즈 출제"}
-            </button>
-          )}
+                <option value="">전체 상태</option>
+                {statusOptions.map((o) => (
+                  <option key={o.v} value={o.v}>
+                    {o.l}
+                  </option>
+                ))}
+              </select>
+              <i
+                className="ri-arrow-down-s-line"
+                style={{ position: "absolute", right: 4, pointerEvents: "none", fontSize: 16, color: "#6b7280" }}
+              />
+            </div>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", flex: 1 }}>
+              <i
+                className="ri-search-line"
+                style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
+              />
+              <input
+                style={{
+                  padding: "9px 8px 9px 28px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  width: "100%",
+                  background: "#fff",
+                }}
+                placeholder={
+                  activeTab === "quiz"
+                    ? isTeacher
+                      ? "퀴즈 제목, 학년, 반으로 검색..."
+                      : "퀴즈 제목, 과목으로 검색..."
+                    : isTeacher
+                      ? "과제 제목, 학년, 반으로 검색..."
+                      : "과제 제목, 과목으로 검색..."
+                }
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+            </div>
+          </form>
         </div>
 
         {/* [soojin] 콘텐츠 래퍼: 과제는 테이블 박스 유지, 퀴즈는 카드 독립 표시 */}
@@ -817,7 +782,7 @@ export default function HomeworkList() {
                                   }}
                                   title="수정"
                                 >
-                                  <i className="ri-pencil-line" />
+                                  <i className="ri-edit-line" />
                                 </button>
                                 <button
                                   type="button"

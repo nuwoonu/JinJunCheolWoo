@@ -293,7 +293,7 @@ export default function StudentList() {
             </div>
             <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
               <i
-                className="bi bi-search"
+                className="ri-search-line"
                 style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }}
               />
               <input

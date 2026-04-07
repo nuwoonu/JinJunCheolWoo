@@ -172,7 +172,7 @@ export default function TeacherSchedule() {
         </div>
         <div className="d-flex align-items-center gap-8">
           <button type="button" className="btn btn-primary-600 radius-8" onClick={openAdd}>
-            <iconify-icon icon="mdi:plus" className="me-4" />
+            <i className="ri-add-line me-4"></i>
             일정 추가
           </button>
         </div>
@@ -183,11 +183,7 @@ export default function TeacherSchedule() {
       {!loading && schedules.length === 0 && (
         <div className="card">
           <div className="card-body text-center py-48">
-            <iconify-icon
-              icon="mdi:calendar-blank-outline"
-              className="text-neutral-400 mb-16"
-              style={{ fontSize: 64 }}
-            />
+            <i className="ri-calendar-line text-neutral-400 mb-16" style={{ fontSize: 64 }}></i>
             <h5 className="text-neutral-600 mb-8">등록된 수업 일정이 없습니다</h5>
             <button type="button" className="btn btn-primary-600 radius-8 mt-8" onClick={openAdd}>
               첫 일정 추가하기
@@ -224,19 +220,19 @@ export default function TeacherSchedule() {
                           </div>
                           {s.className && (
                             <p className="text-xs text-secondary-light mb-2">
-                              <iconify-icon icon="mdi:google-classroom" className="me-4" />
+                              <i className="ri-graduation-cap-line me-4"></i>
                               {s.className}
                             </p>
                           )}
                           {(s.startTime || s.endTime) && (
                             <p className="text-xs text-secondary-light mb-2">
-                              <iconify-icon icon="mdi:clock-outline" className="me-4" />
+                              <i className="ri-time-line me-4"></i>
                               {s.startTime ?? "?"} ~ {s.endTime ?? "?"}
                             </p>
                           )}
                           {s.location && (
                             <p className="text-xs text-secondary-light mb-0">
-                              <iconify-icon icon="mdi:map-marker-outline" className="me-4" />
+                              <i className="ri-map-pin-line me-4"></i>
                               {s.location}
                             </p>
                           )}
@@ -247,14 +243,14 @@ export default function TeacherSchedule() {
                             className="btn btn-xs btn-outline-primary-600 radius-4 px-6 py-4"
                             onClick={() => openEdit(s)}
                           >
-                            <iconify-icon icon="mdi:pencil-outline" />
+                            <i className="ri-edit-line"></i>
                           </button>
                           <button
                             type="button"
                             className="btn btn-xs btn-outline-danger radius-4 px-6 py-4"
                             onClick={() => handleDelete(s.id)}
                           >
-                            <iconify-icon icon="mdi:trash-can-outline" />
+                            <i className="ri-delete-bin-line"></i>
                           </button>
                         </div>
                       </div>

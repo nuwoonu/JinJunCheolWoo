@@ -198,7 +198,7 @@ export default function HomeworkList() {
               <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: 4, pointerEvents: 'none', fontSize: 16, color: '#6b7280' }} />
             </div>
             <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-              <i className="bi bi-search" style={{ position: 'absolute', left: 8, color: '#9ca3af', fontSize: 13, pointerEvents: 'none' }} />
+              <i className="ri-search-line" style={{ position: 'absolute', left: 8, color: '#9ca3af', fontSize: 13, pointerEvents: 'none' }} />
               <input
                 style={{ padding: '5px 8px 5px 28px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, minWidth: 150, background: '#fff' }}
                 placeholder="제목 검색"
