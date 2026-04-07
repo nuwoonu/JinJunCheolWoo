@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.schoolmate.domain.classroom.entity.Classroom;
+import com.example.schoolmate.domain.grade.entity.Subject;
 import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
 import com.example.schoolmate.domain.classroom.repository.ClassroomRepository;
 import com.example.schoolmate.domain.student.repository.StudentAssignmentRepository;
@@ -89,14 +90,17 @@ public class CourseSectionService {
             throw new IllegalArgumentException("담당 과목이 설정되지 않았습니다. 먼저 교사 정보에서 담당 과목을 지정해주세요.");
         }
         AcademicTerm currentTerm = requireActiveTerm();
+        Subject subject = teacher.getSubject();
         return classroomIds.stream()
                 .map(cid -> classroomRepository.findById(cid)
                         .orElseThrow(() -> new IllegalArgumentException("학급을 찾을 수 없습니다: " + cid)))
+                .filter(classroom -> !courseSectionRepository.existsByTermAndSubjectAndClassroom(
+                        currentTerm, subject, classroom))
                 .map(classroom -> courseSectionRepository.save(
                         CourseSection.builder()
                                 .term(currentTerm)
                                 .teacher(teacher)
-                                .subject(teacher.getSubject())
+                                .subject(subject)
                                 .classroom(classroom)
                                 .build()))
                 .collect(Collectors.toList());

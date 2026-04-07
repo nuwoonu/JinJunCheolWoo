@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.schoolmate.domain.classroom.entity.Classroom;
+import com.example.schoolmate.domain.grade.entity.Subject;
 import com.example.schoolmate.domain.teacher.entity.TeacherInfo;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.CourseSection;
@@ -43,4 +44,7 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
 
     /** 특정 학기의 학교 전체 강좌 목록 */
     List<CourseSection> findByTerm(AcademicTerm term);
+
+    /** 동일 학기·과목·학급 조합의 분반이 이미 존재하는지 확인 */
+    boolean existsByTermAndSubjectAndClassroom(AcademicTerm term, Subject subject, Classroom classroom);
 }
