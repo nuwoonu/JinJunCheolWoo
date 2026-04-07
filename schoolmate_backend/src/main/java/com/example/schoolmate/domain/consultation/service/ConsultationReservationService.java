@@ -36,6 +36,7 @@ public class ConsultationReservationService {
     private final StudentInfoRepository studentInfoRepository;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final String ACTION_URL = "/consultation";
 
     // 날짜 범위로 예약 조회 (캘린더 뷰) - 교사: 담당 반만, 학부모: 자녀 반만, 관리자: 전체
     public List<ReservationDTO.Response> getByDateRange(LocalDate startDate, LocalDate endDate,
@@ -44,7 +45,6 @@ public class ConsultationReservationService {
         if (teacherUid != null) {
             list = reservationRepository.findByTeacherUidAndDateBetween(teacherUid, startDate, endDate);
         } else if (studentUserUid != null) {
-            // 학부모: 자녀의 학급 기준으로 필터
             StudentInfo si = studentInfoRepository.findByUserUid(studentUserUid).orElse(null);
             if (si != null && si.getCurrentAssignment() != null
                     && si.getCurrentAssignment().getClassroom() != null) {
@@ -60,7 +60,6 @@ public class ConsultationReservationService {
     }
 
     // 내 예약 목록
-    // TEACHER: 담당 반 학생 상담만 / PARENT: 선택 자녀(studentInfoId) 상담만 / ADMIN: 전체
     public List<ReservationDTO.Response> getMyReservations(Long uid, String role, Long studentUserUid) {
         List<ConsultationReservation> list;
         if ("TEACHER".equals(role)) {
@@ -94,7 +93,6 @@ public class ConsultationReservationService {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        // 자녀 선택 (studentUserUid: 자녀의 User uid)
         if (req.getStudentUserUid() != null) {
             List<FamilyRelation> relations = familyRelationRepository.findByParentInfo_User_Uid(uid);
             relations.stream()
@@ -106,16 +104,16 @@ public class ConsultationReservationService {
 
         ConsultationReservation saved = reservationRepository.save(reservation);
 
-        // 담임 교사에게 상담 예약 알림
+        // [woo] 담임 교사에게 상담 예약 알림 + FCM
         if (saved.getStudentInfo() != null && saved.getStudentInfo().getCurrentAssignment() != null
                 && saved.getStudentInfo().getCurrentAssignment().getClassroom() != null) {
             User teacher = saved.getStudentInfo().getCurrentAssignment().getClassroom().getTeacher();
             if (teacher != null) {
                 String studentName = saved.getStudentInfo().getUser() != null
                         ? saved.getStudentInfo().getUser().getName() : "";
-                NotificationHelper.send(writer, teacher, "새 상담 예약",
-                        studentName + " 학생 상담 예약이 신청되었습니다. (" + req.getDate() + ")",
-                        "/consultation");
+                String title = "새 상담 예약";
+                String content = studentName + " 학생 상담 예약이 신청되었습니다. (" + req.getDate() + ")";
+                NotificationHelper.send(writer, teacher, title, content, ACTION_URL);
             }
         }
 
@@ -135,13 +133,14 @@ public class ConsultationReservationService {
         }
         reservation.setStatus(ReservationStatus.CANCELLED);
 
-        // 담임 교사에게 예약 취소 알림
+        // [woo] 담임 교사에게 예약 취소 알림 + FCM
         if (reservation.getStudentInfo() != null && reservation.getStudentInfo().getCurrentAssignment() != null
                 && reservation.getStudentInfo().getCurrentAssignment().getClassroom() != null) {
             User teacher = reservation.getStudentInfo().getCurrentAssignment().getClassroom().getTeacher();
             if (teacher != null) {
-                NotificationHelper.send(reservation.getWriter(), teacher, "상담 예약 취소",
-                        reservation.getDate() + " 상담 예약이 취소되었습니다.", "/consultation");
+                String title = "상담 예약 취소";
+                String content = reservation.getDate() + " 상담 예약이 취소되었습니다.";
+                NotificationHelper.send(reservation.getWriter(), teacher, title, content, ACTION_URL);
             }
         }
     }
@@ -156,10 +155,11 @@ public class ConsultationReservationService {
         }
         reservation.setStatus(ReservationStatus.COMPLETED);
 
-        // 예약자(학부모)에게 상담 완료 알림
+        // [woo] 예약자(학부모)에게 상담 완료 알림 + FCM
         if (reservation.getWriter() != null) {
-            NotificationHelper.send(reservation.getWriter(), "상담 완료",
-                    reservation.getDate() + " 상담이 완료 처리되었습니다.", "/consultation");
+            String title = "상담 완료";
+            String content = reservation.getDate() + " 상담이 완료 처리되었습니다.";
+            NotificationHelper.send(reservation.getWriter(), title, content, ACTION_URL);
         }
 
         return toResponse(reservation);
@@ -176,10 +176,11 @@ public class ConsultationReservationService {
         }
         reservation.setStatus(ReservationStatus.CANCELLED);
 
-        // 예약자(학부모)에게 교사 취소 알림
+        // [woo] 예약자(학부모)에게 교사 취소 알림 + FCM
         if (reservation.getWriter() != null) {
-            NotificationHelper.send(reservation.getWriter(), "상담 예약 취소",
-                    reservation.getDate() + " 상담 예약이 교사에 의해 취소되었습니다.", "/consultation");
+            String title = "상담 예약 취소";
+            String content = reservation.getDate() + " 상담 예약이 교사에 의해 취소되었습니다.";
+            NotificationHelper.send(reservation.getWriter(), title, content, ACTION_URL);
         }
     }
 
@@ -192,7 +193,6 @@ public class ConsultationReservationService {
                 && reservation.getStatus() != ReservationStatus.CONFIRMED) {
             throw new RuntimeException("대기 중이거나 확정된 예약만 조정할 수 있습니다.");
         }
-        // 교사가 일정을 조정한 경우
         if (req != null) {
             if (req.getDate() != null) reservation.setDate(req.getDate());
             if (req.getStartTime() != null) reservation.setStartTime(req.getStartTime());
@@ -200,11 +200,11 @@ public class ConsultationReservationService {
         }
         reservation.setStatus(ReservationStatus.CONFIRMED);
 
-        // 예약자(학부모)에게 확정 알림
+        // [woo] 예약자(학부모)에게 확정 알림 + FCM
         if (reservation.getWriter() != null) {
-            NotificationHelper.send(reservation.getWriter(), "상담 예약 확정",
-                    reservation.getDate() + " " + reservation.getStartTime() + " 상담이 확정되었습니다.",
-                    "/consultation");
+            String title = "상담 예약 확정";
+            String content = reservation.getDate() + " " + reservation.getStartTime() + " 상담이 확정되었습니다.";
+            NotificationHelper.send(reservation.getWriter(), title, content, ACTION_URL);
         }
 
         return toResponse(reservation);
@@ -244,7 +244,6 @@ public class ConsultationReservationService {
                 ? r.getCreateDate().format(DATE_FMT)
                 : null;
 
-        // 자녀 uid 일치 또는 작성자(학부모) uid 일치 시 본인 예약으로 판단
         boolean isMine = (studentUserUid != null
                 && r.getStudentInfo() != null
                 && r.getStudentInfo().getUser() != null

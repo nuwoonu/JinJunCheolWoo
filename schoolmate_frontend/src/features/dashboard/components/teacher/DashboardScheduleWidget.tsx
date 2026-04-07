@@ -127,12 +127,6 @@ export default function DashboardScheduleWidget() {
 
   // ── 모달 제어 ──────────────────────────────────────────────────────────────
 
-  const openAdd = () => {
-    setForm(emptyForm());
-    setEditTarget(null);
-    setShowModal(true);
-  };
-
   const openEdit = (s: Schedule) => {
     setForm({
       dayOfWeek: s.dayOfWeek,
@@ -221,14 +215,9 @@ export default function DashboardScheduleWidget() {
             <i className="ri-calendar-schedule-line text-primary-600 text-lg" />
             <h6 className="fw-bold mb-0 text-sm">{label}</h6>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <button onClick={openAdd} style={css.addBtn}>
-              + 일정 추가
-            </button>
-            <a href="/teacher/schedule" style={css.manageLink}>
-              일정 관리 →
-            </a>
-          </div>
+          <a href="/teacher/schedule" style={css.manageLink}>
+            일정 관리 →
+          </a>
         </div>
 
         {/* 본문 */}

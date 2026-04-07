@@ -1,5 +1,5 @@
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
-import TimetableApp from "@/features/schedule/components/TimetableApp";
+import TimetableApp from "@/features/dashboard/components/teacher/TimetableApp";
 
 // [woo] /teacher/schedule - 수업 일정 페이지 (TimetableApp 래퍼)
 

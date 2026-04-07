@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "schoolmate_app",
+    "slug": "schoolmate",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2BAD9E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.schoolmate.app",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "UIBackgroundModes": ["fetch"]
+      }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2BAD9E",
+          "googleServicesFile": "./android/app/google-services.json"
+        }
+      ]
+    ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#2BAD9E"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.schoolmate.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "serverUrl": "http://10.0.2.2:8080/api",
+      "eas": {
+        "projectId": "f93e2a58-7f27-4d3b-a2bc-099c61720e7d"
+      }
+    },
+    "owner": "hnu"
+  }
+}

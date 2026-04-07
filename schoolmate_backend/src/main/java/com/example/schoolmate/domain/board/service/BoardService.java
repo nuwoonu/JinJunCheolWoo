@@ -37,6 +37,7 @@ import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
 import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
 import com.example.schoolmate.global.util.NotificationHelper;
 import com.example.schoolmate.global.config.school.SchoolContextHolder;
+import com.example.schoolmate.schoolmate_backend_app.service.ExpoPushService;
 import com.example.schoolmate.domain.school.repository.SchoolRepository;
 import com.example.schoolmate.domain.user.dto.CustomUserDTO;
 import com.example.schoolmate.domain.classroom.entity.Classroom;
@@ -60,6 +61,7 @@ public class BoardService {
     private final StaffInfoRepository staffInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final SchoolRepository schoolRepository;
+    private final ExpoPushService expoPushService; // [woo] FCM 푸시 알림
     // [soojin] 좋아요/북마크/댓글/첨부파일 집계용
     private final com.example.schoolmate.domain.board.repository.BoardLikeRepository boardLikeRepository;
     private final com.example.schoolmate.domain.board.repository.BoardBookmarkRepository boardBookmarkRepository;
@@ -588,12 +590,12 @@ public class BoardService {
 
         // [woo] 가정통신문 작성 시 해당 학교 학부모 전원에게 알림 발송
         if (request.getBoardType() == BoardType.PARENT_NOTICE && schoolId != null) {
-            notifyParentsOfSchool(writer, schoolId, saved.getTitle(), "새 가정통신문이 등록되었습니다");
+            notifyParentsOfSchool(writer, schoolId, saved.getTitle(), "새 가정통신문이 등록되었습니다", saved.getId());
         }
 
         // [woo] 알림장 작성 시 해당 학급 학생 + 학부모에게 알림 발송 → APP 푸시
         if (request.getBoardType() == BoardType.CLASS_DIARY && saved.getTargetClassroom() != null) {
-            notifyClassParentsAndStudents(writer, saved.getTargetClassroom().getCid(), saved.getTitle());
+            notifyClassParentsAndStudents(writer, saved.getTargetClassroom().getCid(), saved.getTitle(), saved.getId());
         }
 
         return BoardDTO.Response.fromEntity(saved);
@@ -1121,58 +1123,67 @@ public class BoardService {
         return result;
     }
 
-    // [woo] 학교 전체 학부모에게 알림 (가정통신문 등)
-    private void notifyParentsOfSchool(User writer, Long schoolId, String noticeTitle, String titlePrefix) {
+    // [woo] 학교 전체 학부모에게 알림 (가정통신문 등) — boardId 포함해 상세 화면으로 딥링크
+    private void notifyParentsOfSchool(User writer, Long schoolId, String noticeTitle, String titlePrefix, Long boardId) {
         String title = titlePrefix;
         String content = noticeTitle;
-        familyRelationRepository.findBySchoolId(schoolId).stream()
+        String actionUrl = "/board/" + boardId; // [woo] 게시글 상세로 바로 이동
+        List<User> parents = familyRelationRepository.findBySchoolId(schoolId).stream()
                 .map(rel -> rel.getParentInfo().getUser())
                 .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
                 .distinct()
-                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+                .collect(java.util.stream.Collectors.toList());
+        // [woo] NotificationHelper.send → notifyUser → expoPushService.sendPush 개별 발송 포함
+        parents.forEach(u -> NotificationHelper.send(writer, u, title, content, actionUrl));
     }
 
-    // [woo] 학급 학생 + 학부모에게 알림 (알림장 등)
-    // → schoolmate_app에서 학부모가 실시간 푸시로 받아보게 됨
-    private void notifyClassParentsAndStudents(User writer, Long classroomId, String diaryTitle) {
+    // [woo] 학급 학생 + 학부모에게 알림 (알림장 등) — boardId 포함해 상세 화면으로 딥링크
+    private void notifyClassParentsAndStudents(User writer, Long classroomId, String diaryTitle, Long boardId) {
         String title = "새 알림장이 등록되었습니다";
         String content = diaryTitle;
+        String actionUrl = "/board/" + boardId; // [woo] 게시글 상세로 바로 이동
 
-        // [woo] 학급 학부모에게 알림 — FamilyRelation JOIN FETCH로 한 번에 조회
         List<FamilyRelation> relations = familyRelationRepository.findByStudentClassroom(classroomId);
 
-        // 학부모 알림
-        relations.stream()
+        // [woo] 학부모 알림 — NotificationHelper.send가 in-app + Expo FCM 개별 발송 처리
+        List<User> parents = relations.stream()
                 .map(rel -> rel.getParentInfo().getUser())
                 .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
                 .distinct()
-                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+                .collect(java.util.stream.Collectors.toList());
+        parents.forEach(u -> NotificationHelper.send(writer, u, title, content, actionUrl));
 
-        // [woo] 학급 학생에게도 알림
+        // [woo] 학생 알림
         relations.stream()
                 .map(rel -> rel.getStudentInfo().getUser())
                 .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
                 .distinct()
-                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+                .forEach(u -> NotificationHelper.send(writer, u, title, content, actionUrl));
     }
 
     private void notifySchoolMembers(User writer, Long schoolId, String noticeTitle) {
         String title = "새 학교 공지가 등록되었습니다";
         String content = "공지: " + noticeTitle;
+        String actionUrl = "/board/school";
 
-        teacherInfoRepository.findBySchoolId(schoolId).stream()
+        java.util.List<User> teachers = teacherInfoRepository.findBySchoolId(schoolId).stream()
                 .map(info -> info.getUser())
                 .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
-                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+                .collect(java.util.stream.Collectors.toList());
 
-        staffInfoRepository.findBySchoolId(schoolId).stream()
+        java.util.List<User> staff = staffInfoRepository.findBySchoolId(schoolId).stream()
                 .map(info -> info.getUser())
                 .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
-                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+                .collect(java.util.stream.Collectors.toList());
 
-        studentInfoRepository.findBySchoolId(schoolId).stream()
+        java.util.List<User> students = studentInfoRepository.findBySchoolId(schoolId).stream()
                 .map(info -> info.getUser())
                 .filter(u -> u != null && !u.getUid().equals(writer.getUid()))
-                .forEach(u -> NotificationHelper.send(writer, u, title, content));
+                .collect(java.util.stream.Collectors.toList());
+
+        // [woo] NotificationHelper.send → notifyUser → expoPushService.sendPush 개별 발송 포함
+        teachers.forEach(u -> NotificationHelper.send(writer, u, title, content, actionUrl));
+        staff.forEach(u -> NotificationHelper.send(writer, u, title, content, actionUrl));
+        students.forEach(u -> NotificationHelper.send(writer, u, title, content, actionUrl));
     }
 }

@@ -118,9 +118,6 @@ schoolmate_backend/uploads/*
 !schoolmate_backend/uploads/.gitkeep
 schoolmate_backend/src/main/resources/static/uploads/
 
-### App (React Native) — developMerge 충돌 방지로 제외 ###
-schoolmate_app/
-schoolmate_backend/src/main/java/com/example/schoolmate/schoolmate_backend_app/
 
 ### Claude AI ###
 .claude/settings.local.json

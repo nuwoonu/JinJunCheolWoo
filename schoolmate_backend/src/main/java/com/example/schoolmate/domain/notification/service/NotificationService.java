@@ -11,6 +11,7 @@ import com.example.schoolmate.domain.notification.entity.Notification;
 import com.example.schoolmate.domain.user.entity.User;
 import com.example.schoolmate.domain.user.repository.UserRepository;
 import com.example.schoolmate.domain.notification.repository.NotificationRepository;
+import com.example.schoolmate.schoolmate_backend_app.service.ExpoPushService; // [woo] Expo FCM 푸시
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final PushNotificationService pushNotificationService;
+    private final ExpoPushService expoPushService; // [woo] Expo FCM 무조건 발송
 
     // 알림 발송 (발신자 UID는 컨트롤러에서 인증 정보로 전달)
     public void sendNotification(NotificationDTO.SendRequest request, Long senderUid) {
@@ -101,8 +103,10 @@ public class NotificationService {
         n.setActionUrl(actionUrl);
         notificationRepository.save(n);
 
-        // 구독 정보가 있는 유저라면 푸쉬 알림도 전송
+        // [woo] 웹 푸시 (VAPID)
         pushNotificationService.sendToUser(receiver, title, content, actionUrl);
+        // [woo] Expo FCM 푸시 — 무조건 발송
+        expoPushService.sendPush(receiver, title, content, actionUrl);
     }
 
     // 알림 논리 삭제

@@ -28,6 +28,7 @@ import com.example.schoolmate.domain.attendance.entity.StudentAttendance;
 import com.example.schoolmate.domain.attendance.entity.TeacherAttendance;
 import com.example.schoolmate.domain.attendance.repository.AttendanceRepository;
 import com.example.schoolmate.domain.attendance.repository.TeacherAttendanceRepository;
+import com.example.schoolmate.schoolmate_backend_app.service.ExpoPushService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,7 @@ public class AttendanceService {
     private final ClassroomRepository classroomRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final TeacherService teacherService;
+    private final ExpoPushService expoPushService; // [woo] FCM 푸시 알림
 
     // ========== [woo] 학생 출결 (담임 교사용 - Classroom 기반) ==========
 
@@ -168,14 +170,18 @@ public class AttendanceService {
         List<FamilyRelation> relations = familyRelationRepository
                 .findByStudentInfo_User_Uid(student.getUser().getUid());
 
+        String actionUrl = "/parent/attendance";
         for (FamilyRelation rel : relations) {
             if (rel.getParentInfo() != null && rel.getParentInfo().getUser() != null) {
+                // [woo] 1) DB 알림 저장
                 NotificationHelper.send(
-                        null, // 시스템 알림
+                        null,
                         rel.getParentInfo().getUser(),
                         title,
-                        content
+                        content,
+                        actionUrl
                 );
+                // [woo] Expo FCM은 NotificationHelper → NotificationService에서 자동 발송
             }
         }
 
@@ -236,7 +242,16 @@ public class AttendanceService {
                 .map(classroom -> {
                     log.info("[woo] 담임 반 찾음 - {}학년 {}반 (cid={})",
                             classroom.getGrade(), classroom.getClassNum(), classroom.getCid());
-                    return studentInfoRepository.findByClassroomCid(classroom.getCid());
+                    // [woo] CURRENT status 의존 제거 → 학년도 숫자로 직접 필터
+                    List<StudentInfo> students = studentInfoRepository
+                            .findByClassroomIdAndSchoolYear(classroom.getCid(), year);
+                    if (students.isEmpty()) {
+                        // [woo] 폴백: 학년도 무관 조회 (테스트/개발 환경 대비)
+                        log.warn("[woo] 학년도({}) 필터 결과 없음 → 전체 조회로 폴백 (cid={})", year, classroom.getCid());
+                        students = studentInfoRepository.findByClassroomId(classroom.getCid());
+                    }
+                    log.info("[woo] 담임 반 학생 {}명 조회됨", students.size());
+                    return students;
                 })
                 .orElseGet(() -> {
                     log.warn("[woo] 담임 반을 찾을 수 없음 - teacherId: {}, year: {}", teacher.getId(), year);
