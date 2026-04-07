@@ -102,7 +102,10 @@ public class TeacherInfoRepositoryImpl implements TeacherInfoRepositoryCustom {
             case "dept" -> info.department.contains(keyword);
             case "subject" -> info.subject.name.contains(keyword); // cheol
             case "position" -> info.position.contains(keyword);
-            default -> null;
+            default -> user.name.contains(keyword)
+                    .or(user.email.contains(keyword))
+                    .or(info.department.contains(keyword))
+                    .or(info.position.contains(keyword));
         };
     }
 

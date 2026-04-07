@@ -29,13 +29,14 @@ export default function NoticeList() {
   // [soojin] 전체 공지 수 저장 (초기 로드 시 1회만 세팅) - TeacherList 패턴 통일
   const [totalAll, setTotalAll] = useState<number | null>(null);
   const isInitialLoad = useRef(true);
+  const [searchType, setSearchType] = useState("");
   const [keyword, setKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
   const load = (p = 0) =>
     admin
       .get("/notices", {
-        params: { keyword: keyword || undefined, page: p, size: 15 },
+        params: { keyword: keyword || undefined, searchType: searchType || undefined, page: p, size: 15 },
       })
       .then((r) => {
         setPage(r.data);
@@ -95,10 +96,23 @@ export default function NoticeList() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12, flexWrap: 'wrap', flexShrink: 0 }}>
           <form style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }} onSubmit={search}>
             <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+              <select
+                style={{ padding: '5px 24px 5px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, background: '#fff', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' }}
+                value={searchType}
+                onChange={(e) => setSearchType(e.target.value)}
+              >
+                <option value="">전체</option>
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+                <option value="writer">작성자</option>
+              </select>
+              <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: '4px', pointerEvents: 'none', fontSize: '16px', color: '#6b7280' }} />
+            </div>
+            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
               <i className="ri-search-line" style={{ position: 'absolute', left: '8px', color: '#9ca3af', fontSize: '13px', pointerEvents: 'none' }} />
               <input
                 style={{ padding: '5px 8px 5px 28px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, minWidth: 200, background: '#fff' }}
-                placeholder="제목 검색"
+                placeholder="검색어 입력"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
               />
@@ -112,7 +126,7 @@ export default function NoticeList() {
             <button
               type="button"
               style={{ padding: '5px 10px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' }}
-              onClick={() => { setKeyword(""); load(0); }}
+              onClick={() => { setSearchType(""); setKeyword(""); load(0); }}
             >
               초기화
             </button>

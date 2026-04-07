@@ -78,8 +78,8 @@ public class BoardService {
     /**
      * 학교 공지 목록
      */
-    public Page<BoardDTO.Response> getSchoolNotices(String keyword, Pageable pageable) {
-        return boardRepository.findByType(BoardType.SCHOOL_NOTICE, keyword, pageable)
+    public Page<BoardDTO.Response> getSchoolNotices(String keyword, String searchType, Pageable pageable) {
+        return boardRepository.findByType(BoardType.SCHOOL_NOTICE, keyword, searchType, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -225,7 +225,7 @@ public class BoardService {
      * 교직원 게시판 목록
      */
     public Page<BoardDTO.Response> getTeacherBoard(Pageable pageable) {
-        return boardRepository.findByType(BoardType.TEACHER_BOARD, null, pageable)
+        return boardRepository.findByType(BoardType.TEACHER_BOARD, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
@@ -234,7 +234,7 @@ public class BoardService {
      */
     // [soojin] keyword 파라미터 추가 - 가정통신문 제목 검색 지원
     public Page<BoardDTO.Response> getParentNotices(String keyword, Pageable pageable) {
-        return boardRepository.findByType(BoardType.PARENT_NOTICE, keyword, pageable)
+        return boardRepository.findByType(BoardType.PARENT_NOTICE, keyword, null, pageable)
                 .map(board -> {
                     BoardDTO.Response dto = BoardDTO.Response.fromEntityForList(board);
                     // [woo] 교사 확인용 읽음 수 포함
@@ -361,7 +361,7 @@ public class BoardService {
                 }
             }
         }
-        return boardRepository.findByType(BoardType.PARENT_BOARD, null, pageable)
+        return boardRepository.findByType(BoardType.PARENT_BOARD, null, null, pageable)
                 .map(BoardDTO.Response::fromEntityForList);
     }
 

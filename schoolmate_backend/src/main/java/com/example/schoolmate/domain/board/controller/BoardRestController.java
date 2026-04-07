@@ -75,10 +75,11 @@ public class BoardRestController {
     @GetMapping("/school-notice")
     public ResponseEntity<Map<String, Object>> getSchoolNotices(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String searchType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<BoardDTO.Response> result = boardService.getSchoolNotices(keyword,
+        Page<BoardDTO.Response> result = boardService.getSchoolNotices(keyword, searchType,
                 PageRequest.of(page, size, Sort.by("createDate").descending()));
         return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),

@@ -10,8 +10,8 @@ import com.example.schoolmate.domain.board.entity.BoardType;
 
 public interface BoardRepositoryCustom {
 
-    /** 타입 + 선택적 키워드 검색 (학교 필터 자동 적용) */
-    Page<Board> findByType(BoardType type, String keyword, Pageable pageable);
+    /** 타입 + 선택적 키워드/검색타입 검색 (학교 필터 자동 적용) */
+    Page<Board> findByType(BoardType type, String keyword, String searchType, Pageable pageable);
 
     /** 특정 학년 대상 게시판 */
     Page<Board> findByTypeAndGrade(BoardType type, int grade, Pageable pageable);
