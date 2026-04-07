@@ -85,12 +85,12 @@ export default function ClassGoalEditor({ classroomId }: Props) {
         <div className="d-flex justify-content-between align-items-center dash-card-header">
           <div className="d-flex align-items-center gap-8">
             <i className="ri-focus-3-line text-primary-600 text-xl"></i>
-            <h6 className="fw-bold mb-0 text-sm">이달의 학급 목표</h6>
+            <h6 className="fw-bold mb-0 text-lg">이달의 학급 목표</h6>
           </div>
           <button
             type="button"
             onClick={openModal}
-            className="text-primary-600 text-sm"
+            className="text-primary-600 text-md"
             style={{ lineHeight: 1, background: "none", border: "none", padding: 0, cursor: "pointer" }}
           >
             작성
@@ -100,7 +100,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
         {/* 카드 본문 */}
         <div className="p-16">
           {loading ? (
-            <p className="text-secondary-light text-sm mb-0">불러오는 중...</p>
+            <p className="text-secondary-light text-md mb-0">불러오는 중...</p>
           ) : goal ? (
             <div>
               {/* 1행: 해당 월 */}
@@ -114,7 +114,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                   textAlign: "center",
                 }}
               >
-                <span style={{ fontWeight: 700, fontSize: 16, color: "#15803d" }}>{goal.month}월</span>
+                <span style={{ fontWeight: 700, fontSize: 18, color: "#15803d" }}>{goal.month}월</span>
               </div>
 
               {/* 2행: 목표 */}
@@ -127,14 +127,14 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                   marginBottom: 16,
                 }}
               >
-                <p style={{ fontWeight: 700, fontSize: 15, color: "#374151", marginBottom: 4 }}>목표</p>
-                <p className="text-sm mb-0" style={{ color: "#374151", lineHeight: 1.6 }}>{goal.goal}</p>
+                <p style={{ fontWeight: 700, fontSize: 17, color: "#374151", marginBottom: 4 }}>목표</p>
+                <p className="text-md mb-0" style={{ color: "#374151", lineHeight: 1.6 }}>{goal.goal}</p>
               </div>
 
               {/* 3행: 실천 사항 */}
               {goal.actionItems.length > 0 && (
                 <div>
-                  <p style={{ fontWeight: 700, fontSize: 15, color: "#374151", marginBottom: 10 }}>실천 사항</p>
+                  <p style={{ fontWeight: 700, fontSize: 17, color: "#374151", marginBottom: 10 }}>실천 사항</p>
                   <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
                     {goal.actionItems.map((item, i) => (
                       <li key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -149,13 +149,13 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: 700,
                           }}
                         >
                           {i + 1}
                         </span>
-                        <span className="text-sm" style={{ color: "#374151", lineHeight: 1.5 }}>
+                        <span className="text-md" style={{ color: "#374151", lineHeight: 1.5 }}>
                           {item}
                         </span>
                       </li>
@@ -166,7 +166,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
             </div>
           ) : (
             <div className="text-center py-24 text-secondary-light">
-              <p className="text-sm mb-4 mt-8">이번 달 학급 목표가 없습니다.</p>
+              <p className="text-md mb-4 mt-8">이번 달 학급 목표가 없습니다.</p>
               <p className="text-xs mb-0" style={{ color: "#9ca3af" }}>
                 위 버튼을 눌러 목표를 설정해보세요.
               </p>
@@ -210,7 +210,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                 borderBottom: "1px solid #e5e7eb",
               }}
             >
-              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 16 }}>
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: 18 }}>
                 {year}년 {month}월 학급 목표 {goal ? "수정" : "설정"}
               </h6>
               <button
@@ -231,7 +231,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
             {/* 모달 본문 */}
             <div style={{ padding: "20px" }}>
               {/* 목표 입력 */}
-              <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+              <label style={{ fontSize: 15, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
                 이달의 목표
               </label>
               <textarea
@@ -244,7 +244,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                   border: "1px solid #d1d5db",
                   borderRadius: 8,
                   padding: "8px 12px",
-                  fontSize: 14,
+                  fontSize: 16,
                   resize: "none",
                   outline: "none",
                   boxSizing: "border-box",
@@ -257,7 +257,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                 <div
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}
                 >
-                  <label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>실천 사항</label>
+                  <label style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>실천 사항</label>
                   <button
                     onClick={addItem}
                     style={{
@@ -265,7 +265,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                       border: "1px solid #25A194",
                       borderRadius: 6,
                       color: "#25A194",
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: 600,
                       padding: "2px 10px",
                       cursor: "pointer",
@@ -303,7 +303,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                           border: "1px solid #d1d5db",
                           borderRadius: 6,
                           padding: "6px 10px",
-                          fontSize: 13,
+                          fontSize: 15,
                           outline: "none",
                           color: "#111827",
                         }}
@@ -316,7 +316,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                             border: "none",
                             cursor: "pointer",
                             color: "#d1d5db",
-                            fontSize: 16,
+                            fontSize: 18,
                             lineHeight: 1,
                           }}
                         >
@@ -340,7 +340,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                   borderRadius: 6,
                   padding: "8px 20px",
                   cursor: "pointer",
-                  fontSize: 14,
+                  fontSize: 16,
                 }}
               >
                 취소
@@ -354,7 +354,7 @@ export default function ClassGoalEditor({ classroomId }: Props) {
                   border: "none",
                   borderRadius: 6,
                   padding: "8px 20px",
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: 500,
                   cursor: saving || !editGoal.trim() ? "not-allowed" : "pointer",
                 }}

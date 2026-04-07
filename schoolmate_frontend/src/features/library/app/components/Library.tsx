@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import { Search, BookOpen, Clock, TrendingUp, Star, Calendar, Grid3x3, List, Table } from "lucide-react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { TrendingUp, Star, Calendar, Grid3x3, List, Table } from "lucide-react";
 import { Link } from "react-router";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import { Card } from "./ui/card";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -47,16 +46,16 @@ const CATEGORY_LABEL_TO_CODE: Record<string, BookCategoryCode> = {
 };
 
 const CATEGORIES = [
-  { name: "000 총류", color: "bg-gray-100 text-gray-700", icon: "📚", description: "백과사전, 도서관학" },
-  { name: "100 철학", color: "bg-purple-100 text-purple-700", icon: "🤔", description: "철학, 심리학, 윤리학" },
-  { name: "200 종교", color: "bg-yellow-100 text-yellow-700", icon: "🙏", description: "종교, 신학" },
-  { name: "300 사회과학", color: "bg-blue-100 text-blue-700", icon: "🏛️", description: "정치, 경제, 사회, 법률" },
-  { name: "400 자연과학", color: "bg-green-100 text-green-700", icon: "🔬", description: "수학, 물리, 화학, 생물" },
-  { name: "500 기술과학", color: "bg-red-100 text-red-700", icon: "⚙️", description: "의학, 공학, 농업" },
-  { name: "600 예술", color: "bg-pink-100 text-pink-700", icon: "🎨", description: "미술, 음악, 사진, 체육" },
-  { name: "700 언어", color: "bg-indigo-100 text-indigo-700", icon: "🗣️", description: "한국어, 영어, 외국어" },
-  { name: "800 문학", color: "bg-cyan-100 text-cyan-700", icon: "📖", description: "시, 소설, 수필, 희곡" },
-  { name: "900 역사", color: "bg-orange-100 text-orange-700", icon: "📜", description: "역사, 지리, 열전" },
+  { name: "000 총류", color: "bg-gray-100 text-gray-700", textColor: "text-gray-700", icon: "ri-book-2-line", description: "백과사전, 도서관학" },
+  { name: "100 철학", color: "bg-purple-100 text-purple-700", textColor: "text-purple-700", icon: "ri-compass-3-line", description: "철학, 심리학, 윤리학" },
+  { name: "200 종교", color: "bg-yellow-100 text-yellow-700", textColor: "text-yellow-700", icon: "ri-quill-pen-line", description: "종교, 신학" },
+  { name: "300 사회과학", color: "bg-blue-100 text-blue-700", textColor: "text-blue-700", icon: "ri-government-line", description: "정치, 경제, 사회, 법률" },
+  { name: "400 자연과학", color: "bg-green-100 text-green-700", textColor: "text-green-700", icon: "ri-flask-line", description: "수학, 물리, 화학, 생물" },
+  { name: "500 기술과학", color: "bg-red-100 text-red-700", textColor: "text-red-700", icon: "ri-settings-3-line", description: "의학, 공학, 농업" },
+  { name: "600 예술", color: "bg-pink-100 text-pink-700", textColor: "text-pink-700", icon: "ri-palette-line", description: "미술, 음악, 사진, 체육" },
+  { name: "700 언어", color: "bg-indigo-100 text-indigo-700", textColor: "text-indigo-700", icon: "ri-translate-2", description: "한국어, 영어, 외국어" },
+  { name: "800 문학", color: "bg-cyan-100 text-cyan-700", textColor: "text-cyan-700", icon: "ri-book-open-line", description: "시, 소설, 수필, 희곡" },
+  { name: "900 역사", color: "bg-orange-100 text-orange-700", textColor: "text-orange-700", icon: "ri-history-line", description: "역사, 지리, 열전" },
 ];
 
 export default function Library() {
@@ -364,16 +363,77 @@ export default function Library() {
   const overdueCount = stats?.overdueCount ?? borrowRecords.filter((r) => r.status === "OVERDUE").length;
   const readThisMonth = stats?.currentMonthBooks ?? 0;
   const monthlyGoal = stats?.monthlyGoal ?? 5;
+  const libraryRootStyle = { "--primary": "#25A194" } as CSSProperties;
+  const topStatsCards = [
+    {
+      key: "borrowed",
+      label: "대출중인 도서",
+      value: `${borrowedCount}권`,
+      icon: "ri-book-open-line",
+      to: "/library/borrowed",
+      borderColor: "#bfdbfe",
+      background: "#eff6ff",
+      iconBackground: "rgba(37, 99, 235, 0.12)",
+      iconColor: "#2563eb",
+      valueColor: "#1d4ed8",
+    },
+    {
+      key: "monthly",
+      label: "이번 달 독서량",
+      value: `${readThisMonth}권`,
+      icon: "ri-line-chart-line",
+      to: "/library/stats",
+      borderColor: "#bbf7d0",
+      background: "#f0fdf4",
+      iconBackground: "rgba(22, 163, 74, 0.12)",
+      iconColor: "#16a34a",
+      valueColor: "#15803d",
+    },
+    {
+      key: "overdue",
+      label: "연체 도서",
+      value: `${overdueCount}권`,
+      icon: "ri-alarm-warning-line",
+      to: "/library/overdue",
+      borderColor: "#fecaca",
+      background: "#fff7ed",
+      iconBackground: "rgba(239, 68, 68, 0.12)",
+      iconColor: "#dc2626",
+      valueColor: "#dc2626",
+    },
+    {
+      key: "goal",
+      label: "독서 목표",
+      value: `${readThisMonth}/${monthlyGoal}권`,
+      icon: "ri-medal-2-line",
+      to: "/library/stats",
+      borderColor: "#99f6e4",
+      background: "#f0fdfa",
+      iconBackground: "rgba(13, 148, 136, 0.14)",
+      iconColor: "#0f766e",
+      valueColor: "#0f766e",
+    },
+  ];
 
   return (
     <DashboardLayout>
-      <div className="library-root">
-        {/* [테스트] 도서 추가 버튼 */}
-        <div className="flex justify-end mb-4">
+      <div className="library-root" style={libraryRootStyle}>
+        <div className="flex justify-between items-start gap-3 mb-4 flex-wrap">
+          <div>
+            <div
+              className="library-page-title"
+              style={{
+                marginBottom: 4,
+              }}
+            >
+              도서관
+            </div>
+            <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>학교 도서를 검색하고 대출 현황을 확인합니다.</p>
+          </div>
           <Button
             onClick={handleSeedBooks}
             disabled={isSeeding}
-            className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5"
+            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs px-3 py-1.5"
           >
             {isSeeding ? "추가 중..." : "[테스트] 도서 20권 DB 추가"}
           </Button>
@@ -384,77 +444,77 @@ export default function Library() {
           {/* 통계 카드 */}
           <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Link to="/library/borrowed" className="block">
-                <Card className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 cursor-pointer hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100 text-xs">대출중인 도서</p>
-                      <p className="text-2xl font-bold">{borrowedCount}</p>
+              {topStatsCards.map((card) => (
+                <Link key={card.key} to={card.to} className="block">
+                  <div
+                    className="w-full cursor-pointer hover:shadow-md transition-shadow"
+                    style={{
+                      width: "100%",
+                      padding: "0.875rem 1rem",
+                      borderRadius: "0.75rem",
+                      border: `1px solid ${card.borderColor}`,
+                      background: card.background,
+                      boxShadow: "0 1px 2px rgba(15,23,42,0.06)",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <span
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 999,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: card.iconBackground,
+                          color: card.iconColor,
+                          fontSize: 14,
+                        }}
+                      >
+                        <i className={card.icon} />
+                      </span>
+                      <p style={{ fontSize: "0.75rem", color: card.iconColor, marginBottom: 0, fontWeight: 600 }}>{card.label}</p>
                     </div>
-                    <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-5 h-5" />
-                    </div>
+                    <p
+                      style={{
+                        fontWeight: 700,
+                        color: card.valueColor,
+                        fontSize: "1.25rem",
+                        lineHeight: 1.1,
+                        marginBottom: 0,
+                        textAlign: "right",
+                      }}
+                    >
+                      {card.value}
+                    </p>
                   </div>
-                </Card>
-              </Link>
-
-              <Link to="/library/stats" className="block">
-                <Card className="p-3 bg-gradient-to-br from-green-500 to-green-600 text-white border-0 cursor-pointer hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-green-100 text-xs">이번 달 독서량</p>
-                      <p className="text-2xl font-bold">{readThisMonth}</p>
-                    </div>
-                    <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5" />
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-
-              <Link to="/library/overdue" className="block">
-                <Card className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 cursor-pointer hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-purple-100 text-xs">연체 도서</p>
-                      <p className="text-2xl font-bold">{overdueCount}</p>
-                    </div>
-                    <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
-                      <Clock className="w-5 h-5" />
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-
-              <Link to="/library/stats" className="block">
-                <Card className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 cursor-pointer hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-orange-100 text-xs">독서 목표</p>
-                      <p className="text-2xl font-bold">
-                        {readThisMonth}/{monthlyGoal}
-                      </p>
-                    </div>
-                    <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
-                      <Star className="w-5 h-5" />
-                    </div>
-                  </div>
-                </Card>
-              </Link>
+                </Link>
+              ))}
             </div>
           </div>
 
           {/* 카테고리와 검색 */}
           <Card className="p-6 mb-8">
             <div className="flex flex-col gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-7 transform -translate-y-1/2 text-red-600 w-5 h-5" />
-                <Input
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <i
+                  className="ri-search-line"
+                  style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }}
+                />
+                <input
                   type="text"
+                  style={{
+                    padding: "9px 8px 9px 28px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    width: "100%",
+                    background: "#fff",
+                    color: "#111827",
+                  }}
                   placeholder="책 제목이나 저자로 검색하세요..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 text-black"
                 />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -473,7 +533,13 @@ export default function Library() {
                     onClick={() => setSelectedCategory(cat.name)}
                     className={selectedCategory === cat.name ? "" : cat.color}
                   >
-                    <span className="mr-1">{cat.icon}</span>
+                    <span
+                      className={`mr-1 inline-flex items-center text-base leading-none ${
+                        selectedCategory === cat.name ? "text-white" : cat.textColor
+                      }`}
+                    >
+                      <i className={cat.icon} />
+                    </span>
                     {cat.name}
                   </Button>
                 ))}
@@ -492,8 +558,8 @@ export default function Library() {
                 </TabsList>
               </div>
 
-              {/* 도서 목록 */}
-              <TabsContent value="catalog" className="space-y-4">
+            {/* 도서 목록 */}
+            <TabsContent value="catalog" className="space-y-4">
                 {/* 보기 형식 선택 버튼 */}
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-600">총 {totalElements}권의 도서</p>
@@ -854,7 +920,9 @@ export default function Library() {
                       {CATEGORIES.slice(0, 4).map((cat, index) => (
                         <div key={cat.name} className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <span>{cat.icon}</span>
+                            <span className={`inline-flex items-center text-base leading-none ${cat.textColor}`}>
+                              <i className={cat.icon} />
+                            </span>
                             <span className="text-sm">{cat.name}</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -889,7 +957,7 @@ export default function Library() {
                           key={book.id}
                           className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         >
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold">
+                          <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
                             {index + 1}
                           </div>
                           <div className="w-16 h-20 bg-gray-200 rounded overflow-hidden flex-shrink-0">
@@ -922,7 +990,7 @@ export default function Library() {
                 </Card>
 
                 {/* 추천 도서 */}
-                <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-0">
+                <Card className="p-6 bg-blue-50 border border-blue-100">
                   <h3 className="text-lg font-bold mb-4">사서 추천 도서</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white p-4 rounded-lg">

@@ -172,11 +172,11 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
       <div className="d-flex justify-content-between align-items-center dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-user-follow-line text-primary-600" style={{ fontSize: 20 }} />
-          <h6 className="fw-bold mb-0 text-sm">학급 학생 출결 상태</h6>
+          <h6 className="fw-bold mb-0 text-lg">학급 학생 출결 상태</h6>
         </div>
         <Link
           to="/attendance/student"
-          className="text-primary-600 text-sm"
+          className="text-primary-600 text-md"
           style={{ lineHeight: 1, textDecoration: "none" }}
         >
           출결관리
@@ -184,19 +184,19 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
       </div>
 
       <div className="p-16 d-flex flex-column gap-12">
-        <p className="text-secondary-light text-xs mb-0">{grade}학년 {classNum}반 ({total}명)</p>
+        <p className="text-secondary-light text-md mb-0">{grade}학년 {classNum}반 ({total}명)</p>
         {isHoliday ? (
           <div className="text-center py-32">
             <i className="ri-calendar-event-line d-block mb-12" style={{ fontSize: 40, color: "#d1d5db" }} />
-            <p className="fw-semibold text-sm mb-4" style={{ color: "#6b7280" }}>
+            <p className="fw-semibold text-md mb-4" style={{ color: "#6b7280" }}>
               오늘은 {holidayLabel} 휴일입니다.
             </p>
-            <p className="text-xs text-secondary-light mb-0">
+            <p className="text-md text-secondary-light mb-0">
               {mm}월 {dd}일은 출결 관리가 필요하지 않습니다.
             </p>
           </div>
         ) : loading ? (
-          <p className="text-secondary-light text-sm text-center py-16 mb-0">불러오는 중...</p>
+          <p className="text-secondary-light text-md text-center py-16 mb-0">불러오는 중...</p>
         ) : (
           <>
             {/* [woo] 필터 버튼 행 */}
@@ -212,7 +212,7 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
                     style={{
                       padding: "5px 12px",
                       borderRadius: 20,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: 600,
                       border: `1.5px solid ${active ? color : "var(--border-color, #e5e7eb)"}`,
                       background: active ? color : "transparent",
@@ -230,7 +230,7 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
             {/* [woo] 학생 목록 */}
             <div style={{ overflowY: "auto", maxHeight: 300 }}>
               {filtered.length === 0 ? (
-                <p className="text-secondary-light text-sm text-center py-20 mb-0">
+                <p className="text-secondary-light text-md text-center py-20 mb-0">
                   {filter === null ? "출결 데이터가 없습니다." : `${getFilterLabel(filter)} 학생이 없습니다.`}
                 </p>
               ) : (
@@ -244,10 +244,10 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
                         borderBottom: i < filtered.length - 1 ? "1px solid var(--border-color, #f3f4f6)" : "none",
                       }}
                     >
-                      <span className="text-secondary-light text-xs me-12" style={{ minWidth: 20, textAlign: "right" }}>
+                      <span className="text-secondary-light text-md me-12" style={{ minWidth: 20, textAlign: "right" }}>
                         {r.studentNumber}
                       </span>
-                      <span className="text-sm fw-medium flex-grow-1">{r.studentName}</span>
+                      <span className="text-md fw-medium flex-grow-1">{r.studentName}</span>
                       {/* [woo] 출결 상태 드롭다운 */}
                       <select
                         value={r.status}
@@ -255,7 +255,7 @@ export default function ClassAttendanceWidget({ grade, classNum }: Props) {
                         style={{
                           padding: "3px 8px",
                           borderRadius: 6,
-                          fontSize: 11,
+                          fontSize: 13,
                           fontWeight: 600,
                           border: `1.5px solid ${cfg.color}`,
                           background: cfg.bg,

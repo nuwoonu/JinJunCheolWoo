@@ -186,7 +186,7 @@ export default function ParentChildrenStatus() {
                   )}
                 </div>
                 <h4 className="fw-bold mb-4">{selectedChild.name}</h4>
-                <p className="text-secondary-light text-sm mb-12">
+                <p className="text-secondary-light text-md mb-12">
                   {selectedChild.grade && <>{selectedChild.grade}학년 </>}
                   {selectedChild.classNum && <>{selectedChild.classNum}반 </>}
                   {selectedChild.attendanceNum && <>{selectedChild.attendanceNum}번</>}
@@ -210,7 +210,7 @@ export default function ParentChildrenStatus() {
 
                 {/* [woo] 출결 현황 서클 - API 연동 */}
                 <div className="border-top pt-20">
-                  <h6 className="fw-bold mb-20 text-sm text-start">
+                  <h6 className="fw-bold mb-20 text-lg text-start">
                     <i className="ri-checkbox-circle-line text-primary-600 me-2" />
                     출결 현황
                   </h6>
@@ -230,7 +230,7 @@ export default function ParentChildrenStatus() {
                             >
                               <span className="text-white fw-bold fs-18">{counts[item.key] ?? 0}</span>
                             </div>
-                            <span className="text-xs text-secondary-light">{item.label}</span>
+                            <span className="text-md text-secondary-light">{item.label}</span>
                           </div>
                         ))}
                       </div>
@@ -263,9 +263,9 @@ export default function ParentChildrenStatus() {
                 <div className="d-flex justify-content-between align-items-center dash-card-header">
                   <div className="d-flex align-items-center gap-8">
                     <i className="ri-file-list-3-line text-primary-600" style={{ fontSize: 18 }} />
-                    <h6 className="fw-bold mb-0 text-sm">가정통신문</h6>
+                    <h6 className="fw-bold mb-0 text-lg">가정통신문</h6>
                   </div>
-                  <Link to="/board/parent-notice" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>
+                  <Link to="/board/parent-notice" className="text-primary-600 text-md" style={{ lineHeight: 1 }}>
                     더보기
                   </Link>
                 </div>
@@ -276,14 +276,14 @@ export default function ParentChildrenStatus() {
                     <div className="d-flex align-items-center gap-12">
                       <i className="ri-file-text-line text-secondary-light" />
                       <div>
-                        <p className="text-sm mb-1 fw-medium">{b.title}</p>
-                        {b.writerName && <span className="text-xs text-secondary-light">{b.writerName}</span>}
+                        <p className="text-md mb-1 fw-medium">{b.title}</p>
+                        {b.writerName && <span className="text-md text-secondary-light">{b.writerName}</span>}
                       </div>
                     </div>
-                    {b.createDate && <span className="text-xs text-secondary-light flex-shrink-0">{b.createDate.slice(0, 10)}</span>}
+                    {b.createDate && <span className="text-md text-secondary-light flex-shrink-0">{b.createDate.slice(0, 10)}</span>}
                   </div>
                 )) : (
-                  <p className="text-secondary-light text-sm mb-0">등록된 가정통신문이 없습니다.</p>
+                  <p className="text-secondary-light text-md mb-0">등록된 가정통신문이 없습니다.</p>
                 )}
                 */}
                   {/* [woo] 가정통신문 실제 API 연동 */}
@@ -296,21 +296,21 @@ export default function ParentChildrenStatus() {
                       >
                         <div className="d-flex align-items-center gap-12">
                           <i className="ri-file-text-line text-secondary-light" />
-                          <span className="text-sm">{b.title}</span>
+                          <span className="text-md">{b.title}</span>
                           {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
                           {b.createDate && isNew(b.createDate) && (
-                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700 }}>새글</span>
+                            <span style={{ color: "#25A194", fontSize: 13, fontWeight: 700 }}>새글</span>
                           )}
                         </div>
                         {b.createDate && (
-                          <span className="text-xs text-secondary-light flex-shrink-0 ms-8">
+                          <span className="text-md text-secondary-light flex-shrink-0 ms-8">
                             {b.createDate.slice(0, 10)}
                           </span>
                         )}
                       </Link>
                     ))
                   ) : (
-                    <p className="text-secondary-light text-sm mb-0 text-center py-20">등록된 가정통신문이 없습니다.</p>
+                    <p className="text-secondary-light text-md mb-0 text-center py-20">등록된 가정통신문이 없습니다.</p>
                   )}
                 </div>
               </div>
@@ -325,10 +325,10 @@ export default function ParentChildrenStatus() {
           {/* <div className="row">
             <div className="col-12">
               <div className="card border-0 shadow-sm p-20" style={{ borderRadius: 16 }}>
-                <h6 className="fw-bold mb-20 text-sm">
+                <h6 className="fw-bold mb-20 text-md">
                   <i className="ri-notification-3-line text-warning-main me-2" />학급 알림장
                 </h6>
-                <p className="text-secondary-light text-sm mb-0 py-8 text-center">
+                <p className="text-secondary-light text-md mb-0 py-8 text-center">
                   알림장 데이터가 아직 등록되지 않았습니다.
                 </p>
               </div>
@@ -345,15 +345,15 @@ export default function ParentChildrenStatus() {
                 <div className="d-flex justify-content-between align-items-center dash-card-header">
                   <div className="d-flex align-items-center gap-8">
                     <i className="ri-parent-line text-primary-600" style={{ fontSize: 18 }} />
-                    <h6 className="fw-bold mb-0 text-sm">학부모 게시판</h6>
+                    <h6 className="fw-bold mb-0 text-lg">학부모 게시판</h6>
                   </div>
-                  <a href="/board/parent" className="text-primary-600 text-sm" style={{ lineHeight: 1 }}>
+                  <a href="/board/parent" className="text-primary-600 text-md" style={{ lineHeight: 1 }}>
                     더보기
                   </a>
                 </div>
                 <div className="p-16">
                   {/* 기존: 빈 상태 표시
-                  <p className="text-secondary-light text-sm mb-0 text-center py-20">
+                  <p className="text-secondary-light text-md mb-0 text-center py-20">
                     등록된 게시글이 없습니다.
                   </p>
                   */}
@@ -367,21 +367,21 @@ export default function ParentChildrenStatus() {
                       >
                         <div className="d-flex align-items-center gap-12">
                           <i className="ri-file-text-line text-secondary-light" />
-                          <span className="text-sm">{b.title}</span>
+                          <span className="text-md">{b.title}</span>
                           {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
                           {b.createDate && isNew(b.createDate) && (
-                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700 }}>새글</span>
+                            <span style={{ color: "#25A194", fontSize: 13, fontWeight: 700 }}>새글</span>
                           )}
                         </div>
                         {b.createDate && (
-                          <span className="text-xs text-secondary-light flex-shrink-0 ms-8">
+                          <span className="text-md text-secondary-light flex-shrink-0 ms-8">
                             {b.createDate.slice(0, 10)}
                           </span>
                         )}
                       </Link>
                     ))
                   ) : (
-                    <p className="text-secondary-light text-sm mb-0 text-center py-20">등록된 게시글이 없습니다.</p>
+                    <p className="text-secondary-light text-md mb-0 text-center py-20">등록된 게시글이 없습니다.</p>
                   )}
                 </div>
               </div>

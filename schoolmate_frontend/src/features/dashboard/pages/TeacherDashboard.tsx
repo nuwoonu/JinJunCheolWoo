@@ -246,7 +246,7 @@ export default function TeacherDashboard() {
               <div className="card-body p-0 d-flex flex-column" style={{ height: "100%" }}>
                 <div className="d-flex align-items-center gap-8 dash-card-header">
                   <i className="ri-notification-3-line text-primary-600 text-lg" />
-                  <h6 className="fw-bold mb-0 text-sm">알림 메시지</h6>
+                  <h6 className="fw-bold mb-0 text-lg">알림 메시지</h6>
                   {notifications.filter((n) => !n.isRead).length > 0 && (
                     <span
                       className="badge text-white text-xs px-6 py-2 radius-4 fw-semibold"
@@ -336,12 +336,12 @@ export default function TeacherDashboard() {
                 <div className="d-flex align-items-center justify-content-between dash-card-header">
                   <div className="d-flex align-items-center gap-8">
                     <i className="ri-checkbox-circle-line text-primary-600 text-lg" />
-                    <h6 className="fw-bold mb-0 text-sm">오늘 할 일</h6>
+                    <h6 className="fw-bold mb-0 text-lg">오늘 할 일</h6>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowTodoModal(true)}
-                    className="text-primary-600 text-sm"
+                    className="text-primary-600 text-md"
                     style={{ lineHeight: 1, background: "none", border: "none", padding: 0, cursor: "pointer" }}
                   >
                     할 일 추가
@@ -364,7 +364,7 @@ export default function TeacherDashboard() {
                           border: isActive ? `1.5px solid ${opt.color}` : "1.5px solid #e5e7eb",
                           borderRadius: 20,
                           padding: "3px 12px",
-                          fontSize: 11,
+                          fontSize: 15,
                           fontWeight: 600,
                           cursor: "pointer",
                           transition: "all 0.15s",
@@ -398,7 +398,7 @@ export default function TeacherDashboard() {
                             justifyContent: "center",
                           }}
                         >
-                          {todo.done && <i className="ri-check-line" style={{ color: "white", fontSize: 11 }} />}
+                          {todo.done && <i className="ri-check-line" style={{ color: "white", fontSize: 15 }} />}
                         </button>
                         {/* [woo] 할 일 텍스트 — 클릭 시 인라인 수정 */}
                         {editingTodoId === todo.id ? (
@@ -422,7 +422,7 @@ export default function TeacherDashboard() {
                               setEditingTodoId(null);
                             }}
                             style={{
-                              fontSize: 13,
+                              fontSize: 15,
                               color: "#111827",
                               border: "1px solid #d1d5db",
                               borderRadius: 4,
@@ -441,7 +441,7 @@ export default function TeacherDashboard() {
                               }
                             }}
                             style={{
-                              fontSize: 13,
+                              fontSize: 15,
                               color: todo.done ? "#9ca3af" : "#111827",
                               textDecoration: todo.done ? "line-through" : "none",
                               cursor: todo.done ? "default" : "text",
@@ -458,7 +458,7 @@ export default function TeacherDashboard() {
                             style={{
                               background: todo.badgeBg,
                               color: todo.badgeColor,
-                              fontSize: 11,
+                              fontSize: 15,
                               fontWeight: 600,
                               borderRadius: 4,
                               padding: "2px 8px",
@@ -499,7 +499,7 @@ export default function TeacherDashboard() {
                                   style={{
                                     background: todo.badge === p.badge ? p.badgeBg : "transparent",
                                     color: p.badgeColor,
-                                    fontSize: 11,
+                                    fontSize: 15,
                                     fontWeight: 600,
                                     borderRadius: 4,
                                     padding: "4px 12px",
@@ -523,7 +523,7 @@ export default function TeacherDashboard() {
                             border: "none",
                             cursor: "pointer",
                             color: "#d1d5db",
-                            fontSize: 13,
+                            fontSize: 15,
                             padding: 0,
                             flexShrink: 0,
                           }}
@@ -544,7 +544,7 @@ export default function TeacherDashboard() {
               <div className="card-body p-0">
                 <div className="d-flex align-items-center gap-8 dash-card-header">
                   <i className="ri-calendar-line text-primary-600 text-lg" />
-                  <h6 className="fw-bold mb-0 text-sm">일정</h6>
+                  <h6 className="fw-bold mb-0 text-lg">일정</h6>
                 </div>
                 <div className="p-20">
                   <MiniCalendar />
@@ -560,7 +560,7 @@ export default function TeacherDashboard() {
                         display: "inline-block",
                       }}
                     />
-                    <span className="text-sm" style={{ color: "#6b7280" }}>
+                    <span className="text-md" style={{ color: "#6b7280" }}>
                       학교 일정
                     </span>
                   </div>
@@ -574,7 +574,7 @@ export default function TeacherDashboard() {
                         display: "inline-block",
                       }}
                     />
-                    <span className="text-sm" style={{ color: "#6b7280" }}>
+                    <span className="text-md" style={{ color: "#6b7280" }}>
                       개인 일정
                     </span>
                   </div>
@@ -589,7 +589,7 @@ export default function TeacherDashboard() {
               <div className="card-body p-0 d-flex flex-column">
                 <div className="d-flex align-items-center gap-8 dash-card-header">
                   <i className="ri-layout-grid-line" style={{ fontSize: 16, color: "#25A194", lineHeight: 1 }} />
-                  <h6 className="fw-bold mb-0 text-sm">바로 가기</h6>
+                  <h6 className="fw-bold mb-0 text-lg">바로 가기</h6>
                 </div>
                 <div className="p-16" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                   <div
@@ -669,7 +669,7 @@ export default function TeacherDashboard() {
                             style={{ color: menu.iconColor, fontSize: 22 }}
                           />
                         </div>
-                        <span style={{ color: "#374151", fontWeight: 600, fontSize: 14 }}>{menu.label}</span>
+                        <span style={{ color: "#374151", fontWeight: 600, fontSize: 16 }}>{menu.label}</span>
                       </a>
                     ))}
                   </div>
@@ -740,7 +740,7 @@ export default function TeacherDashboard() {
                   border: "1px solid #d1d5db",
                   borderRadius: 6,
                   padding: "8px 12px",
-                  fontSize: 14,
+                  fontSize: 16,
                   color: "#111827",
                   outline: "none",
                   boxSizing: "border-box",
@@ -748,7 +748,7 @@ export default function TeacherDashboard() {
               />
               {/* [woo] 우선도 선택 */}
               <div style={{ marginTop: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>우선도</span>
+                <span style={{ fontSize: 15, fontWeight: 500, color: "#374151" }}>우선도</span>
                 <div className="d-flex gap-6" style={{ marginTop: 6 }}>
                   {(
                     [
@@ -770,7 +770,7 @@ export default function TeacherDashboard() {
                           border: selected ? `2px solid ${opt.color}` : "2px solid #e5e7eb",
                           borderRadius: 20,
                           padding: "4px 16px",
-                          fontSize: 13,
+                          fontSize: 15,
                           fontWeight: 600,
                           cursor: "pointer",
                           transition: "all 0.15s",
@@ -796,7 +796,7 @@ export default function TeacherDashboard() {
                   borderRadius: 6,
                   padding: "8px 20px",
                   cursor: "pointer",
-                  fontSize: 14,
+                  fontSize: 16,
                 }}
               >
                 취소
@@ -810,7 +810,7 @@ export default function TeacherDashboard() {
                   borderRadius: 6,
                   padding: "8px 20px",
                   cursor: "pointer",
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: 500,
                 }}
               >

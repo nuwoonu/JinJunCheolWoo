@@ -219,7 +219,7 @@ export default function DashboardScheduleWidget() {
           <div className="d-flex align-items-center gap-8">
             {/* [soojin] 이모지 → 아이콘으로 교체 */}
             <i className="ri-calendar-schedule-line text-primary-600 text-lg" />
-            <h6 className="fw-bold mb-0 text-sm">{label}</h6>
+            <h6 className="fw-bold mb-0 text-lg">{label}</h6>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button onClick={openAdd} style={css.addBtn}>

@@ -3,7 +3,6 @@
 /* [soojin] :root → .library-root 로 스코프 변경: 전역 CSS 변수 오염 방지 */
 .library-root {
   --font-size: 16px;
-  --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
@@ -882,7 +881,6 @@
 
 /* ── 8. 도서관 전용 base styles ── */
 .library-root {
-  background-color: var(--background);
   color: var(--foreground);
   font-size: var(--font-size);
   line-height: 1.5;
@@ -924,6 +922,13 @@
   font-size: var(--text-base, 1rem);
   font-weight: var(--font-weight-normal);
   line-height: 1.5;
+}
+
+.library-root .library-page-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  color: #111827 !important;
 }
 
 /* ── 카테고리 버튼 배경·텍스트 색상 ── */

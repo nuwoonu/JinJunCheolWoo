@@ -55,14 +55,14 @@ export default function ClassNoticeWidget({ classroomId, title = '학급 알림�
   return (
     <div className="card shadow-sm h-100" style={{ borderRadius: 16, border: "1px solid #e5e7eb" }}>
       <div className="d-flex justify-content-between align-items-center p-16 border-bottom">
-        <h6 className="fw-bold mb-0 text-sm">
+        <h6 className="fw-bold mb-0 text-lg">
           <i className="ri-notification-badge-line text-primary-600 me-2" />
           {title}
         </h6>
         {moreHref && (
           <a
             href={moreHref}
-            className="text-primary-600 text-sm"
+            className="text-primary-600 text-md"
             style={{ lineHeight: 1 }}
             onClick={(e) => { e.preventDefault(); navigate(moreHref) }}
           >
@@ -73,11 +73,11 @@ export default function ClassNoticeWidget({ classroomId, title = '학급 알림�
 
       <div className="p-16">
       {loading ? (
-        <p className="text-secondary-light text-sm text-center py-20 mb-0">불러오는 중...</p>
+        <p className="text-secondary-light text-md text-center py-20 mb-0">불러오는 중...</p>
       ) : classroomId == null && !apiEndpoint ? (
         <div className="text-center py-20">
           <i className="ri-information-line text-secondary-light mb-8" style={{ fontSize: 32 }} />
-          <p className="text-secondary-light text-sm mb-0">학급 배정 후 공지사항을 확인할 수 있습니다.</p>
+          <p className="text-secondary-light text-md mb-0">학급 배정 후 공지사항을 확인할 수 있습니다.</p>
         </div>
       ) : (
         notices.length > 0 ? (
@@ -93,17 +93,17 @@ export default function ClassNoticeWidget({ classroomId, title = '학급 알림�
             >
               <div className="d-flex align-items-center gap-12">
                 <i className="ri-file-text-line text-secondary-light" />
-                <span className="text-sm" style={{ color: '#374151' }}>{n.title}</span>
+                <span className="text-md" style={{ color: '#374151' }}>{n.title}</span>
                 {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
                 {isNew(n.createDate) && (
-                  <span style={{ color: '#25A194', fontSize: 11, fontWeight: 700 }}>새글</span>
+                  <span style={{ color: '#25A194', fontSize: 13, fontWeight: 700 }}>새글</span>
                 )}
               </div>
-              <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{n.createDate?.slice(0, 10)}</span>
+              <span className="text-sm text-secondary-light flex-shrink-0 ms-8">{n.createDate?.slice(0, 10)}</span>
             </div>
           ))
         ) : (
-          <div className="text-center text-secondary-light text-sm py-20">
+          <div className="text-center text-secondary-light text-md py-20">
             등록된 공지사항이 없습니다.
           </div>
         )
