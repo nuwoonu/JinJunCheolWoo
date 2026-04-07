@@ -107,6 +107,10 @@ export default function Main() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(
+    window.matchMedia("(display-mode: standalone)").matches ||
+    localStorage.getItem("pwa-installed") === "true"
+  );
 
   useEffect(() => {
     const onScroll = () => {
@@ -149,6 +153,13 @@ export default function Main() {
       return;
     }
 
+    // main.tsx에서 미리 캡처한 프롬프트 우선 사용
+    const captured = (window as any).__pwaInstallPrompt;
+    if (captured) {
+      setDeferredPrompt(captured);
+      setShowInstallPrompt(true);
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -159,6 +170,9 @@ export default function Main() {
     window.addEventListener("appinstalled", () => {
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
+      setIsInstalled(true);
+      localStorage.setItem("pwa-installed", "true");
+      delete (window as any).__pwaInstallPrompt;
     });
 
     return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -171,9 +185,26 @@ export default function Main() {
 
   // [soojin] PWA 설치 핸들러 - Main.tsx에서 이식
   const handleInstallClick = async () => {
+    console.group("[PWA] APP 다운로드 버튼 클릭");
+    console.log("deferredPrompt:", deferredPrompt);
+    console.log("window.__pwaInstallPrompt:", (window as any).__pwaInstallPrompt);
+    console.log("isInstalled (state):", isInstalled);
+    console.log("localStorage pwa-installed:", localStorage.getItem("pwa-installed"));
+    console.log("localStorage pwa-install-dismissed:", localStorage.getItem("pwa-install-dismissed"));
+    console.log("display-mode standalone:", window.matchMedia("(display-mode: standalone)").matches);
+    console.log("navigator.standalone (iOS):", (window.navigator as any).standalone);
+    console.log("userAgent:", navigator.userAgent);
+    console.log("serviceWorker 등록 여부:", "serviceWorker" in navigator);
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      console.log("serviceWorker registrations:", regs);
+    }
+    console.groupEnd();
+
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
+    console.log("[PWA] 설치 선택 결과:", outcome);
     if (outcome === "accepted") {
       setShowInstallPrompt(false);
     }
@@ -1024,10 +1055,12 @@ export default function Main() {
                 <a href="/register" className="btn-hero-primary">
                   지금 바로 시작하기
                 </a>
-                <button className="btn-hero-secondary" onClick={handleInstallClick}>
-                  APP 다운로드
-                </button>{" "}
-                {/* [soojin] 미리보기 → APP 다운로드 */}
+                {!isInstalled && (
+                  <button className="btn-hero-secondary" onClick={handleInstallClick}>
+                    APP 다운로드
+                  </button>
+                )}
+                {/* [soojin] 미리보기 → APP 다운로드 / 설치 후 버튼 숨김 */}
               </div>
             </div>
 
