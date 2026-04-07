@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { ArrowLeft, BookOpen, TrendingUp, Target, Calendar, Award } from "lucide-react";
 import { Link } from "react-router";
-import { ArrowLeft, BookOpen, User, Moon, TrendingUp, Target, Calendar, Award } from "lucide-react";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import {
@@ -68,94 +69,68 @@ export default function ReadingStats() {
   ];
 
   return (
-    <div className="library-root min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link to="/library">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">독서 통계</h1>
-                <p className="text-sm text-gray-500">나의 독서 활동을 분석해보세요</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon">
-                <Moon className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="text-sm">
-                  <p className="font-semibold">홍길동</p>
-                  <p className="text-xs text-gray-500">2학년 3반</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* 메인 콘텐츠 */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
+    <div className="library-root">
+      <div className="flex items-center gap-2 mb-4">
+        <Link to="/library">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-600">
+            <ArrowLeft className="w-4 h-4" />
+            도서관 메인
+          </Button>
+        </Link>
+      </div>
+      <main>
         {/* 요약 통계 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm mb-1">올해 읽은 책</p>
-                <p className="text-3xl font-bold">{totalBooksThisYear}권</p>
+        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-xs">올해 읽은 책</p>
+                  <p className="text-2xl font-bold">{totalBooksThisYear}권</p>
+                </div>
+                <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                  <BookOpen className="w-5 h-5" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-sm mb-1">이번 달</p>
-                <p className="text-3xl font-bold">{currentMonthBooks}권</p>
+            <Card className="p-3 bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-xs">이번 달</p>
+                  <p className="text-2xl font-bold">{currentMonthBooks}권</p>
+                </div>
+                <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm mb-1">목표 달성률</p>
-                <p className="text-3xl font-bold">{goalProgress}%</p>
+            <Card className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-xs">목표 달성률</p>
+                  <p className="text-2xl font-bold">{goalProgress}%</p>
+                </div>
+                <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Target className="w-5 h-5" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <Target className="w-6 h-6" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-100 text-sm mb-1">평균 평점</p>
-                <p className="text-3xl font-bold">{averageRating}</p>
+            <Card className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-xs">평균 평점</p>
+                  <p className="text-2xl font-bold">{averageRating}</p>
+                </div>
+                <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Award className="w-5 h-5" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <Award className="w-6 h-6" />
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
 
         {/* 차트 섹션 */}
@@ -338,5 +313,6 @@ export default function ReadingStats() {
         </Card>
       </main>
     </div>
+    </DashboardLayout>
   );
 }

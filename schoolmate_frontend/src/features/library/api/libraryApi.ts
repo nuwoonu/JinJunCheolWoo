@@ -98,8 +98,42 @@ export interface PageResponse<T> {
 }
 
 // ────────────────────────────────────────────────────────────────────
+// 유틸리티
+// ────────────────────────────────────────────────────────────────────
+
+/**
+ * coverImage가 없을 때 책 ID 기반으로 picsum 랜덤 이미지 URL 반환.
+ * 같은 ID는 항상 같은 이미지를 보여주므로 재렌더링 시 흔들리지 않음.
+ */
+export function bookCoverUrl(id: number, coverImage?: string | null): string {
+  return coverImage || `https://picsum.photos/seed/book-${id}/200/300`;
+}
+
+// ────────────────────────────────────────────────────────────────────
 // 도서 카탈로그
 // ────────────────────────────────────────────────────────────────────
+
+export interface BookCreateRequest {
+  title: string;
+  author: string;
+  category: BookCategoryCode;
+  totalCopies: number;
+  isbn?: string;
+  publisher?: string;
+  publishDate?: string; // "YYYY-MM-DD"
+  pages?: number;
+  language?: string;
+  description?: string;
+  summary?: string;
+  authorBio?: string;
+  tags?: string;
+  coverImage?: string;
+}
+
+export async function createBook(body: BookCreateRequest): Promise<BookListItem> {
+  const res = await api.post("/api/library/books", body);
+  return res.data;
+}
 
 export async function searchBooks(params: {
   keyword?: string;

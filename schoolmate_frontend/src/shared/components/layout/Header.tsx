@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useLocation, Link } from 'react-router-dom'
+import { BookOpen } from 'lucide-react'
 import { useSidebar } from '@/shared/contexts/SidebarContext'
 import { useAuth } from '@/shared/contexts/AuthContext'
 import NotificationDropdown from '@/features/notification/components/NotificationDropdown'
@@ -29,6 +31,8 @@ export default function Header({ showLogo }: { showLogo?: boolean } = {}) {
   const { openSidebar } = useSidebar()
   const { user } = useAuth()
   const theme = useTheme()
+  const { pathname } = useLocation()
+  const isLibraryPage = pathname.startsWith('/library')
 
   // [soojin] 역할별 대시보드 경로 - 사이드바 홈 제거 후 헤더로 이동
   const role = user?.role ?? ''
@@ -51,6 +55,25 @@ export default function Header({ showLogo }: { showLogo?: boolean } = {}) {
               <a href="/main" style={{ lineHeight: 0 }}>
                 <img src="/images/schoolmateLogo.png" alt="SchoolMate" width="160" height="37" />
               </a>
+            )}
+            {isLibraryPage && (
+              <Link to="/library" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="d-flex align-items-center gap-2">
+                  <div style={{
+                    width: 32, height: 32,
+                    background: 'linear-gradient(135deg, #3b82f6, #9333ea)',
+                    borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <BookOpen size={17} color="white" />
+                  </div>
+                  <div style={{ lineHeight: 1.2 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>SchoolLibrary</div>
+                    <div style={{ fontSize: 11, color: '#6b7280' }}>도서관</div>
+                  </div>
+                </div>
+              </Link>
             )}
           </div>
         </div>

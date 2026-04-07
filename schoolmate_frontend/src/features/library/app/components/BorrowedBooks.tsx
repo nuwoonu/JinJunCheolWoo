@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import { ArrowLeft, Calendar, Search, Filter } from "lucide-react";
 import { Link } from "react-router";
-import { ArrowLeft, BookOpen, Calendar, User, Moon, Search, Filter } from "lucide-react";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import {
+  bookCoverUrl,
   extendLoan,
   getMyBorrowed,
   returnLoan,
@@ -72,45 +74,17 @@ export default function BorrowedBooks() {
   };
 
   return (
-    <div className="library-root min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link to="/library">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">대출중인 도서</h1>
-                <p className="text-sm text-gray-500">현재 {books.length}권을 대출 중입니다</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon">
-                <Moon className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="text-sm">
-                  <p className="font-semibold">홍길동</p>
-                  <p className="text-xs text-gray-500">2학년 3반</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* 메인 콘텐츠 */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
+    <div className="library-root">
+      <div className="flex items-center gap-2 mb-4">
+        <Link to="/library">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-600">
+            <ArrowLeft className="w-4 h-4" />
+            도서관 메인
+          </Button>
+        </Link>
+      </div>
+      <main>
         {/* 검색 및 필터 */}
         <Card className="p-6 mb-6">
           <div className="flex gap-4">
@@ -132,49 +106,49 @@ export default function BorrowedBooks() {
         </Card>
 
         {/* 대출 도서 목록 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredBooks.map(book => (
             <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="aspect-[2/3] relative bg-gray-100">
+              <div className="h-44 relative bg-gray-100">
                 <ImageWithFallback
-                  src={book.coverImage ?? ""}
+                  src={bookCoverUrl(book.bookId, book.coverImage)}
                   alt={book.title}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-1 right-1">
                   <Badge
                     variant="secondary"
-                    className={book.status === "OVERDUE" ? "bg-red-500 text-white" : "bg-blue-500 text-white"}
+                    className={`text-xs px-1.5 py-0.5 ${book.status === "OVERDUE" ? "bg-red-500 text-white" : "bg-blue-500 text-white"}`}
                   >
                     {book.status === "OVERDUE" ? "연체" : "대출중"}
                   </Badge>
                 </div>
               </div>
-              <div className="p-4">
-                <h3 className="font-bold text-lg mb-1">{book.title}</h3>
-                <p className="text-sm text-gray-600 mb-3">{book.author}</p>
-                <Badge className="mb-3">{book.category}</Badge>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">대출일</span>
+              <div className="p-3 flex flex-col gap-2">
+                <div>
+                  <h3 className="font-bold text-sm mb-0.5 line-clamp-2">{book.title}</h3>
+                  <p className="text-xs text-gray-600">{book.author}</p>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">대출일</span>
                     <span className="font-semibold">{book.borrowDate}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">반납 예정일</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">반납 예정일</span>
                     <span className="font-semibold">{book.dueDate}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">남은 기간</span>
-                    <span className={`font-bold px-2 py-1 rounded ${getDueDateColor(book.remainingDays)}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">남은 기간</span>
+                    <span className={`font-bold px-1.5 py-0.5 rounded ${getDueDateColor(book.remainingDays)}`}>
                       {book.remainingDays >= 0 ? `${book.remainingDays}일` : `${-book.remainingDays}일 연체`}
                     </span>
                   </div>
                 </div>
-
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                   <Button className="flex-1" size="sm" onClick={() => handleReturn(book.id)}>
-                    반납하기
+                    반납
                   </Button>
                   <Button
                     variant="outline"
@@ -183,12 +157,13 @@ export default function BorrowedBooks() {
                     disabled={book.extensionCount >= 1 || book.status === "OVERDUE"}
                     onClick={() => handleExtend(book.id)}
                   >
-                    연장하기
+                    연장
                   </Button>
                 </div>
               </div>
             </Card>
           ))}
+        </div>
         </div>
 
         {/* 대출 안내 */}
@@ -218,5 +193,6 @@ export default function BorrowedBooks() {
         </Card>
       </main>
     </div>
+    </DashboardLayout>
   );
 }

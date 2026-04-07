@@ -564,6 +564,320 @@
   height: 100% !important;
 }
 
+/* ── 9. flex 정렬 — style.css all:unset 이 @layer utilities 보다 우선순위 높아서 직접 override 필요 ── */
+.library-root .flex-col { flex-direction: column !important; }
+.library-root .flex-row { flex-direction: row !important; }
+.library-root .flex-wrap { flex-wrap: wrap !important; }
+.library-root .flex-1 { flex: 1 1 0% !important; }
+.library-root .flex-none { flex: none !important; }
+.library-root .flex-shrink-0,
+.library-root .shrink-0 { flex-shrink: 0 !important; }
+.library-root .grow { flex-grow: 1 !important; }
+.library-root .items-center { align-items: center !important; }
+.library-root .items-start { align-items: flex-start !important; }
+.library-root .items-end { align-items: flex-end !important; }
+.library-root .justify-center { justify-content: center !important; }
+.library-root .justify-between { justify-content: space-between !important; }
+.library-root .justify-start { justify-content: flex-start !important; }
+.library-root .justify-end { justify-content: flex-end !important; }
+.library-root .justify-self-end { justify-self: end !important; }
+.library-root .self-center { align-self: center !important; }
+.library-root .self-start { align-self: flex-start !important; }
+.library-root .self-end { align-self: flex-end !important; }
+.library-root .min-w-0 { min-width: 0px !important; }
+.library-root .w-fit { width: fit-content !important; }
+
+/* ── 10. grid ── */
+.library-root .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+.library-root .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+.library-root .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.library-root .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+.library-root .auto-rows-min { grid-auto-rows: min-content !important; }
+.library-root .col-start-2 { grid-column-start: 2 !important; }
+.library-root .row-start-1 { grid-row-start: 1 !important; }
+.library-root .row-span-2 { grid-row: span 2 / span 2 !important; }
+
+@media (min-width: 640px) {
+  .library-root .sm\:px-6 { padding-inline: 1.5rem !important; }
+}
+@media (min-width: 768px) {
+  .library-root .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .library-root .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .library-root .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 1024px) {
+  .library-root .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .library-root .lg\:px-8 { padding-inline: 2rem !important; }
+}
+@media (min-width: 1280px) {
+  .library-root .xl\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+}
+
+/* ── 11. 배경색 ── */
+.library-root .bg-transparent { background-color: transparent !important; }
+.library-root .bg-white { background-color: #ffffff !important; }
+.library-root .bg-gray-50 { background-color: #f9fafb !important; }
+.library-root .bg-gray-100 { background-color: #f3f4f6 !important; }
+.library-root .bg-gray-200 { background-color: #e5e7eb !important; }
+.library-root .bg-gray-800 { background-color: #1f2937 !important; }
+.library-root .bg-blue-100 { background-color: #dbeafe !important; }
+.library-root .bg-amber-500 { background-color: #f59e0b !important; }
+.library-root .bg-red-500 { background-color: #ef4444 !important; }
+.library-root .bg-primary { background-color: var(--primary, #030213) !important; }
+.library-root .bg-secondary { background-color: var(--secondary) !important; }
+.library-root .bg-muted { background-color: var(--muted, #ececf0) !important; }
+.library-root .bg-accent { background-color: var(--accent, #e9ebef) !important; }
+.library-root .bg-card { background-color: var(--card, #ffffff) !important; }
+.library-root .bg-background { background-color: var(--background, #ffffff) !important; }
+.library-root .bg-destructive { background-color: var(--destructive) !important; }
+.library-root .bg-input-background { background-color: var(--input-background, #f3f3f5) !important; }
+/* opacity 변형 */
+.library-root .bg-white\/20 { background-color: rgba(255, 255, 255, 0.2) !important; }
+.library-root .bg-black\/50 { background-color: rgba(0, 0, 0, 0.5) !important; }
+.library-root .bg-blue-500\/10 { background-color: rgba(59, 130, 246, 0.1) !important; }
+
+/* ── 12. 그라데이션 ── */
+/* bg-gradient-to-* 는 background-image 를 설정 — all:unset 에 의해 리셋되므로 !important 필요 */
+/* from-* / to-* 는 CSS custom property(--tw-gradient-from/to) 설정 — all:unset 제외 대상이라 정상 작동 */
+.library-root .bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-from, transparent), var(--tw-gradient-to, transparent)) !important;
+}
+.library-root .bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--tw-gradient-from, transparent), var(--tw-gradient-to, transparent)) !important;
+}
+.library-root .bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, var(--tw-gradient-from, transparent), var(--tw-gradient-to, transparent)) !important;
+}
+
+/* ── 13. 텍스트 색상 ── */
+.library-root .text-transparent { color: transparent !important; }
+.library-root .text-white { color: #ffffff !important; }
+.library-root .text-black { color: #000000 !important; }
+.library-root .text-gray-400 { color: #9ca3af !important; }
+.library-root .text-gray-500 { color: #6b7280 !important; }
+.library-root .text-gray-600 { color: #4b5563 !important; }
+.library-root .text-gray-700 { color: #374151 !important; }
+.library-root .text-gray-800 { color: #1f2937 !important; }
+.library-root .text-gray-900 { color: #111827 !important; }
+.library-root .text-blue-100 { color: #dbeafe !important; }
+.library-root .text-blue-600 { color: #2563eb !important; }
+.library-root .text-green-100 { color: #dcfce7 !important; }
+.library-root .text-purple-100 { color: #f3e8ff !important; }
+.library-root .text-orange-100 { color: #ffedd5 !important; }
+.library-root .text-yellow-500 { color: #eab308 !important; }
+.library-root .text-foreground { color: var(--foreground) !important; }
+.library-root .text-card-foreground { color: var(--card-foreground) !important; }
+.library-root .text-muted-foreground { color: var(--muted-foreground) !important; }
+.library-root .text-primary { color: var(--primary) !important; }
+.library-root .text-primary-foreground { color: var(--primary-foreground) !important; }
+.library-root .text-secondary-foreground { color: var(--secondary-foreground) !important; }
+.library-root .text-accent-foreground { color: var(--accent-foreground) !important; }
+.library-root .text-destructive { color: var(--destructive) !important; }
+/* SVG fill */
+.library-root .fill-yellow-500 { fill: #eab308 !important; }
+.library-root .fill-current { fill: currentColor !important; }
+
+/* ── 14. 테두리 ── */
+.library-root .border { border-width: 1px !important; border-style: solid !important; border-color: var(--border, rgba(0,0,0,0.1)) !important; }
+.library-root .border-b { border-bottom-width: 1px !important; border-bottom-style: solid !important; border-bottom-color: var(--border, rgba(0,0,0,0.1)) !important; }
+.library-root .border-t { border-top-width: 1px !important; border-top-style: solid !important; border-top-color: var(--border, rgba(0,0,0,0.1)) !important; }
+.library-root .border-l { border-left-width: 1px !important; border-left-style: solid !important; border-left-color: var(--border, rgba(0,0,0,0.1)) !important; }
+.library-root .border-r { border-right-width: 1px !important; border-right-style: solid !important; border-right-color: var(--border, rgba(0,0,0,0.1)) !important; }
+.library-root .border-2 { border-width: 2px !important; border-style: solid !important; }
+.library-root .border-transparent { border-color: transparent !important; }
+.library-root .border-gray-200 { border-color: #e5e7eb !important; }
+.library-root .border-input { border-color: var(--input, transparent) !important; }
+.library-root .divide-y > * + * { border-top-width: 1px !important; border-top-style: solid !important; }
+.library-root .divide-gray-200 > * + * { border-top-color: #e5e7eb !important; }
+
+/* ── 15. 그림자 ── */
+.library-root .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important; }
+.library-root .shadow { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important; }
+.library-root .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important; }
+.library-root .shadow-xl { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important; }
+.library-root .shadow-none { box-shadow: none !important; }
+
+/* ── 16. max/min 크기 ── */
+.library-root .max-w-xs { max-width: 20rem !important; }
+.library-root .max-w-md { max-width: 28rem !important; }
+.library-root .max-w-7xl { max-width: 80rem !important; }
+.library-root .max-w-full { max-width: 100% !important; }
+.library-root .max-w-none { max-width: none !important; }
+.library-root .min-h-screen { min-height: 100vh !important; }
+.library-root .min-h-full { min-height: 100% !important; }
+
+/* h-7, h-9, h-11 — 기존 누락 */
+.library-root .h-7 { height: 1.75rem !important; }
+.library-root .h-9 { height: 2.25rem !important; }
+.library-root .h-11 { height: 2.75rem !important; }
+/* w-7, w-9, w-11 */
+.library-root .w-7 { width: 1.75rem !important; }
+.library-root .w-9 { width: 2.25rem !important; }
+.library-root .w-11 { width: 2.75rem !important; }
+.library-root .w-32 { width: 8rem !important; }
+.library-root .w-48 { width: 12rem !important; }
+
+/* ── 17. overflow ── */
+.library-root .overflow-hidden { overflow: hidden !important; }
+.library-root .overflow-auto { overflow: auto !important; }
+.library-root .overflow-x-auto { overflow-x: auto !important; }
+.library-root .overflow-y-auto { overflow-y: auto !important; }
+.library-root .overflow-visible { overflow: visible !important; }
+
+/* ── 18. position ── */
+.library-root .relative { position: relative !important; }
+.library-root .absolute { position: absolute !important; }
+.library-root .fixed { position: fixed !important; }
+.library-root .sticky { position: sticky !important; }
+.library-root .static { position: static !important; }
+.library-root .inset-0 { inset: 0px !important; }
+.library-root .top-0 { top: 0px !important; }
+.library-root .right-0 { right: 0px !important; }
+.library-root .bottom-0 { bottom: 0px !important; }
+.library-root .left-0 { left: 0px !important; }
+.library-root .top-1\/2 { top: 50% !important; }
+.library-root .left-3 { left: 0.75rem !important; }
+.library-root .z-10 { z-index: 10 !important; }
+.library-root .z-50 { z-index: 50 !important; }
+
+/* ── 19. 변환 (Transform) ── */
+.library-root .-translate-y-1\/2 { transform: translateY(-50%) !important; }
+.library-root .translate-x-0 { transform: translateX(0) !important; }
+
+/* ── 20. 타이포그래피 — font-weight/leading ── */
+.library-root .font-bold { font-weight: 700 !important; }
+.library-root .font-semibold { font-weight: 600 !important; }
+.library-root .font-medium { font-weight: 500 !important; }
+.library-root .font-normal { font-weight: 400 !important; }
+.library-root .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace !important; }
+.library-root .leading-none { line-height: 1 !important; }
+.library-root .leading-tight { line-height: 1.25 !important; }
+.library-root .leading-normal { line-height: 1.5 !important; }
+.library-root .leading-relaxed { line-height: 1.625 !important; }
+.library-root .tracking-tight { letter-spacing: -0.025em !important; }
+
+/* ── 21. 텍스트 유틸리티 ── */
+.library-root .truncate { overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+.library-root .whitespace-nowrap { white-space: nowrap !important; }
+.library-root .whitespace-pre-wrap { white-space: pre-wrap !important; }
+.library-root .line-clamp-1 { overflow: hidden !important; display: -webkit-box !important; -webkit-box-orient: vertical !important; -webkit-line-clamp: 1 !important; }
+.library-root .line-clamp-2 { overflow: hidden !important; display: -webkit-box !important; -webkit-box-orient: vertical !important; -webkit-line-clamp: 2 !important; }
+.library-root .text-center { text-align: center !important; }
+.library-root .text-left { text-align: left !important; }
+.library-root .text-right { text-align: right !important; }
+.library-root .uppercase { text-transform: uppercase !important; }
+.library-root .capitalize { text-transform: capitalize !important; }
+.library-root .underline { text-decoration-line: underline !important; }
+.library-root .underline-offset-4 { text-underline-offset: 4px !important; }
+
+/* ── 22. 오브젝트 피트 / 비율 ── */
+.library-root .object-cover { object-fit: cover !important; }
+.library-root .object-contain { object-fit: contain !important; }
+.library-root .aspect-\[2\/3\] { aspect-ratio: 2 / 3 !important; }
+.library-root .aspect-square { aspect-ratio: 1 / 1 !important; }
+.library-root .aspect-video { aspect-ratio: 16 / 9 !important; }
+
+/* ── 23. 전환 ── */
+.library-root .transition-shadow {
+  transition-property: box-shadow !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+.library-root .transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+.library-root .transition-all {
+  transition-property: all !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+.library-root .transition-\[color\,box-shadow\] {
+  transition-property: color, box-shadow !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+.library-root .duration-150 { transition-duration: 150ms !important; }
+.library-root .duration-300 { transition-duration: 300ms !important; }
+
+/* ── 24. 호버 상태 ── */
+.library-root .hover\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important; }
+.library-root .hover\:bg-gray-50:hover { background-color: #f9fafb !important; }
+.library-root .hover\:bg-gray-100:hover { background-color: #f3f4f6 !important; }
+.library-root .hover\:bg-accent:hover { background-color: var(--accent) !important; }
+.library-root .hover\:bg-primary\/90:hover { background-color: color-mix(in srgb, var(--primary) 90%, transparent) !important; }
+.library-root .hover\:bg-secondary\/80:hover { background-color: color-mix(in srgb, var(--secondary) 80%, transparent) !important; }
+.library-root .hover\:bg-destructive\/90:hover { background-color: color-mix(in srgb, var(--destructive) 90%, transparent) !important; }
+.library-root .hover\:bg-amber-600:hover { background-color: #d97706 !important; }
+.library-root .hover\:text-accent-foreground:hover { color: var(--accent-foreground) !important; }
+.library-root .hover\:underline:hover { text-decoration-line: underline !important; }
+
+/* ── 25. disabled / focus-visible 상태 ── */
+.library-root .disabled\:opacity-50:disabled { opacity: 0.5 !important; }
+.library-root .disabled\:pointer-events-none:disabled { pointer-events: none !important; }
+.library-root .disabled\:cursor-not-allowed:disabled { cursor: not-allowed !important; }
+
+/* ── 26. 기타 ── */
+.library-root .cursor-pointer { cursor: pointer !important; }
+.library-root .cursor-default { cursor: default !important; }
+.library-root .cursor-not-allowed { cursor: not-allowed !important; }
+.library-root .pointer-events-none { pointer-events: none !important; }
+.library-root .opacity-50 { opacity: 0.5 !important; }
+.library-root .opacity-0 { opacity: 0 !important; }
+.library-root .opacity-100 { opacity: 1 !important; }
+.library-root .outline-none { outline: none !important; }
+.library-root .outline-1 { outline-width: 1px !important; }
+.library-root .select-none { user-select: none !important; }
+.library-root .resize-none { resize: none !important; }
+.library-root .resize { resize: both !important; }
+/* spacing 보완 */
+.library-root .py-0\.5 { padding-block: 0.125rem !important; }
+.library-root .py-1\.5 { padding-block: 0.375rem !important; }
+.library-root .px-1\.5 { padding-inline: 0.375rem !important; }
+.library-root .gap-1\.5 { gap: 0.375rem !important; }
+.library-root .gap-2\.5 { gap: 0.625rem !important; }
+.library-root .p-\[3px\] { padding: 3px !important; }
+/* 소수점 마진 */
+.library-root .mb-0\.5 { margin-bottom: 0.125rem !important; }
+/* space-y-1 */
+.library-root .space-y-1 > * + * { margin-top: 0.25rem !important; }
+/* 대출 카드 세로 레이아웃용 */
+.library-root .h-44 { height: 11rem !important; }
+/* 대출 카드 수평 레이아웃용 */
+.library-root .w-28 { width: 7rem !important; }
+.library-root .min-h-40 { min-height: 10rem !important; }
+.library-root .min-h-\[160px\] { min-height: 160px !important; }
+.library-root .top-1 { top: 0.25rem !important; }
+.library-root .left-1 { left: 0.25rem !important; }
+.library-root .top-2 { top: 0.5rem !important; }
+.library-root .right-2 { right: 0.5rem !important; }
+/* max-w-lg */
+.library-root .max-w-lg { max-width: 32rem !important; }
+.library-root .max-w-2xl { max-width: 42rem !important; }
+/* vertical align */
+.library-root .align-middle { vertical-align: middle !important; }
+/* Tailwind container */
+.library-root .container { width: 100% !important; margin-inline: auto !important; padding-inline: 1rem !important; }
+
+/* ── 27. Tabs 컴포넌트 — data-[state=active]:bg-card 는 @layer utilities 로 all:unset 에 짐 */
+.library-root [data-slot="tabs-list"] {
+  background-color: #f0f0f4 !important;
+  display: inline-flex !important;
+  padding: 3px !important;
+}
+.library-root [data-slot="tabs-trigger"] {
+  background-color: transparent !important;
+  color: var(--muted-foreground, #717182) !important;
+}
+.library-root [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06) !important;
+  color: var(--foreground, #030213) !important;
+  font-weight: 600 !important;
+}
+
+
 /* ── 8. 도서관 전용 base styles ── */
 .library-root {
   background-color: var(--background);
@@ -609,3 +923,23 @@
   font-weight: var(--font-weight-normal);
   line-height: 1.5;
 }
+
+/* ── 카테고리 버튼 배경·텍스트 색상 ── */
+.library-root .bg-purple-100 { background-color: #f3e8ff !important; }
+.library-root .bg-yellow-100 { background-color: #fef9c3 !important; }
+.library-root .bg-green-100  { background-color: #dcfce7 !important; }
+.library-root .bg-red-100    { background-color: #fee2e2 !important; }
+.library-root .bg-pink-100   { background-color: #fce7f3 !important; }
+.library-root .bg-indigo-100 { background-color: #e0e7ff !important; }
+.library-root .bg-cyan-100   { background-color: #cffafe !important; }
+.library-root .bg-orange-100 { background-color: #ffedd5 !important; }
+
+.library-root .text-purple-700 { color: #7e22ce !important; }
+.library-root .text-yellow-700 { color: #a16207 !important; }
+.library-root .text-blue-700   { color: #1d4ed8 !important; }
+.library-root .text-green-700  { color: #15803d !important; }
+.library-root .text-red-700    { color: #b91c1c !important; }
+.library-root .text-pink-700   { color: #be185d !important; }
+.library-root .text-indigo-700 { color: #4338ca !important; }
+.library-root .text-cyan-700   { color: #0e7490 !important; }
+.library-root .text-orange-700 { color: #c2410c !important; }

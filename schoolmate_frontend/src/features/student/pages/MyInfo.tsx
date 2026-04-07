@@ -109,7 +109,6 @@ const TABS = [
   { key: "behavior", icon: "ri-book-open-line", label: "세부능력 및 특기사항" },
   { key: "cocurricular", icon: "ri-lightbulb-line", label: "창의적 체험 활동" },
   { key: "dormitory", icon: "ri-building-4-line", label: "기숙사" },
-  { key: "library", icon: "ri-book-line", label: "Library" },
 ];
 
 // ───────────────────────────────────────────────
@@ -1398,27 +1397,28 @@ export default function StudentMyInfo() {
                   )}
                 </SectionCard>
               </div>
-
               {/* 학적 사항 (col-md-6) */}
               <div className="col-md-6">
                 <SectionCard title="학적 사항">
                   <div className="p-20">
                     <div className="row gy-4">
-                      <div className="col-sm-6">
+                      {/* <div className="col-sm-6">
                         <h6 className="text-md mb-2 fw-medium">학적 상태</h6>
-                        <span className={`badge px-10 py-4 radius-4 fw-medium text-xs ${STATUS_COLOR[student.status ?? ""] ?? "bg-neutral-100 text-secondary-light"}`}>
+                        <span
+                          className={`badge px-10 py-4 radius-4 fw-medium text-xs ${STATUS_COLOR[student.status ?? ""] ?? "bg-neutral-100 text-secondary-light"}`}
+                        >
                           {STATUS_LABEL[student.status ?? ""] ?? "-"}
                         </span>
-                      </div>
-                      <div className="col-sm-6">
+                      </div> */}
+                      {/* <div className="col-sm-6">
                         <h6 className="text-md mb-2 fw-medium">입학일</h6>
-                        <span className="text-secondary-light">{student.admissionDate ? student.admissionDate.slice(0, 10) : "-"}</span>
-                      </div>
+                        <span className="text-secondary-light">
+                          {student.admissionDate ? student.admissionDate.slice(0, 10) : "-"}
+                        </span>
+                      </div> */}
                       <div className="col-sm-12">
                         <h6 className="text-md mb-2 fw-medium">이전 학교명</h6>
                         <span className="text-secondary-light">{student.previousSchoolName ?? "-"}</span>
-                      </div>
-                      <div className="col-sm-12">
                         <h6 className="text-md mb-2 fw-medium">재학 중인 학교명</h6>
                         <span className="text-secondary-light">{student.schoolName ?? "-"}</span>
                       </div>
@@ -1426,36 +1426,6 @@ export default function StudentMyInfo() {
                   </div>
                 </SectionCard>
               </div>
-
-              {/* 진로희망 (col-12) */}
-              <div className="col-12">
-                <SectionCard title="진로희망">
-                  <CareerAspirationSection studentInfoId={student.id} />
-                </SectionCard>
-              </div>
-
-              {/* 계좌 정보 (col-md-6) */}
-              <div className="col-md-6">
-                <SectionCard title="계좌 정보">
-                  <div className="p-20">
-                    <div className="row gy-4">
-                      <div className="col-sm-4">
-                        <h6 className="text-md mb-2 fw-medium">은행명</h6>
-                        <span className="text-secondary-light">-</span>
-                      </div>
-                      <div className="col-sm-4">
-                        <h6 className="text-md mb-2 fw-medium">지점</h6>
-                        <span className="text-secondary-light">-</span>
-                      </div>
-                      <div className="col-sm-4">
-                        <h6 className="text-md mb-2 fw-medium">계좌번호</h6>
-                        <span className="text-secondary-light">-</span>
-                      </div>
-                    </div>
-                  </div>
-                </SectionCard>
-              </div>
-
               {/* 의료 기록 (col-md-6) */}
               <div className="col-md-6">
                 <SectionCard title="의료 기록">
@@ -1477,6 +1447,33 @@ export default function StudentMyInfo() {
                   </div>
                 </SectionCard>
               </div>
+              {/* 진로희망 (col-12) */}
+              <div className="col-12">
+                <SectionCard title="진로희망">
+                  <CareerAspirationSection studentInfoId={student.id} />
+                </SectionCard>
+              </div>
+              {/* 계좌 정보 (col-md-6) */}
+              {/* <div className="col-md-6">
+                <SectionCard title="계좌 정보">
+                  <div className="p-20">
+                    <div className="row gy-4">
+                      <div className="col-sm-4">
+                        <h6 className="text-md mb-2 fw-medium">은행명</h6>
+                        <span className="text-secondary-light">-</span>
+                      </div>
+                      <div className="col-sm-4">
+                        <h6 className="text-md mb-2 fw-medium">지점</h6>
+                        <span className="text-secondary-light">-</span>
+                      </div>
+                      <div className="col-sm-4">
+                        <h6 className="text-md mb-2 fw-medium">계좌번호</h6>
+                        <span className="text-secondary-light">-</span>
+                      </div>
+                    </div>
+                  </div>
+                </SectionCard>
+              </div> */}
             </div>
           )}
 
@@ -1544,14 +1541,6 @@ export default function StudentMyInfo() {
 
           {/* 봉사활동 탭 */}
           {activeTab === "volunteer" && <VolunteerActivityTab studentInfoId={student.id} />}
-
-          {/* 준비 중 탭 */}
-          {["library"].includes(activeTab) && (
-            <div className="shadow-1 radius-12 bg-base p-40 text-center text-secondary-light">
-              <i className="ri-tools-line text-3xl mb-12 d-block" />
-              준비 중입니다.
-            </div>
-          )}
         </div>
       </div>
     </DashboardLayout>
