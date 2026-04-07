@@ -22,13 +22,13 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     private final JPAQueryFactory query;
 
     @Override
-    public Page<Board> findByType(BoardType type, String keyword, Pageable pageable) {
+    public Page<Board> findByType(BoardType type, String keyword, String searchType, Pageable pageable) {
         QBoard board = QBoard.board;
 
         BooleanExpression where = board.boardType.eq(type)
                 .and(board.isDeleted.isFalse())
                 .and(schoolFilter(board))
-                .and(keywordFilter(board, keyword));
+                .and(keywordFilterByType(board, keyword, searchType != null ? searchType.toUpperCase() : null));
 
         JPAQuery<Board> contentQuery = query.selectFrom(board).where(where);
 

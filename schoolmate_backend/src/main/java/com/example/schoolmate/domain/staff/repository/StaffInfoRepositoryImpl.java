@@ -84,7 +84,11 @@ public class StaffInfoRepositoryImpl implements StaffInfoRepositoryCustom {
             case "jobTitle" -> info.jobTitle.contains(keyword);
             case "code" -> info.code.contains(keyword);
             case "extNum" -> info.extensionNumber.contains(keyword);
-            default -> null;
+            default -> user.name.contains(keyword)
+                    .or(user.email.contains(keyword))
+                    .or(info.department.contains(keyword))
+                    .or(info.jobTitle.contains(keyword))
+                    .or(info.code.contains(keyword));
         };
     }
 
