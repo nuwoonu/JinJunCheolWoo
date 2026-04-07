@@ -57,6 +57,7 @@ import SchoolNotice from "@/features/board/pages/SchoolNotice";
 import SchoolNoticeDetail from "@/features/board/pages/SchoolNoticeDetail";
 import ParentNotice from "@/features/board/pages/ParentNotice";
 import ParentNoticeDetail from "@/features/board/pages/ParentNoticeDetail";
+import ParentSchoolNotice from "@/features/board/pages/ParentSchoolNotice";
 import ClassDiary from "@/features/board/pages/ClassDiary";
 import ClassDiaryWrite from "@/features/board/pages/ClassDiaryWrite";
 import ClassDiaryDetail from "@/features/board/pages/ClassDiaryDetail";
@@ -498,6 +499,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["STUDENT", "TEACHER", "ADMIN", "PARENT"]}>
             <SchoolNoticeDetail />
+          </PrivateRoute>
+        }
+      />
+      {/* [parkjoon] 학부모용 학교 공지 — 자녀 탭으로 학교별 필터링 */}
+      <Route
+        path="/parent/school-notice"
+        element={
+          <PrivateRoute allowedRoles={["PARENT"]}>
+            <ParentSchoolNotice />
           </PrivateRoute>
         }
       />

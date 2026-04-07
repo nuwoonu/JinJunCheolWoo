@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import { ArrowLeft, BookOpen, AlertCircle, Search, Clock } from "lucide-react";
 import { Link } from "react-router";
-import { ArrowLeft, BookOpen, AlertCircle, User, Moon, Search, Clock } from "lucide-react";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import {
+  bookCoverUrl,
   getMyOverdue,
   returnLoan,
   type BookLoanResponse,
@@ -65,45 +67,17 @@ export default function OverdueBooks() {
   };
 
   return (
-    <div className="library-root min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link to="/library">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">연체 도서</h1>
-                <p className="text-sm text-gray-500">현재 {books.length}권이 연체되었습니다</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon">
-                <Moon className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="text-sm">
-                  <p className="font-semibold">홍길동</p>
-                  <p className="text-xs text-gray-500">2학년 3반</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* 메인 콘텐츠 */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
+    <div className="library-root">
+      <div className="flex items-center gap-2 mb-4">
+        <Link to="/library">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-600">
+            <ArrowLeft className="w-4 h-4" />
+            도서관 메인
+          </Button>
+        </Link>
+      </div>
+      <main>
         {/* 경고 카드 */}
         <Card className="p-6 mb-6 bg-red-50 border-red-200">
           <div className="flex items-start gap-4">
@@ -150,7 +124,7 @@ export default function OverdueBooks() {
               <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow border-red-200">
                 <div className="aspect-[2/3] relative bg-gray-100">
                   <ImageWithFallback
-                    src={book.coverImage ?? ""}
+                    src={bookCoverUrl(book.bookId, book.coverImage)}
                     alt={book.title}
                     className="w-full h-full object-cover"
                   />
@@ -239,5 +213,6 @@ export default function OverdueBooks() {
         </Card>
       </main>
     </div>
+    </DashboardLayout>
   );
 }

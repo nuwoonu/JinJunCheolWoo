@@ -1,8 +1,5 @@
 import { createBrowserRouter } from "react-router";
 import Root from "./components/Root";
-import BuildingList from "./components/BuildingList";
-import FloorList from "./components/FloorList";
-import RoomView from "./components/RoomView";
 import Library from "./components/Library";
 import BorrowedBooks from "./components/BorrowedBooks";
 import OverdueBooks from "./components/OverdueBooks";
@@ -33,18 +30,6 @@ export const router = createBrowserRouter([
       {
         path: "library/stats",
         element: <ReadingStats />,
-      },
-      {
-        path: "dormitory",
-        element: <BuildingList />,
-      },
-      {
-        path: "building/:buildingId",
-        element: <FloorList />,
-      },
-      {
-        path: "building/:buildingId/room/:roomNumber",
-        element: <RoomView />,
       },
     ],
   },
