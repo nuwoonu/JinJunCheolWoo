@@ -64,7 +64,7 @@ export default function AbilityClasses() {
             className="w-56-px h-56-px rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
             style={{ background: "rgba(255,255,255,0.2)" }}
           >
-            <iconify-icon icon="mdi:text-box-edit-outline" className="text-white text-3xl" />
+            <i className="ri-edit-line text-white text-3xl"></i>
           </div>
           <div>
             <h5 className="fw-bold text-white mb-4">학생 세부능력 및 특기사항(분반)</h5>
@@ -79,7 +79,7 @@ export default function AbilityClasses() {
         <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
       ) : error ? (
         <div className="card radius-12 p-40 text-center">
-          <iconify-icon icon="mdi:alert-circle-outline" className="text-4xl text-danger-600 d-block mb-12" />
+          <i className="ri-error-warning-line text-4xl text-danger-600 d-block mb-12"></i>
           <p className="text-secondary-light">{error}</p>
         </div>
       ) : (
@@ -110,7 +110,7 @@ export default function AbilityClasses() {
                     className="radius-12 d-flex align-items-center justify-content-center"
                     style={{ background: color, height: 80, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}
                   >
-                    <iconify-icon icon="mdi:google-classroom" className="text-white" style={{ fontSize: 40 }} />
+                    <i className="ri-graduation-cap-line text-white" style={{ fontSize: 40 }}></i>
                   </div>
                   <div className="p-20">
                     <h5 className="fw-bold mb-4" style={{ color }}>
@@ -125,7 +125,7 @@ export default function AbilityClasses() {
                       </p>
                     )}
                     <div className="d-flex align-items-center gap-6 fw-medium text-sm" style={{ color }}>
-                      <iconify-icon icon="mdi:text-box-edit-outline" />
+                      <i className="ri-edit-line"></i>
                       세부능력 입력
                     </div>
                   </div>

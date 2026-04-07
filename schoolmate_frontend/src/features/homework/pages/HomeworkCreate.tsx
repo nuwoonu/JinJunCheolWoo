@@ -222,7 +222,7 @@ export default function HomeworkCreate() {
           >
             {/* [soojin] 아이콘 중앙 정렬 */}
             <div style={{ fontSize: 32, color: "#9ca3af", marginBottom: 8, lineHeight: 1, display: "flex", justifyContent: "center" }}>
-              <iconify-icon icon="mdi:tray-arrow-up" />
+              <i className="ri-upload-line"></i>
             </div>
             <p style={{ color: "#374151", fontWeight: 500, fontSize: 14, margin: "0 0 4px" }}>
               파일을 드래그하거나 클릭하여 업로드
@@ -238,7 +238,7 @@ export default function HomeworkCreate() {
           {file && (
             <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 13, color: "#6b7280" }}>
-                <iconify-icon icon="mdi:attachment" style={{ marginRight: 4 }} />
+                <i className="ri-attachment-line" style={{ marginRight: 4 }}></i>
                 {file.name} ({(file.size / 1024).toFixed(1)} KB)
               </span>
               <button
@@ -297,7 +297,7 @@ export default function HomeworkCreate() {
             onClick={handleSubmit}
             disabled={saving}
           >
-            <iconify-icon icon="mdi:clipboard-text-outline" />
+            <i className="ri-survey-line"></i>
             {saving ? "저장 중..." : "과제 출제"}
           </button>
         </div>

@@ -300,7 +300,7 @@ export default function TimetableApp() {
                                   color: c.text, fontSize: 11,
                                 }}
                               >
-                                <i className="ri-pencil-line" />
+                                <i className="ri-edit-line" />
                               </button>
                               <button
                                 onClick={() => handleDelete(s.id)}

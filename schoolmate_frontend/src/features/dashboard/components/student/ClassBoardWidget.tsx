@@ -53,12 +53,12 @@ export default function ClassBoardWidget({ classroomId, moreHref, apiEndpoint, d
       <div className="d-flex justify-content-between align-items-center dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-article-line text-primary-600" style={{ fontSize: 18 }} />
-          <h6 className="fw-bold mb-0 text-sm">학급 게시판</h6>
+          <h6 className="fw-bold mb-0 text-lg">학급 게시판</h6>
         </div>
         {moreHref && (
           <a
             href={moreHref}
-            className="text-primary-600 text-sm"
+            className="text-primary-600 text-md"
             style={{ lineHeight: 1 }}
             onClick={(e) => { e.preventDefault(); navigate(moreHref) }}
           >
@@ -69,11 +69,11 @@ export default function ClassBoardWidget({ classroomId, moreHref, apiEndpoint, d
 
       <div className="p-16">
       {loading ? (
-        <p className="text-secondary-light text-sm text-center py-20 mb-0">불러오는 중...</p>
+        <p className="text-secondary-light text-md text-center py-20 mb-0">불러오는 중...</p>
       ) : classroomId == null ? (
         <div className="text-center py-20">
           <i className="ri-information-line text-secondary-light mb-8" style={{ fontSize: 32 }} />
-          <p className="text-secondary-light text-sm mb-0">학급 배정 후 게시판을 이용할 수 있습니다.</p>
+          <p className="text-secondary-light text-md mb-0">학급 배정 후 게시판을 이용할 수 있습니다.</p>
         </div>
       ) : (
         posts.length > 0 ? (
@@ -89,18 +89,18 @@ export default function ClassBoardWidget({ classroomId, moreHref, apiEndpoint, d
             >
               <div className="d-flex align-items-center gap-12">
                 <i className="ri-file-text-line text-secondary-light" />
-                <span className="text-sm" style={{ color: '#374151' }}>{post.title}</span>
-                <span className="text-xs text-secondary-light">{post.writerName}</span>
-                {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
+                <span className="text-md" style={{ color: '#374151' }}>{post.title}</span>
+                {/* [soojin] 새글 표시 - 제목 오른쪽 고정 */}
                 {isNew(post.createDate) && (
-                  <span style={{ color: '#25A194', fontSize: 11, fontWeight: 700 }}>새글</span>
+                  <span style={{ color: '#25A194', fontSize: 13, fontWeight: 700 }}>새글</span>
                 )}
+                <span className="text-sm text-secondary-light">{post.writerName}</span>
               </div>
-              <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{post.createDate?.slice(0, 10)}</span>
+              <span className="text-sm text-secondary-light flex-shrink-0 ms-8">{post.createDate?.slice(0, 10)}</span>
             </div>
           ))
         ) : (
-          <div className="text-center text-secondary-light text-sm py-20">
+          <div className="text-center text-secondary-light text-md py-20">
             등록된 게시글이 없습니다.
           </div>
         )

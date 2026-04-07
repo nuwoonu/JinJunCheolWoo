@@ -382,7 +382,7 @@ export default function StaffDetail() {
 
             {activeTab === "noti" && (
               <div style={{ padding: '48px 24px', textAlign: 'center', color: '#9ca3af' }}>
-                <i className="bi bi-bell" style={{ fontSize: 48, display: 'block', marginBottom: 12 }} />
+                <i className="ri-notification-3-line" style={{ fontSize: 48, display: 'block', marginBottom: 12 }} />
                 <p>알림 이력 기능은 준비 중입니다.</p>
               </div>
             )}

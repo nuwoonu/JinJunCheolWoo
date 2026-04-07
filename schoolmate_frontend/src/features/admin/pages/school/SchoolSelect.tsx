@@ -163,7 +163,7 @@ export default function SchoolSelect() {
                 ))}
               </select>
               <i
-                className="bi bi-chevron-down"
+                className="ri-arrow-down-s-line"
                 style={{
                   position: "absolute",
                   right: "8px",
@@ -175,7 +175,7 @@ export default function SchoolSelect() {
             </div>
             <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
               <i
-                className="bi bi-search"
+                className="ri-search-line"
                 style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }}
               />
               <input
@@ -429,7 +429,7 @@ export default function SchoolSelect() {
               color: "#9ca3af",
             }}
           >
-            <i className="bi bi-search" style={{ fontSize: 40, display: "block", marginBottom: 12, opacity: 0.3 }}></i>
+            <i className="ri-search-line" style={{ fontSize: 40, display: "block", marginBottom: 12, opacity: 0.3 }}></i>
             <p style={{ margin: 0, fontSize: 14 }}>학교명을 입력하고 검색하세요.</p>
             <p style={{ margin: "6px 0 0", fontSize: 13, color: "#6b7280" }}>
               학교 DB가 비어있다면 우측의 <strong style={{ color: "#374151" }}>학교 DB 동기화 (NEIS)</strong> 버튼을

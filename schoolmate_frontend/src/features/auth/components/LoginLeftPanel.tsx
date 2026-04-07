@@ -161,7 +161,7 @@ function TeacherSlide() {
           </div>
         </MockCard>
 
-        <MockCard icon="bi bi-grid" title="바로가기">
+        <MockCard icon="ri-layout-grid-line" title="바로가기">
           <div className="lp-teacher-shortcut-grid">
             {[
               { icon: "ri-team-line", label: "학급 관리", tone: "class" },
@@ -180,7 +180,7 @@ function TeacherSlide() {
         </MockCard>
       </div>
 
-      <MockCard icon="bi bi-check2-square" title="오늘 할 일">
+      <MockCard icon="ri-checkbox-circle-line" title="오늘 할 일">
         {[
           { text: "출결 마감", badge: "일반", c: "#475569", bg: "#e2e8f0" },
           { text: "수업 자료 업로드", badge: "중요", c: "#0f766e", bg: "#ccfbf7" },

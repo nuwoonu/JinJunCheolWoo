@@ -54,7 +54,7 @@ export default function ExamSchedule() {
         <ul className="d-flex align-items-center gap-2">
           <li className="fw-medium">
             <Link to="/student/dashboard" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />
+              <i className="ri-home-4-line icon text-lg"></i>
               홈
             </Link>
           </li>
@@ -132,7 +132,7 @@ export default function ExamSchedule() {
             </h6>
             {[
               { icon: 'ri-book-3-line', color: 'text-primary-600', bg: 'bg-primary-50', text: '교과서 복습' },
-              { icon: 'ri-pencil-line', color: 'text-success-600', bg: 'bg-success-50', text: '문제 풀기' },
+              { icon: 'ri-edit-line', color: 'text-success-600', bg: 'bg-success-50', text: '문제 풀기' },
               { icon: 'ri-time-line', color: 'text-warning-main', bg: 'bg-warning-50', text: '시간 관리' },
               { icon: 'ri-sleep-line', color: 'text-info-600', bg: 'bg-info-50', text: '충분한 수면' },
               { icon: 'ri-heart-line', color: 'text-danger-600', bg: 'bg-danger-50', text: '건강 관리' },

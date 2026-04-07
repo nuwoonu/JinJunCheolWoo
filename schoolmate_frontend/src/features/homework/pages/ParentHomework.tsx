@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "@/shared/api/authApi";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
-import ParentBackButton from "@/shared/components/ParentBackButton";
 
 // [woo] 학부모 - 자녀 과제/퀴즈 조회 페이지
 // - GET /dashboard/parent 로 자녀 목록 로드
@@ -43,16 +42,52 @@ interface QuizItem {
   myBestScore: number | null;
 }
 
-const HW_STATUS: Record<string, { text: string; cls: string }> = {
-  OPEN: { text: "진행중", cls: "bg-success-100 text-success-600" },
-  CLOSED: { text: "마감", cls: "bg-danger-100 text-danger-600" },
-  GRADED: { text: "채점완료", cls: "bg-primary-100 text-primary-600" },
+// [soojin] 뱃지 인라인 스타일 - HomeworkList 동일 패턴
+const badgeBase: React.CSSProperties = {
+  padding: "3px 8px",
+  borderRadius: 4,
+  fontSize: 11,
+  fontWeight: 600,
+  whiteSpace: "nowrap",
 };
 
-const SUB_STATUS: Record<string, { text: string; cls: string }> = {
-  SUBMITTED: { text: "제출", cls: "bg-success-100 text-success-600" },
-  LATE: { text: "지각제출", cls: "bg-warning-100 text-warning-600" },
-  GRADED: { text: "채점완료", cls: "bg-primary-100 text-primary-600" },
+const HW_BADGE: Record<string, React.CSSProperties> = {
+  OPEN: { background: "rgba(22,163,74,0.1)", color: "#16a34a" },
+  CLOSED: { background: "rgba(239,68,68,0.1)", color: "#dc2626" },
+  GRADED: { background: "rgba(14,165,233,0.1)", color: "#0284c7" },
+};
+const HW_LABEL: Record<string, string> = { OPEN: "진행중", CLOSED: "마감", GRADED: "채점완료" };
+
+const QZ_BADGE: Record<string, React.CSSProperties> = {
+  OPEN: { background: "rgba(22,163,74,0.1)", color: "#16a34a" },
+  CLOSED: { background: "rgba(239,68,68,0.1)", color: "#dc2626" },
+};
+const QZ_LABEL: Record<string, string> = { OPEN: "진행중", CLOSED: "마감" };
+
+const SUB_STATUS: Record<string, { text: string; color: string; bg: string }> = {
+  SUBMITTED: { text: "제출", color: "#16a34a", bg: "rgba(22,163,74,0.1)" },
+  LATE: { text: "지각제출", color: "#ca8a04", bg: "rgba(234,179,8,0.1)" },
+  GRADED: { text: "채점완료", color: "#0284c7", bg: "rgba(14,165,233,0.1)" },
+};
+
+// [soojin] th/td 공통 스타일 - HomeworkList 동일 패턴
+const thSt: React.CSSProperties = {
+  padding: "10px 16px",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+const tdSt: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 13,
+  color: "#374151",
+  borderBottom: "1px solid #f3f4f6",
+  verticalAlign: "middle",
+  whiteSpace: "nowrap",
 };
 
 export default function ParentHomework() {
@@ -99,132 +134,185 @@ export default function ParentHomework() {
   }, [selectedId]);
 
   const selectedChild = children.find((c) => c.id === selectedId);
+  const totalCount = tab === "homework" ? homeworks.length : quizzes.length;
 
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="text-center py-40 text-secondary-light">불러오는 중...</div>
+        <div style={{ textAlign: "center", paddingTop: 160, color: "#9ca3af" }}>불러오는 중...</div>
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout>
-      {/* 브레드크럼 */}
-      <div className="breadcrumb d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h6 className="fw-semibold mb-0">과제 / 퀴즈</h6>
-          <p className="text-neutral-600 mt-4 mb-0">자녀 과제·퀴즈 현황</p>
+      <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 4.5rem - 48px)" }}>
+        {/* [soojin] 제목 - HomeworkList 동일 패턴 */}
+        <div style={{ marginBottom: 12, flexShrink: 0 }}>
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: 20,
+              lineHeight: 1.3,
+              color: "#111827",
+              marginBottom: 4,
+              display: "flex",
+              alignItems: "baseline",
+              gap: 8,
+            }}
+          >
+            {tab === "homework" ? "과제 목록" : "퀴즈 목록"}
+            {!dataLoading && (
+              <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalCount}건</span>
+            )}
+          </div>
+          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+            {selectedChild ? `${selectedChild.name}의 과제·퀴즈 현황` : "자녀 과제·퀴즈 현황"}
+          </p>
         </div>
-        <ParentBackButton />
-      </div>
 
-      {/* 자녀 선택 (자녀가 여러 명일 때) */}
-      {children.length > 1 && (
-        <div className="d-flex align-items-center gap-8 mb-24">
-          <span className="text-sm fw-semibold me-4">자녀 선택:</span>
-          {children.map((c) => (
+        {/* [soojin] 탭 - HomeworkList 동일 스타일 */}
+        <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb", marginBottom: 12, flexShrink: 0 }}>
+          {(["homework", "quiz"] as const).map((t) => (
             <button
-              key={c.id}
+              key={t}
               type="button"
-              className={`btn btn-sm radius-8 ${selectedId === c.id ? "btn-primary-600" : "btn-outline-neutral-300"}`}
-              onClick={() => setSelectedId(c.id)}
+              style={{
+                padding: "8px 20px",
+                fontSize: 14,
+                fontWeight: tab === t ? 600 : 400,
+                color: tab === t ? "#25A194" : "#6b7280",
+                background: "none",
+                border: "none",
+                borderBottom: tab === t ? "2px solid #25A194" : "2px solid transparent",
+                cursor: "pointer",
+                marginBottom: -1,
+              }}
+              onClick={() => setTab(t)}
             >
-              {c.name}
-              {c.grade && c.classNum && (
-                <span className="ms-4 text-xs opacity-75">
-                  ({c.grade}학년 {c.classNum}반)
+              <i
+                className={t === "homework" ? "ri-draft-line" : "ri-question-answer-line"}
+                style={{ marginRight: 4 }}
+              />
+              {t === "homework" ? "과제" : "퀴즈"}
+              {!dataLoading && (
+                <span
+                  style={{
+                    marginLeft: 6,
+                    padding: "1px 6px",
+                    background: "#f3f4f6",
+                    color: "#6b7280",
+                    borderRadius: 10,
+                    fontSize: 11,
+                    fontWeight: 500,
+                  }}
+                >
+                  {t === "homework" ? homeworks.length : quizzes.length}
                 </span>
               )}
             </button>
           ))}
         </div>
-      )}
 
-      {/* 탭 */}
-      <ul className="nav bordered-tab mb-24">
-        <li className="nav-item">
-          <button
-            type="button"
-            className={`nav-link${tab === "homework" ? " active" : ""}`}
-            onClick={() => setTab("homework")}
-          >
-            <i className="ri-draft-line me-6" />
-            과제
-            {!dataLoading && <span className="ms-6 badge bg-neutral-100 text-neutral-600">{homeworks.length}</span>}
-          </button>
-        </li>
-        <li className="nav-item">
-          <button type="button" className={`nav-link${tab === "quiz" ? " active" : ""}`} onClick={() => setTab("quiz")}>
-            <i className="ri-question-line me-6" />
-            퀴즈
-            {!dataLoading && <span className="ms-6 badge bg-neutral-100 text-neutral-600">{quizzes.length}</span>}
-          </button>
-        </li>
-      </ul>
-
-      {dataLoading ? (
-        <div className="text-center py-32 text-secondary-light">불러오는 중...</div>
-      ) : tab === "homework" ? (
-        /* ========== 과제 탭 ========== */
-        <div className="card radius-12">
-          <div className="card-header py-16 px-24 border-bottom">
-            <h6 className="mb-0">{selectedChild ? `${selectedChild.name}의 과제 목록` : "과제 목록"}</h6>
-          </div>
-          {homeworks.length === 0 ? (
-            <div className="card-body text-center py-32 text-secondary-light">과제가 없습니다.</div>
-          ) : (
-            <div className="card-body p-0">
-              <div className="table-responsive">
-                <table className="table bordered-table mb-0">
-                  <thead>
+        {/* [soojin] 테이블 컨테이너 - HomeworkList 동일 패턴 */}
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 12,
+            border: "1px solid #e5e7eb",
+            overflow: "hidden",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+          }}
+        >
+          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
+            {dataLoading ? (
+              <div style={{ textAlign: "center", padding: "48px 16px", color: "#9ca3af" }}>불러오는 중...</div>
+            ) : tab === "homework" ? (
+              /* ===== 과제 테이블 ===== */
+              <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                <colgroup>
+                  <col style={{ width: 55 }} />
+                  <col />
+                  <col style={{ width: 130 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 90 }} />
+                  <col style={{ width: 80 }} />
+                  <col style={{ width: 110 }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th style={thSt}>번호</th>
+                    <th style={thSt}>제목</th>
+                    <th style={thSt}>학급</th>
+                    <th style={thSt}>출제 교사</th>
+                    <th style={thSt}>마감일</th>
+                    <th style={thSt}>상태</th>
+                    <th style={thSt}>제출</th>
+                    <th style={thSt}>점수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {homeworks.length === 0 ? (
                     <tr>
-                      <th>제목</th>
-                      <th style={{ width: 120 }}>학급</th>
-                      <th style={{ width: 100 }}>교사</th>
-                      <th style={{ width: 110 }}>마감일</th>
-                      <th style={{ width: 80 }}>상태</th>
-                      <th style={{ width: 80 }}>제출</th>
-                      <th style={{ width: 100 }}>점수</th>
+                      <td colSpan={8} style={{ ...tdSt, textAlign: "center", padding: "48px 16px", color: "#9ca3af" }}>
+                        과제가 없습니다.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {homeworks.map((hw) => {
-                      const hwSt = HW_STATUS[hw.status] ?? HW_STATUS.OPEN;
-                      const subSt = hw.submissionStatus ? SUB_STATUS[hw.submissionStatus] : null;
+                  ) : (
+                    homeworks.map((hw, i) => {
                       const isOverdue = new Date(hw.dueDate) < new Date();
+                      const subSt = hw.submissionStatus ? SUB_STATUS[hw.submissionStatus] : null;
                       return (
                         <tr key={hw.id}>
-                          <td className="fw-medium">{hw.title}</td>
-                          <td className="text-secondary-light">{hw.classroomName}</td>
-                          <td className="text-secondary-light">{hw.teacherName}</td>
-                          <td className={isOverdue && !hw.submitted ? "text-danger-600" : "text-secondary-light"}>
+                          <td style={tdSt}>{homeworks.length - i}</td>
+                          <td style={{ ...tdSt, overflow: "hidden", textOverflow: "ellipsis" }}>
+                            <span style={{ fontWeight: 600 }}>{hw.title}</span>
+                          </td>
+                          <td style={{ ...tdSt, color: "#6b7280" }}>{hw.classroomName}</td>
+                          <td style={{ ...tdSt, color: "#6b7280" }}>{hw.teacherName}</td>
+                          <td style={{ ...tdSt, color: isOverdue && !hw.submitted ? "#dc2626" : "#6b7280" }}>
                             {hw.dueDate?.slice(0, 10)}
                           </td>
-                          <td>
-                            <span className={`badge ${hwSt.cls}`}>{hwSt.text}</span>
+                          <td style={tdSt}>
+                            <span style={{ ...badgeBase, ...(HW_BADGE[hw.status] ?? HW_BADGE.OPEN) }}>
+                              {HW_LABEL[hw.status] ?? "진행중"}
+                            </span>
                           </td>
-                          <td>
+                          <td style={tdSt}>
                             {hw.submitted == null ? (
-                              <span className="text-secondary-light">-</span>
+                              <span style={{ color: "#9ca3af" }}>-</span>
                             ) : hw.submitted ? (
-                              <span className={`badge ${subSt?.cls ?? "bg-success-100 text-success-600"}`}>
+                              <span
+                                style={{
+                                  ...badgeBase,
+                                  background: subSt?.bg ?? "rgba(22,163,74,0.1)",
+                                  color: subSt?.color ?? "#16a34a",
+                                }}
+                              >
                                 {subSt?.text ?? "제출"}
                               </span>
                             ) : (
-                              <span className="badge bg-neutral-100 text-neutral-600">미제출</span>
+                              <span style={{ ...badgeBase, background: "rgba(234,179,8,0.1)", color: "#ca8a04" }}>
+                                미제출
+                              </span>
                             )}
                           </td>
-                          <td>
+                          <td style={tdSt}>
                             {hw.score != null ? (
                               <div>
-                                <span className="fw-bold text-primary-600">
+                                <span style={{ fontWeight: 700, color: "#25A194" }}>
                                   {hw.score}/{hw.maxScore ?? 100}
                                 </span>
                                 {hw.feedback && (
                                   <div
-                                    className="text-xs text-secondary-light mt-2"
                                     style={{
+                                      fontSize: 11,
+                                      color: "#9ca3af",
+                                      marginTop: 2,
                                       maxWidth: 120,
                                       overflow: "hidden",
                                       textOverflow: "ellipsis",
@@ -237,88 +325,94 @@ export default function ParentHomework() {
                                 )}
                               </div>
                             ) : (
-                              <span className="text-secondary-light">-</span>
+                              <span style={{ color: "#9ca3af" }}>-</span>
                             )}
                           </td>
                         </tr>
                       );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* ========== 퀴즈 탭 ========== */
-        <div className="card radius-12">
-          <div className="card-header py-16 px-24 border-bottom">
-            <h6 className="mb-0">{selectedChild ? `${selectedChild.name}의 퀴즈 목록` : "퀴즈 목록"}</h6>
-          </div>
-          {quizzes.length === 0 ? (
-            <div className="card-body text-center py-32 text-secondary-light">퀴즈가 없습니다.</div>
-          ) : (
-            <div className="card-body p-0">
-              <div className="table-responsive">
-                <table className="table bordered-table mb-0">
-                  <thead>
+                    })
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              /* ===== 퀴즈 테이블 ===== */
+              <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                <colgroup>
+                  <col style={{ width: 55 }} />
+                  <col />
+                  <col style={{ width: 130 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 110 }} />
+                  <col style={{ width: 90 }} />
+                  <col style={{ width: 100 }} />
+                  <col style={{ width: 110 }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th style={thSt}>번호</th>
+                    <th style={thSt}>제목</th>
+                    <th style={thSt}>학급</th>
+                    <th style={thSt}>출제 교사</th>
+                    <th style={thSt}>마감일</th>
+                    <th style={thSt}>상태</th>
+                    <th style={thSt}>응시</th>
+                    <th style={thSt}>최고점수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quizzes.length === 0 ? (
                     <tr>
-                      <th>제목</th>
-                      <th style={{ width: 120 }}>학급</th>
-                      <th style={{ width: 100 }}>교사</th>
-                      <th style={{ width: 110 }}>마감일</th>
-                      <th style={{ width: 80 }}>상태</th>
-                      <th style={{ width: 100 }}>응시</th>
-                      <th style={{ width: 100 }}>최고점수</th>
+                      <td colSpan={8} style={{ ...tdSt, textAlign: "center", padding: "48px 16px", color: "#9ca3af" }}>
+                        퀴즈가 없습니다.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {quizzes.map((qz) => {
-                      const isOpen = qz.status === "OPEN";
-                      return (
-                        <tr key={qz.id}>
-                          <td className="fw-medium">{qz.title}</td>
-                          <td className="text-secondary-light">{qz.classroomName}</td>
-                          <td className="text-secondary-light">{qz.teacherName}</td>
-                          <td className="text-secondary-light">{qz.dueDate?.slice(0, 10)}</td>
-                          <td>
-                            <span
-                              className={`badge ${isOpen ? "bg-success-100 text-success-600" : "bg-danger-100 text-danger-600"}`}
-                            >
-                              {isOpen ? "진행중" : "마감"}
+                  ) : (
+                    quizzes.map((qz, i) => (
+                      <tr key={qz.id}>
+                        <td style={tdSt}>{quizzes.length - i}</td>
+                        <td style={{ ...tdSt, overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <span style={{ fontWeight: 600 }}>{qz.title}</span>
+                        </td>
+                        <td style={{ ...tdSt, color: "#6b7280" }}>{qz.classroomName}</td>
+                        <td style={{ ...tdSt, color: "#6b7280" }}>{qz.teacherName}</td>
+                        <td style={{ ...tdSt, color: "#6b7280" }}>{qz.dueDate?.slice(0, 10)}</td>
+                        <td style={tdSt}>
+                          <span style={{ ...badgeBase, ...(QZ_BADGE[qz.status] ?? QZ_BADGE.OPEN) }}>
+                            {QZ_LABEL[qz.status] ?? "진행중"}
+                          </span>
+                        </td>
+                        <td style={{ ...tdSt, color: "#6b7280" }}>
+                          {qz.myAttemptCount != null ? (
+                            <span>
+                              {qz.myAttemptCount}회
+                              {qz.maxAttempts != null && (
+                                <span style={{ fontSize: 11, marginLeft: 4, color: "#9ca3af" }}>
+                                  / {qz.maxAttempts}회
+                                </span>
+                              )}
                             </span>
-                          </td>
-                          <td className="text-secondary-light">
-                            {qz.myAttemptCount != null ? (
-                              <span>
-                                {qz.myAttemptCount}회
-                                {qz.maxAttempts && (
-                                  <span className="text-xs ms-2 opacity-75">/ {qz.maxAttempts}회</span>
-                                )}
-                              </span>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                          <td>
-                            {qz.myBestScore != null ? (
-                              <span className="fw-bold text-primary-600">
-                                {qz.myBestScore}/{qz.totalPoints}
-                              </span>
-                            ) : (
-                              <span className="text-secondary-light">미응시</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                          ) : (
+                            <span style={{ color: "#9ca3af" }}>-</span>
+                          )}
+                        </td>
+                        <td style={tdSt}>
+                          {qz.myBestScore != null ? (
+                            <span style={{ fontWeight: 700, color: "#25A194" }}>
+                              {qz.myBestScore}/{qz.totalPoints}
+                            </span>
+                          ) : (
+                            <span style={{ color: "#9ca3af" }}>미응시</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </DashboardLayout>
   );
 }

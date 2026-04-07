@@ -57,6 +57,7 @@ import SchoolNotice from "@/features/board/pages/SchoolNotice";
 import SchoolNoticeDetail from "@/features/board/pages/SchoolNoticeDetail";
 import ParentNotice from "@/features/board/pages/ParentNotice";
 import ParentNoticeDetail from "@/features/board/pages/ParentNoticeDetail";
+import ParentSchoolNotice from "@/features/board/pages/ParentSchoolNotice";
 import ClassDiary from "@/features/board/pages/ClassDiary";
 import ClassDiaryWrite from "@/features/board/pages/ClassDiaryWrite";
 import ClassDiaryDetail from "@/features/board/pages/ClassDiaryDetail";
@@ -501,6 +502,15 @@ function App() {
           </PrivateRoute>
         }
       />
+      {/* [parkjoon] 학부모용 학교 공지 — 자녀 탭으로 학교별 필터링 */}
+      <Route
+        path="/parent/school-notice"
+        element={
+          <PrivateRoute allowedRoles={["PARENT"]}>
+            <ParentSchoolNotice />
+          </PrivateRoute>
+        }
+      />
       {/* [woo] 학부모 공지 */}
       <Route
         path="/board/parent-notice"
@@ -518,11 +528,11 @@ function App() {
           </PrivateRoute>
         }
       />
-      {/* [woo] 학부모 학급 알림장 */}
+      {/* [woo] 학부모 학급 알림장 / [soojin] STUDENT 추가 - 학생 사이드바 학급 알림장 메뉴 연결 */}
       <Route
         path="/parent/class/notice"
         element={
-          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+          <PrivateRoute allowedRoles={["PARENT", "STUDENT", "ADMIN"]}>
             <ClassDiary />
           </PrivateRoute>
         }
@@ -530,7 +540,7 @@ function App() {
       <Route
         path="/parent/class/notice/:id"
         element={
-          <PrivateRoute allowedRoles={["PARENT", "ADMIN"]}>
+          <PrivateRoute allowedRoles={["PARENT", "STUDENT", "ADMIN"]}>
             <ClassDiaryDetail />
           </PrivateRoute>
         }

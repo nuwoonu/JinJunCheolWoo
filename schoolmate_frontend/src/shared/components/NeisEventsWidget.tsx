@@ -49,7 +49,7 @@ export default function NeisEventsWidget() {
       <div className="d-flex align-items-center justify-content-between dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-calendar-event-line text-primary-600" style={{ fontSize: 18 }} />
-          <h6 className="fw-bold mb-0 text-sm">학교 일정</h6>
+          <h6 className="fw-bold mb-0 text-lg">학교 일정</h6>
         </div>
         <button
           className="btn btn-sm btn-outline-primary rounded-pill px-12 py-4"

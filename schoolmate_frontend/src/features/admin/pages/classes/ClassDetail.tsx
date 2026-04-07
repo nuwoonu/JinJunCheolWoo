@@ -240,14 +240,14 @@ export default function ClassDetail() {
                   onClick={() => setShowEdit(true)}
                   style={{ padding: "7px 12px", background: "#fff", border: "1px solid #25A194", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#25A194", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
-                  <i className="bi bi-pencil" /> 학급 정보 수정
+                  <i className="ri-edit-line" /> 학급 정보 수정
                 </button>
                 <button
                   type="button"
                   onClick={handleDelete}
                   style={{ padding: "7px 12px", background: "#fff", border: "1px solid #ef4444", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
-                  <i className="bi bi-trash" /> 학급 삭제
+                  <i className="ri-delete-bin-line" /> 학급 삭제
                 </button>
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function ClassDetail() {
                       onClick={downloadRoster}
                       style={{ padding: "5px 12px", background: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4 }}
                     >
-                      <i className="bi bi-download" /> 명렬표
+                      <i className="ri-download-line" /> 명렬표
                     </button>
                   </div>
 

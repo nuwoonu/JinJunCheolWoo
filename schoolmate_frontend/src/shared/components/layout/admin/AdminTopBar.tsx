@@ -200,10 +200,7 @@ export default function AdminTopBar({
               aria-label="Dark & Light Mode Button"
               style={{ border: "none", transition: smoothTransition }}
             >
-              <iconify-icon
-                icon={theme.isDark ? "ri:sun-line" : "ri:moon-line"}
-                className="text-primary-light text-xl"
-              />
+              <i className={`${theme.isDark ? "ri-sun-line" : "ri-moon-line"} text-primary-light text-xl`}></i>
             </button>
             <NotificationDropdown />
             <ProfileDropdown />

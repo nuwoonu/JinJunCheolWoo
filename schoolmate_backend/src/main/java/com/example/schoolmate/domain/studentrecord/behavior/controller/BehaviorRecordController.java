@@ -27,7 +27,7 @@ public class BehaviorRecordController {
 
     // 학생별 전체 조회
     // GET /api/behavior-records/student/{studentId}
-    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.customUserDTO.studentInfoId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or #studentId == authentication.principal.customUserDTO.studentInfoId")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<BehaviorRecordDTO>> getByStudent(@PathVariable Long studentId) {
         return ResponseEntity.ok(behaviorRecordService.getByStudentId(studentId));

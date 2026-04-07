@@ -69,12 +69,12 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
         <div className="d-flex justify-content-between align-items-center dash-card-header">
           <div className="d-flex align-items-center gap-8">
             <i className="ri-image-2-line text-primary-600" style={{ fontSize: 18 }} />
-            <h6 className="fw-bold mb-0 text-sm">학급 앨범</h6>
+            <h6 className="fw-bold mb-0 text-lg">학급 앨범</h6>
           </div>
           {moreHref && (
             <button
               type="button"
-              className="btn p-0 text-primary-600 text-sm"
+              className="btn p-0 text-primary-600 text-md"
               style={{ lineHeight: 1, background: 'none', border: 'none' }}
               onClick={() => navigate(moreHref)}
             >
@@ -84,9 +84,9 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
         </div>
         <div className="p-12">
           {loading ? (
-            <div className="text-center text-secondary-light text-sm py-20">불러오는 중...</div>
+            <div className="text-center text-secondary-light text-md py-20">불러오는 중...</div>
           ) : groups.length === 0 ? (
-            <div className="text-center text-secondary-light text-sm py-20">등록된 사진이 없습니다.</div>
+            <div className="text-center text-secondary-light text-md py-20">등록된 사진이 없습니다.</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
               {groups.map(group => {
@@ -116,7 +116,7 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
                       <div style={{
                         position: 'absolute', bottom: 4, right: 4,
                         background: 'rgba(0,0,0,0.5)', color: '#fff',
-                        fontSize: 10, borderRadius: 10, padding: '1px 6px',
+                        fontSize: 12, borderRadius: 10, padding: '1px 6px',
                       }}>
                         +{group.photos.length - 1}
                       </div>
@@ -126,7 +126,7 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
                       <div style={{
                         position: 'absolute', bottom: 0, left: 0, right: 0,
                         background: 'rgba(0,0,0,0.5)',
-                        color: '#fff', fontSize: 10, padding: '12px 6px 4px',
+                        color: '#fff', fontSize: 12, padding: '12px 6px 4px',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         opacity: 0, transition: 'opacity 0.2s',
                         pointerEvents: 'none',
@@ -146,7 +146,7 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
                           }}
                           style={{
                             background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer',
-                            color: '#fff', fontSize: 14, borderRadius: '50%',
+                            color: '#fff', fontSize: 16, borderRadius: '50%',
                             width: 22, height: 22,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}
@@ -172,7 +172,7 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
                                 onClick={() => handleEdit()}
                                 style={{
                                   display: 'block', width: '100%', background: 'none', border: 'none',
-                                  padding: '5px 10px', fontSize: 12, cursor: 'pointer',
+                                  padding: '5px 10px', fontSize: 14, cursor: 'pointer',
                                   textAlign: 'left', color: '#374151', borderRadius: 4,
                                 }}
                                 onMouseEnter={e => (e.currentTarget.style.background = '#f3f4f6')}
@@ -184,7 +184,7 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
                                 onClick={() => handleDelete(group)}
                                 style={{
                                   display: 'block', width: '100%', background: 'none', border: 'none',
-                                  padding: '5px 10px', fontSize: 12, cursor: 'pointer',
+                                  padding: '5px 10px', fontSize: 14, cursor: 'pointer',
                                   textAlign: 'left', color: '#dc2626', borderRadius: 4,
                                 }}
                                 onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')}
@@ -222,7 +222,7 @@ export default function ClassAlbumWidget({ classroomId, moreHref }: Props) {
               style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: 12, objectFit: 'contain' }}
             />
             {lightbox.caption && (
-              <p style={{ color: '#fff', marginTop: 12, fontSize: 14 }}>{lightbox.caption}</p>
+              <p style={{ color: '#fff', marginTop: 12, fontSize: 16 }}>{lightbox.caption}</p>
             )}
           </div>
           <button

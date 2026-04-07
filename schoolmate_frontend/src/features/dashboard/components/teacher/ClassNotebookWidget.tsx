@@ -11,6 +11,7 @@ interface NotebookEntry {
   id: number
   date: string
   content: string
+  createDate: string
 }
 
 interface Props {
@@ -18,6 +19,11 @@ interface Props {
   studentUserUid?: number | null // [woo] 학부모용: 자녀 uid로 조회
   moreHref?: string
   canWrite?: boolean // [woo 03-27] 작성 버튼 표시 여부
+}
+
+function isNew(dateStr: string) {
+  if (!dateStr) return false
+  return Date.now() - new Date(dateStr).getTime() < 24 * 60 * 60 * 1000
 }
 
 export default function ClassNotebookWidget({ classroomId, studentUserUid, moreHref, canWrite = false }: Props) {
@@ -48,6 +54,7 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
           id: b.id,
           date: b.createDate ? b.createDate.slice(0, 10) : '',
           content: b.title,
+          createDate: b.createDate ?? '',
         }))
         setEntries(items)
       })
@@ -100,13 +107,13 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
         <div className="d-flex justify-content-between align-items-center dash-card-header">
           <div className="d-flex align-items-center gap-8">
             <i className="ri-book-open-line text-primary-600" style={{ fontSize: 18 }} />
-            <h6 className="fw-bold mb-0 text-sm">우리 반 알림장</h6>
+            <h6 className="fw-bold mb-0 text-lg">우리 반 알림장</h6>
           </div>
           <div className="d-flex align-items-center gap-8">
             {moreHref && (
               <a
                 href={moreHref}
-                className="text-primary-600 text-sm"
+                className="text-primary-600 text-md"
                 style={{ lineHeight: 1 }}
                 onClick={(e) => { e.preventDefault(); navigate(moreHref) }}
               >
@@ -116,7 +123,9 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
             {/* [woo 03-27] 작성 버튼 — 클릭 시 모달 */}
             {canWrite && (
               <button
-                style={{ background: '#25A194', color: 'white', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                type="button"
+                className="text-primary-600 text-md"
+                style={{ lineHeight: 1, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                 onClick={() => setShowWriteModal(true)}
               >
                 작성
@@ -128,11 +137,11 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
         {/* [woo] 목록 */}
         <div className="p-16">
           {loading ? (
-            <div className="text-center text-secondary-light text-sm py-24">
+            <div className="text-center text-secondary-light text-md py-24">
               불러오는 중...
             </div>
           ) : entries.length === 0 ? (
-            <div className="text-center text-secondary-light text-sm py-24">
+            <div className="text-center text-secondary-light text-md py-24">
               등록된 알림장이 없습니다.
             </div>
           ) : (
@@ -146,9 +155,12 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
                 >
                   <div className="d-flex align-items-center gap-12">
                     <i className="ri-notification-3-line text-secondary-light" />
-                    <span className="text-sm" style={{ color: '#374151' }}>{entry.content}</span>
+                    <span className="text-md" style={{ color: '#374151' }}>{entry.content}</span>
+                    {isNew(entry.createDate) && (
+                      <span style={{ color: '#25A194', fontSize: 13, fontWeight: 700 }}>새글</span>
+                    )}
                   </div>
-                  <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{entry.date}</span>
+                  <span className="text-sm text-secondary-light flex-shrink-0 ms-8">{entry.date}</span>
                 </div>
               ))}
             </div>
@@ -170,7 +182,7 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
               </div>
               <div className="modal-body p-24">
                 <div className="mb-16">
-                  <label className="form-label fw-semibold text-sm">제목 *</label>
+                  <label className="form-label fw-semibold text-md">제목 *</label>
                   <input
                     type="text"
                     className="form-control"
@@ -180,7 +192,7 @@ export default function ClassNotebookWidget({ classroomId, studentUserUid, moreH
                   />
                 </div>
                 <div>
-                  <label className="form-label fw-semibold text-sm">내용 *</label>
+                  <label className="form-label fw-semibold text-md">내용 *</label>
                   <div style={{ minHeight: 280 }}>
                     <ReactQuill
                       theme="snow"

@@ -137,133 +137,305 @@ export default function ClassDiary() {
 
   return (
     <DashboardLayout>
-      {/* [woo] 상단 헤더 */}
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <div>
-          <h5 className="fw-bold mb-4">우리반 알림장</h5>
-          <p className="text-secondary-light text-sm mb-0">
-            {isTeacher && myClass
-              ? `${myClass.className} 학생 및 학부모에게 전달되는 알림장입니다.`
-              : "담임선생님이 전달하는 우리반 소식입니다."}
-          </p>
-        </div>
-      </div>
-
-      {/* [woo] 교사 담임 학급 안내 배너 */}
-      {isTeacher && myClass && (
-        <div className="card border-0 radius-8 mb-20" style={{ background: "#f0faf8" }}>
-          <div className="card-body py-12 px-20 d-flex align-items-center gap-10">
-            <i className="ri-information-line text-success-600" />
-            <span className="text-sm text-dark">
-              <strong>{myClass.className}</strong> 학생 및 학부모에게 자동 전달됩니다.
-            </span>
+      <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 4.5rem - 48px)" }}>
+        {/* 제목 + 전체 건수 + 작성 버튼 */}
+        <div
+          style={{
+            marginBottom: 16,
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <h5
+              style={{
+                fontWeight: 700,
+                color: "#111827",
+                marginBottom: 4,
+                display: "flex",
+                alignItems: "baseline",
+                gap: 8,
+              }}
+            >
+              우리반 알림장
+              <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalElements}건</span>
+            </h5>
+            <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+              {isTeacher && myClass
+                ? `${myClass.className} 학생 및 학부모에게 전달되는 알림장입니다.`
+                : "담임선생님이 전달하는 우리반 소식입니다."}
+            </p>
           </div>
-        </div>
-      )}
-
-      {/* [woo] 게시판 테이블 */}
-      <div>
-        <div className="mb-12 d-flex flex-column align-items-end">
-          <span
-            style={{
-              display: "inline-block",
-              background: "#3b82f6",
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 600,
-              padding: "5px 14px",
-              borderRadius: 4,
-              marginTop: 8,
-            }}
-          >
-            총 {totalElements}건
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-48 text-secondary-light">불러오는 중...</div>
-        ) : boards.length === 0 ? (
-          <div className="text-center py-48">
-            <p className="text-secondary-light mb-0">등록된 알림장이 없습니다.</p>
-          </div>
-        ) : (
-          <table className="table table-hover mb-0 board-table">
-            <thead>
-              <tr>
-                <th className="text-center" style={{ width: 70 }}>번호</th>
-                <th>제목</th>
-                <th className="text-center" style={{ width: 90 }}>작성자</th>
-                <th className="text-center" style={{ width: 110 }}>등록일</th>
-                <th className="text-center" style={{ width: 70 }}>조회수</th>
-              </tr>
-            </thead>
-            <tbody>
-              {boards.map((board, idx) => {
-                const rowNum = totalElements - page * 10 - idx;
-                const isNew = Date.now() - new Date(board.createDate).getTime() < 24 * 60 * 60 * 1000;
-                return (
-                  <tr
-                    key={board.id}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => navigate(`${baseUrl}/${board.id}`)}
-                  >
-                    <td className="text-center td-num">{rowNum}</td>
-                    <td className="td-title">
-                      <div className="d-flex align-items-center gap-4">
-                        <span className="td-title-text">{board.title}</span>
-                        {/* [soojin] 새글 표시 - 가정통신문 위젯과 동일한 스타일로 통일 */}
-                        {isNew && (
-                          <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700 }}>새글</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="text-center td-writer">{board.writerName}</td>
-                    <td className="text-center td-date">{formatDate(board.createDate)}</td>
-                    <td className="text-center td-views">{board.viewCount}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-
-        {/* [woo] 페이지네이션 */}
-        {totalPages > 1 && (
-          <div className="d-flex justify-content-center py-16">
-            <nav>
-              <ul className="pagination pagination-sm mb-0">
-                <li className={`page-item${page === 0 ? " disabled" : ""}`}>
-                  <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(page - 1)}>
-                    <i className="ri-arrow-left-s-line" />
-                  </button>
-                </li>
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <li key={i} className={`page-item${i === page ? " active" : ""}`}>
-                    <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(i)}>
-                      {i + 1}
-                    </button>
-                  </li>
-                ))}
-                <li className={`page-item${page >= totalPages - 1 ? " disabled" : ""}`}>
-                  <button className="page-link d-flex align-items-center justify-content-center" style={{ minWidth: 32, minHeight: 32 }} onClick={() => fetchBoards(page + 1)}>
-                    <i className="ri-arrow-right-s-line" />
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        )}
-
-        {/* [woo 03-27] 작성 버튼 — 하단 우측, 클릭 시 모달 */}
-        {(isAdmin || (isTeacher && myClass)) && (
-          <div className="d-flex justify-content-end mt-16">
+          {(isAdmin || (isTeacher && myClass)) && (
             <button
               type="button"
-              className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
+              style={{
+                padding: "5px 12px",
+                background: "#25A194",
+                border: "none",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#fff",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
               onClick={() => setShowWriteModal(true)}
             >
               <i className="ri-edit-line" />
               작성
+            </button>
+          )}
+        </div>
+
+        {/* [woo] 교사 담임 학급 안내 배너 */}
+        {isTeacher && myClass && (
+          <div
+            style={{
+              background: "#f0faf8",
+              border: "1px solid #c8ede8",
+              borderRadius: 8,
+              padding: "10px 16px",
+              marginBottom: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexShrink: 0,
+            }}
+          >
+            <i className="ri-information-line" style={{ color: "#25a194" }} />
+            <span style={{ fontSize: 13, color: "#1a2e2c" }}>
+              <strong>{myClass.className}</strong> 학생 및 학부모에게 자동 전달됩니다.
+            </span>
+          </div>
+        )}
+
+        {/* 테이블 카드 */}
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 12,
+            border: "1px solid #e5e7eb",
+            overflow: "hidden",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+          }}
+        >
+          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto", minHeight: 0 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+              <colgroup>
+                <col style={{ width: "6%" }} />
+                <col style={{ width: "52%" }} />
+                <col style={{ width: "18%" }} />
+                <col style={{ width: "16%" }} />
+                <col style={{ width: "8%" }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  {["번호", "제목", "작성자", "날짜", "조회"].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#6b7280",
+                        background: "#f9fafb",
+                        borderBottom: "1px solid #e5e7eb",
+                        textAlign: "left",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      style={{ padding: "48px 16px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}
+                    >
+                      불러오는 중...
+                    </td>
+                  </tr>
+                ) : boards.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      style={{ padding: "48px 16px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}
+                    >
+                      등록된 알림장이 없습니다.
+                    </td>
+                  </tr>
+                ) : (
+                  boards.map((board, idx) => {
+                    const rowNum = totalElements - page * 10 - idx;
+                    const isNew = Date.now() - new Date(board.createDate).getTime() < 24 * 60 * 60 * 1000;
+                    return (
+                      <tr
+                        key={board.id}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => navigate(`${baseUrl}/${board.id}`)}
+                      >
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            fontSize: 13,
+                            color: "#6b7280",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {rowNum}
+                        </td>
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            fontSize: 13,
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: "#1d4ed8",
+                              fontWeight: 500,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            {board.title}
+                            {isNew && (
+                              <span style={{ color: "#25a194", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                                새글
+                              </span>
+                            )}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            fontSize: 13,
+                            color: "#6b7280",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {board.writerName}
+                        </td>
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            fontSize: 13,
+                            color: "#6b7280",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {formatDate(board.createDate)}
+                        </td>
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            fontSize: 13,
+                            color: "#6b7280",
+                            borderBottom: "1px solid #f3f4f6",
+                            verticalAlign: "middle",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {board.viewCount}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 페이지네이션: 카드 밖, 우측 정렬, 28×28 정사각형 버튼 */}
+        {totalPages >= 1 && (
+          <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 0", gap: 4, flexShrink: 0 }}>
+            <button
+              onClick={() => fetchBoards(page - 1)}
+              disabled={page === 0}
+              style={{
+                width: 28,
+                height: 28,
+                padding: 0,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "1px solid #e5e7eb",
+                borderRadius: 6,
+                background: "#fff",
+                cursor: page === 0 ? "not-allowed" : "pointer",
+                color: page === 0 ? "#d1d5db" : "#374151",
+                fontSize: 12,
+              }}
+            >
+              ‹
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => fetchBoards(i)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  padding: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: `1px solid ${i === page ? "#25A194" : "#e5e7eb"}`,
+                  borderRadius: 6,
+                  background: i === page ? "#25A194" : "#fff",
+                  color: i === page ? "#fff" : "#374151",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: i === page ? 600 : 400,
+                }}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => fetchBoards(page + 1)}
+              disabled={page >= totalPages - 1}
+              style={{
+                width: 28,
+                height: 28,
+                padding: 0,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "1px solid #e5e7eb",
+                borderRadius: 6,
+                background: "#fff",
+                cursor: page >= totalPages - 1 ? "not-allowed" : "pointer",
+                color: page >= totalPages - 1 ? "#d1d5db" : "#374151",
+                fontSize: 12,
+              }}
+            >
+              ›
             </button>
           </div>
         )}
@@ -287,6 +459,17 @@ export default function ClassDiary() {
                 <button type="button" className="btn-close" onClick={() => setShowWriteModal(false)} />
               </div>
               <div className="modal-body p-24">
+                {isTeacher && myClass && (
+                  <div
+                    className="radius-8 mb-16 py-10 px-16 d-flex align-items-center gap-8"
+                    style={{ background: "#f0faf8" }}
+                  >
+                    <i className="ri-information-line text-success-600" />
+                    <span className="text-sm text-dark">
+                      <strong>{myClass.className}</strong> 학생 및 학부모에게 자동 전달됩니다.
+                    </span>
+                  </div>
+                )}
                 <div className="mb-16">
                   <label className="form-label fw-semibold text-sm">제목 *</label>
                   <input
@@ -322,16 +505,11 @@ export default function ClassDiary() {
                 </button>
                 <button
                   type="button"
-                  className="btn btn-primary-600 radius-8 d-flex align-items-center gap-6"
+                  className="btn btn-primary-600 radius-8"
                   onClick={handleWrite}
                   disabled={saving}
                 >
-                  {saving ? "저장 중..." : (
-                    <>
-                      <i className="ri-check-line" />
-                      등록
-                    </>
-                  )}
+                  {saving ? "저장 중..." : "등록"}
                 </button>
               </div>
             </div>

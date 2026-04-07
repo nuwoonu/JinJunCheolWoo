@@ -558,7 +558,7 @@ export default function ProfileModal({ isOpen, onClose }: Props) {
                     }}
                   >
                     <i
-                      className="ri-pencil-line"
+                      className="ri-edit-line"
                       style={{ fontSize: 12, color: "#25A194" }}
                     />
                   </button>

@@ -373,13 +373,13 @@ export default function QuizCreate() {
                         onClick={() => removeOption(qIdx, oIdx)}
                         title="선택지 삭제"
                       >
-                        <iconify-icon icon="mdi:close" />
+                        <i className="ri-close-line"></i>
                       </button>
                     )}
                   </div>
                 ))}
                 <button className="btn btn-sm btn-outline-primary-600 radius-8 mt-8" onClick={() => addOption(qIdx)}>
-                  <iconify-icon icon="mdi:plus" className="me-4" />
+                  <i className="ri-add-line me-4"></i>
                   선택지 추가
                 </button>
                 <p className="text-xs text-secondary-light mt-8 mb-0">라디오 버튼을 클릭하여 정답을 선택하세요.</p>
@@ -407,11 +407,11 @@ export default function QuizCreate() {
       {/* 문제 추가 버튼 */}
       <div className="d-flex gap-8 mb-24">
         <button className="btn btn-outline-primary-600 radius-8" onClick={() => addQuestion("MULTIPLE_CHOICE")}>
-          <iconify-icon icon="mdi:plus" className="me-4" />
+          <i className="ri-add-line me-4"></i>
           객관식 문제 추가
         </button>
         <button className="btn btn-outline-warning-600 radius-8" onClick={() => addQuestion("SHORT_ANSWER")}>
-          <iconify-icon icon="mdi:plus" className="me-4" />
+          <i className="ri-add-line me-4"></i>
           단답형 문제 추가
         </button>
       </div>

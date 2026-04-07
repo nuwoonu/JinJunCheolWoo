@@ -13,19 +13,19 @@ export default function SelectRole() {
     {
       value: 'STUDENT',
       label: '학생',
-      icon: 'fa-solid fa-graduation-cap',
+      icon: 'ri-graduation-cap-line',
       desc: '수업 시간표, 성적, 출결 현황을 확인할 수 있습니다.',
     },
     {
       value: 'TEACHER',
       label: '교사',
-      icon: 'fa-solid fa-chalkboard-user',
+      icon: 'ri-presentation-line',
       desc: '학급 관리, 성적 입력 및 수정, 출결 및 게시판 관리를 할 수 있습니다.',
     },
     {
       value: 'PARENT',
       label: '학부모',
-      icon: 'fa-solid fa-people-roof',
+      icon: 'ri-user-heart-line',
       desc: '자녀의 학교 생활, 성적, 알림을 확인할 수 있습니다.',
     },
   ]

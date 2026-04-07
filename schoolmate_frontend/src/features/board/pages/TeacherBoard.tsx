@@ -332,11 +332,11 @@ export default function TeacherBoard() {
                           </div>
                         )}
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                          {/* [soojin] 새글 표시 - 가정통신문 위젯과 동일한 스타일로 통일 */}
+                          <span style={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>{board.title}</span>
+                          {/* [soojin] 새글 표시 - 제목 오른쪽 고정 */}
                           {isNew && (
                             <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>새글</span>
                           )}
-                          <span style={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>{board.title}</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#9ca3af" }}>
                           <span style={{ display: "flex", alignItems: "center", gap: 2 }}><i className="ri-user-line" style={{ fontSize: 12 }} />{board.writerName}</span>

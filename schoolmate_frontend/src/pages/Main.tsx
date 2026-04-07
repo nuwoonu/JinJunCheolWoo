@@ -324,11 +324,11 @@ export default function Main() {
             </div>
             <div className="d-flex gap-3 align-items-center">
               <a href="/login" className="btn-login-nav">
-                <i className="fa-solid fa-arrow-right-to-bracket me-1" />
+                <i className="ri-login-box-line me-1" />
                 로그인
               </a>
               <a href="/register" className="btn-register-nav">
-                <i className="fa-solid fa-user-plus me-1" />
+                <i className="ri-user-add-line me-1" />
                 회원가입
               </a>
             </div>

@@ -130,7 +130,7 @@ export default function ChangeLogs() {
           <form style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }} onSubmit={search}>
             {/* 키워드 검색 input */}
             <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-              <i className="bi bi-search" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
+              <i className="ri-search-line" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
               <input
                 style={{ ...inputStyle, padding: "5px 8px 5px 28px", minWidth: 150 }}
                 placeholder="작업자, 대상 검색"

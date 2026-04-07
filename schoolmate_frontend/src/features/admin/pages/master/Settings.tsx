@@ -218,7 +218,7 @@ export default function AcademicTermManagement() {
       <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', marginTop: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid #e5e7eb', background: '#fffbeb', borderRadius: '12px 12px 0 0' }}>
           <h6 style={{ fontWeight: 600, margin: 0, fontSize: 15, color: '#d97706' }}>
-            <i className="bi bi-exclamation-triangle-fill me-2" />학생 진급 처리
+            <i className="ri-error-warning-fill me-2" />학생 진급 처리
           </h6>
         </div>
         <div style={{ padding: 24 }}>
@@ -230,7 +230,7 @@ export default function AcademicTermManagement() {
             onClick={() => alert('현재 준비 중인 기능입니다.\n(학생 Info 엔티티 연동 필요)')}
             style={{ padding: '9px 20px', background: '#f59e0b', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer' }}
           >
-            <i className="bi bi-arrow-up-circle-fill me-2" />전체 학생 진급 처리
+            <i className="ri-arrow-up-circle-line me-2" />전체 학생 진급 처리
           </button>
         </div>
       </div>

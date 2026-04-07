@@ -311,9 +311,9 @@ export default function ConsultationReservation() {
                 <div className="card-body p-16 d-flex align-items-center gap-12">
                   <div
                     className="d-flex align-items-center justify-content-center rounded-circle"
-                    style={{ width: 40, height: 40, background: "#2ecc7118" }}
+                    style={{ width: 40, height: 40, background: "#25a19418" }}
                   >
-                    <i className="ri-checkbox-circle-line" style={{ fontSize: 18, color: "#2ecc71" }} />
+                    <i className="ri-checkbox-circle-line" style={{ fontSize: 18, color: "#25a194" }} />
                   </div>
                   <div>
                     <div className="text-xs text-secondary-light">이번 주 확정</div>
@@ -421,7 +421,7 @@ export default function ConsultationReservation() {
                                   <td
                                     key={i}
                                     style={{
-                                      background: "#2ecc71",
+                                      background: "#E0F5F5",
                                       height: 48,
                                       verticalAlign: "middle",
                                       cursor: isTeacher ? "pointer" : "default",
@@ -429,7 +429,7 @@ export default function ConsultationReservation() {
                                     }}
                                     onClick={() => isTeacher && handleReservationClick(reservation)}
                                   >
-                                    <span className="text-white fw-semibold" style={{ fontSize: 12 }}>
+                                    <span className="fw-semibold" style={{ fontSize: 12, color: "#0f766e" }}>
                                       {label}
                                     </span>
                                   </td>
@@ -486,7 +486,7 @@ export default function ConsultationReservation() {
                   </span>
                   <span className="d-flex align-items-center gap-6">
                     <span
-                      style={{ width: 16, height: 16, background: "#2ecc71", borderRadius: 4, display: "inline-block" }}
+                      style={{ width: 16, height: 16, background: "#E0F5F5", border: "1px solid #25a194", borderRadius: 4, display: "inline-block" }}
                     />
                     {isTeacher ? "확정" : "신청"}
                   </span>
@@ -578,8 +578,8 @@ export default function ConsultationReservation() {
                             padding: "6px 18px",
                             borderRadius: 6,
                             fontSize: 13,
-                            border: `1.5px solid ${consultationType === type ? "#2ecc71" : "#dee2e6"}`,
-                            background: consultationType === type ? "#2ecc71" : "#fff",
+                            border: `1.5px solid ${consultationType === type ? "#25a194" : "#dee2e6"}`,
+                            background: consultationType === type ? "#25a194" : "#fff",
                             color: consultationType === type ? "#fff" : "#555",
                             cursor: "pointer",
                             fontWeight: consultationType === type ? 600 : 400,
@@ -604,7 +604,7 @@ export default function ConsultationReservation() {
 
                   <button
                     className="btn w-100 text-white py-12 fw-semibold"
-                    style={{ background: selected ? "#2ecc71" : "#a0a0a0", borderRadius: 10 }}
+                    style={{ background: selected ? "#25a194" : "#a0a0a0", borderRadius: 10 }}
                     onClick={handleReserve}
                     disabled={saving || !selected}
                   >
@@ -693,7 +693,7 @@ export default function ConsultationReservation() {
                                 className="text-center flex-shrink-0"
                                 style={{ width: 56, padding: "8px 0", background: "#f0faf0", borderRadius: 10 }}
                               >
-                                <div className="fw-bold text-lg" style={{ color: "#2ecc71" }}>
+                                <div className="fw-bold text-lg" style={{ color: "#25a194" }}>
                                   {dateObj.getDate()}
                                 </div>
                                 <div className="text-xs text-secondary-light">{dateObj.getMonth() + 1}월</div>
@@ -868,7 +868,7 @@ export default function ConsultationReservation() {
                   </button>
                   <button
                     className="btn text-white flex-fill py-10 fw-semibold"
-                    style={{ background: "#2ecc71" }}
+                    style={{ background: "#25a194" }}
                     disabled={adjSaving}
                     onClick={handleAdjustSave}
                   >

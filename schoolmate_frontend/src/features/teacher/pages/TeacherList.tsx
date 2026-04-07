@@ -111,7 +111,7 @@ export default function TeacherList() {
               <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: 4, pointerEvents: 'none', fontSize: 16, color: '#6b7280' }} />
             </div>
             <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-              <i className="bi bi-search" style={{ position: 'absolute', left: 8, color: '#9ca3af', fontSize: 13, pointerEvents: 'none' }} />
+              <i className="ri-search-line" style={{ position: 'absolute', left: 8, color: '#9ca3af', fontSize: 13, pointerEvents: 'none' }} />
               <input
                 style={{ padding: '5px 8px 5px 28px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, minWidth: 160, background: '#fff' }}
                 placeholder="이름 또는 이메일"
@@ -164,7 +164,7 @@ export default function TeacherList() {
                     <td style={{ padding: '14px 16px', fontSize: 13, borderBottom: '1px solid #f3f4f6', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div className="w-36-px h-36-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                          <iconify-icon icon="mdi:account-tie" className="text-primary-600" />
+                          <i className="ri-user-settings-line text-primary-600"></i>
                         </div>
                         <span style={{ fontWeight: 500, color: '#374151' }}>{t.name}</span>
                       </div>
@@ -190,7 +190,7 @@ export default function TeacherList() {
                         style={{ padding: '4px 10px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, color: '#374151', cursor: 'pointer' }}
                         onClick={() => setSelectedTeacher(t)}
                       >
-                        <iconify-icon icon="mdi:eye-outline" />
+                        <i className="ri-eye-line"></i>
                       </button>
                     </td>
                   </tr>
@@ -235,8 +235,8 @@ export default function TeacherList() {
               </div>
               <div className="modal-body p-24">
                 <div className="text-center mb-24">
-                  <div className="w-80-px h-80-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center mx-auto mb-16">
-                    <iconify-icon icon="mdi:account-tie" className="text-primary-600 text-4xl" />
+                  <div className="bg-primary-100 d-flex justify-content-center align-items-center mx-auto mb-16" style={{ width: 80, height: 80, borderRadius: "50%", flexShrink: 0 }}>
+                    <i className="ri-user-settings-line text-primary-600" style={{ fontSize: "3rem" }}></i>
                   </div>
                   <h5 className="mb-4">{selectedTeacher.name}</h5>
                   {(() => {

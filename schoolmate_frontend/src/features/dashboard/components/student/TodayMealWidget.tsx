@@ -30,6 +30,20 @@ export default function TodayMealWidget({ schoolId }: Props) {
       .catch(() => setLoading(false))
   }, [schoolId])
 
+  // [soojin] 알레르기 모달 열림 시 배경 스크롤 잠금
+  useEffect(() => {
+    if (!showAllergy) return
+    const prevOverflow = document.body.style.overflow
+    const prevOverscroll = document.body.style.overscrollBehavior
+    document.body.style.overflow = 'hidden'
+    document.body.style.overscrollBehavior = 'none'
+
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.body.style.overscrollBehavior = prevOverscroll
+    }
+  }, [showAllergy])
+
   // [soojin] menuItems가 있으면 알레르기 포함 목록 사용, 없으면 기존 menu 문자열 폴백
   const menuItems = meal?.menuItems ?? meal?.menu?.split('\n').map(name => ({ name, allergies: [] })) ?? []
 
@@ -49,11 +63,11 @@ export default function TodayMealWidget({ schoolId }: Props) {
       <div className="d-flex align-items-center justify-content-between dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-restaurant-line text-primary-600" style={{ fontSize: 18 }} />
-          <h6 className="fw-bold mb-0 text-sm">오늘의 급식</h6>
+          <h6 className="fw-bold mb-0 text-lg">오늘의 급식</h6>
         </div>
         {meal?.mealType && (
           <span style={{
-            fontSize: 11, fontWeight: 600, color: '#25A194',
+            fontSize: 13, fontWeight: 600, color: '#25A194',
             background: '#e6f7f6', borderRadius: 20, padding: '2px 10px',
           }}>
             {meal.mealType}
@@ -65,12 +79,12 @@ export default function TodayMealWidget({ schoolId }: Props) {
       <div className="d-flex flex-column align-items-center justify-content-center p-20" style={{ flex: 1 }}>
         {loading ? (
           <div className="d-flex align-items-center justify-content-center h-100">
-            <p className="text-secondary-light text-sm mb-0">급식 정보를 불러오는 중...</p>
+            <p className="text-secondary-light text-md mb-0">급식 정보를 불러오는 중...</p>
           </div>
         ) : meal ? (
           <>
             {/* [soojin] 메뉴를 쉼표 구분 한 단락으로 표시 (학부모 대시보드 형태) */}
-            <p className="text-sm mb-12 text-center" style={{ color: '#374151', lineHeight: 1.7 }}>
+            <p className="text-md mb-12 text-center" style={{ color: '#374151', lineHeight: 1.7 }}>
               {menuItems.map(item => item.name).join(', ')}
             </p>
 
@@ -81,7 +95,7 @@ export default function TodayMealWidget({ schoolId }: Props) {
                   flex: 1, textAlign: 'center',
                   background: '#25A194', color: 'white',
                   borderRadius: 20, padding: '5px 0',
-                  fontSize: 12, fontWeight: 500,
+                  fontSize: 14, fontWeight: 500,
                 }}>
                   칼로리: {meal.calories} kcal
                 </span>
@@ -92,7 +106,7 @@ export default function TodayMealWidget({ schoolId }: Props) {
                   flex: 1, textAlign: 'center',
                   background: '#fef3c7', color: '#b45309',
                   border: 'none', borderRadius: 20, padding: '5px 0',
-                  fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 }}
               >
                 알레르기 정보
@@ -118,7 +132,7 @@ export default function TodayMealWidget({ schoolId }: Props) {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <span style={{ fontWeight: 700, fontSize: 15 }}>알레르기 정보</span>
+                    <span style={{ fontWeight: 700, fontSize: 17 }}>알레르기 정보</span>
                     <button
                       onClick={() => setShowAllergy(false)}
                       style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#6b7280' }}
@@ -127,11 +141,11 @@ export default function TodayMealWidget({ schoolId }: Props) {
                     </button>
                   </div>
                   {allergyEntries.length === 0 ? (
-                    <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'center', margin: 0 }}>
+                    <p style={{ fontSize: 15, color: '#6b7280', textAlign: 'center', margin: 0 }}>
                       알레르기 유발 식품 정보가 없습니다.
                     </p>
                   ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
                       <thead>
                         <tr style={{ borderBottom: '2px solid #f3f4f6' }}>
                           <th style={{ padding: '6px 8px', textAlign: 'left', color: '#6b7280', fontWeight: 600, width: 110 }}>알레르기</th>
@@ -144,7 +158,7 @@ export default function TodayMealWidget({ schoolId }: Props) {
                             <td style={{ padding: '6px 8px', verticalAlign: 'top' }}>
                               <span style={{
                                 display: 'inline-block', marginRight: 6,
-                                fontSize: 10, fontWeight: 700, color: '#b45309',
+                                fontSize: 12, fontWeight: 700, color: '#b45309',
                                 background: '#fef3c7', borderRadius: 4, padding: '1px 5px',
                               }}>
                                 {code}
@@ -174,7 +188,7 @@ export default function TodayMealWidget({ schoolId }: Props) {
           </>
         ) : (
           <div className="d-flex align-items-center justify-content-center h-100">
-            <p className="text-secondary-light text-sm mb-0 text-center">오늘의 급식 정보가 없습니다.</p>
+            <p className="text-secondary-light text-md mb-0 text-center">오늘의 급식 정보가 없습니다.</p>
           </div>
         )}
       </div>

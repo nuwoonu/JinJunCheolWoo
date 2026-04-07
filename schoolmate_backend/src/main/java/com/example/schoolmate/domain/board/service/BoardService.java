@@ -83,6 +83,12 @@ public class BoardService {
                 .map(BoardDTO.Response::fromEntityForList);
     }
 
+    /** 학부모용 학교 공지 - 자녀의 schoolId로 직접 필터링 */
+    public Page<BoardDTO.Response> getSchoolNoticesForParent(Long schoolId, String keyword, String searchType, Pageable pageable) {
+        return boardRepository.findSchoolNoticeBySchoolId(schoolId, keyword, searchType, pageable)
+                .map(BoardDTO.Response::fromEntityForList);
+    }
+
     /**
      * 학급 공지 목록
      */

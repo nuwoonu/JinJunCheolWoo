@@ -210,7 +210,6 @@ export default function AdminDashboard() {
   const [studentRRFilter, setStudentRRFilter] = useState<RRStatus>("PENDING");
   const [teacherRRFilter, setTeacherRRFilter] = useState<RRStatus>("PENDING");
   // const [studentFilterOpen, setStudentFilterOpen] = useState(false); // [soojin] 학생 필터 아코디언 (미사용)
-  const [teacherFilterOpen, setTeacherFilterOpen] = useState(false); // [soojin] 교사 필터 아코디언
   const [roleRequestCounts, setRoleRequestCounts] = useState<
     Record<string, Record<string, number>>
   >({});
@@ -436,11 +435,11 @@ export default function AdminDashboard() {
           <h5 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>
             관리자 대시보드
           </h5>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+          <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>
             {selectedSchool ? (
               <>
                 <span style={{ fontWeight: 600 }}>{selectedSchool.name}</span>
-                <span style={{ color: "#9ca3af", marginLeft: 4, fontSize: 13 }}>
+                <span style={{ color: "#9ca3af", marginLeft: 4, fontSize: 15 }}>
                   ({selectedSchool.schoolKind} ·{" "}
                   {selectedSchool.officeOfEducation})
                 </span>
@@ -450,7 +449,7 @@ export default function AdminDashboard() {
             )}
           </p>
         </div>
-        <span style={{ color: "#9ca3af", fontSize: 13 }}>{today}</span>
+        <span style={{ color: "#9ca3af", fontSize: 15 }}>{today}</span>
       </div>
 
       {/* ── 1행: 탭 전환형 현황 카드 ── */}
@@ -488,7 +487,7 @@ export default function AdminDashboard() {
                     alignItems: "center",
                     gap: 6,
                     paddingBottom: 10,
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: activeTab === tab ? 600 : 400,
                     color: activeTab === tab ? "#25A194" : "#6b7280",
                   }}
@@ -527,7 +526,7 @@ export default function AdminDashboard() {
             >
               <p
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   color: "#065f46",
                   margin: 0,
                   marginBottom: 6,
@@ -544,7 +543,7 @@ export default function AdminDashboard() {
                 }}
               >
                 {currentTab.total.toLocaleString()}
-                <span style={{ fontSize: 13, fontWeight: 400, marginLeft: 4 }}>
+                <span style={{ fontSize: 15, fontWeight: 400, marginLeft: 4 }}>
                   명
                 </span>
               </p>
@@ -579,7 +578,7 @@ export default function AdminDashboard() {
                   marginBottom: 6,
                 }}
               >
-                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
                   {currentTab.activeLabel}
                 </p>
                 <i
@@ -596,7 +595,7 @@ export default function AdminDashboard() {
                 }}
               >
                 {currentTab.activeCount.toLocaleString()}
-                <span style={{ fontSize: 13, fontWeight: 400, marginLeft: 4 }}>
+                <span style={{ fontSize: 15, fontWeight: 400, marginLeft: 4 }}>
                   명
                 </span>
               </p>
@@ -620,7 +619,7 @@ export default function AdminDashboard() {
               </div>
               <p
                 style={{
-                  fontSize: 11,
+                  fontSize: 13,
                   color: "#6b7280",
                   margin: 0,
                   marginTop: 4,
@@ -647,7 +646,7 @@ export default function AdminDashboard() {
                   marginBottom: 6,
                 }}
               >
-                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
                   {currentTab.inactiveLabel}
                 </p>
                 <i
@@ -664,13 +663,13 @@ export default function AdminDashboard() {
                 }}
               >
                 {currentTab.inactiveCount.toLocaleString()}
-                <span style={{ fontSize: 13, fontWeight: 400, marginLeft: 4 }}>
+                <span style={{ fontSize: 15, fontWeight: 400, marginLeft: 4 }}>
                   명
                 </span>
               </p>
               <p
                 style={{
-                  fontSize: 11,
+                  fontSize: 13,
                   color: "#9ca3af",
                   margin: 0,
                   marginTop: 12,
@@ -684,7 +683,7 @@ export default function AdminDashboard() {
           {/* [soojin] 차트 제목 추가 (참고 디자인 반영) */}
           <p
             style={{
-              fontSize: 13,
+              fontSize: 15,
               fontWeight: 600,
               color: "#374151",
               margin: 0,
@@ -709,12 +708,12 @@ export default function AdminDashboard() {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#6b7280", fontSize: 11 }}
+                  tick={{ fill: "#6b7280", fontSize: 13 }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#6b7280", fontSize: 10 }}
+                  tick={{ fill: "#6b7280", fontSize: 12 }}
                   allowDecimals={false}
                 />
                 <Tooltip
@@ -722,7 +721,7 @@ export default function AdminDashboard() {
                     background: "#fff",
                     border: "1px solid #e5e7eb",
                     borderRadius: 8,
-                    fontSize: 12,
+                    fontSize: 14,
                   }}
                   formatter={(v) => [
                     `${Number(v ?? 0).toLocaleString()}명`,
@@ -740,7 +739,7 @@ export default function AdminDashboard() {
                 justifyContent: "center",
                 height: 100,
                 color: "#9ca3af",
-                fontSize: 13,
+                fontSize: 15,
               }}
             >
               데이터가 없습니다.
@@ -761,7 +760,7 @@ export default function AdminDashboard() {
             <div className="d-flex align-items-center justify-content-between dash-card-header">
               <div className="d-flex align-items-center gap-8">
                 <i className="ri-user-follow-line text-primary-600" style={{ fontSize: 18 }} />
-                <h6 className="fw-bold mb-0 text-sm">학생 계정 승인 현황</h6>
+                <h6 className="fw-bold mb-0 text-lg">학생 계정 승인 현황</h6>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 {(
@@ -781,7 +780,7 @@ export default function AdminDashboard() {
                           : "2px solid transparent",
                         color: isActive ? RR_STATUS_COLOR[status] : "#9ca3af",
                         padding: "2px 0",
-                        fontSize: 11,
+                        fontSize: 13,
                         fontWeight: isActive ? 700 : 500,
                         cursor: "pointer",
                       }}
@@ -794,7 +793,7 @@ export default function AdminDashboard() {
                 <Link
                   to={ADMIN_ROUTES.STUDENTS.LIST}
                   style={{
-                    fontSize: 12,
+                    fontSize: 14,
                     color: "#6b7280",
                     textDecoration: "none",
                     marginLeft: 4,
@@ -821,7 +820,7 @@ export default function AdminDashboard() {
                     className="ri-error-warning-line"
                     style={{ fontSize: 28, marginBottom: 8 }}
                   />
-                  <p style={{ margin: 0, fontSize: 13 }}>
+                  <p style={{ margin: 0, fontSize: 15 }}>
                     해당 항목이 없습니다
                   </p>
                 </div>
@@ -853,7 +852,7 @@ export default function AdminDashboard() {
                           alignItems: "center",
                           justifyContent: "center",
                           fontWeight: 700,
-                          fontSize: 14,
+                          fontSize: 16,
                           flexShrink: 0,
                         }}
                       >
@@ -864,7 +863,7 @@ export default function AdminDashboard() {
                           style={{
                             fontWeight: 600,
                             color: "#111827",
-                            fontSize: 13,
+                            fontSize: 15,
                             margin: 0,
                             marginBottom: 2,
                           }}
@@ -872,7 +871,7 @@ export default function AdminDashboard() {
                           {s.name}
                         </p>
                         <p
-                          style={{ color: "#6b7280", fontSize: 11, margin: 0 }}
+                          style={{ color: "#6b7280", fontSize: 13, margin: 0 }}
                         >
                           {studentRRFilter === "ACTIVE"
                             ? `${s.latestClass ?? "-"} · ${formatRequestDate(s.roleRequestCreateDate)}`
@@ -894,104 +893,40 @@ export default function AdminDashboard() {
             <div className="d-flex align-items-center justify-content-between dash-card-header">
               <div className="d-flex align-items-center gap-8">
                 <i className="ri-user-star-line text-primary-600" style={{ fontSize: 18 }} />
-                <h6 className="fw-bold mb-0 text-sm">교사 계정 승인 현황</h6>
+                <h6 className="fw-bold mb-0 text-lg">교사 계정 승인 현황</h6>
               </div>
-              {/* [soojin] 현재 선택 필터만 표시, 클릭 시 드롭다운으로 나머지 옵션 노출 */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ position: "relative" }}>
-                  <button
-                    onClick={() => setTeacherFilterOpen((o) => !o)}
-                    style={{
-                      background: RR_STATUS_SOFT_BG[teacherRRFilter],
-                      color: RR_STATUS_COLOR[teacherRRFilter],
-                      border: "none",
-                      borderRadius: 14,
-                      padding: "4px 10px",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 3,
-                    }}
-                  >
-                    {RR_STATUS_LABEL[teacherRRFilter]}
-                    {(roleRequestCounts.TEACHER?.[teacherRRFilter] ?? 0) > 0
-                      ? ` ${roleRequestCounts.TEACHER?.[teacherRRFilter]}`
-                      : ""}
-                    <i
-                      className={
-                        teacherFilterOpen
-                          ? "ri-arrow-up-s-line"
-                          : "ri-arrow-down-s-line"
-                      }
-                      style={{ fontSize: 12 }}
-                    />
-                  </button>
-                  {teacherFilterOpen && (
-                    <div
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {(
+                  ["ACTIVE", "PENDING", "SUSPENDED", "REJECTED"] as RRStatus[]
+                ).map((status) => {
+                  const count = roleRequestCounts.TEACHER?.[status] ?? 0;
+                  const isActive = teacherRRFilter === status;
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => setTeacherRRFilter(status)}
                       style={{
-                        position: "absolute",
-                        top: "calc(100% + 4px)",
-                        right: 0,
-                        zIndex: 100,
-                        background: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: 10,
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.10)",
-                        padding: "6px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                        minWidth: 80,
+                        background: "none",
+                        border: "none",
+                        borderBottom: isActive
+                          ? `2px solid ${RR_STATUS_COLOR[status]}`
+                          : "2px solid transparent",
+                        color: isActive ? RR_STATUS_COLOR[status] : "#9ca3af",
+                        padding: "2px 0",
+                        fontSize: 13,
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: "pointer",
                       }}
                     >
-                      {(
-                        [
-                          "ACTIVE",
-                          "PENDING",
-                          "SUSPENDED",
-                          "REJECTED",
-                        ] as RRStatus[]
-                      ).map((status) => {
-                        const count = roleRequestCounts.TEACHER?.[status] ?? 0;
-                        const isActive = teacherRRFilter === status;
-                        return (
-                          <button
-                            key={status}
-                            onClick={() => {
-                              setTeacherRRFilter(status);
-                              setTeacherFilterOpen(false);
-                            }}
-                            style={{
-                              background: isActive
-                                ? RR_STATUS_SOFT_BG[status]
-                                : "transparent",
-                              color: isActive
-                                ? RR_STATUS_COLOR[status]
-                                : "#374151",
-                              border: "none",
-                              borderRadius: 6,
-                              padding: "5px 10px",
-                              fontSize: 11,
-                              fontWeight: 600,
-                              cursor: "pointer",
-                              textAlign: "left",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {RR_STATUS_LABEL[status]}
-                            {count > 0 ? ` ${count}` : ""}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                      {RR_STATUS_LABEL[status]}
+                      {count > 0 ? ` ${count}` : ""}
+                    </button>
+                  );
+                })}
                 <Link
                   to={ADMIN_ROUTES.TEACHERS.LIST}
                   style={{
-                    fontSize: 12,
+                    fontSize: 14,
                     color: "#6b7280",
                     textDecoration: "none",
                     marginLeft: 4,
@@ -1018,7 +953,7 @@ export default function AdminDashboard() {
                     className="ri-error-warning-line"
                     style={{ fontSize: 28, marginBottom: 8 }}
                   />
-                  <p style={{ margin: 0, fontSize: 13 }}>
+                  <p style={{ margin: 0, fontSize: 15 }}>
                     해당 항목이 없습니다
                   </p>
                 </div>
@@ -1050,7 +985,7 @@ export default function AdminDashboard() {
                           alignItems: "center",
                           justifyContent: "center",
                           fontWeight: 700,
-                          fontSize: 14,
+                          fontSize: 16,
                           flexShrink: 0,
                         }}
                       >
@@ -1061,7 +996,7 @@ export default function AdminDashboard() {
                           style={{
                             fontWeight: 600,
                             color: "#111827",
-                            fontSize: 13,
+                            fontSize: 15,
                             margin: 0,
                             marginBottom: 2,
                           }}
@@ -1069,7 +1004,7 @@ export default function AdminDashboard() {
                           {t.name}
                         </p>
                         <p
-                          style={{ color: "#6b7280", fontSize: 11, margin: 0 }}
+                          style={{ color: "#6b7280", fontSize: 13, margin: 0 }}
                         >
                           {teacherRRFilter === "ACTIVE"
                             ? `${t.subject ?? "-"} · ${formatRequestDate(t.roleRequestCreateDate)}`
@@ -1095,8 +1030,8 @@ export default function AdminDashboard() {
               <div className="d-flex align-items-center gap-8">
                 <i className="ri-group-line text-primary-600" style={{ fontSize: 18 }} />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                  <h6 className="fw-bold mb-0 text-sm">학급 현황</h6>
-                  <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                  <h6 className="fw-bold mb-0 text-lg">학급 현황</h6>
+                  <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
                     {settings
                       ? `${settings.schoolYear}년 ${settings.semester}학기 편성 학급`
                       : "로딩 중…"}
@@ -1106,7 +1041,7 @@ export default function AdminDashboard() {
               <Link
                 to={ADMIN_ROUTES.CLASSES.LIST}
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   color: "#6b7280",
                   textDecoration: "none",
                 }}
@@ -1134,7 +1069,7 @@ export default function AdminDashboard() {
                         marginBottom: 8,
                       }}
                     />
-                    <p style={{ margin: 0, fontSize: 13 }}>
+                    <p style={{ margin: 0, fontSize: 15 }}>
                       {settings ? "편성된 학급이 없습니다." : "로딩 중…"}
                     </p>
                   </div>
@@ -1176,7 +1111,7 @@ export default function AdminDashboard() {
                           <div style={{ flex: 1, textAlign: "center" }}>
                             <p
                               style={{
-                                fontSize: 13,
+                                fontSize: 15,
                                 color: "#9ca3af",
                                 margin: 0,
                                 marginBottom: 4,
@@ -1195,7 +1130,7 @@ export default function AdminDashboard() {
                               {students.toLocaleString()}
                               <span
                                 style={{
-                                  fontSize: 12,
+                                  fontSize: 14,
                                   fontWeight: 400,
                                   marginLeft: 2,
                                 }}
@@ -1214,7 +1149,7 @@ export default function AdminDashboard() {
                           <div style={{ flex: 1, textAlign: "center" }}>
                             <p
                               style={{
-                                fontSize: 13,
+                                fontSize: 15,
                                 color: "#9ca3af",
                                 margin: 0,
                                 marginBottom: 4,
@@ -1233,7 +1168,7 @@ export default function AdminDashboard() {
                               {count}
                               <span
                                 style={{
-                                  fontSize: 12,
+                                  fontSize: 14,
                                   fontWeight: 400,
                                   marginLeft: 2,
                                 }}
@@ -1271,7 +1206,7 @@ export default function AdminDashboard() {
                         >
                           <p
                             style={{
-                              fontSize: 12,
+                              fontSize: 14,
                               color: "#6b7280",
                               margin: 0,
                             }}
@@ -1314,8 +1249,8 @@ export default function AdminDashboard() {
               <div className="d-flex align-items-center gap-8">
                 <i className="ri-calendar-event-line text-primary-600" style={{ fontSize: 18 }} />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                  <h6 className="fw-bold mb-0 text-sm">다가오는 학사 일정</h6>
-                  <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                  <h6 className="fw-bold mb-0 text-lg">다가오는 학사 일정</h6>
+                  <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
                     오늘 이후 60일 이내
                   </p>
                 </div>
@@ -1323,7 +1258,7 @@ export default function AdminDashboard() {
               <Link
                 to={ADMIN_ROUTES.MASTER.SCHEDULE}
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   color: "#6b7280",
                   textDecoration: "none",
                 }}
@@ -1363,7 +1298,7 @@ export default function AdminDashboard() {
                     className="ri-calendar-line"
                     style={{ fontSize: 28, marginBottom: 8 }}
                   />
-                  <p style={{ margin: 0, fontSize: 13 }}>
+                  <p style={{ margin: 0, fontSize: 15 }}>
                     예정된 일정이 없습니다.
                   </p>
                 </div>
@@ -1399,7 +1334,7 @@ export default function AdminDashboard() {
                         >
                           <span
                             style={{
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: 700,
                               color: dday === "오늘" ? "#fff" : "#0369a1",
                             }}
@@ -1420,7 +1355,7 @@ export default function AdminDashboard() {
                               style={{
                                 background: cfg.bg,
                                 color: cfg.color,
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontWeight: 600,
                                 padding: "2px 6px",
                                 borderRadius: 4,
@@ -1433,7 +1368,7 @@ export default function AdminDashboard() {
                               style={{
                                 fontWeight: 600,
                                 color: "#111827",
-                                fontSize: 13,
+                                fontSize: 15,
                                 margin: 0,
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
@@ -1447,7 +1382,7 @@ export default function AdminDashboard() {
                             style={{
                               color: "#6b7280",
                               margin: 0,
-                              fontSize: 11,
+                              fontSize: 13,
                             }}
                           >
                             {fmtDate(ev.start, ev.end)}

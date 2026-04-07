@@ -88,8 +88,8 @@ export default function WeeklyCalendarWidget() {
       {/* 헤더 */}
       <div className="d-flex justify-content-between align-items-center dash-card-header">
         <div className="d-flex align-items-center gap-8">
-          <i className="ri-calendar-event-line text-primary-600" style={{ fontSize: 18 }} />
-          <h6 className="fw-bold mb-0 text-sm">이번 주 일정</h6>
+          <i className="ri-calendar-event-line text-primary-600" style={{ fontSize: 20 }} />
+          <h6 className="fw-bold mb-0 text-lg">이번 주 일정</h6>
         </div>
       </div>
 
@@ -103,14 +103,14 @@ export default function WeeklyCalendarWidget() {
         ].map(l => (
           <div key={l.label} className="d-flex align-items-center" style={{ gap: 4 }}>
             <span style={{ width: 10, height: 10, borderRadius: 3, background: l.bg, border: `1px solid ${l.text}44`, display: 'inline-block', flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: '#374151' }}>{l.label}</span>
+            <span style={{ fontSize: 15, color: '#374151' }}>{l.label}</span>
           </div>
         ))}
       </div>
 
       <div className="p-16" style={{ paddingTop: 8 }}>
         {loading ? (
-          <p className="text-secondary-light text-sm text-center py-16 mb-0">일정을 불러오는 중...</p>
+          <p className="text-secondary-light text-md text-center py-16 mb-0">일정을 불러오는 중...</p>
         ) : (
           <div className="d-flex gap-10">
             {weekDays.map((date, i) => {
@@ -131,7 +131,7 @@ export default function WeeklyCalendarWidget() {
                 >
                   <div
                     className="text-center fw-semibold mb-2"
-                    style={{ fontSize: 13, color: isToday ? '#25A194' : '#9ca3af' }}
+                    style={{ fontSize: 15, color: isToday ? '#25A194' : '#9ca3af' }}
                   >
                     {DAY_LABEL[i]}
                   </div>
@@ -144,7 +144,7 @@ export default function WeeklyCalendarWidget() {
                         borderRadius: '50%',
                         background: isToday ? '#25A194' : 'transparent',
                         color: isToday ? '#fff' : '#111827',
-                        fontSize: 18,
+                        fontSize: 20,
                       }}
                     >
                       {Number(date.slice(8))}
@@ -160,7 +160,7 @@ export default function WeeklyCalendarWidget() {
                             background: c.bg,
                             color: c.text,
                             borderRadius: 6,
-                            fontSize: 11,
+                            fontSize: 13,
                             fontWeight: 500,
                             padding: '3px 6px',
                             textAlign: 'center',

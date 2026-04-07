@@ -17,7 +17,7 @@ function hasGrant(grants: GrantInfo[], ...roles: string[]) {
 const ALL_MENU_ITEMS = [
   {
     to: ADMIN_ROUTES.SCHOOL_SELECT,
-    icon: "ri-building-2-line",
+    icon: "ri-school-line",
     label: "학교 정보 관리",
     desc: "학교를 선택하여 학생, 교사, 교직원, 학급, 공지사항 등을 관리합니다.",
     /** 표시 조건: SCHOOL_ADMIN 이상이거나 학교 내 기능 grant 중 하나라도 보유 */

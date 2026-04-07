@@ -393,7 +393,7 @@ export default function Assets() {
           {currentTab === "assets" ? (
             <form style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }} onSubmit={search}>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <i className="bi bi-search" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
+                <i className="ri-search-line" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
                 <input
                   style={{ padding: "5px 8px 5px 28px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, minWidth: 200, background: "#fff" }}
                   placeholder="기자재명 또는 관리번호 검색"
@@ -425,7 +425,7 @@ export default function Assets() {
             // [soojin] 모델 탭 검색 폼
             <form style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }} onSubmit={(e) => { e.preventDefault(); setModelKeyword(modelInput); }}>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <i className="bi bi-search" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
+                <i className="ri-search-line" style={{ position: "absolute", left: "8px", color: "#9ca3af", fontSize: "13px", pointerEvents: "none" }} />
                 <input
                   style={{ padding: "5px 8px 5px 28px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, minWidth: 200, background: "#fff" }}
                   placeholder="모델명, 제조사, 분류 검색"
@@ -623,7 +623,7 @@ export default function Assets() {
                             <img src={m.imageUrl} alt={m.name} style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: 6 }} />
                           ) : (
                             <div style={{ width: 40, height: 40, background: "#f3f4f6", borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#9ca3af" }}>
-                              <i className="bi bi-image" />
+                              <i className="ri-image-line" />
                             </div>
                           )}
                         </td>

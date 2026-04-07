@@ -229,7 +229,67 @@ export default function HomeworkDetailPage() {
   const st = STATUS_LABEL[homework.status] ?? STATUS_LABEL.OPEN;
   const isOverdue = new Date(homework.dueDate) < new Date();
   const allStudents = homework.allStudents ?? [];
+  const totalStudents = allStudents.length;
   const submittedCount = allStudents.filter((s) => s.submitted).length;
+  const unsubmittedCount = totalStudents - submittedCount;
+  const dueDateLabel = homework.dueDate ? homework.dueDate.slice(0, 10) : "-";
+  const statsCards = [
+    {
+      key: "classroom",
+      label: "학급",
+      value: homework.classroomName || "-",
+      icon: "ri-community-line",
+      borderColor: "#bfdbfe",
+      background: "#eff6ff",
+      iconBackground: "rgba(37,99,235,0.12)",
+      iconColor: "#2563eb",
+      valueColor: "#1e40af",
+    },
+    {
+      key: "total",
+      label: "전체 학생 수",
+      value: `${totalStudents}명`,
+      icon: "ri-group-line",
+      borderColor: "#ddd6fe",
+      background: "#f5f3ff",
+      iconBackground: "rgba(124,58,237,0.12)",
+      iconColor: "#7c3aed",
+      valueColor: "#6d28d9",
+    },
+    {
+      key: "dueDate",
+      label: "마감일",
+      value: dueDateLabel,
+      icon: "ri-calendar-event-line",
+      borderColor: "#fde68a",
+      background: "#fffbeb",
+      iconBackground: "rgba(217,119,6,0.14)",
+      iconColor: "#d97706",
+      valueColor: "#b45309",
+    },
+    {
+      key: "submitted",
+      label: "제출",
+      value: `${submittedCount}명`,
+      icon: "ri-check-line",
+      borderColor: "#bbf7d0",
+      background: "#f0fdf4",
+      iconBackground: "rgba(22,163,74,0.12)",
+      iconColor: "#16a34a",
+      valueColor: "#15803d",
+    },
+    {
+      key: "unsubmitted",
+      label: "미제출",
+      value: `${unsubmittedCount}명`,
+      icon: "ri-time-line",
+      borderColor: "#fecaca",
+      background: "#fff7ed",
+      iconBackground: "rgba(239,68,68,0.12)",
+      iconColor: "#dc2626",
+      valueColor: "#dc2626",
+    },
+  ];
 
   // ========== 목록으로 버튼 (공통) ==========
   const BackButton = () => (
@@ -243,7 +303,7 @@ export default function HomeworkDetailPage() {
         padding: "0.375rem 0.875rem",
         border: "1px solid var(--neutral-200)",
         borderRadius: "0.5rem",
-        background: "none",
+        background: "#fff",
         cursor: "pointer",
         fontSize: "0.875rem",
         color: "var(--neutral-700)",
@@ -363,7 +423,7 @@ export default function HomeworkDetailPage() {
                 title={isTeacher ? "클릭하여 마감일 수정" : undefined}
               >
                 {isOverdue ? "기한 지남" : `마감: ${homework.dueDate?.slice(0, 10)}`}
-                {isTeacher && <iconify-icon icon="mdi:pencil" style={{ fontSize: "0.875rem" }} />}
+                {isTeacher && <i className="ri-edit-line" style={{ fontSize: "0.875rem" }}></i>}
               </span>
             )}
           </div>
@@ -399,7 +459,7 @@ export default function HomeworkDetailPage() {
                   textDecoration: "none",
                 }}
               >
-                <iconify-icon icon="mdi:attachment" />
+                <i className="ri-attachment-line"></i>
                 {homework.attachmentOriginalName ?? homework.attachmentUrl}
               </a>
             </div>
@@ -485,21 +545,48 @@ export default function HomeworkDetailPage() {
           {/* 제출 통계 */}
           <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--neutral-200)" }}>
             <h6 style={{ fontWeight: 600, marginBottom: "1rem" }}>제출 현황</h6>
-            <div style={{ display: "flex", gap: "0.75rem" }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ padding: "1rem", borderRadius: "0.5rem", backgroundColor: "var(--success-50)", textAlign: "center" }}>
-                  <p style={{ fontSize: "0.75rem", color: "var(--text-secondary-light)", marginBottom: "0.375rem" }}>제출</p>
-                  <p style={{ fontWeight: 700, color: "var(--success-600)", fontSize: "1rem", marginBottom: 0 }}>{submittedCount}명</p>
-                </div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ padding: "1rem", borderRadius: "0.5rem", backgroundColor: "var(--danger-50)", textAlign: "center" }}>
-                  <p style={{ fontSize: "0.75rem", color: "var(--text-secondary-light)", marginBottom: "0.375rem" }}>미제출</p>
-                  <p style={{ fontWeight: 700, color: "var(--danger-600)", fontSize: "1rem", marginBottom: 0 }}>
-                    {allStudents.length - submittedCount}명
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.35fr repeat(4, minmax(0, 1fr))",
+                gap: "0.75rem",
+              }}
+            >
+              {statsCards.map((card) => (
+                <div
+                  key={card.key}
+                  style={{
+                    width: "100%",
+                    padding: "0.875rem 1rem",
+                    borderRadius: "0.75rem",
+                    border: `1px solid ${card.borderColor}`,
+                    background: card.background,
+                    boxShadow: "0 1px 2px rgba(15,23,42,0.06)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 999,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: card.iconBackground,
+                        color: card.iconColor,
+                        fontSize: 14,
+                      }}
+                    >
+                      <i className={card.icon} />
+                    </span>
+                    <p style={{ fontSize: "0.75rem", color: "#6b7280", marginBottom: 0, fontWeight: 600 }}>{card.label}</p>
+                  </div>
+                  <p style={{ fontWeight: 700, color: card.valueColor, fontSize: "1.25rem", lineHeight: 1.1, marginBottom: 0 }}>
+                    {card.value}
                   </p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -597,7 +684,7 @@ export default function HomeworkDetailPage() {
                               download={sub.attachmentOriginalName ?? sub.attachmentUrl}
                               style={{ color: "var(--primary-600)", display: "flex", alignItems: "center" }}
                             >
-                              <iconify-icon icon="mdi:download" style={{ fontSize: "1.125rem" }} />
+                              <i className="ri-download-line" style={{ fontSize: "1.125rem" }}></i>
                             </a>
                           )}
                           <button
@@ -801,7 +888,7 @@ export default function HomeworkDetailPage() {
                       download={homework.mySubmission.attachmentOriginalName}
                       style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", color: "var(--primary-600)", fontSize: "0.875rem" }}
                     >
-                      <iconify-icon icon="mdi:attachment" />
+                      <i className="ri-attachment-line"></i>
                       {homework.mySubmission.attachmentOriginalName}
                     </a>
                   </div>
@@ -897,7 +984,7 @@ export default function HomeworkDetailPage() {
                   />
                   {submitFile && (
                     <div style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "var(--text-secondary-light)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                      <iconify-icon icon="mdi:attachment" />
+                      <i className="ri-attachment-line"></i>
                       {submitFile.name} ({(submitFile.size / 1024).toFixed(1)} KB)
                     </div>
                   )}

@@ -355,7 +355,7 @@ export default function QuizDetail() {
               setResult(null);
             }}
           >
-            <iconify-icon icon="mdi:play" className="me-8" />
+            <i className="ri-play-line me-8"></i>
             퀴즈 풀기
             {quiz.maxAttempts && (
               <span className="ms-8 text-sm">

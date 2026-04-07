@@ -119,10 +119,7 @@ export default function NotificationDropdown() {
         aria-label="Notification Button"
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        <iconify-icon
-          icon="iconoir:bell"
-          className="text-primary-light text-xl"
-        />
+        <i className="ri-notification-3-line text-primary-light text-xl"></i>
         {unreadCount > 0 && (
           <span
             className="position-absolute bg-danger-600 rounded-pill d-flex align-items-center justify-content-center text-white"
@@ -163,7 +160,7 @@ export default function NotificationDropdown() {
                   미열람 {unreadCount}
                 </span>
               )}
-              <span className="text-primary-600 fw-semibold text-sm w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
+              <span className="text-primary-600 fw-semibold text-sm">
                 전체 {notifications.length}
               </span>
             </div>
@@ -188,11 +185,7 @@ export default function NotificationDropdown() {
                 >
                   <div className="d-flex align-items-start gap-12">
                     <div className="w-36-px h-36-px rounded-circle bg-primary-100 d-flex align-items-center justify-content-center flex-shrink-0">
-                      <iconify-icon
-                        icon="iconoir:bell"
-                        className="text-primary-600"
-                        style={{ fontSize: 16 }}
-                      />
+                      <i className="ri-notification-3-line text-primary-600" style={{ fontSize: 16 }}></i>
                     </div>
                     <div className="flex-grow-1">
                       <div className="d-flex justify-content-between align-items-start mb-2">
@@ -210,10 +203,7 @@ export default function NotificationDropdown() {
                           }}
                           aria-label="알림 삭제"
                         >
-                          <iconify-icon
-                            icon="iconoir:xmark"
-                            style={{ fontSize: 14 }}
-                          />
+                          <i className="ri-close-line" style={{ fontSize: 14 }}></i>
                         </button>
                       </div>
                       <p

@@ -193,7 +193,7 @@ export default function HomeworkEdit() {
             {/* [woo] 기존 첨부파일 표시 */}
             {existingFile && !removeFile && !newFile && (
               <div className="mb-8 d-flex align-items-center gap-8 p-12 bg-neutral-50 radius-8">
-                <iconify-icon icon="mdi:attachment" />
+                <i className="ri-attachment-line"></i>
                 <span className="text-sm text-secondary-light">{existingFile.name}</span>
                 <button
                   type="button"
@@ -216,7 +216,7 @@ export default function HomeworkEdit() {
             {newFile && (
               <div className="mt-8 d-flex align-items-center gap-8">
                 <span className="text-sm text-secondary-light">
-                  <iconify-icon icon="mdi:attachment" className="me-4" />
+                  <i className="ri-attachment-line me-4"></i>
                   {newFile.name} ({(newFile.size / 1024).toFixed(1)} KB)
                 </span>
                 <button

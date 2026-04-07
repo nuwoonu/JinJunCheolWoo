@@ -87,7 +87,7 @@ export default function TodayTimetableWidget({ grade, classNum, schoolId, events
       <div className="d-flex align-items-center justify-content-between dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-time-line text-primary-600" style={{ fontSize: 18 }} />
-          <h6 className="fw-bold mb-0 text-sm">오늘의 시간표</h6>
+          <h6 className="fw-bold mb-0 text-lg">오늘의 시간표</h6>
         </div>
         {timetable.length > 0 && (
           <span style={{

@@ -97,7 +97,7 @@ export default function GradeBoard() {
         <ul className="d-flex align-items-center gap-2">
           <li className="fw-medium">
             <Link to="/main" className="d-flex align-items-center gap-1 hover-text-primary">
-              <iconify-icon icon="solar:home-smile-angle-outline" className="icon text-lg" />홈
+              <i className="ri-home-4-line icon text-lg"></i>홈
             </Link>
           </li>
           <li>-</li>
@@ -126,7 +126,7 @@ export default function GradeBoard() {
             </div>
             {canWrite && (
               <button type="button" className="btn btn-primary-600 radius-8" onClick={() => setShowWriteModal(true)}>
-                <iconify-icon icon="mdi:plus" className="me-4" />
+                <i className="ri-add-line me-4"></i>
                 글쓰기
               </button>
             )}
@@ -199,7 +199,7 @@ export default function GradeBoard() {
                 <ul className="pagination mb-0">
                   <li className={`page-item${page === 0 ? " disabled" : ""}`}>
                     <button className="page-link" onClick={() => fetchBoards(page - 1)}>
-                      <iconify-icon icon="mdi:chevron-left" />
+                      <i className="ri-arrow-left-s-line"></i>
                     </button>
                   </li>
                   {Array.from({ length: totalPages }, (_, i) => (
@@ -211,7 +211,7 @@ export default function GradeBoard() {
                   ))}
                   <li className={`page-item${page >= totalPages - 1 ? " disabled" : ""}`}>
                     <button className="page-link" onClick={() => fetchBoards(page + 1)}>
-                      <iconify-icon icon="mdi:chevron-right" />
+                      <i className="ri-arrow-right-s-line"></i>
                     </button>
                   </li>
                 </ul>

@@ -333,7 +333,7 @@ export default function ConsultationList() {
             <Link
               to="/consultation/reservation"
               className="btn text-white px-16 py-6 ms-8"
-              style={{ background: "#2ecc71", borderRadius: 20, fontSize: 13 }}
+              style={{ background: "#25a194", borderRadius: 20, fontSize: 13 }}
             >
               <i className="ri-add-line me-4" />새 신청
             </Link>
@@ -374,7 +374,7 @@ export default function ConsultationList() {
                       {/* 왼쪽 증명사진 패널 (3:4 비율) */}
                       <div
                         className="d-flex align-items-center justify-content-center flex-shrink-0"
-                        style={{ width: 130, minHeight: 147, background: "#2ecc71" }}
+                        style={{ width: 130, minHeight: 147, background: "#25a194" }}
                       >
                         <i className="ri-user-line text-white" style={{ fontSize: 36 }} />
                       </div>
@@ -403,14 +403,15 @@ export default function ConsultationList() {
                           {isTeacher && item.status === "PENDING" && !isPast && (
                             <div className="d-flex gap-6 flex-shrink-0">
                               <button
-                                className="btn btn-sm btn-outline-primary px-12 py-4"
+                                className="btn btn-sm px-12 py-4"
+                                style={{ border: "1px solid #25a194", color: "#25a194", background: "#fff" }}
                                 onClick={() => openAdjustModal(item)}
                               >
                                 일정 변경
                               </button>
                               <button
                                 className="btn btn-sm text-white px-12 py-4"
-                                style={{ background: "#2ecc71" }}
+                                style={{ background: "#25a194" }}
                                 onClick={() => handleQuickConfirm(item.id)}
                               >
                                 확정
@@ -487,7 +488,7 @@ export default function ConsultationList() {
                 style={{
                   fontSize: 14,
                   fontWeight: page === i + 1 ? 700 : 400,
-                  color: page === i + 1 ? "#2ecc71" : "#888",
+                  color: page === i + 1 ? "#25a194" : "#888",
                   cursor: "pointer",
                 }}
               >
@@ -568,7 +569,7 @@ export default function ConsultationList() {
                                   <td
                                     key={i}
                                     style={{
-                                      background: "#2ecc71",
+                                      background: "#E0F5F5",
                                       height: 48,
                                       verticalAlign: "middle",
                                       cursor: "pointer",
@@ -576,7 +577,7 @@ export default function ConsultationList() {
                                     }}
                                     onClick={() => handleCalReservationClick(reservation)}
                                   >
-                                    <span className="text-white fw-semibold" style={{ fontSize: 12 }}>
+                                    <span className="fw-semibold" style={{ fontSize: 12, color: "#0f766e" }}>
                                       {reservation.studentName ?? reservation.writerName} 학부모
                                     </span>
                                   </td>
@@ -608,7 +609,7 @@ export default function ConsultationList() {
                   </span>
                   <span className="d-flex align-items-center gap-6">
                     <span
-                      style={{ width: 16, height: 16, background: "#2ecc71", borderRadius: 4, display: "inline-block" }}
+                      style={{ width: 16, height: 16, background: "#E0F5F5", border: "1px solid #25a194", borderRadius: 4, display: "inline-block" }}
                     />
                     확정
                   </span>
@@ -719,7 +720,7 @@ export default function ConsultationList() {
                   </button>
                   <button
                     className="btn text-white flex-fill py-10 fw-semibold"
-                    style={{ background: "#2ecc71" }}
+                    style={{ background: "#25a194" }}
                     disabled={confirming}
                     onClick={handleAdjustConfirm}
                   >
@@ -839,7 +840,7 @@ export default function ConsultationList() {
                   </button>
                   <button
                     className="btn text-white flex-fill py-10 fw-semibold"
-                    style={{ background: "#2ecc71" }}
+                    style={{ background: "#25a194" }}
                     disabled={calAdjSaving}
                     onClick={handleCalAdjustSave}
                   >

@@ -84,7 +84,7 @@ export default function TeacherAttendance() {
             </div>
             <div className="mt-auto">
               <button type="button" className="btn btn-primary-600 radius-8" onClick={() => fetchRecords()}>
-                <iconify-icon icon="ion:search-outline" className="me-4" />
+                <i className="ri-search-line me-4"></i>
                 조회
               </button>
             </div>
@@ -127,7 +127,7 @@ export default function TeacherAttendance() {
                       <td>
                         <div className="d-flex align-items-center gap-10">
                           <div className="w-36-px h-36-px bg-primary-100 rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                            <iconify-icon icon="mdi:account-tie" className="text-primary-600" />
+                            <i className="ri-user-settings-line text-primary-600"></i>
                           </div>
                           <span className="fw-medium">{r.teacherName}</span>
                         </div>

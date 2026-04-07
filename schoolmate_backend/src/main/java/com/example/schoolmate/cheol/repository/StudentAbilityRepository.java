@@ -24,6 +24,6 @@ public interface StudentAbilityRepository extends JpaRepository<StudentAbility, 
     @Query("SELECT sa FROM StudentAbility sa " +
            "JOIN FETCH sa.subject JOIN FETCH sa.academicTerm " +
            "WHERE sa.studentInfo.id = :studentId " +
-           "ORDER BY sa.academicTerm.schoolYear ASC, sa.academicTerm.semester ASC")
+           "ORDER BY sa.academicTerm.schoolYear.year ASC, sa.academicTerm.semester ASC")
     List<StudentAbility> findByStudentInfoId(@Param("studentId") Long studentId);
 }

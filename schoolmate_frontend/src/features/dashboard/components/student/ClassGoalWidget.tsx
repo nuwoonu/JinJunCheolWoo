@@ -45,7 +45,7 @@ export default function ClassGoalWidget({ classroomId }: Props) {
       <div className="d-flex align-items-center justify-content-between dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-focus-3-line text-primary-600" style={{ fontSize: 18 }} />
-          <h6 className="fw-bold mb-0 text-sm">이달의 학급 목표</h6>
+          <h6 className="fw-bold mb-0 text-lg">이달의 학급 목표</h6>
         </div>
         <span className="text-xs" style={{ color: '#9ca3af', lineHeight: 1 }}>
           {now.getFullYear()}년 {now.getMonth() + 1}월
@@ -55,12 +55,12 @@ export default function ClassGoalWidget({ classroomId }: Props) {
       {/* 본문 */}
       <div className="p-20">
         {loading ? (
-          <p className="text-secondary-light text-sm mb-0">불러오는 중...</p>
+          <p className="text-secondary-light text-md mb-0">불러오는 중...</p>
 
         ) : classroomId == null ? (
           <div className="text-center py-20">
             <i className="ri-error-warning-line text-secondary-light mb-8" style={{ fontSize: 32 }} />
-            <p className="text-secondary-light text-sm mb-0">학급 정보가 없습니다.</p>
+            <p className="text-secondary-light text-md mb-0">학급 정보가 없습니다.</p>
           </div>
 
         ) : goal ? (
@@ -74,7 +74,7 @@ export default function ClassGoalWidget({ classroomId }: Props) {
               marginBottom: 12,
               textAlign: 'center',
             }}>
-              <span style={{ fontWeight: 700, fontSize: 16, color: '#15803d' }}>
+              <span style={{ fontWeight: 700, fontSize: 18, color: '#15803d' }}>
                 {goal.month}월
               </span>
             </div>
@@ -87,14 +87,14 @@ export default function ClassGoalWidget({ classroomId }: Props) {
               padding: '12px 16px',
               marginBottom: 16,
             }}>
-              <p style={{ fontWeight: 700, fontSize: 15, color: '#374151', marginBottom: 4 }}>목표</p>
-              <p className="text-sm mb-0" style={{ color: '#374151', lineHeight: 1.6 }}>{goal.goal}</p>
+              <p style={{ fontWeight: 700, fontSize: 17, color: '#374151', marginBottom: 4 }}>목표</p>
+              <p className="text-md mb-0" style={{ color: '#374151', lineHeight: 1.6 }}>{goal.goal}</p>
             </div>
 
             {/* 3행: 실천 사항 */}
             {goal.actionItems.length > 0 && (
               <div>
-                <p style={{ fontWeight: 700, fontSize: 15, color: '#374151', marginBottom: 10 }}>실천 사항</p>
+                <p style={{ fontWeight: 700, fontSize: 17, color: '#374151', marginBottom: 10 }}>실천 사항</p>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {goal.actionItems.map((item, i) => (
                     <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -102,11 +102,11 @@ export default function ClassGoalWidget({ classroomId }: Props) {
                         width: 24, height: 24, minWidth: 24, borderRadius: '50%',
                         background: '#25A194', color: 'white',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 12, fontWeight: 700,
+                        fontSize: 14, fontWeight: 700,
                       }}>
                         {i + 1}
                       </span>
-                      <span className="text-sm" style={{ color: '#374151', lineHeight: 1.5 }}>{item}</span>
+                      <span className="text-md" style={{ color: '#374151', lineHeight: 1.5 }}>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -117,7 +117,7 @@ export default function ClassGoalWidget({ classroomId }: Props) {
         ) : (
           <div className="text-center py-20">
             <i className="ri-focus-3-line text-secondary-light mb-8" style={{ fontSize: 32 }} />
-            <p className="text-secondary-light text-sm mb-0">이번 달 학급 목표가 없습니다.</p>
+            <p className="text-secondary-light text-md mb-0">이번 달 학급 목표가 없습니다.</p>
           </div>
         )}
       </div>

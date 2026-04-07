@@ -211,7 +211,7 @@ export default function AbilityStudents() {
                       <td>
                         <div className="d-flex align-items-center gap-10">
                           <div className="w-36-px h-36-px bg-success-100 rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                            <iconify-icon icon="mdi:account" className="text-success-600" />
+                            <i className="ri-user-line text-success-600"></i>
                           </div>
                           <span className="fw-medium">{s.userName ?? "-"}</span>
                         </div>
@@ -223,7 +223,7 @@ export default function AbilityStudents() {
                       <td className="text-center">
                         {writtenSet.has(s.id) ? (
                           <span className="badge bg-success-100 text-success-600 px-8 py-4 radius-4 text-xs">
-                            <iconify-icon icon="mdi:check-circle" className="me-4" />작성됨
+                            <i className="ri-checkbox-circle-line me-4"></i>작성됨
                           </span>
                         ) : (
                           <span className="badge bg-neutral-100 text-secondary-light px-8 py-4 radius-4 text-xs">
@@ -237,7 +237,7 @@ export default function AbilityStudents() {
                           className="btn btn-sm btn-success-600 radius-4"
                           onClick={() => openModal(s)}
                         >
-                          <iconify-icon icon="mdi:text-box-edit-outline" />{" "}
+                          <i className="ri-edit-line"></i>{" "}
                           {writtenSet.has(s.id) ? "수정" : "입력"}
                         </button>
                       </td>

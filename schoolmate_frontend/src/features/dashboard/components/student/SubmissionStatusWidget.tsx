@@ -76,17 +76,17 @@ function HwRow({ item, last }: { item: HomeworkItem; last: boolean }) {
       <div className="d-flex align-items-center gap-8 mb-4">
         <span
           className="fw-medium flex-grow-1"
-          style={{ fontSize: 13, color: C.rowText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          style={{ fontSize: 15, color: C.rowText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         >
           {item.title}
         </span>
         {/* D-day: 과제 섹션 타이틀 색(C.hw), 상태 앞 */}
         {dday && (
-          <span className="fw-semibold flex-shrink-0" style={{ fontSize: 10, color: C.hw }}>{dday.label}</span>
+          <span className="fw-semibold flex-shrink-0" style={{ fontSize: 12, color: C.hw }}>{dday.label}</span>
         )}
         <span
           className="fw-semibold flex-shrink-0"
-          style={{ background: statusBg, color: statusColor, borderRadius: 4, padding: '2px 7px', fontSize: 10, minWidth: 44, textAlign: 'center' }}
+          style={{ background: statusBg, color: statusColor, borderRadius: 4, padding: '2px 7px', fontSize: 12, minWidth: 44, textAlign: 'center' }}
         >
           {statusLabel}
         </span>
@@ -94,7 +94,7 @@ function HwRow({ item, last }: { item: HomeworkItem; last: boolean }) {
           <a
             href={`/homework/${item.id}`}
             className="flex-shrink-0"
-            style={{ background: C.hw, color: '#fff', borderRadius: 4, padding: '2px 8px', fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap', textDecoration: 'none' }}
+            style={{ background: C.hw, color: '#fff', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', textDecoration: 'none' }}
           >
             제출하기
           </a>
@@ -102,11 +102,11 @@ function HwRow({ item, last }: { item: HomeworkItem; last: boolean }) {
       </div>
       {/* 메타 정보 */}
       <div className="d-flex align-items-center gap-8">
-        <span style={{ fontSize: 11, color: C.subText }}>{item.subjectName}</span>
-        <span style={{ fontSize: 11, color: C.divider }}>|</span>
-        <span style={{ fontSize: 11, color: C.subText }}>{item.teacherName} 선생님</span>
-        <span style={{ fontSize: 11, color: C.divider }}>|</span>
-        <span style={{ fontSize: 11, color: C.subText }}>{formatDate(item.createDate)}-{formatDate(item.dueDate)}</span>
+        <span style={{ fontSize: 13, color: C.subText }}>{item.subjectName}</span>
+        <span style={{ fontSize: 13, color: C.divider }}>|</span>
+        <span style={{ fontSize: 13, color: C.subText }}>{item.teacherName} 선생님</span>
+        <span style={{ fontSize: 13, color: C.divider }}>|</span>
+        <span style={{ fontSize: 13, color: C.subText }}>{formatDate(item.createDate)}-{formatDate(item.dueDate)}</span>
       </div>
     </div>
   )
@@ -128,17 +128,17 @@ function QzRow({ item, last }: { item: QuizItem; last: boolean }) {
       <div className="d-flex align-items-center gap-8 mb-4">
         <span
           className="fw-medium flex-grow-1"
-          style={{ fontSize: 13, color: C.rowText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          style={{ fontSize: 15, color: C.rowText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         >
           {item.title}
         </span>
         {/* D-day: 퀴즈 섹션 타이틀 색(C.qz), 상태 앞 */}
         {dday && (
-          <span className="fw-semibold flex-shrink-0" style={{ fontSize: 10, color: C.qz }}>{dday.label}</span>
+          <span className="fw-semibold flex-shrink-0" style={{ fontSize: 12, color: C.qz }}>{dday.label}</span>
         )}
         <span
           className="fw-semibold flex-shrink-0"
-          style={{ background: statusBg, color: statusColor, borderRadius: 4, padding: '2px 7px', fontSize: 10, minWidth: 44, textAlign: 'center' }}
+          style={{ background: statusBg, color: statusColor, borderRadius: 4, padding: '2px 7px', fontSize: 12, minWidth: 44, textAlign: 'center' }}
         >
           {statusLabel}
         </span>
@@ -146,7 +146,7 @@ function QzRow({ item, last }: { item: QuizItem; last: boolean }) {
           <a
             href={`/quiz/${item.id}`}
             className="flex-shrink-0"
-            style={{ background: C.qz, color: '#fff', borderRadius: 4, padding: '2px 8px', fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap', textDecoration: 'none' }}
+            style={{ background: C.qz, color: '#fff', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', textDecoration: 'none' }}
           >
             응시하기
           </a>
@@ -154,11 +154,11 @@ function QzRow({ item, last }: { item: QuizItem; last: boolean }) {
       </div>
       {/* 메타 정보 */}
       <div className="d-flex align-items-center gap-8">
-        <span style={{ fontSize: 11, color: C.subText }}>{item.subjectName}</span>
-        <span style={{ fontSize: 11, color: C.divider }}>|</span>
-        <span style={{ fontSize: 11, color: C.subText }}>{item.teacherName} 선생님</span>
-        <span style={{ fontSize: 11, color: C.divider }}>|</span>
-        <span style={{ fontSize: 11, color: C.subText }}>{formatDate(item.createDate)}-{formatDate(item.dueDate)}</span>
+        <span style={{ fontSize: 13, color: C.subText }}>{item.subjectName}</span>
+        <span style={{ fontSize: 13, color: C.divider }}>|</span>
+        <span style={{ fontSize: 13, color: C.subText }}>{item.teacherName} 선생님</span>
+        <span style={{ fontSize: 13, color: C.divider }}>|</span>
+        <span style={{ fontSize: 13, color: C.subText }}>{formatDate(item.createDate)}-{formatDate(item.dueDate)}</span>
       </div>
     </div>
   )
@@ -210,14 +210,14 @@ export default function SubmissionStatusWidget() {
       <div className="d-flex justify-content-between align-items-center dash-card-header">
         <div className="d-flex align-items-center gap-8">
           <i className="ri-file-list-3-line text-primary-600" style={{ fontSize: 18 }} />
-          <h6 className="fw-bold mb-0 text-sm">과제/퀴즈 현황</h6>
+          <h6 className="fw-bold mb-0 text-lg">과제/퀴즈 현황</h6>
         </div>
         {!loading && (
           <div className="d-flex gap-8">
-            <span className="fw-semibold" style={{ background: C.hwLight, color: C.hw, borderRadius: 20, padding: '1px 10px', fontSize: 11 }}>
+            <span className="fw-semibold" style={{ background: C.hwLight, color: C.hw, borderRadius: 20, padding: '1px 10px', fontSize: 13 }}>
               과제 {hwItems.length}
             </span>
-            <span className="fw-semibold" style={{ background: C.qzLight, color: C.qz, borderRadius: 20, padding: '1px 10px', fontSize: 11 }}>
+            <span className="fw-semibold" style={{ background: C.qzLight, color: C.qz, borderRadius: 20, padding: '1px 10px', fontSize: 13 }}>
               퀴즈 {qzItems.length}
             </span>
           </div>
@@ -233,7 +233,7 @@ export default function SubmissionStatusWidget() {
           {/* 과제 열 */}
           <div className="p-16 flex-grow-1" style={{ width: '50%', borderRight: `1px solid ${C.divider}`, overflowY: 'auto' }}>
             {/* 섹션 제목 — 리스트보다 큰 사이즈, 아이콘 없음 */}
-            <p className="fw-bold mb-12" style={{ fontSize: 15, color: C.hw }}>과제</p>
+            <p className="fw-bold mb-12" style={{ fontSize: 17, color: C.hw }}>과제</p>
             {hwItems.length > 0
               ? hwItems.map((item, i) => <HwRow key={item.id} item={item} last={i === hwItems.length - 1} />)
               : <p className="text-secondary-light text-sm text-center py-20 mb-0">등록된 과제가 없습니다.</p>
@@ -243,7 +243,7 @@ export default function SubmissionStatusWidget() {
           {/* 퀴즈 열 */}
           <div className="p-16 flex-grow-1" style={{ width: '50%', overflowY: 'auto' }}>
             {/* 섹션 제목 — 리스트보다 큰 사이즈, 아이콘 없음 */}
-            <p className="fw-bold mb-12" style={{ fontSize: 15, color: C.qz }}>퀴즈</p>
+            <p className="fw-bold mb-12" style={{ fontSize: 17, color: C.qz }}>퀴즈</p>
             {qzItems.length > 0
               ? qzItems.map((item, i) => <QzRow key={item.id} item={item} last={i === qzItems.length - 1} />)
               : <p className="text-secondary-light text-sm text-center py-20 mb-0">등록된 퀴즈가 없습니다.</p>

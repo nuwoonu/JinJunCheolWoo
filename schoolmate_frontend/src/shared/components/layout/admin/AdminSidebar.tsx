@@ -96,7 +96,7 @@ export default function AdminSidebar() {
         className="sidebar-close-btn"
         onClick={closeSidebar}
       >
-        <iconify-icon icon="radix-icons:cross-2" />
+        <i className="ri-close-line"></i>
       </button>
 
       <div>
@@ -299,7 +299,7 @@ export default function AdminSidebar() {
             title={selectedSchool?.name}
             style={{ fontSize: 18 }}
           >
-            <i className="ri-building-line" />
+            <i className="ri-school-line" />
           </div>
         ) : (
           <>
@@ -314,7 +314,7 @@ export default function AdminSidebar() {
                 }}
                 title={selectedSchool.name}
               >
-                <i className="ri-building-line me-1" />
+                <i className="ri-school-line me-1" />
                 {selectedSchool.name}
               </div>
             )}
@@ -336,7 +336,7 @@ export default function AdminSidebar() {
                   e.currentTarget.classList.replace("bg-neutral-200", "bg-neutral-100")
                 }
               >
-                <i className="ri-building-4-line" />
+                <i className="ri-school-line" />
                 <span>다른 학교 선택</span>
               </button>
             )}

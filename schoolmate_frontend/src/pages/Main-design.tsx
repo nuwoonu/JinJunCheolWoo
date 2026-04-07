@@ -107,6 +107,10 @@ export default function Main() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(
+    window.matchMedia("(display-mode: standalone)").matches ||
+    localStorage.getItem("pwa-installed") === "true"
+  );
 
   useEffect(() => {
     const onScroll = () => {
@@ -149,6 +153,13 @@ export default function Main() {
       return;
     }
 
+    // main.tsx에서 미리 캡처한 프롬프트 우선 사용
+    const captured = (window as any).__pwaInstallPrompt;
+    if (captured) {
+      setDeferredPrompt(captured);
+      setShowInstallPrompt(true);
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -159,6 +170,9 @@ export default function Main() {
     window.addEventListener("appinstalled", () => {
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
+      setIsInstalled(true);
+      localStorage.setItem("pwa-installed", "true");
+      delete (window as any).__pwaInstallPrompt;
     });
 
     return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -171,9 +185,26 @@ export default function Main() {
 
   // [soojin] PWA 설치 핸들러 - Main.tsx에서 이식
   const handleInstallClick = async () => {
+    console.group("[PWA] APP 다운로드 버튼 클릭");
+    console.log("deferredPrompt:", deferredPrompt);
+    console.log("window.__pwaInstallPrompt:", (window as any).__pwaInstallPrompt);
+    console.log("isInstalled (state):", isInstalled);
+    console.log("localStorage pwa-installed:", localStorage.getItem("pwa-installed"));
+    console.log("localStorage pwa-install-dismissed:", localStorage.getItem("pwa-install-dismissed"));
+    console.log("display-mode standalone:", window.matchMedia("(display-mode: standalone)").matches);
+    console.log("navigator.standalone (iOS):", (window.navigator as any).standalone);
+    console.log("userAgent:", navigator.userAgent);
+    console.log("serviceWorker 등록 여부:", "serviceWorker" in navigator);
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      console.log("serviceWorker registrations:", regs);
+    }
+    console.groupEnd();
+
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
+    console.log("[PWA] 설치 선택 결과:", outcome);
     if (outcome === "accepted") {
       setShowInstallPrompt(false);
     }
@@ -984,11 +1015,11 @@ export default function Main() {
             </div>
             <div className="d-flex gap-3 align-items-center">
               <a href="/login" className="btn-login-nav">
-                <i className="fa-solid fa-arrow-right-to-bracket me-1" />
+                <i className="ri-login-box-line me-1" />
                 로그인
               </a>
               <a href="/register" className="btn-register-nav">
-                <i className="fa-solid fa-user-plus me-1" />
+                <i className="ri-user-add-line me-1" />
                 회원가입
               </a>
             </div>
@@ -1024,10 +1055,12 @@ export default function Main() {
                 <a href="/register" className="btn-hero-primary">
                   지금 바로 시작하기
                 </a>
-                <button className="btn-hero-secondary" onClick={handleInstallClick}>
-                  APP 다운로드
-                </button>{" "}
-                {/* [soojin] 미리보기 → APP 다운로드 */}
+                {!isInstalled && (
+                  <button className="btn-hero-secondary" onClick={handleInstallClick}>
+                    APP 다운로드
+                  </button>
+                )}
+                {/* [soojin] 미리보기 → APP 다운로드 / 설치 후 버튼 숨김 */}
               </div>
             </div>
 
@@ -1392,12 +1425,13 @@ export default function Main() {
           <div className="sm-inner" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div className="reveal" style={{ textAlign: "center" }}>
               <div className="section-label">COMPARISON</div>
-              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700 }}>
-                <span style={{ color: "#000" }}>기존 시스템 </span> vs{" "}
+              <h2 className="sm-section-title" style={{ fontSize: "2rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", flexWrap: "nowrap" }}>
+                <span style={{ color: "#000" }}>기존 시스템</span>
+                <span>vs</span>
                 <img
                   src="/images/schoolmate_logo.png"
                   alt="School Mate"
-                  style={{ height: "5.5rem", verticalAlign: "middle" }}
+                  style={{ height: "5.5rem" }}
                 />
               </h2>
               <p
@@ -1501,17 +1535,17 @@ export default function Main() {
           <div className="sm-inner" style={{ position: "relative", zIndex: 1 }}>
             <div className="reveal">
               <h2 className="cta-title">
-                <img
-                  src="/images/schoolmateLogo.png"
-                  alt="SchoolMate"
-                  style={{
-                    height: "1.5em",
-                    verticalAlign: "middle",
-                    filter: "brightness(0) invert(1)",
-                    marginBottom: "4px",
-                  }}
-                />
-                와 함께
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25em" }}>
+                  <img
+                    src="/images/schoolmateLogo.png"
+                    alt="SchoolMate"
+                    style={{
+                      height: "1.5em",
+                      filter: "brightness(0) invert(1)",
+                    }}
+                  />
+                  <span>와 함께</span>
+                </span>
                 <br />
                 학사 관리의 변화를 경험하세요
               </h2>

@@ -481,13 +481,13 @@ export default function ClassBoard() {
                         )}
                         {/* [soojin] 신규 배지 + 제목 — 태그 아래 별도 줄 */}
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                          {/* [soojin] 새글 표시 - 가정통신문 위젯과 동일한 스타일로 통일 */}
-                          {isNew && (
-                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>새글</span>
-                          )}
                           <span style={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>
                             {board.title}
                           </span>
+                          {/* [soojin] 새글 표시 - 제목 오른쪽 고정 */}
+                          {isNew && (
+                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>새글</span>
+                          )}
                         </div>
 
                         {/* [soojin] 작성자 / 날짜 / 조회수 / 좋아요 / 댓글 — 목표 이미지 간격 맞춤 */}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import api from '@/shared/api/authApi';
+import ParentBackButton from "@/shared/components/ParentBackButton";
 import { getChildGrades, getTerms, getChildClassInfo } from "@/shared/api/grade";
 import type { GradeResponseDTO, TermDTO, TestType, ChildClassInfoDTO } from "@/shared/api/grade";
 
@@ -162,10 +163,10 @@ export default function ParentGrades() {
         <div>
           <h6 style={{ fontWeight: 600, margin: 0 }}>자녀 성적 조회</h6>
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           {children.length > 1 && (
             <select
-              style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 14, background: "#fff" }}
+              style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 13, background: "#fff", color: "#374151", fontWeight: 500, cursor: "pointer" }}
               value={selectedChild ?? ""}
               onChange={(e) => setSelectedChild(Number(e.target.value))}
             >
@@ -177,7 +178,7 @@ export default function ParentGrades() {
             </select>
           )}
           <select
-            style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 14, background: "#fff" }}
+            style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 13, background: "#fff", color: "#374151", fontWeight: 500, cursor: "pointer" }}
             value={selectedTermId ?? ""}
             onChange={(e) => setSelectedTermId(Number(e.target.value))}
           >
@@ -187,6 +188,7 @@ export default function ParentGrades() {
               </option>
             ))}
           </select>
+          <ParentBackButton />
         </div>
       </div>
 
