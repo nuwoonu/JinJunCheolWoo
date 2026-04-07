@@ -30,8 +30,9 @@ public class AdminNoticeApiController {
     @GetMapping
     public ResponseEntity<Page<BoardDTO.Response>> list(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String searchType,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(boardService.getSchoolNotices(keyword, pageable));
+        return ResponseEntity.ok(boardService.getSchoolNotices(keyword, searchType, pageable));
     }
 
     @GetMapping("/{id}")

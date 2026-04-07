@@ -4,6 +4,7 @@ import { useAuth } from '@/shared/contexts/AuthContext'
 import { useProfileModal } from '@/shared/contexts/ProfileModalContext'
 import { getRoleContexts } from '@/shared/api/authApi'
 import type { RoleContext } from '@/shared/api/authApi'
+import { ADMIN_ROUTES } from '@/shared/constants/routes'
 
 const menuItemStyle: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 8,
@@ -21,11 +22,13 @@ export default function ProfileDropdown() {
   const [open, setOpen] = useState(false)
 
   const isHub = pathname === '/hub'
+  const isAdminPage = pathname.startsWith('/admin')
   const ref = useRef<HTMLDivElement>(null)
   const [allContexts, setAllContexts] = useState<RoleContext[]>([])
 
   const roleRequests = user?.roleRequests ?? []
   const isSuperAdmin = user?.grants?.some(g => g.grantedRole === 'SUPER_ADMIN') ?? false
+  const hasAdminAccess = (user?.grants?.length ?? 0) > 0 && !isSuperAdmin
   // 역할이 2개 이상이거나 비활성(승인 대기·거부·차단) 역할이 존재하면 허브 진입 버튼 노출
   const showHubButton =
     roleRequests.length + (isSuperAdmin ? 1 : 0) >= 2 ||
@@ -134,6 +137,29 @@ export default function ProfileDropdown() {
               <i className="ri-swap-box-line" style={{ fontSize: 15 }} />
               역할 전환
             </button>
+          )}
+          {hasAdminAccess && (
+            isAdminPage ? (
+              <button
+                onClick={() => { setOpen(false); navigate('/teacher/dashboard') }}
+                style={menuItemStyle}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--neutral-100, #f3f4f6)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+              >
+                <i className="ri-home-smile-line" style={{ fontSize: 15 }} />
+                교사 대시보드
+              </button>
+            ) : (
+              <button
+                onClick={() => { setOpen(false); navigate(ADMIN_ROUTES.MAIN) }}
+                style={menuItemStyle}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--neutral-100, #f3f4f6)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+              >
+                <i className="ri-shield-keyhole-line" style={{ fontSize: 15 }} />
+                관리 페이지
+              </button>
+            )
           )}
           <div style={{ height: 1, background: 'var(--neutral-100, #f3f4f6)' }} />
           <button
