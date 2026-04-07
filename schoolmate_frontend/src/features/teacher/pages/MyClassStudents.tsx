@@ -224,9 +224,10 @@ export default function TeacherMyClassStudents() {
   const handleSaveBehavior = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedStudent) return;
-    const selectedTerm = academicTerms.find((t) => t.id === behaviorForm.academicTermId);
+    const selectedTerm =
+      academicTerms.find((t) => t.id === behaviorForm.academicTermId) ?? academicTerms[0];
     if (!selectedTerm) {
-      setBehaviorError("학기를 선택해주세요.");
+      setBehaviorError("학기 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
     setBehaviorSaving(true);
@@ -1338,18 +1339,17 @@ export default function TeacherMyClassStudents() {
                           onClick={() => {
                             setBehaviorError(null);
                             Promise.all([
-                              api.get("/admin/settings/history"),
+                              api.get("/grades/terms"),
                               api.get(`/behavior-records/student/${selectedStudent!.studentId}`),
                             ])
                               .then(([termsRes, recordsRes]) => {
-                                const terms = (termsRes.data ?? []).map((t: { id: number; displayName: string; schoolYear: number; semester: number }) => ({ id: t.id, displayName: t.displayName, schoolYear: t.schoolYear, semester: t.semester }));
+                                const terms = (termsRes.data ?? []).map((t: { termId: number; displayName: string; schoolYear: number; semester: number }) => ({ id: t.termId, displayName: t.displayName, schoolYear: t.schoolYear, semester: t.semester }));
                                 const records = recordsRes.data ?? [];
                                 setAcademicTerms(terms);
                                 setBehaviorRecords(records);
-                                const firstTermId = terms[0]?.id ?? null;
                                 const firstTerm = terms[0];
                                 const existing = firstTerm ? records.find((r: { schoolYear: number; semester: number; specialNotes?: string }) => r.schoolYear === firstTerm.schoolYear && r.semester === firstTerm.semester) : null;
-                                setBehaviorForm({ academicTermId: firstTermId, specialNotes: existing?.specialNotes ?? "" });
+                                setBehaviorForm({ academicTermId: firstTerm?.id ?? null, specialNotes: existing?.specialNotes ?? "" });
                               })
                               .catch(() => { setBehaviorRecords([]); setBehaviorForm({ academicTermId: null, specialNotes: "" }); });
                             setSubView("behavior");
@@ -2087,34 +2087,9 @@ export default function TeacherMyClassStudents() {
                     )}
                     <div className="row gy-16">
                       <div className="col-12">
-                        <label className="form-label fw-semibold text-sm">학기 *</label>
-                        {academicTerms.length === 0 ? (
-                          <div className="text-secondary-light text-sm py-8">
-                            <span className="spinner-border spinner-border-sm me-8" />
-                            학기 목록 불러오는 중...
-                          </div>
-                        ) : (
-                          <select
-                            className="form-select"
-                            value={behaviorForm.academicTermId ?? ""}
-                            onChange={(e) => {
-                              const newTermId = Number(e.target.value);
-                              const term = academicTerms.find((t) => t.id === newTermId);
-                              const existing = term ? behaviorRecords.find((r) => r.schoolYear === term.schoolYear && r.semester === term.semester) : null;
-                              setBehaviorForm({ academicTermId: newTermId, specialNotes: existing?.specialNotes ?? "" });
-                            }}
-                            required
-                          >
-                            {academicTerms.map((t) => (
-                              <option key={t.id} value={t.id}>{t.displayName}</option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-                      <div className="col-12">
                         <label className="form-label fw-semibold text-sm">행동특성 및 종합의견 *</label>
                         <div className="text-xs text-secondary-light mb-6">
-                          학년도+학기 기준으로 저장되며, 기존 내용이 있으면 덮어씁니다.
+                          기존 내용이 있으면 덮어씁니다.
                         </div>
                         <textarea
                           className="form-control"
