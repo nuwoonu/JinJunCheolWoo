@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 import MiniCalendar from "@/shared/components/MiniCalendar";
 // @ts-ignore [woo] 추후 사용 예정
 import NeisEventsWidget from "@/shared/components/NeisEventsWidget";
@@ -106,25 +107,15 @@ export default function SchoolSchedule() {
     <DashboardLayout>
       {/* [soojin] 화면 꽉 채우기: 테이블 내부 스크롤, 카드 flex:1 */}
       <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 4.5rem - 48px)" }}>
-      {/* [soojin] 플랜 패턴 적용: 제목 + 뷰 토글 버튼 */}
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10, flexShrink: 0 }}>
-        <h6
-          style={{
-            fontWeight: 700,
-            color: "#111827",
-            marginBottom: 0,
-            display: "flex",
-            alignItems: "baseline",
-            gap: 8,
-          }}
-        >
+      {/* 제목 행 */}
+      <div style={{ marginBottom: 10, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 0, display: "flex", alignItems: "baseline", gap: 8 }}>
           학교 일정
           {view === "list" && (
             <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>
               {isFiltered ? (
                 <>
-                  <span style={{ fontWeight: 600, color: "#111827" }}>{filtered.length}건</span> / 전체 {events.length}
-                  건
+                  <span style={{ fontWeight: 600, color: "#111827" }}>{filtered.length}건</span> / 전체 {events.length}건
                 </>
               ) : (
                 `전체 ${events.length}건`
@@ -132,82 +123,68 @@ export default function SchoolSchedule() {
             </span>
           )}
         </h6>
-        {/* [soojin] 목록/달력 토글 - 플랜 버튼 스타일 적용 */}
-        <div style={{ display: "flex", gap: 6 }}>
+        <ParentBackButton />
+      </div>
+
+      {/* [soojin] 컨트롤 바: 필터(좌) + 목록/달력 토글(우) 한 행에 배치 */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
+        {/* 좌측: 목록 뷰일 때만 필터 표시 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {view === "list" && (
+            <>
+              <div style={{ position: "relative" }}>
+                <select
+                  value={filterGrade}
+                  onChange={(e) => setFilterGrade(e.target.value)}
+                  style={{ appearance: "none", padding: "5px 28px 5px 10px", fontSize: 13, borderRadius: 6, border: "1px solid #d1d5db", color: "#374151", background: "#fff", cursor: "pointer", minWidth: 95 }}
+                >
+                  <option value="">전체 학년</option>
+                  <option value="1">1학년</option>
+                  <option value="2">2학년</option>
+                  <option value="3">3학년</option>
+                </select>
+                <i className="ri-arrow-down-s-line" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#6b7280", fontSize: 14 }} />
+              </div>
+              <div style={{ position: "relative" }}>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  style={{ appearance: "none", padding: "5px 28px 5px 10px", fontSize: 13, borderRadius: 6, border: "1px solid #d1d5db", color: "#374151", background: "#fff", cursor: "pointer", minWidth: 105 }}
+                >
+                  <option value="">전체 유형</option>
+                  {Object.entries(EVENT_TYPE_LABEL).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+                <i className="ri-arrow-down-s-line" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#6b7280", fontSize: 14 }} />
+              </div>
+              <button onClick={handleSearch} style={{ padding: "5px 12px", fontSize: 13, borderRadius: 6, background: "#25A194", border: "none", color: "#fff", cursor: "pointer" }}>
+                조회
+              </button>
+              <button onClick={handleReset} style={{ padding: "5px 12px", fontSize: 13, borderRadius: 6, background: "#fff", border: "1px solid #d1d5db", color: "#374151", cursor: "pointer" }}>
+                초기화
+              </button>
+            </>
+          )}
+        </div>
+        {/* 우측: 목록/달력 토글 버튼 */}
+        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
           <button
             onClick={() => setView("list")}
-            style={{
-              padding: "5px 12px",
-              fontSize: 13,
-              borderRadius: 6,
-              cursor: "pointer",
-              background: view === "list" ? "#25A194" : "#fff",
-              border: view === "list" ? "none" : "1px solid #d1d5db",
-              color: view === "list" ? "#fff" : "#374151",
-            }}
+            style={{ padding: "5px 12px", fontSize: 13, borderRadius: 6, cursor: "pointer", background: view === "list" ? "#25A194" : "#fff", border: view === "list" ? "none" : "1px solid #d1d5db", color: view === "list" ? "#fff" : "#374151" }}
           >
             <i className="ri-list-check" style={{ marginRight: 4 }} />
             목록
           </button>
           <button
             onClick={() => setView("calendar")}
-            style={{
-              padding: "5px 12px",
-              fontSize: 13,
-              borderRadius: 6,
-              cursor: "pointer",
-              background: view === "calendar" ? "#25A194" : "#fff",
-              border: view === "calendar" ? "none" : "1px solid #d1d5db",
-              color: view === "calendar" ? "#fff" : "#374151",
-            }}
+            style={{ padding: "5px 12px", fontSize: 13, borderRadius: 6, cursor: "pointer", background: view === "calendar" ? "#25A194" : "#fff", border: view === "calendar" ? "none" : "1px solid #d1d5db", color: view === "calendar" ? "#fff" : "#374151" }}
           >
             <i className="ri-calendar-2-line" style={{ marginRight: 4 }} />
             달력
           </button>
         </div>
       </div>
-
-      {/* [soojin] 컨트롤 바: 필터만 카드 밖 좌측, 년/월 네비는 카드 안으로 이동 */}
-      {view === "list" && (
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 12, gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
-          {/* 학년 select */}
-          <div style={{ position: "relative" }}>
-            <select
-              value={filterGrade}
-              onChange={(e) => setFilterGrade(e.target.value)}
-              style={{ appearance: "none", padding: "5px 28px 5px 10px", fontSize: 13, borderRadius: 6, border: "1px solid #d1d5db", color: "#374151", background: "#fff", cursor: "pointer", minWidth: 95 }}
-            >
-              <option value="">전체 학년</option>
-              <option value="1">1학년</option>
-              <option value="2">2학년</option>
-              <option value="3">3학년</option>
-            </select>
-            <i className="ri-arrow-down-s-line" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#6b7280", fontSize: 14 }} />
-          </div>
-          {/* 유형 select */}
-          <div style={{ position: "relative" }}>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              style={{ appearance: "none", padding: "5px 28px 5px 10px", fontSize: 13, borderRadius: 6, border: "1px solid #d1d5db", color: "#374151", background: "#fff", cursor: "pointer", minWidth: 105 }}
-            >
-              <option value="">전체 유형</option>
-              {Object.entries(EVENT_TYPE_LABEL).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
-            <i className="ri-arrow-down-s-line" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#6b7280", fontSize: 14 }} />
-          </div>
-          {/* 조회 버튼 */}
-          <button onClick={handleSearch} style={{ padding: "5px 12px", fontSize: 13, borderRadius: 6, background: "#25A194", border: "none", color: "#fff", cursor: "pointer" }}>
-            조회
-          </button>
-          {/* 초기화 버튼 */}
-          <button onClick={handleReset} style={{ padding: "5px 12px", fontSize: 13, borderRadius: 6, background: "#fff", border: "1px solid #d1d5db", color: "#374151", cursor: "pointer" }}>
-            초기화
-          </button>
-        </div>
-      )}
 
       {/* [soojin] 카드: flex:1, 화면 꽉 채움 (플랜 패턴) */}
       <div

@@ -1,7 +1,10 @@
 package com.example.schoolmate.domain.resources.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 
 import com.example.schoolmate.domain.resources.constant.AssetStatus;
@@ -9,9 +12,8 @@ import com.example.schoolmate.domain.resources.constant.AssetStatus;
 @Entity
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @DiscriminatorValue("ASSET")
 public class SchoolAsset extends BaseResource {
     @Column(unique = true)

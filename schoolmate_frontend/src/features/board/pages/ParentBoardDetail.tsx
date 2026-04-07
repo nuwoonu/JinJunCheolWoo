@@ -5,6 +5,7 @@ import 'react-quill-new/dist/quill.snow.css'
 import api from '@/shared/api/authApi'
 import { useAuth } from '@/shared/contexts/AuthContext'
 import DashboardLayout from '@/shared/components/layout/DashboardLayout'
+import ParentBackButton from '@/shared/components/ParentBackButton'
 
 // [soojin] /board/parent/:id - 학부모 게시판 상세 (ClassBoardDetail.tsx 형식)
 
@@ -274,7 +275,7 @@ export default function ParentBoardDetail() {
   return (
     <DashboardLayout>
       {/* 상단 네비게이션 */}
-      <div style={{ maxWidth: 860, margin: '0 auto 24px' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link
           to="/board/parent"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: '#374151', textDecoration: 'none', padding: '5px 10px', background: '#fff', border: '1px solid #d1d5db', borderRadius: 6, fontWeight: 500 }}
@@ -282,6 +283,7 @@ export default function ParentBoardDetail() {
           <i className="ri-arrow-left-line" />
           목록으로
         </Link>
+        <ParentBackButton />
       </div>
 
       {/* 게시글 카드 */}

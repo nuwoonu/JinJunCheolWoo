@@ -28,6 +28,9 @@ public interface BoardRepositoryCustom {
     // [soojin] keyword 검색 지원 추가 (가정통신문 학부모 뷰 검색 기능)
     Page<Board> findParentByClassroom(BoardType type, Long classroomId, int grade, String keyword, Pageable pageable);
 
+    /** 학부모용 학교 공지 - schoolId를 직접 받아 필터링 (SchoolContextHolder 미사용) */
+    Page<Board> findSchoolNoticeBySchoolId(Long schoolId, String keyword, String searchType, Pageable pageable);
+
     /** 최근 게시물 조회 (대시보드용) */
     List<Board> findRecentByType(BoardType type, int limit);
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "@/shared/api/authApi";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 
 // [woo] /attendance/parent - 학부모 자녀 출결 현황 조회
 // 좌우 2패널: 왼쪽(출결 안내 파란 섹션 + 자녀 카운트 + 월별 통계), 오른쪽(월별 상세 테이블)
@@ -188,6 +189,7 @@ export default function ParentAttendance() {
         <div>
           <h6 className="fw-semibold mb-0">자녀 출결 관리</h6>
         </div>
+        <ParentBackButton />
       </div>
 
       {/* [woo] 출결 안내 배너 - 가정통신문 안내 배너 동일 스타일 */}

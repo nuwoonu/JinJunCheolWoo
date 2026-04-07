@@ -719,7 +719,7 @@ export default function HomeworkList() {
                   </div>
                 ) : (
                   <div
-                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 }}
+                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))", gap: 14 }}
                   >
                     {quizzes.map((q) => {
                       const teacherInfo = splitTeacherName(q.teacherName);

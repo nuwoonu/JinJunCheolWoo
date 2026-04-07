@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import api from '@/shared/api/authApi';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import DashboardLayout from '@/shared/components/layout/DashboardLayout';
+import ParentBackButton from "@/shared/components/ParentBackButton";
 import {
   TIME_SLOTS,
   TIME_MAP,
@@ -280,7 +281,7 @@ export default function ConsultationReservation() {
     <DashboardLayout>
       <div style={{ background: "#fff", borderRadius: 16, padding: "24px" }}>
         {/* 헤더 */}
-        <div className="d-flex align-items-center gap-12 mb-24">
+        <div className="d-flex align-items-center justify-content-between mb-24">
           <div>
             <h5 className="fw-bold mb-4">{isTeacher ? "상담 일정" : "상담 신청"}</h5>
             <p className="text-secondary-light text-sm mb-0">
@@ -289,6 +290,7 @@ export default function ConsultationReservation() {
                 : "원하시는 날짜와 시간을 선택해주세요"}
             </p>
           </div>
+          <ParentBackButton />
         </div>
 
         {successMsg && (

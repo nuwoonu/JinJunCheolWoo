@@ -11,13 +11,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED) // 공통 정보와 상세 정보를 테이블로 분리
 @DiscriminatorColumn(name = "resource_type") // 구분을 위한 컬럼 (FACILITY, ASSET)
 @Getter
 @Setter
+@SuperBuilder
+@NoArgsConstructor
 public abstract class BaseResource extends SchoolBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

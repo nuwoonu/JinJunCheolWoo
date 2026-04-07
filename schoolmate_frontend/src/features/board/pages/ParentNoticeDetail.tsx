@@ -5,6 +5,7 @@ import "react-quill-new/dist/quill.snow.css";
 import api from "@/shared/api/authApi";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 
 // [soojin] /board/parent-notice/:id - 가정통신문 상세 (ClassBoardDetail.tsx 형식으로 UI 통일)
 
@@ -189,8 +190,8 @@ export default function ParentNoticeDetail() {
 
   return (
     <DashboardLayout>
-      {/* [soojin] 상단 목록으로 버튼 — 원형+h5 브레드크럼에서 변경 */}
-      <div style={{ maxWidth: 860, margin: "0 auto 24px" }}>
+      {/* [soojin] 상단 목록으로 버튼 */}
+      <div style={{ maxWidth: 860, margin: "0 auto 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link
           to="/board/parent-notice"
           style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#374151", textDecoration: "none", padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontWeight: 500 }}
@@ -198,6 +199,7 @@ export default function ParentNoticeDetail() {
           <i className="ri-arrow-left-line" />
           목록으로
         </Link>
+        <ParentBackButton />
       </div>
 
       {/* [soojin] 게시글 카드 — ClassBoardDetail 형식 */}

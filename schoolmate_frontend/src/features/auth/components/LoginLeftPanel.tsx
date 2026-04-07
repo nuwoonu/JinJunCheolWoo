@@ -225,7 +225,8 @@ function ParentSlide() {
             <div className="lp-parent-divider" />
 
             <div className="lp-parent-attend-title">
-              <i className="ri-checkbox-circle-line" />
+              {/* [soojin] 출결 현황 아이콘 색상 다른 아이콘과 통일 */}
+              <i className="ri-checkbox-circle-line text-primary-600" />
               출결 현황
             </div>
 

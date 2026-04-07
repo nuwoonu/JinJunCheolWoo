@@ -4,9 +4,33 @@
 
 import { useEffect, useState } from "react"
 
+// [soojin] 교시별 시간 범위 — 현재 시간과 비교해 활성 교시 강조
+const PERIOD_TIMES: Record<number, { start: string; end: string }> = {
+  1: { start: '09:00', end: '09:50' },
+  2: { start: '10:00', end: '10:50' },
+  3: { start: '11:00', end: '11:50' },
+  4: { start: '12:00', end: '12:50' },
+  5: { start: '13:50', end: '14:40' },
+  6: { start: '14:50', end: '15:40' },
+  7: { start: '15:50', end: '16:40' },
+  8: { start: '16:50', end: '17:40' },
+}
+
+function getCurrentPeriod(): number | null {
+  const now = new Date()
+  const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  for (const [p, { start, end }] of Object.entries(PERIOD_TIMES)) {
+    if (hhmm >= start && hhmm <= end) return Number(p)
+  }
+  return null
+}
+
 interface TimetableItem {
   period: number
   subject: string
+  // [soojin] 선생님·학급 정보 (API 응답에 포함될 경우 표시)
+  teacher?: string
+  className?: string
 }
 
 interface CalendarEvent {
@@ -30,9 +54,17 @@ const EVENT_COLOR: Record<string, string> = {
   ETC:     '#6c757d',
 }
 
+
 export default function TodayTimetableWidget({ grade, classNum, schoolId, events }: Props) {
   const [timetable, setTimetable] = useState<TimetableItem[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentPeriod, setCurrentPeriod] = useState<number | null>(getCurrentPeriod)
+
+  // [soojin] 1분마다 현재 교시 갱신
+  useEffect(() => {
+    const id = setInterval(() => setCurrentPeriod(getCurrentPeriod()), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     if (!grade || !classNum) return
@@ -75,16 +107,37 @@ export default function TodayTimetableWidget({ grade, classNum, schoolId, events
           <p className="text-secondary-light text-sm text-center py-20 mb-0">오늘 시간표 정보가 없습니다.</p>
         ) : (
           <>
-            {timetable.map((item, i) => (
-              <div
-                key={item.period}
-                className="p-10 bg-neutral-50 rounded-8 d-flex justify-content-between align-items-center"
-                style={{ marginBottom: i < timetable.length - 1 || hasEvents ? 8 : 0 }}
-              >
-                <span className="text-sm fw-bold text-secondary-light">{item.period}교시</span>
-                <span className="fw-medium text-dark text-sm">{item.subject}</span>
-              </div>
-            ))}
+            {/* [soojin] 현재 교시 = 민트 배경, 나머지 = 연한 회색 배경 */}
+            {timetable.map((item, i) => {
+              const isActive = item.period === currentPeriod
+              return (
+                <div
+                  key={item.period}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    background: isActive ? '#e6f7f6' : '#f6f7f8',
+                    border: `1px solid ${isActive ? '#25A194' : '#e5e7eb'}`,
+                    borderRadius: 12,
+                    padding: '12px 16px',
+                    marginBottom: i < timetable.length - 1 || hasEvents ? 8 : 0,
+                  }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 600, color: isActive ? '#25A194' : '#9ca3af', minWidth: 36, flexShrink: 0 }}>
+                    {item.period}교시
+                  </span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: isActive ? '#111827' : '#6b7280' }}>{item.subject}</div>
+                    {(item.teacher || item.className) && (
+                      <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
+                        {[item.teacher, item.className].filter(Boolean).join(' · ')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
 
             {/* [soojin] 학부모 대시보드 전달용 오늘의 학사일정 */}
             {hasEvents && events!.map((evt, i) => {

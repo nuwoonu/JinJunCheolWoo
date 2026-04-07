@@ -57,20 +57,43 @@ const sectionStyle: React.CSSProperties = {
   marginBottom: 16,
 };
 
+// [soojin] 학교 선택 페이지 스타일로 통일
 const inputStyle: React.CSSProperties = {
-  padding: "9px 12px",
-  border: `1px solid ${border}`,
-  borderRadius: 8,
-  fontSize: 14,
+  padding: "5px 8px",
+  border: "1px solid #d1d5db",
+  borderRadius: 6,
+  fontSize: 13,
   outline: "none",
   width: "100%",
   boxSizing: "border-box",
+  background: "#fff",
+  color: "#374151",
+};
+
+const th: React.CSSProperties = {
+  padding: "12px 16px",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#6b7280",
+  background: "#f9fafb",
+  borderBottom: "1px solid #e5e7eb",
+  whiteSpace: "nowrap",
+  textAlign: "left",
+};
+
+const td: React.CSSProperties = {
+  padding: "14px 16px",
+  fontSize: 13,
+  color: "#374151",
+  borderBottom: "1px solid #f3f4f6",
+  verticalAlign: "middle",
+  whiteSpace: "nowrap",
 };
 
 const btnPrimary = (disabled?: boolean): React.CSSProperties => ({
-  padding: "9px 20px",
+  padding: "5px 12px",
   border: "none",
-  borderRadius: 8,
+  borderRadius: 6,
   fontSize: 13,
   fontWeight: 600,
   background: disabled ? "#d1d5db" : primary,
@@ -130,7 +153,10 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
             {selected.officeOfEducation ? ` · ${selected.officeOfEducation}` : ""}
           </div>
         </div>
-        <button onClick={onClear} style={{ ...btnPrimary(), background: "#f3f4f6", color: "#374151" }}>
+        <button
+          onClick={onClear}
+          style={{ padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, color: "#374151", cursor: "pointer", whiteSpace: "nowrap" }}
+        >
           변경
         </button>
       </div>
@@ -141,27 +167,29 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
     <>
       {/* 검색 폼 */}
       <form onSubmit={handleSearch}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input
-            style={{ ...inputStyle, flex: 1, minWidth: 160 }}
-            placeholder={`${title} 이름 (예) 서울중학교`}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <select
-            value={schoolKind}
-            onChange={(e) => setSchoolKind(e.target.value)}
-            style={{ ...inputStyle, width: "auto", flexShrink: 0 }}
-          >
-            {SCHOOL_KINDS.map((k) => (
-              <option key={k} value={k}>{k || "전체 학교 종류"}</option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            style={btnPrimary(loading)}
-            disabled={loading}
-          >
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+            <select
+              value={schoolKind}
+              onChange={(e) => setSchoolKind(e.target.value)}
+              style={{ ...inputStyle, padding: "5px 28px 5px 8px", width: "auto", flexShrink: 0, appearance: "none", cursor: "pointer" }}
+            >
+              {SCHOOL_KINDS.map((k) => (
+                <option key={k} value={k}>{k || "전체 학교 종류"}</option>
+              ))}
+            </select>
+            <i className="bi bi-chevron-down" style={{ position: "absolute", right: 8, color: "#9ca3af", fontSize: 12, pointerEvents: "none" }} />
+          </div>
+          <div style={{ position: "relative", display: "inline-flex", alignItems: "center", flex: 1, minWidth: 160 }}>
+            <i className="bi bi-search" style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }} />
+            <input
+              style={{ ...inputStyle, paddingLeft: 28 }}
+              placeholder={`${title} 이름 (예) 서울중학교`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <button type="submit" style={btnPrimary(loading)} disabled={loading}>
             {loading ? "검색 중..." : "검색"}
           </button>
         </div>
@@ -169,47 +197,37 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
 
       {/* 검색 결과 */}
       {searched && (
-        <div style={{ marginTop: 12, border: `1px solid ${border}`, borderRadius: 8, overflow: "hidden" }}>
-          <div style={{
-            padding: "10px 16px",
-            borderBottom: `1px solid ${border}`,
-            background: "#f9fafb",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>검색 결과</span>
-            <span style={{ fontSize: 12, color: textSub }}>총 {totalElements.toLocaleString()}개</span>
-          </div>
-
-          {schools.length === 0 ? (
-            <div style={{ padding: "32px", textAlign: "center", color: textSub, fontSize: 14 }}>
-              검색 결과가 없습니다.
-            </div>
-          ) : (
-            // [soojin] overflowX 래퍼 제거 → 브라우저 자동 컬럼 분배
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <div style={{ marginTop: 12 }}>
+          {schools.length > 0 && (
+            <p style={{ fontSize: 12, color: textSub, marginBottom: 6, textAlign: "right" }}>
+              총 {totalElements.toLocaleString()}개
+            </p>
+          )}
+          <div style={{ border: `1px solid ${border}`, borderRadius: 8, overflow: "hidden" }}>
+            {schools.length === 0 ? (
+              <div style={{ padding: "48px 24px", textAlign: "center", color: "#9ca3af" }}>
+                <i className="bi bi-search" style={{ fontSize: 36, display: "block", marginBottom: 12, opacity: 0.3 }} />
+                <p style={{ margin: 0, fontSize: 14 }}>검색 결과가 없습니다.</p>
+              </div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: "#f9fafb" }}>
+                  <tr>
                     {["학교명", "종류", "관할 교육청", "주소", ""].map((h) => (
-                      <th key={h} style={{
-                        padding: "10px 14px",
-                        fontWeight: 600,
-                        color: "#374151",
-                        textAlign: "left",
-                        borderBottom: `1px solid ${border}`,
-                        whiteSpace: "nowrap",
-                      }}>{h}</th>
+                      <th key={h} style={th}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {schools.filter((s) => s.id !== excludeId).map((s) => (
-                    <tr key={s.id} style={{ borderBottom: `1px solid ${border}` }}
+                    <tr
+                      key={s.id}
+                      style={{ borderBottom: "1px solid #f3f4f6" }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}>
-                      <td style={{ padding: "10px 14px", fontWeight: 500 }}>{s.name}</td>
-                      <td style={{ padding: "10px 14px" }}>
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                    >
+                      <td style={{ ...td, fontWeight: 500 }}>{s.name}</td>
+                      <td style={td}>
                         <span style={{
                           background: "#f3f4f6", color: "#374151",
                           borderRadius: 6, padding: "2px 8px", fontSize: 12, fontWeight: 500,
@@ -217,20 +235,16 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
                           {s.schoolKind ?? "-"}
                         </span>
                       </td>
-                      <td style={{ padding: "10px 14px", color: textSub }}>{s.officeOfEducation ?? "-"}</td>
-                      <td style={{
-                        padding: "10px 14px", color: textSub,
-                        maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}>
+                      <td style={{ ...td, color: textSub }}>{s.officeOfEducation ?? "-"}</td>
+                      <td style={{ ...td, color: textSub, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
                         {s.address ?? "-"}
                       </td>
-                      <td style={{ padding: "10px 14px", textAlign: "right" }}>
+                      <td style={{ ...td, textAlign: "right" }}>
                         <button
                           onClick={() => onSelect(s)}
                           style={{
-                            background: primary,
-                            color: "#fff", border: "none", borderRadius: 8,
-                            padding: "5px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            background: primary, color: "#fff", border: "none", borderRadius: 6,
+                            padding: "4px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer",
                           }}
                           onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
                           onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
@@ -242,33 +256,37 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
                   ))}
                 </tbody>
               </table>
-          )}
+            )}
+          </div>
 
           {/* 페이지네이션 */}
           {totalPages > 1 && (
-            <div style={{ padding: "12px 16px", borderTop: `1px solid ${border}`, display: "flex", justifyContent: "center", gap: 4 }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 0", gap: 4 }}>
               <button
                 onClick={() => fetchSchools(page - 1)}
                 disabled={page === 0}
-                style={{ padding: "4px 10px", border: `1px solid ${border}`, borderRadius: 6, background: "#fff",
-                  cursor: page === 0 ? "default" : "pointer", opacity: page === 0 ? 0.4 : 1, fontSize: 13 }}
+                style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff",
+                  cursor: page === 0 ? "not-allowed" : "pointer", color: page === 0 ? "#d1d5db" : "#374151", fontSize: 12 }}
               >‹</button>
               {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
                 const start = Math.max(0, Math.min(page - 4, totalPages - 10));
                 const p = start + i;
                 return (
                   <button key={p} onClick={() => fetchSchools(p)} style={{
-                    padding: "4px 10px", border: `1px solid ${p === page ? primary : border}`, borderRadius: 6,
+                    width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    border: `1px solid ${p === page ? primary : "#e5e7eb"}`, borderRadius: 6,
                     background: p === page ? primary : "#fff", color: p === page ? "#fff" : "#374151",
-                    cursor: "pointer", fontSize: 13,
+                    cursor: "pointer", fontSize: 12, fontWeight: p === page ? 600 : 400,
                   }}>{p + 1}</button>
                 );
               })}
               <button
                 onClick={() => fetchSchools(page + 1)}
                 disabled={page >= totalPages - 1}
-                style={{ padding: "4px 10px", border: `1px solid ${border}`, borderRadius: 6, background: "#fff",
-                  cursor: page >= totalPages - 1 ? "default" : "pointer", opacity: page >= totalPages - 1 ? 0.4 : 1, fontSize: 13 }}
+                style={{ width: 28, height: 28, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff",
+                  cursor: page >= totalPages - 1 ? "not-allowed" : "pointer", color: page >= totalPages - 1 ? "#d1d5db" : "#374151", fontSize: 12 }}
               >›</button>
             </div>
           )}
@@ -276,9 +294,10 @@ function SchoolSearchPanel({ title, selected, onSelect, onClear, excludeId }: Sc
       )}
 
       {!searched && (
-        <p style={{ marginTop: 10, fontSize: 13, color: textSub }}>
-          검색 버튼을 누르면 전체 목록이 표시됩니다. 학교명이나 종류로 필터할 수 있습니다.
-        </p>
+        <div style={{ marginTop: 12, background: "#fff", borderRadius: 8, border: `1px solid ${border}`, padding: "32px 24px", textAlign: "center", color: "#9ca3af" }}>
+          <i className="bi bi-search" style={{ fontSize: 32, display: "block", marginBottom: 10, opacity: 0.3 }} />
+          <p style={{ margin: 0, fontSize: 13 }}>학교명 또는 종류로 검색하세요.</p>
+        </div>
       )}
     </>
   );
@@ -415,51 +434,61 @@ export default function Transfer() {
             <StepLabel step={2} label="전출 대상 선택" />
 
             {/* 역할 + 검색어 */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-              <select
-                value={role}
-                onChange={(e) => {
-                  setRole(e.target.value);
-                  setMembers([]);
-                  setMemberSearched(false);
-                  setSelected(null);
-                }}
-                style={{ ...inputStyle, width: "auto", flexShrink: 0 }}
-              >
-                {ROLE_OPTIONS.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
-                ))}
-              </select>
-              <input
-                style={{ ...inputStyle, flex: 1, minWidth: 160 }}
-                placeholder="이름 또는 코드 검색 (비워두면 전체)"
-                value={memberKw}
-                onChange={(e) => setMemberKw(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && searchMembers()}
-              />
+            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                <select
+                  value={role}
+                  onChange={(e) => {
+                    setRole(e.target.value);
+                    setMembers([]);
+                    setMemberSearched(false);
+                    setSelected(null);
+                  }}
+                  style={{ ...inputStyle, padding: "5px 28px 5px 8px", width: "auto", flexShrink: 0, appearance: "none", cursor: "pointer" }}
+                >
+                  {ROLE_OPTIONS.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
+                </select>
+                <i className="bi bi-chevron-down" style={{ position: "absolute", right: 8, color: "#9ca3af", fontSize: 12, pointerEvents: "none" }} />
+              </div>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center", flex: 1, minWidth: 160 }}>
+                <i className="bi bi-search" style={{ position: "absolute", left: 8, color: "#9ca3af", fontSize: 13, pointerEvents: "none" }} />
+                <input
+                  style={{ ...inputStyle, paddingLeft: 28 }}
+                  placeholder="이름 또는 코드 검색 (비워두면 전체)"
+                  value={memberKw}
+                  onChange={(e) => setMemberKw(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && searchMembers()}
+                />
+              </div>
               <button style={btnPrimary(memberLoading)} disabled={memberLoading} onClick={searchMembers}>
                 {memberLoading ? "검색 중..." : "검색"}
               </button>
             </div>
 
             {/* 구성원 목록 */}
-            {memberSearched && members.length === 0 && (
-              <div style={{ padding: "32px", textAlign: "center", color: textSub, fontSize: 14 }}>
-                검색 결과가 없습니다.
+            {!memberSearched && (
+              <div style={{ border: `1px solid ${border}`, borderRadius: 8, padding: "32px 24px", textAlign: "center", color: "#9ca3af" }}>
+                <i className="bi bi-person-search" style={{ fontSize: 32, display: "block", marginBottom: 10, opacity: 0.3 }} />
+                <p style={{ margin: 0, fontSize: 13 }}>역할과 검색어를 입력하고 검색하세요.</p>
               </div>
             )}
 
-            {!memberSearched && (
-              <p style={{ fontSize: 13, color: textSub }}>역할과 검색어를 입력하고 검색하세요.</p>
+            {memberSearched && members.length === 0 && (
+              <div style={{ border: `1px solid ${border}`, borderRadius: 8, padding: "48px 24px", textAlign: "center", color: "#9ca3af" }}>
+                <i className="bi bi-search" style={{ fontSize: 36, display: "block", marginBottom: 12, opacity: 0.3 }} />
+                <p style={{ margin: 0, fontSize: 14 }}>검색 결과가 없습니다.</p>
+              </div>
             )}
 
             {members.length > 0 && (
               <div style={{ border: `1px solid ${border}`, borderRadius: 8, overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
-                    <tr style={{ background: "#f9fafb", borderBottom: `1px solid ${border}` }}>
+                    <tr>
                       {["이름", "코드", "이메일", "상태", ""].map((h) => (
-                        <th key={h} style={{ padding: "10px 12px", fontWeight: 600, color: "#374151", textAlign: "left" }}>{h}</th>
+                        <th key={h} style={th}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -469,19 +498,19 @@ export default function Transfer() {
                       return (
                         <tr
                           key={m.infoId}
-                          style={{ borderBottom: `1px solid ${border}`, background: isSel ? "rgba(37,161,148,0.06)" : "#fff" }}
+                          style={{ borderBottom: "1px solid #f3f4f6", background: isSel ? "rgba(37,161,148,0.06)" : "#fff" }}
                           onMouseEnter={(e) => { if (!isSel) e.currentTarget.style.background = "#f9fafb"; }}
                           onMouseLeave={(e) => { e.currentTarget.style.background = isSel ? "rgba(37,161,148,0.06)" : "#fff"; }}
                         >
-                          <td style={{ padding: "10px 12px", fontWeight: 600 }}>{m.name}</td>
-                          <td style={{ padding: "10px 12px", color: textSub }}>{m.code}</td>
-                          <td style={{ padding: "10px 12px", color: textSub }}>{m.email}</td>
-                          <td style={{ padding: "10px 12px" }}><StatusBadge status={m.status} /></td>
-                          <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                          <td style={{ ...td, fontWeight: 600 }}>{m.name}</td>
+                          <td style={{ ...td, color: textSub }}>{m.code}</td>
+                          <td style={{ ...td, color: textSub }}>{m.email}</td>
+                          <td style={td}><StatusBadge status={m.status} /></td>
+                          <td style={{ ...td, textAlign: "right" }}>
                             <button
                               onClick={() => setSelected(isSel ? null : m)}
                               style={{
-                                padding: "5px 14px",
+                                padding: "4px 14px",
                                 border: `1px solid ${isSel ? primary : border}`,
                                 borderRadius: 6, fontSize: 12, fontWeight: 600,
                                 background: isSel ? primary : "#fff",

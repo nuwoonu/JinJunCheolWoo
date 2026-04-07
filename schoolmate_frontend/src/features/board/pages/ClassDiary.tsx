@@ -211,21 +211,9 @@ export default function ClassDiary() {
                     <td className="td-title">
                       <div className="d-flex align-items-center gap-4">
                         <span className="td-title-text">{board.title}</span>
+                        {/* [soojin] 새글 표시 - 가정통신문 위젯과 동일한 스타일로 통일 */}
                         {isNew && (
-                          <span
-                            style={{
-                              display: "inline-block",
-                              background: "#ef4444",
-                              color: "#fff",
-                              fontSize: 9,
-                              fontWeight: 800,
-                              padding: "1px 4px",
-                              borderRadius: 2,
-                              lineHeight: "12px",
-                            }}
-                          >
-                            N
-                          </span>
+                          <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700 }}>새글</span>
                         )}
                       </div>
                     </td>

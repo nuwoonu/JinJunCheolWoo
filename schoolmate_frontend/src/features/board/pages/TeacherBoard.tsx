@@ -188,16 +188,6 @@ export default function TeacherBoard() {
     <DashboardLayout>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 24 }}>
         <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 0 }}>교직원 게시판</h6>
-        {(isTeacher || isAdmin) && (
-          <button
-            type="button"
-            style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
-            onClick={() => navigate("/board/teacher/write")}
-          >
-            <i className="ri-edit-line" />
-            글쓰기
-          </button>
-        )}
       </div>
 
       <div className="row" style={{ alignItems: "flex-start" }}>
@@ -252,6 +242,16 @@ export default function TeacherBoard() {
                   </button>
                 )}
               </div>
+              {(isTeacher || isAdmin) && (
+                <button
+                  type="button"
+                  style={{ padding: "5px 12px", background: "#25A194", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0, marginRight: 8 }}
+                  onClick={() => navigate("/board/teacher/write")}
+                >
+                  <i className="ri-edit-line" />
+                  글쓰기
+                </button>
+              )}
             </div>
 
             {/* 서브 헤더: 태그 탭 + 정렬 */}
@@ -332,8 +332,9 @@ export default function TeacherBoard() {
                           </div>
                         )}
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                          {/* [soojin] 새글 표시 - 가정통신문 위젯과 동일한 스타일로 통일 */}
                           {isNew && (
-                            <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 5px", borderRadius: 3, background: "#ef4444", color: "#fff", flexShrink: 0, lineHeight: "14px" }}>N</span>
+                            <span style={{ color: "#25A194", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>새글</span>
                           )}
                           <span style={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>{board.title}</span>
                         </div>

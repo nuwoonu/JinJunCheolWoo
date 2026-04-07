@@ -31,6 +31,8 @@ function useSubmenu() {
       r.parentList = true;
     if (p.startsWith("/board/school-notice")) {
       r.notice = true;
+    }
+    if (p.startsWith("/parent/school-notice")) {
       r.parentNotice = true;
     }
     if (p.startsWith("/board/class-board") || p.startsWith("/board/teacher")) r.board = true;
@@ -920,7 +922,7 @@ export default function Sidebar() {
               </a>
               <ul className="sidebar-submenu">
                 <li>
-                  <SNavLink to="/board/school-notice">
+                  <SNavLink to="/parent/school-notice">
                     <i className="ri-circle-fill circle-icon w-auto" /> 학교 공지
                   </SNavLink>
                 </li>
@@ -987,6 +989,17 @@ export default function Sidebar() {
                   </SNavLink>
                 </li>
               </ul>
+            </li>
+          )}
+
+          {/* 학부모 게시판 - PARENT */}
+          {/* [soojin] 학부모 게시판 메뉴 추가 */}
+          {has("PARENT") && (
+            <li>
+              <SNavLink to="/board/parent">
+                <i className="ri-chat-3-line" />
+                <span>학부모 게시판</span>
+              </SNavLink>
             </li>
           )}
         </ul>

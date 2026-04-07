@@ -207,8 +207,18 @@ export default function Schedule() {
 
   const cells = buildCalendar(year, month);
 
+  // [soojin] 학부모 학교 일정 페이지 스타일 통일
+  const arrowBtnStyle: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    padding: "2px 4px",
+    cursor: "pointer",
+    color: "#6b7280",
+    display: "flex",
+    alignItems: "center",
+  };
   const navBtnStyle: React.CSSProperties = {
-    padding: "6px 12px",
+    padding: "5px 12px",
     border: "1px solid #d1d5db",
     borderRadius: 6,
     background: "#fff",
@@ -438,13 +448,16 @@ export default function Schedule() {
       )}
       <input type="file" ref={csvRef} accept=".csv" style={{ display: "none" }} onChange={importCsv} />
 
+      {/* [soojin] 전체 컨테이너 */}
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
       {/* 헤더 */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 28,
+          padding: "20px 24px",
+          borderBottom: "1px solid #e5e7eb",
           flexWrap: "wrap",
           gap: 12,
         }}
@@ -453,47 +466,49 @@ export default function Schedule() {
           <h6 style={{ fontWeight: 700, color: "#111827", marginBottom: 4 }}>학사 일정 관리</h6>
           <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>학년도별 학사 일정을 등록하고 관리합니다.</p>
         </div>
+        {/* [soojin] 학급 목록 페이지 버튼 스타일 통일 */}
         <div style={{ display: "flex", gap: 8 }}>
           <button
             style={{
-              padding: "9px 16px",
-              background: "#6b7280",
-              border: "none",
+              padding: "5px 10px",
+              background: "#fff",
+              border: "1px solid #d1d5db",
               borderRadius: 8,
-              fontSize: 14,
-              fontWeight: 500,
-              color: "#fff",
+              fontSize: 13,
+              color: "#374151",
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
             onClick={exportCsv}
           >
-            <i className="bi bi-file-earmark-arrow-down" /> CSV 내보내기
+            <i className="bi bi-file-earmark-arrow-down" style={{ marginRight: 4 }} /> CSV 내보내기
           </button>
           <button
             style={{
-              padding: "9px 16px",
-              background: "#22c55e",
-              border: "none",
+              padding: "5px 10px",
+              background: "#fff",
+              border: "1px solid #25A194",
               borderRadius: 8,
-              fontSize: 14,
-              fontWeight: 500,
-              color: "#fff",
+              fontSize: 13,
+              color: "#25A194",
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
             onClick={() => csvRef.current?.click()}
           >
-            <i className="bi bi-file-earmark-spreadsheet" /> CSV 일괄 등록
+            <i className="bi bi-file-earmark-spreadsheet" style={{ marginRight: 4 }} /> CSV 일괄 등록
           </button>
           <button
             style={{
-              padding: "9px 20px",
+              padding: "5px 12px",
               background: "#25A194",
               border: "none",
               borderRadius: 8,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: 600,
               color: "#fff",
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
             onClick={() => openCreate()}
           >
@@ -502,19 +517,17 @@ export default function Schedule() {
         </div>
       </div>
 
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+      <div>
         {/* 네비게이션: 간격 및 정렬 개선 */}
         <div style={{ display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid #e5e7eb" }}>
           {/* 1. 좌측 (월 이동 및 오늘 버튼) */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
-            <div style={{ display: "flex" }}>
-              <button style={navBtnStyle} onClick={() => goMonth(-1)}>
-                <i className="bi bi-chevron-left" />
-              </button>
-              <button style={navBtnStyle} onClick={() => goMonth(1)}>
-                <i className="bi bi-chevron-right" />
-              </button>
-            </div>
+            <button style={arrowBtnStyle} onClick={() => goMonth(-1)}>
+              <i className="bi bi-chevron-left" style={{ fontSize: 18 }} />
+            </button>
+            <button style={arrowBtnStyle} onClick={() => goMonth(1)}>
+              <i className="bi bi-chevron-right" style={{ fontSize: 18 }} />
+            </button>
             <button style={navBtnStyle} onClick={goToday}>
               오늘
             </button>
@@ -522,35 +535,33 @@ export default function Schedule() {
 
           {/* 2. 중앙 (현재 년/월 타이틀) */}
           <div style={{ textAlign: "center", flex: 1 }}>
-            <h5 style={{ margin: 0, fontWeight: 700, fontSize: 18, color: "#25A194" }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "#111827", minWidth: 90, display: "inline-block" }}>
               {year}년 {month}월
-            </h5>
+            </span>
           </div>
 
           {/* 3. 우측 (Month / List 토글 버튼) */}
-          <div style={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
-            <div style={{ display: "flex" }}>
-              <button
-                style={
-                  view === "month"
-                    ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
-                    : navBtnStyle
-                }
-                onClick={() => setView("month")}
-              >
-                달력
-              </button>
-              <button
-                style={
-                  view === "list"
-                    ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "1px solid #25A194" }
-                    : navBtnStyle
-                }
-                onClick={() => setView("list")}
-              >
-                목록
-              </button>
-            </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, flex: 1 }}>
+            <button
+              style={
+                view === "month"
+                  ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "none" }
+                  : navBtnStyle
+              }
+              onClick={() => setView("month")}
+            >
+              달력
+            </button>
+            <button
+              style={
+                view === "list"
+                  ? { ...navBtnStyle, background: "#25A194", color: "#fff", border: "none" }
+                  : navBtnStyle
+              }
+              onClick={() => setView("list")}
+            >
+              목록
+            </button>
           </div>
         </div>
 
@@ -758,6 +769,7 @@ export default function Schedule() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </AdminLayout>
   );

@@ -94,8 +94,9 @@ export default function ClassNoticeWidget({ classroomId, title = '학급 알림�
               <div className="d-flex align-items-center gap-12">
                 <i className="ri-file-text-line text-secondary-light" />
                 <span className="text-sm" style={{ color: '#374151' }}>{n.title}</span>
+                {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
                 {isNew(n.createDate) && (
-                  <span style={{ background: '#25A194', color: 'white', borderRadius: 4, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>새글</span>
+                  <span style={{ color: '#25A194', fontSize: 11, fontWeight: 700 }}>새글</span>
                 )}
               </div>
               <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{n.createDate?.slice(0, 10)}</span>

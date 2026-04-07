@@ -91,8 +91,9 @@ export default function ClassBoardWidget({ classroomId, moreHref, apiEndpoint, d
                 <i className="ri-file-text-line text-secondary-light" />
                 <span className="text-sm" style={{ color: '#374151' }}>{post.title}</span>
                 <span className="text-xs text-secondary-light">{post.writerName}</span>
+                {/* [soojin] 새글 배지 배경/모양 제거, 글자색으로 변경 */}
                 {isNew(post.createDate) && (
-                  <span style={{ background: '#25A194', color: 'white', borderRadius: 4, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>새글</span>
+                  <span style={{ color: '#25A194', fontSize: 11, fontWeight: 700 }}>새글</span>
                 )}
               </div>
               <span className="text-xs text-secondary-light flex-shrink-0 ms-8">{post.createDate?.slice(0, 10)}</span>

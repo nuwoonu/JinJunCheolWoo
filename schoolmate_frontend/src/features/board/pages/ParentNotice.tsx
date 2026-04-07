@@ -5,6 +5,7 @@ import "react-quill-new/dist/quill.snow.css";
 import api from "@/shared/api/authApi";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 
 // [woo] /board/parent-notice - 가정통신문 목록
 // [soojin] 플랜 패턴 적용: 교사/학부모 모두 테이블 형태로 통일
@@ -182,29 +183,32 @@ export default function ParentNotice() {
     <DashboardLayout>
       {/* [soojin] 화면 꽉 채우는 flex column 컨테이너 */}
       <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 4.5rem - 48px)" }}>
-        {/* [soojin] 제목 + 전체 건수 인라인 */}
-        <div style={{ marginBottom: 16, flexShrink: 0 }}>
-          <h5
-            style={{
-              fontWeight: 700,
-              color: "#111827",
-              marginBottom: 4,
-              display: "flex",
-              alignItems: "baseline",
-              gap: 8,
-            }}
-          >
-            가정통신문
-            <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalAll ?? 0}건</span>
-          </h5>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
-            {isTeacher && myClass
-              ? `${myClass.className} 담임 학부모에게 전달되는 가정통신문입니다.`
-              : "학교와 가정을 연결하는 소식을 전합니다."}
-          </p>
+        {/* [soojin] 제목 + 전체 건수 + 돌아가기 */}
+        <div style={{ marginBottom: 16, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div>
+            <h5
+              style={{
+                fontWeight: 700,
+                color: "#111827",
+                marginBottom: 4,
+                display: "flex",
+                alignItems: "baseline",
+                gap: 8,
+              }}
+            >
+              가정통신문
+              <span style={{ fontSize: 13, fontWeight: 400, color: "#6b7280" }}>전체 {totalAll ?? 0}건</span>
+            </h5>
+            <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+              {isTeacher && myClass
+                ? `${myClass.className} 담임 학부모에게 전달되는 가정통신문입니다.`
+                : "학교와 가정을 연결하는 소식을 전합니다."}
+            </p>
+          </div>
+          <ParentBackButton />
         </div>
 
-        {/* [soojin] 컨트롤 바: 검색(좌) + 작성(우, teacher/admin only) */}
+        {/* [soojin] 컨트롤 바: 검색(좌) + 작성/돌아가기(우) */}
         <div
           style={{
             display: "flex",
@@ -504,25 +508,19 @@ export default function ParentNotice() {
                               color: "#1d4ed8",
                               fontWeight: isParent && !isRead ? 700 : 500,
                               textDecoration: "none",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
                             }}
                             onClick={() => isParent && markRead(board.id)}
                           >
+                            {board.title}
+                            {/* [soojin] NEW → 새글, 배경/모양 제거, 제목 오른쪽 배치 */}
                             {isNew && (
-                              <span
-                                style={{
-                                  background: "#25a194",
-                                  color: "#fff",
-                                  fontSize: 10,
-                                  fontWeight: 700,
-                                  padding: "2px 6px",
-                                  borderRadius: 8,
-                                  marginRight: 6,
-                                }}
-                              >
-                                NEW
+                              <span style={{ color: "#25a194", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                                새글
                               </span>
                             )}
-                            {board.title}
                           </Link>
                         </td>
                         <td

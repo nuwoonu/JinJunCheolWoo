@@ -5,6 +5,7 @@ import "react-quill-new/dist/quill.snow.css";
 import api from "@/shared/api/authApi";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
+import ParentBackButton from "@/shared/components/ParentBackButton";
 
 // [soojin] /board/parent/write - 학부모 게시판 작성 (ClassBoardWrite.tsx 형식)
 // PARENT, TEACHER, ADMIN 작성 가능 / 파일 첨부 전체 허용
@@ -107,7 +108,7 @@ export default function ParentBoardWrite() {
 
   return (
     <DashboardLayout>
-      <div style={{ maxWidth: 900, margin: "0 auto 24px" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link
           to="/board/parent"
           style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#374151", textDecoration: "none", padding: "5px 10px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, fontWeight: 500 }}
@@ -115,6 +116,7 @@ export default function ParentBoardWrite() {
           <i className="ri-arrow-left-line" />
           목록으로
         </Link>
+        <ParentBackButton />
       </div>
 
       <div className="card" style={{ maxWidth: 900, margin: "0 auto", borderRadius: 12 }}>
