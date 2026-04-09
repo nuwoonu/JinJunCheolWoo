@@ -26,8 +26,14 @@ function ChildDropdown({ children, colors }: { children: Child[]; colors: ThemeC
   const { selectedChild, setSelectedChild } = useSelectedChild(); // [woo] 전역 자녀 선택
   const [open, setOpen] = useState(false);
 
-  // [woo] 초기값: 전역 선택된 자녀 or 첫 번째 자녀
-  const selected = selectedChild ?? children[0] ?? null;
+  // [woo] 캐시된 selectedChild가 현재 계정 자녀 목록에 있는지 검증
+  const validSelected = children.find((c) => c.id === selectedChild?.id);
+  const selected = validSelected ?? children[0] ?? null;
+
+  // [woo] 캐시 불일치 시 첫 번째 자녀로 업데이트
+  React.useEffect(() => {
+    if (children.length > 0 && !validSelected) setSelectedChild(children[0]);
+  }, [children]);
 
   const select = (c: Child) => { setSelectedChild(c); setOpen(false); };
 

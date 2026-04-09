@@ -36,6 +36,8 @@ public class BookService {
     private final BookLoanRepository bookLoanRepository;
     private final BookReviewRepository bookReviewRepository;
     private final SchoolRepository schoolRepository;
+    // [woo] 네이버 책 API로 표지 이미지 자동 조회
+    private final NaverBookService naverBookService;
 
     // ── 내부 헬퍼 ──────────────────────────────────────────────────────────────
 
@@ -73,6 +75,17 @@ public class BookService {
                     });
         }
 
+        // [woo] coverImage가 없으면 네이버 API로 자동 조회
+        String coverImage = req.getCoverImage();
+        if (coverImage == null || coverImage.isBlank()) {
+            if (req.getIsbn() != null && !req.getIsbn().isBlank()) {
+                coverImage = naverBookService.searchCoverByIsbn(req.getIsbn());
+            }
+            if (coverImage == null) {
+                coverImage = naverBookService.searchCoverByTitle(req.getTitle());
+            }
+        }
+
         Book book = Book.builder()
                 .school(school)
                 .title(req.getTitle())
@@ -87,7 +100,7 @@ public class BookService {
                 .summary(req.getSummary())
                 .authorBio(req.getAuthorBio())
                 .tags(req.getTags())
-                .coverImage(req.getCoverImage())
+                .coverImage(coverImage)
                 .totalCopies(req.getTotalCopies() != null ? req.getTotalCopies() : 1)
                 .borrowCount(0L)
                 .deleted(false)
@@ -112,9 +125,47 @@ public class BookService {
         if (req.getSummary() != null) book.setSummary(req.getSummary());
         if (req.getAuthorBio() != null) book.setAuthorBio(req.getAuthorBio());
         if (req.getTags() != null) book.setTags(req.getTags());
-        if (req.getCoverImage() != null) book.setCoverImage(req.getCoverImage());
         if (req.getTotalCopies() != null) book.setTotalCopies(req.getTotalCopies());
+
+        // [woo] coverImage가 명시적으로 전달된 경우 우선, 없으면 네이버 API 자동 조회
+        if (req.getCoverImage() != null && !req.getCoverImage().isBlank()) {
+            book.setCoverImage(req.getCoverImage());
+        } else if (req.getCoverImage() == null && (book.getCoverImage() == null || book.getCoverImage().isBlank())) {
+            String isbn = req.getIsbn() != null ? req.getIsbn() : book.getIsbn();
+            String fetched = (isbn != null && !isbn.isBlank())
+                    ? naverBookService.searchCoverByIsbn(isbn)
+                    : naverBookService.searchCoverByTitle(book.getTitle());
+            if (fetched != null) book.setCoverImage(fetched);
+        }
+
         return toDetail(book);
+    }
+
+    // [woo] coverImage가 없거나 picsum placeholder인 책을 네이버 API로 일괄 업데이트
+    @Transactional
+    public int refreshCovers() {
+        Long schoolId = getRequiredSchoolId();
+        List<Book> books = bookRepository.findBooksNeedingCover(schoolId);
+        int updated = 0;
+        for (Book book : books) {
+            try {
+                String fetched = (book.getIsbn() != null && !book.getIsbn().isBlank())
+                        ? naverBookService.searchCoverByIsbn(book.getIsbn())
+                        : naverBookService.searchCoverByTitle(book.getTitle());
+                if (fetched != null) {
+                    book.setCoverImage(fetched);
+                    updated++;
+                }
+                Thread.sleep(100); // rate limit 방지
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Exception e) {
+                log.warn("[woo] 표지 업데이트 실패 bookId={}: {}", book.getId(), e.getMessage());
+            }
+        }
+        log.info("[woo] 표지 일괄 업데이트 완료: {}권", updated);
+        return updated;
     }
 
     @Transactional

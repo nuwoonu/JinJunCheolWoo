@@ -12,7 +12,8 @@ import ConsultationScreen from "@/screens/parent/ConsultationScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
 import BoardDetailScreen from "@/screens/common/BoardDetailScreen";
 import ChildDetailScreen from "@/screens/parent/ChildDetailScreen";
-import GradeScreen from "@/screens/parent/GradeScreen"; // [woo] 자녀 성적 화면
+import GradeScreen from "@/screens/parent/GradeScreen";
+import DailySummaryScreen from "@/screens/parent/DailySummaryScreen"; // [woo] 하루 요약
 import NotificationsScreen from "@/screens/NotificationsScreen"; // [woo] 알림 목록 화면
 import NotificationSettingsScreen from "@/screens/NotificationSettingsScreen"; // [woo] 알림 설정 화면
 import NotificationBell from "@/components/NotificationBell"; // [woo] 헤더 알림 벨
@@ -66,6 +67,12 @@ function HomeStackNavigator() {
           headerTitle: route.params?.childName ?? "자녀 현황",
           headerBackTitle: "뒤로",
         })}
+      />
+      {/* [woo] 하루 요약 */}
+      <HomeStack.Screen
+        name="DailySummary"
+        component={DailySummaryScreen}
+        options={{ headerTitle: "하루 요약", headerBackTitle: "뒤로" }}
       />
       {/* [woo] 바로가기에서 진입 시 탭 전환 대신 스택 push → 뒤로가기 노출 */}
       <HomeStack.Screen

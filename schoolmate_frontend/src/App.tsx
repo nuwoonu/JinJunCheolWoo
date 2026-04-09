@@ -38,6 +38,7 @@ import DormitoryRoomView from "@/features/dormitory/app/components/RoomView";
 import TeacherDashboard from "@/features/dashboard/pages/TeacherDashboard";
 import TeacherMyClass from "@/features/teacher/pages/MyClass";
 import TeacherMyClassStudents from "@/features/teacher/pages/MyClassStudents";
+import DailyNoteInput from "@/features/teacher/pages/DailyNoteInput";
 import TeacherSchedulePage from "@/features/schedule/pages/SchedulePage";
 import TeacherScheduleAdd from "@/features/schedule/pages/ScheduleAdd";
 import TeacherScheduleEdit from "@/features/schedule/pages/ScheduleEdit";
@@ -421,6 +422,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
             <TeacherMyClassStudents />
+          </PrivateRoute>
+        }
+      />
+      {/* [woo] 교사 학생 일일 메모 입력 */}
+      <Route
+        path="/teacher/daily-note"
+        element={
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <DailyNoteInput />
           </PrivateRoute>
         }
       />

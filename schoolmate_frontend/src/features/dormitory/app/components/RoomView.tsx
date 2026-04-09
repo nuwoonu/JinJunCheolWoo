@@ -148,9 +148,9 @@ export default function RoomView() {
         {/* 학생 배정 폼 — 학생 제한 */}
         {!isStudent && showAssignForm && ( // cheol
           <div style={formCardStyle}>
-            <h2 style={{ fontSize: "17px", fontWeight: 600, margin: "0 0 4px", color: "#1e293b" }}>
+            <p style={{ fontSize: "13px", fontWeight: 600, margin: "0 0 4px", color: "#1e293b" }}>
               학생 배정 — {selectedBed?.bedNumber}번 침대
-            </h2>
+            </p>
 
             {/* 학생 검색 */}
             <div

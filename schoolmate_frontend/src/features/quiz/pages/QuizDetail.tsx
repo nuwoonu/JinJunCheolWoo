@@ -95,6 +95,8 @@ export default function QuizDetail() {
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const autoSubmitTriggeredRef = useRef(false);
+  // [woo] 정답/해설 상세 뷰 토글
+  const [showAnswerDetail, setShowAnswerDetail] = useState(false);
 
   useEffect(() => {
     answersRef.current = answers;
@@ -104,7 +106,14 @@ export default function QuizDetail() {
     setLoading(true);
     api
       .get(`/quiz/${id}`)
-      .then((res) => setQuiz(res.data))
+      .then((res) => {
+        const data: QuizDetailData = res.data;
+        setQuiz(data);
+        // [woo] 학생 재방문: 기제출 이력 있으면 result 초기화 (같은 세션 내 result 덮어쓰기 방지)
+        if (role === "STUDENT" && data.mySubmissions && data.mySubmissions.length > 0) {
+          setResult((prev) => prev ?? data.mySubmissions![0]);
+        }
+      })
       .catch(() => alert("퀴즈를 불러올 수 없습니다."))
       .finally(() => setLoading(false));
   };
@@ -384,6 +393,7 @@ export default function QuizDetail() {
     setTakingQuiz(true);
     setCurrentQuestionIndex(0);
     setResult(null);
+    setShowAnswerDetail(false);
     setAnswers({});
     setQuizStartTime(Date.now());
     setElapsedSeconds(0);
@@ -433,47 +443,79 @@ export default function QuizDetail() {
     </div>
   );
 
-  const QuestionAnswerSection = () => (
+  // [woo] myAnswers: 학생 정답 화면에서 내 답 표시용 (없으면 교사 뷰 기본 동작)
+  const QuestionAnswerSection = ({ myAnswers }: { myAnswers?: QuizAnswer[] }) => (
     <>
       <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 16, color: "#111827" }}>문제 및 정답</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {quiz.questions.map((q) => (
-          <div key={q.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <div style={{ fontWeight: 700, color: "#111827" }}>{`문제 ${q.questionOrder}`}</div>
-              <div style={{ fontSize: 13, color: "#111827" }}>{`${q.points}점 · ${q.questionType === "MULTIPLE_CHOICE" ? "객관식" : "단답형"}`}</div>
-            </div>
-            <div style={{ marginBottom: 10, whiteSpace: "pre-wrap", color: "#111827" }}>{q.questionText}</div>
-            {q.questionType === "MULTIPLE_CHOICE" ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {q.options.map((o) => (
-                  <div
-                    key={o.id}
-                    style={{
-                      border: `1px solid ${o.isCorrect ? "#86efac" : "#e5e7eb"}`,
-                      background: o.isCorrect ? "#f0fdf4" : "#fff",
-                      borderRadius: 8,
-                      padding: "7px 10px",
-                      fontSize: 14,
-                      color: "#111827",
-                    }}
-                  >
-                    {`${o.optionOrder}. ${o.optionText}`}
+        {quiz.questions.map((q) => {
+          const myAnswer = myAnswers?.find((a) => a.questionId === q.id);
+          const myShortAnswer = myAnswer;
+          return (
+            <div key={q.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontWeight: 700, color: "#111827" }}>{`문제 ${q.questionOrder}`}</div>
+                <div style={{ fontSize: 13, color: "#111827" }}>{`${q.points}점 · ${q.questionType === "MULTIPLE_CHOICE" ? "객관식" : "단답형"}`}</div>
+              </div>
+              <div style={{ marginBottom: 10, whiteSpace: "pre-wrap", color: "#111827" }}>{q.questionText}</div>
+              {q.questionType === "MULTIPLE_CHOICE" ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {q.options.map((o) => {
+                    const isMySelection = myAnswer?.selectedOptionId === o.id;
+                    const isMyWrong = isMySelection && myAnswer?.isCorrect === false;
+                    return (
+                      <div
+                        key={o.id}
+                        style={{
+                          border: `1px solid ${o.isCorrect ? "#86efac" : isMyWrong ? "#fca5a5" : "#e5e7eb"}`,
+                          background: o.isCorrect ? "#f0fdf4" : isMyWrong ? "#fff1f2" : "#fff",
+                          borderRadius: 8,
+                          padding: "7px 10px",
+                          fontSize: 14,
+                          color: "#111827",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <span>{`${o.optionOrder}. ${o.optionText}`}</span>
+                        {isMyWrong && (
+                          <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 700, marginLeft: 4 }}>내 답</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <>
+                  <div style={{ border: "1px solid #86efac", background: "#f0fdf4", borderRadius: 8, padding: "7px 10px", fontSize: 14, color: "#111827" }}>
+                    정답: {q.correctAnswer}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ border: "1px solid #86efac", background: "#f0fdf4", borderRadius: 8, padding: "7px 10px", fontSize: 14, color: "#111827" }}>
-                정답: {q.correctAnswer}
-              </div>
-            )}
-            {q.explanation && (
-              <div style={{ marginTop: 8, border: "1px solid #bfdbfe", background: "#eff6ff", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#111827" }}>
-                해설: {q.explanation}
-              </div>
-            )}
-          </div>
-        ))}
+                  {myShortAnswer?.answerText && (
+                    <div
+                      style={{
+                        marginTop: 6,
+                        border: `1px solid ${myShortAnswer.isCorrect ? "#86efac" : "#fca5a5"}`,
+                        background: myShortAnswer.isCorrect ? "#f0fdf4" : "#fff1f2",
+                        borderRadius: 8,
+                        padding: "7px 10px",
+                        fontSize: 14,
+                        color: "#111827",
+                      }}
+                    >
+                      내 답: {myShortAnswer.answerText}
+                    </div>
+                  )}
+                </>
+              )}
+              {q.explanation && (
+                <div style={{ marginTop: 8, border: "1px solid #bfdbfe", background: "#eff6ff", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#111827" }}>
+                  해설: {q.explanation}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </>
   );
@@ -763,7 +805,87 @@ export default function QuizDetail() {
 
   return (
     <DashboardLayout>
-      {result ? (
+      {/* [woo] 정답 상세 뷰: 교사 스타일, 응시 통계/수정/삭제 제외 */}
+      {result && showAnswerDetail ? (
+        <div>
+          <button
+            onClick={() => setShowAnswerDetail(false)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.375rem",
+              marginBottom: "1rem",
+              padding: "0.375rem 0.875rem",
+              border: "1px solid var(--neutral-200)",
+              borderRadius: "0.5rem",
+              background: "#fff",
+              cursor: "pointer",
+              fontSize: "0.875rem",
+              color: "var(--neutral-700)",
+            }}
+          >
+            ← 결과로 돌아가기
+          </button>
+
+          <div
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: "0.75rem",
+              border: "1px solid var(--neutral-200)",
+              overflow: "hidden",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <div style={{ padding: "1.5rem 1.75rem" }}>
+              <div style={{ marginBottom: "1rem" }}>
+                <div style={{ fontWeight: 700, marginBottom: "0.5rem", fontSize: 18, color: "#111827" }}>{quiz.title}</div>
+                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary-light)", marginBottom: 0 }}>
+                  {quiz.teacherName} | {quiz.classroomName}
+                  {quiz.week ? ` | ${quiz.week}주차` : ""}
+                </p>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "0.75rem" }}>
+                {quizInfoStatsCards.map((card) => (
+                  <div
+                    key={`answer-${card.key}`}
+                    style={{
+                      width: "100%",
+                      padding: "0.875rem 1rem",
+                      borderRadius: "0.75rem",
+                      border: `1px solid ${card.borderColor}`,
+                      background: card.background,
+                      boxShadow: "0 1px 2px rgba(15,23,42,0.06)",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <span
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 999,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: card.iconBackground,
+                          color: card.iconColor,
+                          fontSize: 14,
+                        }}
+                      >
+                        <i className={card.icon} />
+                      </span>
+                      <p style={{ fontSize: "0.75rem", color: "#111827", marginBottom: 0, fontWeight: 600 }}>{card.label}</p>
+                    </div>
+                    <p style={{ fontWeight: 700, color: card.valueColor, fontSize: "1.25rem", lineHeight: 1.1, marginBottom: 0 }}>{card.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ padding: "1.75rem 1.75rem", borderTop: "1px solid var(--neutral-200)" }}>
+              <QuestionAnswerSection myAnswers={result.answers ?? undefined} />
+            </div>
+          </div>
+        </div>
+      ) : result ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 130px)" }}>
           <div
             style={{
@@ -815,24 +937,53 @@ export default function QuizDetail() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/quiz")}
+            {/* [woo] 버튼 행: 정답/해설 보기 + 목록으로 돌아가기 */}
+            <div
               style={{
-                width: "100%",
-                border: "none",
-                borderRadius: 12,
-                background: "#25A194",
-                color: "#fff",
-                padding: "12px 16px",
-                fontWeight: 500,
-                fontSize: 16,
-                cursor: "pointer",
-                textAlign: "center",
+                display: "grid",
+                gridTemplateColumns: quiz.showAnswer && result.answers != null && result.answers.length > 0 ? "1fr 1fr" : "1fr",
+                gap: "0.75rem",
               }}
             >
-              퀴즈 목록으로 돌아가기
-            </button>
+              {quiz.showAnswer && result.answers != null && result.answers.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAnswerDetail(true)}
+                  style={{
+                    width: "100%",
+                    border: "1px solid #25A194",
+                    borderRadius: 12,
+                    background: "#fff",
+                    color: "#25A194",
+                    padding: "12px 16px",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    cursor: "pointer",
+                    textAlign: "center",
+                  }}
+                >
+                  정답/해설 보기
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => navigate("/quiz")}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  borderRadius: 12,
+                  background: "#25A194",
+                  color: "#fff",
+                  padding: "12px 16px",
+                  fontWeight: 500,
+                  fontSize: 16,
+                  cursor: "pointer",
+                  textAlign: "center",
+                }}
+              >
+                목록으로
+              </button>
+            </div>
           </div>
         </div>
       ) : (

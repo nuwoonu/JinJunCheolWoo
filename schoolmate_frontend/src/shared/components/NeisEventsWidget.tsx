@@ -3,6 +3,7 @@ import MiniCalendar from '@/shared/components/MiniCalendar'
 
 // [woo] NEIS 학교일정 위젯 - 모든 대시보드에서 공용 사용
 // 이번달 + 다음달 일정 조회 → 오늘 이후 5개 표시, 목록↔캘린더 토글
+// [woo] schoolId prop: 학부모처럼 JWT 컨텍스트에 schoolId 없는 경우 자녀 schoolId 직접 전달
 
 interface CalendarEvent {
   title: string
@@ -10,6 +11,10 @@ interface CalendarEvent {
   eventType: string
   dday: number
   dateRangeText: string
+}
+
+interface Props {
+  schoolId?: number | null
 }
 
 const COLOR_MAP: Record<string, string> = {
@@ -20,7 +25,7 @@ const COLOR_MAP: Record<string, string> = {
   ETC: '#6c757d',
 }
 
-export default function NeisEventsWidget() {
+export default function NeisEventsWidget({ schoolId }: Props = {}) {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [showCalendar, setShowCalendar] = useState(false)
 
@@ -28,9 +33,10 @@ export default function NeisEventsWidget() {
     const now = new Date()
     const nextMonth = now.getMonth() + 2 > 12 ? 1 : now.getMonth() + 2
     const nextYear = now.getMonth() + 2 > 12 ? now.getFullYear() + 1 : now.getFullYear()
+    const schoolParam = schoolId != null ? `&schoolId=${schoolId}` : ''
     Promise.all([
-      fetch(`/api/calendar/events?year=${now.getFullYear()}&month=${now.getMonth() + 1}`),
-      fetch(`/api/calendar/events?year=${nextYear}&month=${nextMonth}`),
+      fetch(`/api/calendar/events?year=${now.getFullYear()}&month=${now.getMonth() + 1}${schoolParam}`),
+      fetch(`/api/calendar/events?year=${nextYear}&month=${nextMonth}${schoolParam}`),
     ])
       .then(([r1, r2]) => Promise.all([r1.ok ? r1.json() : [], r2.ok ? r2.json() : []]))
       .then(([d1, d2]) => {
@@ -42,7 +48,7 @@ export default function NeisEventsWidget() {
         setEvents(upcoming)
       })
       .catch(() => {})
-  }, [])
+  }, [schoolId])
 
   return (
     <div className="card shadow-sm h-100 overflow-hidden dash-card">

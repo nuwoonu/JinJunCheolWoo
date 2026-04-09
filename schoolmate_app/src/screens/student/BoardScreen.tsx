@@ -11,6 +11,8 @@ import EmptyState from "@/components/EmptyState";
 
 type Tab = "공지사항" | "알림장" | "학급게시판";
 const TABS: Tab[] = ["공지사항", "알림장", "학급게시판"];
+// [woo] 탭별 EmptyState 아이콘
+const ICONS: Record<Tab, string> = { "공지사항": "📢", "알림장": "📝", "학급게시판": "📋" };
 
 function timeAgo(dateStr: string): string {
   if (!dateStr) return "";

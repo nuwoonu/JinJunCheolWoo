@@ -1,4 +1,4 @@
-// [woo] 학부모 홈 대시보드 — 알림 배너 + 오늘의 출결 상태 + 바로가기
+// [woo] 학부모 홈 대시보드 — 알림 배너 + 오늘의 출결 상태 + 하루 요약 + 바로가기
 import React, { useCallback, useEffect, useState } from "react";
 import {
   RefreshControl, ScrollView, StyleSheet, Text,
@@ -8,10 +8,10 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { getChildren, getParentNotices, getClassDiary, getChildAttendanceRecords } from "@/api/parent";
 import type { ChildAttendanceRecord } from "@/api/parent";
-import { STATUS_CONFIG } from "@/constants/colors"; // [woo] STATUS_CONFIG는 유지
-import { useTheme, ThemeColors } from "@/hooks/useTheme"; // [woo] 다크모드
+import { STATUS_CONFIG } from "@/constants/colors";
+import { useTheme, ThemeColors } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
-import { useSelectedChild } from "@/context/SelectedChildContext"; // [woo] 전역 자녀 선택
+import { useSelectedChild } from "@/context/SelectedChildContext";
 import api from "@/api/client";
 
 const QUICK = [
@@ -27,14 +27,48 @@ export default function ParentHomeScreen() {
   const styles = makeStyles(colors); // [woo]
   const navigation = useNavigation<any>();
 
-  const { selectedChild, setSelectedChild } = useSelectedChild(); // [woo] 전역 선택된 자녀
+  const { selectedChild, setSelectedChild } = useSelectedChild();
   const [todayStatus, setTodayStatus] = useState<ChildAttendanceRecord | null>(null);
   const [unreadNotices, setUnreadNotices] = useState(0);
   const [unreadDiary, setUnreadDiary] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  // [woo] 하루 요약 (오늘 없으면 최근 것)
+  const [todaySummary, setTodaySummary] = useState<string | null>(null);
+  const [summaryLabel, setSummaryLabel] = useState<string>("오늘의 하루 요약");
 
   const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  // [woo] 로컬 날짜 기준 오늘 (toISOString은 UTC → KST 자정~오전9시 사이 하루 전 날짜 버그)
+  const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+
+  // [woo] 하루 요약 로드 — 오늘 요약 없으면 최근 요약으로 fallback
+  const loadTodaySummary = useCallback(async () => {
+    if (!selectedChild?.studentInfoId) { setTodaySummary(null); setSummaryLabel("하루 요약"); return; }
+    const today = new Date().toISOString().split("T")[0];
+    try {
+      const res = await api.get(`/daily-summary/student/${selectedChild.studentInfoId}/date/${today}`);
+      if (res.data?.content) {
+        setTodaySummary(res.data.content);
+        setSummaryLabel("오늘의 하루 요약");
+        return;
+      }
+    } catch {}
+    // 오늘 요약 없으면 최근 요약 1개 fallback
+    try {
+      const listRes = await api.get<{ id: number; summaryDate: string; content: string }[]>(
+        `/daily-summary/student/${selectedChild.studentInfoId}`
+      );
+      const latest = listRes.data?.[0];
+      if (latest?.content) {
+        const d = new Date(latest.summaryDate);
+        const label = `${d.getMonth() + 1}월 ${d.getDate()}일 하루 요약`;
+        setTodaySummary(latest.content);
+        setSummaryLabel(label);
+        return;
+      }
+    } catch {}
+    setTodaySummary(null);
+    setSummaryLabel("하루 요약");
+  }, [selectedChild]);
 
   // [woo] 선택된 자녀의 출결 로드
   const loadAttendance = useCallback(async () => {
@@ -47,14 +81,13 @@ export default function ParentHomeScreen() {
     } catch { setTodayStatus(null); }
   }, [selectedChild, today]);
 
-  // [woo] 공지/알림장 미읽음 + 선택된 자녀 없으면 첫 자녀 자동 세팅
+  // [woo] 공지/알림장 미읽음 + 선택된 자녀 유효성 검증 후 자동 세팅
   const loadData = useCallback(async () => {
     try {
-      // [woo] 선택된 자녀 없으면 첫 자녀 자동 선택
-      if (!selectedChild) {
-        const kids = await getChildren();
-        if (kids[0]) setSelectedChild(kids[0]);
-      }
+      // [woo] 항상 자녀 목록을 가져와서 캐시된 selectedChild가 현재 계정에 유효한지 검증
+      const kids = await getChildren();
+      const isValid = kids.some((k) => k.id === selectedChild?.id);
+      if (!isValid && kids[0]) setSelectedChild(kids[0]);
 
       const [notices, diary, noticeReadIds, diaryReadIds] = await Promise.all([
         getParentNotices(0),
@@ -74,10 +107,11 @@ export default function ParentHomeScreen() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // [woo] 선택 자녀 바뀌면 출결 다시 로드
+  // [woo] 선택 자녀 바뀌면 출결 + 요약 다시 로드
   useEffect(() => { loadAttendance(); }, [loadAttendance]);
+  useEffect(() => { loadTodaySummary(); }, [loadTodaySummary]);
 
-  const onRefresh = async () => { setRefreshing(true); await Promise.all([loadData(), loadAttendance()]); setRefreshing(false); };
+  const onRefresh = async () => { setRefreshing(true); await Promise.all([loadData(), loadAttendance(), loadTodaySummary()]); setRefreshing(false); };
 
   const todayCfg = todayStatus
     ? (STATUS_CONFIG[todayStatus.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.NONE)
@@ -166,6 +200,26 @@ export default function ParentHomeScreen() {
 
       </View>
 
+      {/* [woo] 오늘의 하루 요약 카드 */}
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate("DailySummary" as never)}
+      >
+        <View style={styles.cardTitleRow}>
+          <View style={styles.summaryIconWrap}>
+            <Ionicons name="document-text-outline" size={18} color={colors.primary} />
+          </View>
+          <Text style={styles.cardTitle}>{summaryLabel}</Text>
+          <Ionicons name="chevron-forward-outline" size={16} color={colors.textSecondary} style={{ marginLeft: "auto" }} />
+        </View>
+        {todaySummary ? (
+          <Text style={styles.summaryText} numberOfLines={3}>{todaySummary}</Text>
+        ) : (
+          <Text style={styles.summaryEmpty}>아직 작성된 요약이 없어요</Text>
+        )}
+      </TouchableOpacity>
+
       {/* 바로 가기 */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>바로 가기</Text>
@@ -241,6 +295,16 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
     borderRadius: 10, paddingVertical: 12, alignItems: "center",
   },
   monthlyBtnText: { color: colors.textInverse, fontWeight: "700", fontSize: 14 },
+
+  // 하루 요약
+  cardTitleRow: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  summaryIconWrap: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: colors.primaryLight,
+    justifyContent: "center", alignItems: "center", marginRight: 8,
+  },
+  summaryText: { fontSize: 14, color: colors.text, lineHeight: 22 },
+  summaryEmpty: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
 
   // 바로가기
   quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },

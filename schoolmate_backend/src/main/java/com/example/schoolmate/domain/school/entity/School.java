@@ -30,4 +30,8 @@ public class School extends BaseEntity {
     private String schoolKind; // 학교 종류 (SCHUL_KND_SC_NM - 초/중/고)
     private String foundationType; // 설립 구분 (FOND_SC_NM - 공립/사립)
     private String coeduType; // 남녀공학 구분 (COEDU_SC_NM)
+
+    // [woo] 학교 급식 이미지 페이지 URL (goeas.kr 등) - 없으면 Naver 이미지 검색 폴백
+    @Column(length = 500)
+    private String mealPageUrl;
 }

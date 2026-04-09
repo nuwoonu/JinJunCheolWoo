@@ -32,6 +32,9 @@ public interface FamilyRelationRepository extends JpaRepository<FamilyRelation, 
            "WHERE si.school.id = :schoolId")
     List<FamilyRelation> findBySchoolId(@Param("schoolId") Long schoolId);
 
+    // [woo] 특정 학생 단건 학부모 관계 조회 (하루 요약 푸시용)
+    List<FamilyRelation> findByStudentInfoId(Long studentInfoId);
+
     // [woo] 특정 학생들의 학부모 관계 조회 (담임 반 학부모 목록용)
     @Query("SELECT fr FROM FamilyRelation fr " +
             "JOIN FETCH fr.parentInfo pi " +

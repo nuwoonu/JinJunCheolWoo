@@ -51,4 +51,20 @@ public interface QuizSubmissionRepository extends JpaRepository<QuizSubmission, 
     // [soojin] 수정하는 이유: 교사 목록 카드 평균점수(%) 계산값 제공
     @Query("SELECT AVG((s.score * 100.0) / NULLIF(s.totalPoints, 0)) FROM QuizSubmission s WHERE s.quiz.id = :quizId")
     Optional<Double> findAverageScorePercentByQuizId(@Param("quizId") Long quizId);
+
+    // [woo] 하루 요약용: 학생의 최근 퀴즈 응시 결과 (날짜 기준, 최대 3개)
+    @Query("SELECT qs FROM QuizSubmission qs JOIN FETCH qs.quiz " +
+           "WHERE qs.student.id = :studentId AND DATE(qs.submittedAt) = :date " +
+           "ORDER BY qs.submittedAt DESC")
+    List<QuizSubmission> findAllByStudentIdAndDate(
+            @Param("studentId") Long studentId,
+            @Param("date") java.time.LocalDate date);
+
+    // [woo] 하루 요약용: 학생의 최근 퀴즈 응시 결과 (기간 무관, 최대 3개)
+    @Query("SELECT qs FROM QuizSubmission qs JOIN FETCH qs.quiz " +
+           "WHERE qs.student.id = :studentId " +
+           "ORDER BY qs.submittedAt DESC")
+    List<QuizSubmission> findRecentByStudent(
+            @Param("studentId") Long studentId,
+            org.springframework.data.domain.Pageable pageable);
 }

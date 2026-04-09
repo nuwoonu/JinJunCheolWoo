@@ -154,6 +154,8 @@ public class ExpoPushService {
                 json.append("{");
                 json.append("\"to\":\"").append(escapeJson(tokens.get(i))).append("\",");
                 json.append("\"sound\":\"default\",");
+                // [woo] Android 알림 채널 지정 — 앱에서 생성한 "default" 채널과 일치해야 알림 표시
+                json.append("\"channelId\":\"default\",");
                 json.append("\"title\":\"").append(escapeJson(title)).append("\",");
                 json.append("\"body\":\"").append(escapeJson(body)).append("\"");
                 if (actionUrl != null) {

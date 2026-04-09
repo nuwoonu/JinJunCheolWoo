@@ -61,6 +61,27 @@ public interface HomeworkSubmissionRepository extends JpaRepository<HomeworkSubm
            "AND hs.status != 'GRADED'")
     long countUngradedByPastDueSectionId(@Param("sectionId") Long sectionId);
 
+    // [woo] 하루 요약용: 학생의 최근 채점 완료 과제 (최대 3개)
+    @Query("SELECT hs FROM HomeworkSubmission hs JOIN FETCH hs.homework h " +
+           "WHERE hs.student.id = :studentId AND hs.status = 'GRADED' " +
+           "ORDER BY hs.submittedAt DESC")
+    List<HomeworkSubmission> findRecentGradedByStudent(
+            @Param("studentId") Long studentId,
+            org.springframework.data.domain.Pageable pageable);
+
+    // [woo] 하루 요약용: 마감됐지만 학생이 제출하지 않은 과제 목록
+    @Query("SELECT h.title FROM Homework h " +
+           "WHERE h.courseSection.classroom.id IN (" +
+           "  SELECT ca.classroom.id FROM StudentAssignment ca " +
+           "  WHERE ca.studentInfo.id = :studentId " +
+           "  AND ca.schoolYear.status = com.example.schoolmate.domain.term.entity.SchoolYearStatus.CURRENT" +
+           ") " +
+           "AND h.dueDate < CURRENT_TIMESTAMP " +
+           "AND NOT EXISTS (" +
+           "  SELECT 1 FROM HomeworkSubmission hs WHERE hs.homework.id = h.id AND hs.student.id = :studentId" +
+           ")")
+    List<String> findOverdueNotSubmittedTitles(@Param("studentId") Long studentId);
+
     // [woo] FinalGrade 계산용: 채점 완료된 제출 (학생+학급+과목 필터)
     @Query("SELECT hs FROM HomeworkSubmission hs " +
            "JOIN FETCH hs.homework h " +

@@ -117,7 +117,18 @@ export function handleNotificationDeepLink(
       return;
     }
 
-    // 8. 알림 목록: /notifications
+    // 8. 하루 요약: /daily-summary/{studentId}
+    const dailySummaryMatch = url.match(/^\/daily-summary\/(\d+)/);
+    if (dailySummaryMatch) {
+      nav.navigate("ParentTabs", {
+        screen: "홈",
+        params: { screen: "DailySummary" },
+      });
+      console.log("[woo] 딥링크 → DailySummary, studentId:", dailySummaryMatch[1]);
+      return;
+    }
+
+    // 9. 알림 목록: /notifications
     if (url.startsWith("/notifications")) {
       nav.navigate("Notifications");
       return;

@@ -208,7 +208,8 @@ public class GradeService {
 
     // ========== [woo] 교사: 성적 입력 (upsert) ==========
 
-    @Transactional
+    // [woo] readOnly=false 명시 — 클래스 레벨 readOnly=true 오버라이드 보장
+    @Transactional(readOnly = false)
     public GradeResponseDTO inputGrade(GradeInputDTO dto, Long uid) {
         CourseSection section = courseSectionRepository.findById(dto.getCourseSectionId())
                 .orElseThrow(() -> new IllegalArgumentException("분반 정보를 찾을 수 없습니다."));
@@ -256,7 +257,7 @@ public class GradeService {
 
     // ========== [woo] 교사: 성적 수정 ==========
 
-    @Transactional
+    @Transactional(readOnly = false)
     public GradeResponseDTO updateGrade(Long gradeId, Double score, Long uid) {
         Grade grade = gradeRepository.findById(gradeId)
                 .orElseThrow(() -> new IllegalArgumentException("성적 정보를 찾을 수 없습니다."));

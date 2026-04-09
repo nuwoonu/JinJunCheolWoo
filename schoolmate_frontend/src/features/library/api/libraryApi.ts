@@ -102,11 +102,10 @@ export interface PageResponse<T> {
 // ────────────────────────────────────────────────────────────────────
 
 /**
- * coverImage가 없을 때 책 ID 기반으로 picsum 랜덤 이미지 URL 반환.
- * 같은 ID는 항상 같은 이미지를 보여주므로 재렌더링 시 흔들리지 않음.
+ * coverImage URL 반환. 없으면 null 반환 (더미 이미지 미사용).
  */
-export function bookCoverUrl(id: number, coverImage?: string | null): string {
-  return coverImage || `https://picsum.photos/seed/book-${id}/200/300`;
+export function bookCoverUrl(_id: number, coverImage?: string | null): string | null {
+  return coverImage || null;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -221,4 +220,10 @@ export async function deleteReview(
   reviewId: number
 ): Promise<void> {
   await api.delete(`/api/library/books/${bookId}/reviews/${reviewId}`);
+}
+
+// [woo] 표지 이미지 일괄 업데이트 (교사/관리자 전용)
+export async function refreshBookCovers(): Promise<{ updatedCount: number }> {
+  const res = await api.post("/api/library/books/refresh-covers");
+  return res.data;
 }

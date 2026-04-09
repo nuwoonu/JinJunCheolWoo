@@ -129,10 +129,10 @@ export async function fetchActiveAssignments(): Promise<Record<number, string>> 
   return res.data ?? {};
 }
 
-// 전체 학생 목록 (배정 시 선택용, 기숙사 배정 정보 포함)
+// [woo] 기숙사 배정용 학생 목록 — 역할 필터 없이 학교 전체 학생 반환
 export async function fetchAllStudents(): Promise<StudentSummary[]> {
   const [studentsRes, assignmentsRes] = await Promise.all([
-    dormApi.get("/students"),
+    dormApi.get("/dormitories/available-students"),
     dormApi.get("/dormitories/assignments/active").catch(() => ({ data: {} })),
   ]);
   const assignmentMap: Record<number, string> = assignmentsRes.data ?? {};

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.schoolmate.domain.dormitory.dto.DormitoryAssignDTO;
 import com.example.schoolmate.domain.dormitory.dto.DormitoryDTO;
 import com.example.schoolmate.domain.dormitory.service.DormitoryService;
+import com.example.schoolmate.domain.student.dto.StudentResponseDTO;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -133,6 +134,15 @@ public class DormitoryController {
     @GetMapping("/search")
     public ResponseEntity<List<String>> searchBuildingsByStudent(@RequestParam String name) {
         return ResponseEntity.ok(dormitoryService.getBuildingsByStudentName(name));
+    }
+
+    /**
+     * [woo] 기숙사 배정용 학생 목록 — X-School-Id 기준 학교 전체 학생
+     * GET /api/dormitories/available-students
+     */
+    @GetMapping("/available-students")
+    public ResponseEntity<List<StudentResponseDTO>> getAvailableStudents() {
+        return ResponseEntity.ok(dormitoryService.getStudentsBySchool());
     }
 
     /**
