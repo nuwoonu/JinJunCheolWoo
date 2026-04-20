@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart,
@@ -206,6 +206,10 @@ export default function AdminDashboard() {
   const [teacherList, setTeacherList] = useState<any[]>([]);
   const [staffList, setStaffList] = useState<any[]>([]);
 
+  // [woo] 학급 현황 카드 높이 측정 → 학사 일정 카드 고정 높이 적용
+  const classCardRef = useRef<HTMLDivElement>(null);
+  const [scheduleCardHeight, setScheduleCardHeight] = useState<number | undefined>(undefined);
+
   // [soojin] 2행: RoleRequest 필터 탭 상태 (기본 대기)
   const [studentRRFilter, setStudentRRFilter] = useState<RRStatus>("PENDING");
   const [teacherRRFilter, setTeacherRRFilter] = useState<RRStatus>("PENDING");
@@ -361,6 +365,13 @@ export default function AdminDashboard() {
   }, [teacherRRFilter, selectedSchool]);
 
   // [soojin] 학급 조회는 메인 useEffect로 이동됨
+
+  // [woo] 학급 현황 카드 높이 측정 → 학사 일정 카드 동일 높이 고정
+  useEffect(() => {
+    if (classCardRef.current) {
+      setScheduleCardHeight(classCardRef.current.getBoundingClientRect().height);
+    }
+  }, [classesByGrade]);
 
   const g = (counts: Record<string, number>, key: string) => counts[key] ?? 0;
 
@@ -1021,9 +1032,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── 3행: 학급 현황 + 학사 일정 ── */}
-      <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
         {/* 학급 현황 */}
-        <div style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24 }}>
+        {/* [woo] ref로 높이 측정 → 학사 일정 카드에 동일 높이 적용해 세로폭 고정 */}
+        <div ref={classCardRef} style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24 }}>
           <div className="card shadow-sm dash-card d-flex flex-column h-100">
             <div className="d-flex align-items-center justify-content-between dash-card-header">
               {/* [soojin] "N년 N학기 편성 학급"을 제목 우측으로 이동 */}
@@ -1243,7 +1255,8 @@ export default function AdminDashboard() {
         </div>
 
         {/* 다가오는 학사 일정 */}
-        <div style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24 }}>
+        {/* [woo] 학급 현황 높이로 고정 → 내용 넘치면 스크롤 */}
+        <div style={{ flex: "1 1 400px", minWidth: 320, marginBottom: 24, height: scheduleCardHeight ?? "auto" }}>
           <div className="card shadow-sm dash-card d-flex flex-column h-100">
             <div className="d-flex align-items-center justify-content-between dash-card-header">
               <div className="d-flex align-items-center gap-8">

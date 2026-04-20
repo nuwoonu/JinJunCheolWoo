@@ -45,7 +45,7 @@ public class DailySummaryService {
     private final DailyNoteRepository dailyNoteRepository;
     private final ChildDailySummaryRepository childDailySummaryRepository;
     private final FamilyRelationRepository familyRelationRepository;
-    private final OpenAiSummaryService openAiSummaryService;
+    private final ClaudeSummaryService claudeSummaryService;
     private final NotificationService notificationService;
 
     /**
@@ -88,7 +88,7 @@ public class DailySummaryService {
             return;
         }
 
-        String summaryText = openAiSummaryService.generateSummary(ctx);
+        String summaryText = claudeSummaryService.generateSummary(ctx);
 
         ChildDailySummary summary = ChildDailySummary.builder()
                 .student(student)

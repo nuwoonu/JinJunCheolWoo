@@ -195,6 +195,8 @@ export default function TeacherMyClassStudents() {
   const [assignTarget, setAssignTarget] = useState<PendingStudent | null>(null);
   const [assignNum, setAssignNum] = useState("");
   const [editingNum, setEditingNum] = useState<string>("");
+  // [woo] 학생 목록 페이지네이션
+  const [studentPage, setStudentPage] = useState(1);
   const [editSaving, setEditSaving] = useState(false);
 
   // subView: 학생 정보 모달 내 서브 화면
@@ -307,6 +309,11 @@ export default function TeacherMyClassStudents() {
     fetchClassInfo();
     fetchPendingStudents();
   }, []);
+
+  // [woo] 필터/검색 변경 시 1페이지로 리셋
+  useEffect(() => {
+    setStudentPage(1);
+  }, [search, filterField, searchGender]);
 
   // [woo] 모달 열릴 때 배경 스크롤 방지
   useEffect(() => {
@@ -437,6 +444,11 @@ export default function TeacherMyClassStudents() {
           return s.name.includes(search) || (s.email ?? "").includes(search) || (s.phone ?? "").includes(search);
       }
     }) ?? [];
+
+  // [woo] 페이지네이션: 10명씩
+  const PAGE_SIZE = 10;
+  const totalStudentPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginatedStudents = filtered.slice((studentPage - 1) * PAGE_SIZE, studentPage * PAGE_SIZE);
 
   const setField = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setAddForm((f) => ({ ...f, [field]: e.target.value }));
@@ -974,7 +986,7 @@ export default function TeacherMyClassStudents() {
                         </td>
                       </tr>
                     ) : (
-                      filtered.map((s) => (
+                      paginatedStudents.map((s) => (
                         <tr key={s.studentId}>
                           <td style={{ ...tdStyle, color: "#6b7280" }}>{s.studentNumber}</td>
                           <td style={tdStyle}>
@@ -1036,6 +1048,64 @@ export default function TeacherMyClassStudents() {
                     )}
                   </tbody>
                 </table>
+
+                {/* [woo] 학생 목록 페이지네이션 */}
+                {totalStudentPages > 1 && (
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 4, paddingTop: 16 }}>
+                    <button
+                      type="button"
+                      onClick={() => setStudentPage((p) => Math.max(1, p - 1))}
+                      disabled={studentPage === 1}
+                      style={{
+                        padding: "4px 10px",
+                        border: "1px solid #d1d5db",
+                        borderRadius: 6,
+                        background: "#fff",
+                        fontSize: 13,
+                        color: studentPage === 1 ? "#d1d5db" : "#374151",
+                        cursor: studentPage === 1 ? "default" : "pointer",
+                      }}
+                    >
+                      이전
+                    </button>
+                    {Array.from({ length: totalStudentPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setStudentPage(p)}
+                        style={{
+                          padding: "4px 10px",
+                          border: "1px solid",
+                          borderColor: p === studentPage ? "#25A194" : "#d1d5db",
+                          borderRadius: 6,
+                          background: p === studentPage ? "#25A194" : "#fff",
+                          fontSize: 13,
+                          fontWeight: p === studentPage ? 600 : 400,
+                          color: p === studentPage ? "#fff" : "#374151",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setStudentPage((p) => Math.min(totalStudentPages, p + 1))}
+                      disabled={studentPage === totalStudentPages}
+                      style={{
+                        padding: "4px 10px",
+                        border: "1px solid #d1d5db",
+                        borderRadius: 6,
+                        background: "#fff",
+                        fontSize: 13,
+                        color: studentPage === totalStudentPages ? "#d1d5db" : "#374151",
+                        cursor: studentPage === totalStudentPages ? "default" : "pointer",
+                      }}
+                    >
+                      다음
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
