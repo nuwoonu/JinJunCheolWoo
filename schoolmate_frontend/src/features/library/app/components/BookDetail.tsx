@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
-import { ArrowLeft, User, Star, TrendingUp, MessageSquare, Heart } from "lucide-react";
+import { ArrowLeft, User, Star, TrendingUp, MessageSquare } from "lucide-react";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -36,7 +36,7 @@ const CATEGORIES = [
 
 export default function BookDetail() {
   const { bookId } = useParams();
-  const [isLiked, setIsLiked] = useState(false);
+  const [_isLiked, _setIsLiked] = useState(false); void _isLiked; void _setIsLiked;
   const [book, setBook] = useState<BookDetailData | null>(null);
   const [reviews, setReviews] = useState<BookReviewResponse[]>([]);
   const [relatedBooks, setRelatedBooks] = useState<BookListItem[]>([]);
@@ -206,7 +206,7 @@ export default function BookDetail() {
                 <Card className="overflow-hidden sticky top-8">
                   <div className="aspect-2/3 relative bg-gray-100">
                     <ImageWithFallback
-                      src={bookCoverUrl(book.id, book.coverImage)}
+                      src={bookCoverUrl(book.id, book.coverImage ?? undefined)}
                       alt={book.title}
                       className="w-full h-full object-cover"
                     />
@@ -509,7 +509,7 @@ export default function BookDetail() {
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                       <div className="aspect-[2/3] relative bg-gray-100">
                         <ImageWithFallback
-                          src={bookCoverUrl(relatedBook.id, relatedBook.coverImage)}
+                          src={bookCoverUrl(relatedBook.id, relatedBook.coverImage ?? undefined)}
                           alt={relatedBook.title}
                           className="w-full h-full object-cover"
                         />

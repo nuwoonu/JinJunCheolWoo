@@ -106,7 +106,7 @@ export default function StudentList() {
   const [type, setType] = useState("");
   const [keyword, setKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const { csvRef, loading, csvErrors, setCsvErrors, triggerUpload, handleFileChange } = useCsvUpload(
     "/students/import-csv",
@@ -144,7 +144,7 @@ export default function StudentList() {
   };
 
   const toggleAll = (checked: boolean) => setSelected(checked ? (page?.content ?? []).map((s) => s.uid) : []);
-  const toggleOne = (uid: string) =>
+  const toggleOne = (uid: number) =>
     setSelected((prev) => (prev.includes(uid) ? prev.filter((x) => x !== uid) : [...prev, uid]));
 
   const bulkStatus = async (s: string, label: string) => {
@@ -677,7 +677,7 @@ export default function StudentList() {
                         verticalAlign: "middle",
                       }}
                     >
-                      {studentStatusBadge(s.statusName)}
+                      {studentStatusBadge(s.statusName ?? "")}
                     </td>
                     <td
                       style={{
@@ -705,7 +705,7 @@ export default function StudentList() {
                                   background: "rgba(22,163,74,0.1)",
                                   color: "#16a34a",
                                 }}
-                                onClick={() => approveRequest(s.roleRequestId)}
+                                onClick={() => approveRequest(s.roleRequestId!)}
                               >
                                 승인
                               </button>
@@ -720,7 +720,7 @@ export default function StudentList() {
                                   background: "rgba(239,68,68,0.1)",
                                   color: "#dc2626",
                                 }}
-                                onClick={() => rejectRequest(s.roleRequestId)}
+                                onClick={() => rejectRequest(s.roleRequestId!)}
                               >
                                 거절
                               </button>

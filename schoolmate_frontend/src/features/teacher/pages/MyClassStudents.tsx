@@ -277,9 +277,9 @@ export default function TeacherMyClassStudents() {
   >([]);
 
   const [behaviorForm, setBehaviorForm] = useState({ academicTermId: null as number | null, specialNotes: "" });
-  const [behaviorRecords, setBehaviorRecords] = useState<
+  const [_behaviorRecords, _setBehaviorRecords] = useState<
     { schoolYear: number; semester: number; specialNotes?: string }[]
-  >([]);
+  >([]); void _behaviorRecords; void _setBehaviorRecords;
   const [behaviorSaving, setBehaviorSaving] = useState(false);
   const [behaviorError, setBehaviorError] = useState<string | null>(null);
 

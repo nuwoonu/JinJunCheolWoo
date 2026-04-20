@@ -37,7 +37,7 @@ const DormitoryManagement: React.FC = () => {
     setLoading(true);
     try {
       const data = await fetchBuildingRooms(building);
-      setBuildingData(data);
+      setBuildingData(data as unknown as BuildingData);
     } catch (error) {
       console.error("Failed to fetch building data:", error);
     } finally {
@@ -45,7 +45,7 @@ const DormitoryManagement: React.FC = () => {
     }
   };
 
-  const fetchRoomDetails = async (
+  const loadRoomDetails = async (
     building: string,
     floor: number,
     roomNumber: string,
@@ -53,7 +53,7 @@ const DormitoryManagement: React.FC = () => {
     setLoading(true);
     try {
       const data = await fetchRoomDetails(building, floor, roomNumber);
-      setRoomDetails(data);
+      setRoomDetails(data as unknown as BedData[]);
     } catch (error) {
       console.error("Failed to fetch room details:", error);
     } finally {
@@ -72,7 +72,7 @@ const DormitoryManagement: React.FC = () => {
         bed.bedNumber.toString(),
       );
 
-      fetchRoomDetails(
+      loadRoomDetails(
         selectedRoom.building,
         selectedRoom.floor,
         selectedRoom.roomNumber,
@@ -89,7 +89,7 @@ const DormitoryManagement: React.FC = () => {
     if (!selectedRoom) return;
     try {
       await unassignStudentApi(studentId);
-      fetchRoomDetails(
+      loadRoomDetails(
         selectedRoom.building,
         selectedRoom.floor,
         selectedRoom.roomNumber,
@@ -110,7 +110,7 @@ const DormitoryManagement: React.FC = () => {
 
   useEffect(() => {
     if (selectedRoom) {
-      fetchRoomDetails(
+      loadRoomDetails(
         selectedRoom.building,
         selectedRoom.floor,
         selectedRoom.roomNumber,

@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
 import AdminTopBar from "@/shared/components/layout/admin/AdminTopBar";
 import { ADMIN_ROUTES } from "@/shared/constants/routes";
-import Footer from "@/shared/components/layout/Footer";
 import { useAuth } from "@/shared/contexts/AuthContext";
 
 // [woo] requireSchool prop 추가

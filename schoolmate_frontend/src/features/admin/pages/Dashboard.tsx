@@ -72,13 +72,14 @@ const RR_STATUS_COLOR: Record<RRStatus, string> = {
   REJECTED: "#ef4444",
 };
 
-// [soojin] 버튼 soft 스타일용 연한 배경색
-const RR_STATUS_SOFT_BG: Record<RRStatus, string> = {
+// [soojin] 버튼 soft 스타일용 연한 배경색 (추후 사용 예정)
+const _RR_STATUS_SOFT_BG: Record<RRStatus, string> = {
   ACTIVE: "#d1faf6",
   PENDING: "#e0f2fe",
   SUSPENDED: "#fef3c7",
   REJECTED: "#fee2e2",
 };
+void _RR_STATUS_SOFT_BG;
 
 const EVENT_CFG: Record<string, { label: string; color: string; bg: string }> =
   {

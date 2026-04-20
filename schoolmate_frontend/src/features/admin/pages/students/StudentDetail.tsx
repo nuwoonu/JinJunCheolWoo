@@ -201,9 +201,9 @@ export default function StudentDetail() {
                 학번 {student.code ?? "-"}
               </p>
               {(() => {
-                const cfg = STUDENT_STATUS[student.statusName] ?? STATUS_DEFAULT;
+                const cfg = STUDENT_STATUS[student.statusName ?? ""] ?? STATUS_DEFAULT;
                 return (
-                  <span style={{ padding: "5px 16px", borderRadius: 20, fontSize: 13, fontWeight: 600, background: cfg.bg ?? "#f3f4f6", color: cfg.color ?? "#6b7280" }}>
+                  <span className={cfg.badge} style={{ padding: "5px 16px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
                     {student.statusDescription || cfg.label}
                   </span>
                 );
@@ -219,14 +219,14 @@ export default function StudentDetail() {
                   </p>
                 </div>
               </div>
-              {student.assignments?.length > 0 && (
+              {(student.assignments?.length ?? 0) > 0 && (
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                   <i className="ri-building-2-line" style={{ fontSize: 15, color: "#9ca3af", marginTop: 1 }} />
                   <div>
                     <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 2 }}>최근 소속</p>
                     <p style={{ fontSize: 13, fontWeight: 500, color: "#374151", marginBottom: 0 }}>
                       {(() => {
-                        const a = student.assignments[student.assignments.length - 1];
+                        const a = student.assignments![student.assignments!.length - 1];
                         return `${a.schoolYear}년 ${a.grade}학년 ${a.classNum}반`;
                       })()}
                     </p>
@@ -438,8 +438,8 @@ export default function StudentDetail() {
                   {student.roleRequestId ? (
                     <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 16, background: "#f9fafb" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                        <span style={{ padding: "3px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, ...((ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? STATUS_DEFAULT) as any) }}>
-                          {(ROLE_REQUEST_STATUS[student.roleRequestStatus] ?? { label: student.roleRequestStatus }).label}
+                        <span style={{ padding: "3px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>
+                          {(ROLE_REQUEST_STATUS[student.roleRequestStatus ?? ""] ?? { label: student.roleRequestStatus }).label}
                         </span>
                       </div>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>

@@ -424,7 +424,7 @@ export default function QuizDetail() {
     </button>
   );
 
-  const StatBox = ({
+  const _StatBox = ({
     label,
     value,
     bg,

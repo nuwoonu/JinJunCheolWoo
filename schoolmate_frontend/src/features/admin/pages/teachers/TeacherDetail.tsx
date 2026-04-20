@@ -22,11 +22,13 @@ interface TeacherData {
   email?: string;
   code?: string;
   subjectCode?: string;
+  subject?: string;
   department?: string;
   position?: string;
   statusName?: string;
   roleRequestId?: number | null;
   roleRequestStatus?: string;
+  roles?: string[];
 }
 interface TeacherSection {
   id: number;
@@ -83,7 +85,7 @@ const POSITIONS = [
   "평교사",
   "기간제교사",
 ];
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- [soojin] 추후 사용 예정, @ts-ignore 대신 eslint 주석으로 교체
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SYSTEM_ROLES = [
   { value: "STAFF", label: "교직원" },
   { value: "ADMIN", label: "관리자" },
@@ -217,20 +219,20 @@ export default function TeacherDetail() {
   };
 
   const approveRequest = async () => {
-    if (!teacher.roleRequestId) return;
+    if (!teacher?.roleRequestId) return;
     await admin.post(`/role-requests/${teacher.roleRequestId}/approve`);
     load();
   };
 
   const rejectRequest = async () => {
-    if (!teacher.roleRequestId) return;
+    if (!teacher?.roleRequestId) return;
     await admin.post(`/role-requests/${teacher.roleRequestId}/reject`, { reason: rejectReason });
     setRejectReason("");
     load();
   };
 
   const suspendRequest = async () => {
-    if (!teacher.roleRequestId || !confirm("역할을 정지하시겠습니까?")) return;
+    if (!teacher?.roleRequestId || !confirm("역할을 정지하시겠습니까?")) return;
     await admin.post(`/role-requests/${teacher.roleRequestId}/suspend`);
     load();
   };
@@ -300,7 +302,7 @@ export default function TeacherDetail() {
               </div>
               <h5 style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>{teacher.name}</h5>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>{teacher.email}</p>
-              <span style={{ padding: '5px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, ...getStatusBadgeStyle(teacher.statusName) }}>
+              <span style={{ padding: '5px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, ...getStatusBadgeStyle(teacher.statusName ?? "") }}>
                 {statusCfg.label}
               </span>
               <hr style={{ margin: '20px 0', borderColor: '#f3f4f6' }} />
@@ -579,8 +581,8 @@ export default function TeacherDetail() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb', flexWrap: 'wrap' }}>
                     {teacher.roleRequestId ? (
                       <>
-                        <span style={{ padding: '3px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', ...getRoleRequestBadgeStyle(teacher.roleRequestStatus) }}>
-                          {(ROLE_REQUEST_STATUS[teacher.roleRequestStatus] ?? { label: teacher.roleRequestStatus }).label}
+                        <span style={{ padding: '3px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', ...getRoleRequestBadgeStyle(teacher.roleRequestStatus ?? "") }}>
+                          {(ROLE_REQUEST_STATUS[teacher.roleRequestStatus ?? ""] ?? { label: teacher.roleRequestStatus }).label}
                         </span>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginLeft: 'auto' }}>
                           {teacher.roleRequestStatus === 'PENDING' && (

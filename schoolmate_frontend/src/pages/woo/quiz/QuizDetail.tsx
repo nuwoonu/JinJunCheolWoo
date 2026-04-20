@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "@/shared/api/authApi";
-import { useAuth } from "../../../contexts/AuthContext";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
 // [woo] 퀴즈 상세 페이지
 // - 교사: 문제 확인 + 학생별 응시 결과

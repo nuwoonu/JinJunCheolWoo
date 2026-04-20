@@ -52,7 +52,7 @@ export default function StudentCreate() {
     classroomId: "",
   });
   // [soojin] any[] 대신 구체적 타입 정의
-  const [classrooms, setClassrooms] = useState<{ id: number; name: string }[]>([]);
+  const [classrooms, setClassrooms] = useState<{ id: number; name: string; cid: number; year: number; grade: number; classNum: number }[]>([]);
   const [guardians, setGuardians] = useState<{ parentId: string; name: string; relation: string }[]>([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResult, setSearchResult] = useState<{ id?: number; uid?: number; name: string; email?: string }[]>([]);
@@ -85,7 +85,7 @@ export default function StudentCreate() {
     setShowModal(false);
     setSearchKeyword("");
     setSearchResult([]);
-    setRelModal({ parentId: p.id ?? p.uid, name: p.name });
+    setRelModal({ parentId: String(p.id ?? p.uid ?? ""), name: p.name });
     setRelation("FATHER");
   };
 

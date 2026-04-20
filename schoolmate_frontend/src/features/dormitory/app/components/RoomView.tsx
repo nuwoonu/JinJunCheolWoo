@@ -79,15 +79,6 @@ export default function RoomView() {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "8px 12px",
-    border: "1px solid #e2e8f0",
-    borderRadius: "8px",
-    fontSize: "14px",
-    boxSizing: "border-box",
-    outline: "none",
-  };
 
   const formCardStyle: React.CSSProperties = {
     background: "#fff",

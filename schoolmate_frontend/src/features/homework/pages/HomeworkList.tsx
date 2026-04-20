@@ -698,7 +698,7 @@ export default function HomeworkList() {
                       const myPercent = getPercent(myScore, q.totalPoints);
                       const dday = getDday(q.dueDate);
                       const ddayValue = Number(dday.replace(/[^0-9-]/g, ""));
-                      const urgent = !attempted && /^D-\d+$/.test(dday) && ddayValue <= 2;
+                      const _urgent = !attempted && /^D-\d+$/.test(dday) && ddayValue <= 2; void _urgent;
 
                       return (
                         <div
