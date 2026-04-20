@@ -43,7 +43,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "serverUrl": "본인 IP PC재부팅하면 변경됨.",
+      "serverUrl": "http://schoolmatedeploy.duckdns.org/api",
       "eas": {
         "projectId": "f93e2a58-7f27-4d3b-a2bc-099c61720e7d"
       }
