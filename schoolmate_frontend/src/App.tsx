@@ -178,7 +178,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/hub" replace />} />
+      <Route path="/" element={<Navigate to="/main" replace />} />
       <Route path="/main" element={<MainDesign />} /> {/* [soojin] Main-design을 Main 화면으로 변경 */}
       <Route path="/main-design" element={<MainDesign />} />
       <Route path="/school-search" element={<SchoolSearchPage />} /> {/* [soojin] 학교 찾기 독립 페이지 */}
