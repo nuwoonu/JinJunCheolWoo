@@ -119,7 +119,15 @@ function ParentTabs() {
       })}
     >
       {/* [woo] 홈은 내부 스택으로 — 자녀 성적/출결 진입 시 탭바 유지 */}
-      <Tab.Screen name="홈" component={HomeStackNavigator} />
+      <Tab.Screen
+        name="홈"
+        component={HomeStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            navigation.navigate("홈", { screen: "ParentHome" });
+          },
+        })}
+      />
       <Tab.Screen
         name="게시판"
         component={ParentBoardScreen}
