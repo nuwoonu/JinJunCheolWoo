@@ -97,6 +97,14 @@ export default function DailyNoteInput() {
     setGenerating(true);
     setGeneratedContent(null);
     try {
+      // [woo] 태그/메모를 먼저 저장해야 백엔드 hasAnyActivity() 통과
+      await api.post("/daily-summary/teacher/note", {
+        studentId: selectedStudent.studentId,
+        date: today,
+        tags: selectedTags,
+        memo: memo || null,
+      });
+      setSavedIds((prev) => new Set([...prev, selectedStudent.studentId]));
       const res = await api.post(`/daily-summary/trigger/student/${selectedStudent.studentId}`, null, {
         params: { date: today },
       });
