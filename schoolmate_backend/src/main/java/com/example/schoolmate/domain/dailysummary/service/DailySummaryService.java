@@ -45,7 +45,8 @@ public class DailySummaryService {
     private final DailyNoteRepository dailyNoteRepository;
     private final ChildDailySummaryRepository childDailySummaryRepository;
     private final FamilyRelationRepository familyRelationRepository;
-    private final ClaudeSummaryService claudeSummaryService;
+    // [woo] OpenAI GPT 사용 (서버 환경변수 anthropic.api-key 미적용으로 전환)
+    private final OpenAiSummaryService openAiSummaryService;
     private final NotificationService notificationService;
 
     /**
@@ -88,7 +89,7 @@ public class DailySummaryService {
             return;
         }
 
-        String summaryText = claudeSummaryService.generateSummary(ctx);
+        String summaryText = openAiSummaryService.generateSummary(ctx);
 
         ChildDailySummary summary = ChildDailySummary.builder()
                 .student(student)
