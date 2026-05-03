@@ -43,7 +43,6 @@ export default function ParentHomeScreen() {
   // [woo] 하루 요약 로드 — 오늘 요약 없으면 최근 요약으로 fallback
   const loadTodaySummary = useCallback(async () => {
     if (!selectedChild?.studentInfoId) { setTodaySummary(null); setSummaryLabel("하루 요약"); return; }
-    const today = new Date().toISOString().split("T")[0];
     try {
       const res = await api.get(`/daily-summary/student/${selectedChild.studentInfoId}/date/${today}`);
       if (res.data?.content) {
@@ -68,7 +67,7 @@ export default function ParentHomeScreen() {
     } catch {}
     setTodaySummary(null);
     setSummaryLabel("하루 요약");
-  }, [selectedChild]);
+  }, [selectedChild, today]);
 
   // [woo] 선택된 자녀의 출결 로드
   const loadAttendance = useCallback(async () => {

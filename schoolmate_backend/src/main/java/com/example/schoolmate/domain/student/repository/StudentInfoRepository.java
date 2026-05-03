@@ -22,6 +22,10 @@ public interface StudentInfoRepository extends JpaRepository<StudentInfo, Long>,
         // primary 인스턴스 조회 (로그인·토큰 발급 기본값)
         Optional<StudentInfo> findByUserUidAndPrimaryTrue(Long uid);
 
+        @org.springframework.data.jpa.repository.Query(
+            "SELECT s FROM StudentInfo s JOIN FETCH s.user WHERE s.id = :id")
+        Optional<StudentInfo> findByIdWithUser(
+            @org.springframework.data.repository.query.Param("id") Long id);
 
         // 학교 범위 내 학번 중복 체크
         boolean existsByCodeAndSchoolId(String code, Long schoolId);

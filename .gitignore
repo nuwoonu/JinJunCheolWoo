@@ -128,3 +128,6 @@ schoolmate_backend/.vscode/
 schoolmate_frontend/.vite/deps/package.json
 schoolmate_frontend/.vite/deps/_metadata.json
 .claude/settings.json
+
+### Server uploads (root-level) ###
+/uploads/
