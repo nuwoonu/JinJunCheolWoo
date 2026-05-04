@@ -1,0 +1,57 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: schoolmate_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: schoolmate
+      MYSQL_USER: schoolmate
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: "Asia/Seoul"
+      JAVA_TOOL_OPTIONS: "-Duser.timezone=Asia/Seoul"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    expose:
+      - "3306"
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
+      --default-time-zone=+09:00
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$$MYSQL_ROOT_PASSWORD", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./schoolmate_backend
+    container_name: schoolmate-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/schoolmate?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_USERNAME: schoolmate
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      APP_FRONTEND_URL: https://schoolmatedeploy.duckdns.org
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./uploads:/app/uploads
+
+  frontend:
+    build: ./schoolmate_frontend
+    container_name: schoolmate-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  mysql_data:
