@@ -18,7 +18,11 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "UIBackgroundModes": ["fetch"]
+        "UIBackgroundModes": [
+          "fetch",
+          "fetch"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "plugins": [
@@ -43,7 +47,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "serverUrl": "http://schoolmatedeploy.duckdns.org/api",
+      "serverUrl": "https://schoolmatedeploy.duckdns.org/api",
       "eas": {
         "projectId": "f93e2a58-7f27-4d3b-a2bc-099c61720e7d"
       }

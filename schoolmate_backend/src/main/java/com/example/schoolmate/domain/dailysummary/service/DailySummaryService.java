@@ -81,6 +81,10 @@ public class DailySummaryService {
      */
     @Transactional
     public void generateSummaryForStudent(StudentInfo student, LocalDate date) {
+        generateAndSaveSummary(student, date, false);
+    }
+
+    private void generateAndSaveSummary(StudentInfo student, LocalDate date, boolean replaceExisting) {
         SummaryContext ctx = collectContext(student, date);
 
         // 아무 활동도 없으면 요약 생성 스킵 (출결도 없는 방학/공휴일)
@@ -90,6 +94,12 @@ public class DailySummaryService {
         }
 
         String summaryText = openAiSummaryService.generateSummary(ctx);
+
+        if (replaceExisting) {
+            childDailySummaryRepository.findByStudentIdAndSummaryDate(student.getId(), date)
+                    .ifPresent(childDailySummaryRepository::delete);
+            childDailySummaryRepository.flush();
+        }
 
         ChildDailySummary summary = ChildDailySummary.builder()
                 .student(student)
@@ -181,9 +191,10 @@ public class DailySummaryService {
      * studentId를 받아 내부에서 새로 조회 (@Async 스레드에 detached 엔티티 전달 방지)
      */
     @Async
+    @Transactional
     public void triggerSummaryAsync(Long studentId, LocalDate date) {
         try {
-            StudentInfo student = studentInfoRepository.findById(studentId).orElse(null);
+            StudentInfo student = studentInfoRepository.findByIdWithUser(studentId).orElse(null);
             if (student == null) return;
             regenerateSummaryForStudent(student, date);
         } catch (Exception e) {
@@ -196,11 +207,10 @@ public class DailySummaryService {
      */
     @Transactional
     public void regenerateSummaryForStudent(StudentInfo student, LocalDate date) {
-        // 기존 요약 삭제 (덮어쓰기)
-        childDailySummaryRepository.findByStudentIdAndSummaryDate(student.getId(), date)
-                .ifPresent(childDailySummaryRepository::delete);
-        childDailySummaryRepository.flush();
-        generateSummaryForStudent(student, date);
+        // 새 요약 생성이 성공한 뒤 기존 요약을 교체해 실패 시 빈 상태가 되지 않게 한다.
+        StudentInfo managedStudent = studentInfoRepository.findByIdWithUser(student.getId())
+                .orElse(student);
+        generateAndSaveSummary(managedStudent, date, true);
     }
 
     /**
