@@ -131,3 +131,4 @@ schoolmate_frontend/.vite/deps/_metadata.json
 
 ### Server uploads (root-level) ###
 /uploads/
+application-secret.yml

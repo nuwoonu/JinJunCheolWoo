@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://db:3306/schoolmate?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+
+app:
+  frontend-url: https://schoolmatedeploy.duckdns.org
+
+com:
+  example:
+    schoolmate:
+      upload:
+        path: /app/uploads

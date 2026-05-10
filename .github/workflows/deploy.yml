@@ -1,0 +1,44 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER}}
+          key: ${{ secrets.SSH_PRIVATE_KEY}}
+          script: |
+            cd /root/JinJunCheolWoo
+
+            cat >.env <<EOF
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD}}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD}}
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY}}
+            JWT_SECRET=${{ secrets.JWT_SECRET}}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID}}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET}}
+            KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID}}
+            KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET}}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME}}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD}}
+            VAPID_PUBLIC_KEY=${{ secrets.VAPID_PUBLIC_KEY}}
+            VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY}}
+            NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID}}
+            NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET}}
+            NEIS_API_KEY=${{ secrets.NEIS_API_KEY }}
+            EOF
+
+            git pull origin main
+            docker compose build backend
+            docker compose up -d backend
+
+            docker image prune -f
