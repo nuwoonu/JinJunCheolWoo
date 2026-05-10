@@ -119,8 +119,13 @@ public class GradeController {
             return ResponseEntity.ok(results);
         } catch (SecurityException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            // [woo] IllegalStateException 포함 — readOnly 트랜잭션 충돌 등
+            log.warn("[성적 batch] 저장 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage(), "message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("[성적 batch] 예상치 못한 오류", e);
+            return ResponseEntity.status(500).body(Map.of("error", "저장 중 오류가 발생했습니다.", "message", e.getMessage()));
         }
     }
 

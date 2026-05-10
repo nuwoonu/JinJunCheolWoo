@@ -112,7 +112,7 @@ export default function NoticeForm() {
                 id="isImportant"
                 checked={form.isImportant}
                 onChange={(e) => setForm((f) => ({ ...f, isImportant: e.target.checked }))}
-                style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#25A194", appearance: "auto", WebkitAppearance: "auto", opacity: 1 }}
+                style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#25A194", appearance: "auto", WebkitAppearance: "none", opacity: 1 }}
               />
               <label htmlFor="isImportant" style={{ fontSize: 13, fontWeight: 500, color: "#374151", cursor: "pointer", marginBottom: 0 }}>
                 중요 공지로 설정

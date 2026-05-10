@@ -332,6 +332,12 @@ export default function Sidebar() {
                         <i className="ri-circle-fill circle-icon w-auto" /> 학생 관리
                       </SNavLink>
                     </li>
+                    {/* [woo] 학생 하루 요약 메모 입력 */}
+                    <li>
+                      <SNavLink to="/teacher/daily-note">
+                        <i className="ri-circle-fill circle-icon w-auto" /> 하루 요약 메모
+                      </SNavLink>
+                    </li>
                     <li>
                       <SNavLink to="/teacher/myclass/notice">
                         <i className="ri-circle-fill circle-icon w-auto" /> 우리 반 알림장

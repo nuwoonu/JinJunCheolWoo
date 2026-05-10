@@ -22,6 +22,7 @@ import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
 import com.example.schoolmate.domain.term.repository.CourseSectionRepository;
 import com.example.schoolmate.global.util.FileManager;
 import com.example.schoolmate.global.util.NotificationHelper;
+import com.example.schoolmate.schoolmate_backend_app.service.ExpoPushService;
 import com.example.schoolmate.domain.user.dto.CustomUserDTO;
 import com.example.schoolmate.domain.homework.dto.HomeworkDTO;
 import com.example.schoolmate.domain.homework.entity.Homework;
@@ -52,6 +53,7 @@ public class HomeworkService {
     private final StudentInfoRepository studentInfoRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final FileManager fileManager;
+    private final ExpoPushService expoPushService; // [woo] FCM 푸시 알림
 
     // ========== [woo] 과제 출제 (교사) ==========
 
@@ -89,12 +91,18 @@ public class HomeworkService {
                 courseSection.getDisplayName(),
                 teacher.getUser().getName());
 
-        // 해당 학급 학생들에게 과제 출제 알림
-        studentInfoRepository.findByClassroomCid(courseSection.getClassroom().getCid())
-                .stream().map(si -> si.getUser()).filter(u -> u != null)
-                .forEach(u -> NotificationHelper.send(teacher.getUser(), u, "새 과제 등록",
-                        "'" + saved.getTitle() + "' 과제가 등록되었습니다. (마감: " + saved.getDueDate() + ")",
-                        "/homework/" + saved.getId()));
+        // [woo] 해당 학급 학생들에게 과제 출제 알림 (DB + FCM 푸시)
+        List<com.example.schoolmate.domain.user.entity.User> students =
+                studentInfoRepository.findByClassroomCid(courseSection.getClassroom().getCid())
+                        .stream().map(si -> si.getUser()).filter(u -> u != null)
+                        .collect(Collectors.toList());
+
+        String pushTitle = "새 과제 등록";
+        String pushContent = "[" + courseSection.getSubject().getName() + "] " + saved.getTitle() + " 과제가 등록되었습니다.";
+        String actionUrl = "/homework/" + saved.getId();
+
+        students.forEach(u -> NotificationHelper.send(teacher.getUser(), u, pushTitle, pushContent, actionUrl));
+        expoPushService.sendPushToUsers(students, pushTitle, pushContent, actionUrl);
 
         return HomeworkDTO.DetailResponse.fromEntity(saved, totalStudents);
     }

@@ -237,18 +237,23 @@ export default function ParentNoticeDetail() {
         <div style={{ height: 1, background: "#e5e7eb", margin: "0 24px" }} />
 
         {/* [woo] PDF 첨부파일: 가로 맞춤, 여백 최소화 */}
-        {ext === "pdf" && board.attachmentUrl && (
+        {/* [woo] PDF/HWP/HWPX 첨부파일 미리보기 */}
+        {(ext === "pdf" || ext === "hwp" || ext === "hwpx") && board.attachmentUrl && (
           <div style={{ background: "#f5f5f5", overflow: "hidden" }}>
             <iframe
-              src={`${board.attachmentUrl}#view=FitH&toolbar=0&navpanes=0`}
+              src={
+                ext === "pdf"
+                  ? `${board.attachmentUrl}#view=FitH&toolbar=0&navpanes=0`
+                  : `https://docs.google.com/viewer?url=${encodeURIComponent("https://schoolmatedeploy.duckdns.org" + board.attachmentUrl)}&embedded=true`
+              }
               style={{ width: "100%", height: 800, border: "none", display: "block" }}
-              title="PDF 미리보기"
+              title="파일 미리보기"
             />
           </div>
         )}
 
-        {/* 본문 (PDF가 아닐 때) */}
-        {ext !== "pdf" && (
+        {/* 본문 (미리보기 불가 파일일 때) */}
+        {ext !== "pdf" && ext !== "hwp" && ext !== "hwpx" && (
           <div className="card-body" style={{ padding: "20px 24px" }}>
             {board.content.includes("<") ? (
               <div
@@ -357,7 +362,7 @@ export default function ParentNoticeDetail() {
                       <button type="button" className="btn-close ms-auto" style={{ fontSize: 10 }} onClick={() => setEditForm((f) => ({ ...f, attachmentUrl: "" }))} />
                     </div>
                   )}
-                  <input type="file" className="form-control" accept=".pdf,.docx,.doc" onChange={(e) => setEditFile(e.target.files?.[0] ?? null)} />
+                  <input type="file" className="form-control" accept=".pdf,.docx,.doc,.hwp,.hwpx" onChange={(e) => setEditFile(e.target.files?.[0] ?? null)} />
                 </div>
               </div>
               <div className="modal-footer" style={{ padding: "16px 24px", gap: 8 }}>

@@ -258,7 +258,7 @@ export default function ConsultationList() {
   const reservationMap = useMemo(() => {
     const map: Record<string, CalendarReservation> = {};
     for (const r of calendarReservations) {
-      if (r.status !== "CONFIRMED") continue;
+      if (r.status !== "CONFIRMED" && r.status !== "COMPLETED") continue;
       map[`${r.date}_${r.startTime}`] = r;
     }
     return map;

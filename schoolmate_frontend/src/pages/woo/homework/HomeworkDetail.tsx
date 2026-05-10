@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "@/shared/api/authApi";
-import { useAuth } from "../../../contexts/AuthContext";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
 // [woo] 과제 상세 페이지
 // - 교사: 과제 내용 + 제출 현황 목록 + 채점

@@ -14,6 +14,7 @@ import com.example.schoolmate.domain.user.entity.constant.TestType;
 import com.example.schoolmate.domain.parent.repository.FamilyRelationRepository;
 import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
 import com.example.schoolmate.domain.teacher.repository.TeacherInfoRepository;
+import com.example.schoolmate.schoolmate_backend_app.service.GradeNotificationService;
 import com.example.schoolmate.domain.term.entity.AcademicTerm;
 import com.example.schoolmate.domain.term.entity.AcademicTermStatus;
 import com.example.schoolmate.domain.term.entity.CourseSection;
@@ -58,6 +59,7 @@ public class GradeService {
     private final HomeworkSubmissionRepository homeworkSubmissionRepository;
     private final QuizRepository quizRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
+    private final GradeNotificationService gradeNotificationService; // [woo] 성적 등록 시 학부모 푸시 알림
 
     // ========== [woo] 교사: 내 분반 목록 조회 ==========
 
@@ -206,7 +208,8 @@ public class GradeService {
 
     // ========== [woo] 교사: 성적 입력 (upsert) ==========
 
-    @Transactional
+    // [woo] readOnly=false 명시 — 클래스 레벨 readOnly=true 오버라이드 보장
+    @Transactional(readOnly = false)
     public GradeResponseDTO inputGrade(GradeInputDTO dto, Long uid) {
         CourseSection section = courseSectionRepository.findById(dto.getCourseSectionId())
                 .orElseThrow(() -> new IllegalArgumentException("분반 정보를 찾을 수 없습니다."));
@@ -244,12 +247,17 @@ public class GradeService {
         }
 
         Grade saved = gradeRepository.save(grade);
+
+        // [woo] 비동기 — 학부모에게 성적 등록 푸시 알림
+        gradeNotificationService.notifyParentsOnGradeInput(
+                student, section.getSubject().getName(), dto.getTestType(), dto.getScore());
+
         return toResponseDTO(saved);
     }
 
     // ========== [woo] 교사: 성적 수정 ==========
 
-    @Transactional
+    @Transactional(readOnly = false)
     public GradeResponseDTO updateGrade(Long gradeId, Double score, Long uid) {
         Grade grade = gradeRepository.findById(gradeId)
                 .orElseThrow(() -> new IllegalArgumentException("성적 정보를 찾을 수 없습니다."));
@@ -265,6 +273,11 @@ public class GradeService {
         }
 
         grade.changeScore(score);
+
+        // [woo] 비동기 — 학부모에게 성적 변경 푸시 알림
+        gradeNotificationService.notifyParentsOnGradeUpdate(
+                grade.getStudent(), grade.getSubject().getName(), grade.getTestType(), score);
+
         return toResponseDTO(grade);
     }
 

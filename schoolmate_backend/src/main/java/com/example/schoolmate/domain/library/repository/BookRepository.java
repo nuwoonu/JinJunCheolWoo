@@ -43,4 +43,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     /** 최근 등록 도서 (createDate DESC TopN) */
     @Query("SELECT b FROM Book b WHERE b.school.id = :schoolId AND b.deleted = false ORDER BY b.createDate DESC")
     List<Book> findRecent(@Param("schoolId") Long schoolId, Pageable pageable);
+
+    // [woo] 표지 이미지가 없거나 picsum placeholder인 책 조회 (커버 일괄 업데이트용)
+    @Query("SELECT b FROM Book b WHERE b.school.id = :schoolId AND b.deleted = false " +
+            "AND (b.coverImage IS NULL OR b.coverImage = '' OR b.coverImage LIKE '%picsum.photos%')")
+    List<Book> findBooksNeedingCover(@Param("schoolId") Long schoolId);
 }

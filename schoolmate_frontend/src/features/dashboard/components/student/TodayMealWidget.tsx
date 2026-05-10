@@ -22,9 +22,12 @@ export default function TodayMealWidget({ schoolId }: Props) {
   const [loading, setLoading] = useState(true)
   // [soojin] 알레르기 정보 모달 표시 여부
   const [showAllergy, setShowAllergy] = useState(false)
+  // [woo] 음식 이미지 로드 실패 여부 (성공 시 false 유지)
+  const [foodImgFailed, setFoodImgFailed] = useState(false)
 
   useEffect(() => {
     setLoading(true)
+    setFoodImgFailed(false)
     getTodayMeal(schoolId)
       .then(data => { setMeal(data); setLoading(false) })
       .catch(() => setLoading(false))
@@ -56,6 +59,12 @@ export default function TodayMealWidget({ schoolId }: Props) {
     }
   }
   const allergyEntries = [...allergyMap.entries()].sort((a, b) => a[0] - b[0])
+
+  // [woo] 첫 번째 메뉴명 기반 이미지 URL — schoolId 있으면 goeas.kr 매칭, 없으면 Naver 폴백
+  const firstMenuName = menuItems[0]?.name ?? ''
+  const foodImageSrc = firstMenuName
+    ? `/api/neis/meal/food-image?query=${encodeURIComponent(firstMenuName)}${schoolId ? `&schoolId=${schoolId}` : ''}`
+    : ''
 
   return (
     <div className="card shadow-sm h-100 d-flex flex-column dash-card">
@@ -177,13 +186,30 @@ export default function TodayMealWidget({ schoolId }: Props) {
               </div>
             )}
 
-            {/* [soojin] 이미지 플레이스홀더 */}
+            {/* [woo] 음식 이미지: 백엔드 프록시로 이미지 바이트 직접 수신 → hotlink 우회 */}
             <div style={{
               width: '100%', height: 110, borderRadius: 10,
-              background: '#f3f4f6', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
+              background: '#f3f4f6', overflow: 'hidden',
+              position: 'relative', flexShrink: 0,
             }}>
-              <i className="ri-image-line" style={{ fontSize: 32, color: '#9ca3af' }} />
+              {foodImageSrc && !foodImgFailed ? (
+                <img
+                  src={foodImageSrc}
+                  alt={firstMenuName}
+                  onError={() => setFoodImgFailed(true)}
+                  style={{
+                    position: 'absolute', top: 0, left: 0,
+                    width: '100%', height: '100%', objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <i className="ri-image-line" style={{ fontSize: 32, color: '#9ca3af' }} />
+                </div>
+              )}
             </div>
           </>
         ) : (

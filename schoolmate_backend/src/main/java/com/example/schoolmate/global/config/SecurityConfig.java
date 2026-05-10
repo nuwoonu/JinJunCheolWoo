@@ -97,7 +97,10 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 // [woo] NEIS 공개 API - 인증 불필요
                                                 .requestMatchers("/api/calendar/**", "/api/meals/**",
-                                                                "/api/board/file/**").permitAll()
+                                                                "/api/board/file/**",
+                                                                "/api/neis/**").permitAll()
+                                                // [woo] 하루 요약 - 인증 필요
+                                                .requestMatchers("/api/daily-summary/**").authenticated()
                                                 // SUPER_ADMIN 전용: 학교 관리·권한 위임·시스템 설정·감사 로그
                                                 // URL 레벨에서는 내장 hasRole 사용 (SpEL bean 참조 없이 안전하게 처리)
                                                 // 컨트롤러 레벨에서 @PreAuthorize("@grants.isSuperAdmin()")로 이중 방어

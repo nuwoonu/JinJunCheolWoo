@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/shared/api/authApi";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
+import DashboardLayout from "@/shared/components/layout/DashboardLayout";
 
 // [woo] 과제 출제 페이지 (교사 전용)
 // - 제목, 내용, 학급 선택, 마감일, 첨부파일

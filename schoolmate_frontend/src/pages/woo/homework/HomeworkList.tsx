@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import api from "@/shared/api/authApi"
-import { useAuth } from '../../../contexts/AuthContext'
-import DashboardLayout from '../../../components/layout/DashboardLayout'
+import { useAuth } from '@/shared/contexts/AuthContext'
+import DashboardLayout from '@/shared/components/layout/DashboardLayout'
 
 // [woo] 과제/퀴즈 통합 목록 페이지
 // - /homework → 과제 목록, /quiz → 퀴즈 목록

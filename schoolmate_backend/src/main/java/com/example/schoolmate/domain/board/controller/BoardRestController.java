@@ -382,36 +382,38 @@ public class BoardRestController {
                 return ResponseEntity.badRequest().body("파일이 비어있습니다.");
             }
 
-            // 리눅스 배포하고 사용할 것입니다. 가정통신문 한글파일 바로 띄우려고 생성해둔것.
-            // [woo] HWP → PDF 변환 (LibreOffice 설치 필요 — Linux 배포 시 활성화)
-            // 활성화 방법: sudo apt install libreoffice 후 아래 주석 해제
-            /*
+            // [woo] HWP → HTML → PDF 변환 (hwp5html + wkhtmltopdf)
             String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
             if (originalName.endsWith(".hwp") || originalName.endsWith(".hwpx")) {
                 String boardDir = System.getProperty("user.dir") + "/uploads/board/";
                 String hwpPath = boardDir + filename;
+                String tmpDir = "/tmp/hwp_" + java.util.UUID.randomUUID();
                 try {
-                    ProcessBuilder pb = new ProcessBuilder(
-                        "libreoffice", "--headless", "--convert-to", "pdf",
-                        "--outdir", boardDir, hwpPath
+                    new java.io.File(tmpDir).mkdirs();
+                    ProcessBuilder pb1 = new ProcessBuilder("hwp5html", "--output=" + tmpDir, hwpPath);
+                    pb1.redirectErrorStream(true);
+                    pb1.start().waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+                    String pdfFilename = filename.replaceAll("\\.(hwp|hwpx)$", ".pdf");
+                    String pdfPath = boardDir + pdfFilename;
+                    ProcessBuilder pb2 = new ProcessBuilder(
+                        "wkhtmltopdf", "--quiet", "--disable-smart-shrinking",
+                        "--no-stop-slow-scripts", "--enable-local-file-access",
+                        tmpDir + "/index.xhtml", pdfPath
                     );
-                    pb.redirectErrorStream(true);
-                    Process proc = pb.start();
-                    boolean done = proc.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
-                    if (done && proc.exitValue() == 0) {
-                        String pdfFilename = filename.replaceAll("\\.(hwp|hwpx)$", ".pdf");
-                        java.io.File pdfFile = new java.io.File(boardDir + pdfFilename);
-                        if (pdfFile.exists()) {
-                            new java.io.File(hwpPath).delete();
-                            String url = "/api/board/file/" + pdfFilename;
-                            return ResponseEntity.ok(Map.of("url", url, "filename", pdfFilename));
-                        }
+                    pb2.redirectErrorStream(true);
+                    pb2.start().waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
+                    if (new java.io.File(pdfPath).exists()) {
+                        new java.io.File(hwpPath).delete();
+                        return ResponseEntity.ok(Map.of("url", "/api/board/file/" + pdfFilename, "filename", pdfFilename));
                     }
                 } catch (Exception e) {
-                    log.warn("[woo] HWP 변환 실패 (LibreOffice 없음 또는 오류): {}", e.getMessage());
+                    log.warn("[woo] HWP 변환 실패: {}", e.getMessage());
+                } finally {
+                    java.io.File[] tmpFiles = new java.io.File(tmpDir).listFiles();
+                    if (tmpFiles != null) for (java.io.File f2 : tmpFiles) f2.delete();
+                    new java.io.File(tmpDir).delete();
                 }
             }
-            */
 
             // [woo] /api/board/file/ 경로로 반환 — iframe에서 Vite 프록시 경유 가능
             String url = "/api/board/file/" + filename;

@@ -24,6 +24,37 @@ const EMPTY_ASSET_FORM = {
   purchaseDate: "",
 };
 
+// [woo] API 응답 타입 정의
+interface AssetItem {
+  id: number;
+  modelId: number | string;
+  name: string;
+  assetCode: string;
+  serialNumber?: string;
+  category: string;
+  manufacturer?: string;
+  location?: string;
+  status: string;
+  purchaseDate?: string;
+}
+
+interface ModelItem {
+  id: number;
+  name: string;
+  category: string;
+  manufacturer: string;
+  description?: string;
+  imageUrl?: string;
+}
+
+interface SummaryItem {
+  category: string;
+  totalCount: number;
+  availableCount: number;
+  inUseCount: number;
+  brokenCount: number;
+}
+
 const EMPTY_MODEL_FORM = {
   id: null as number | null,
   name: "",
@@ -36,10 +67,9 @@ const EMPTY_MODEL_FORM = {
 export default function Assets() {
   // --- 상태 관리 ---
   const [currentTab, setCurrentTab] = useState<"assets" | "models">("assets");
-  // [soojin] any → 구체적 타입 정의
-  const [page, setPage] = useState<{ content: Record<string, unknown>[]; totalElements: number; totalPages: number; number: number; first: boolean; last: boolean } | null>(null);
-  const [models, setModels] = useState<Record<string, unknown>[]>([]);
-  const [summaries, setSummaries] = useState<Record<string, unknown>[]>([]);
+  const [page, setPage] = useState<{ content: AssetItem[]; totalElements: number; totalPages: number; number: number; first: boolean; last: boolean } | null>(null);
+  const [models, setModels] = useState<ModelItem[]>([]);
+  const [summaries, setSummaries] = useState<SummaryItem[]>([]);
   // [soojin] 전체 건수 표시용 - 초기 로드 시 한 번만 세팅
   const [totalAll, setTotalAll] = useState<number | null>(null);
   const isInitialLoad = useRef(true);
@@ -90,7 +120,7 @@ export default function Assets() {
     setAssetForm({ ...EMPTY_ASSET_FORM });
     setShowAssetModal(true);
   };
-  const openAssetEdit = (a: Record<string, unknown>) => {
+  const openAssetEdit = (a: AssetItem) => {
     setAssetForm({
       id: (a.id as number) ?? null,
       modelId: (a.modelId as string | number) ?? "",
@@ -133,7 +163,7 @@ export default function Assets() {
     setModelForm({ ...EMPTY_MODEL_FORM });
     setShowModelModal(true);
   };
-  const openModelEdit = (m: Record<string, unknown>) => {
+  const openModelEdit = (m: ModelItem) => {
     setModelForm({
       id: (m.id as number) ?? null,
       name: (m.name as string) ?? "",

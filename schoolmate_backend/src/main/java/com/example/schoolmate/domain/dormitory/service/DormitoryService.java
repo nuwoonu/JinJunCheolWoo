@@ -15,6 +15,7 @@ import com.example.schoolmate.domain.dormitory.entity.Dormitory;
 import com.example.schoolmate.domain.dormitory.entity.DormitoryAssignment;
 import com.example.schoolmate.domain.dormitory.repository.DormitoryAssignmentRepository;
 import com.example.schoolmate.domain.dormitory.repository.DormitoryRepository;
+import com.example.schoolmate.domain.student.dto.StudentResponseDTO;
 import com.example.schoolmate.domain.student.entity.StudentInfo;
 import com.example.schoolmate.domain.user.entity.constant.RoomType;
 import com.example.schoolmate.domain.student.repository.StudentInfoRepository;
@@ -469,5 +470,13 @@ public class DormitoryService {
     public List<DormitoryDTO> getRoomDetails(String building, Integer floor, String roomNumber) {
         return dormitoryRepository.findByRoom(getRequiredSchoolId(), building, floor, roomNumber).stream()
                 .map(DormitoryDTO::from).collect(Collectors.toList());
+    }
+
+    // [woo] 기숙사 배정용 학생 목록 — 역할 필터 없이 학교 전체 학생 반환
+    public List<StudentResponseDTO> getStudentsBySchool() {
+        Long schoolId = getRequiredSchoolId();
+        return studentInfoRepository.findBySchoolId(schoolId).stream()
+                .map(StudentResponseDTO::from)
+                .collect(Collectors.toList());
     }
 }

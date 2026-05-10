@@ -33,6 +33,9 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long>, Cla
     // ★ [현재 사용] teacher(User)로 조회
     Optional<Classroom> findByTeacherUidAndSchoolYear_Year(Long teacherUid, int year);
 
+    // [woo] 학교 + teacher(User) + 학년도로 조회 (다중학교 환경에서 NonUniqueResultException 방지)
+    Optional<Classroom> findBySchoolIdAndTeacherUidAndSchoolYear_Year(Long schoolId, Long teacherUid, int year);
+
     // 학년도, 학년, 반으로 학급 찾기
     Optional<Classroom> findBySchoolYear_YearAndGradeAndClassNum(int year, int grade, int classNum);
 

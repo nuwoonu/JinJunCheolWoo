@@ -250,9 +250,9 @@ export default function ParentChildrenStatus() {
               />
             </div>
 
-            {/* 학교 일정 - [woo] NEIS API 연동 */}
+            {/* 학교 일정 - [woo] NEIS API 연동, schoolId로 자녀 학교 기준 일정 조회 */}
             <div className="col-xl-4 col-md-12">
-              <NeisEventsWidget />
+              <NeisEventsWidget schoolId={selectedChild?.schoolId} />
             </div>
           </div>
 

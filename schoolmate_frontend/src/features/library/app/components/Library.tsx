@@ -1,4 +1,5 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, useCallback, type CSSProperties } from "react";
+import { useAuth } from "@/shared/contexts/AuthContext"; // [woo]
 import { TrendingUp, Star, Calendar, Grid3x3, List, Table } from "lucide-react";
 import { Link } from "react-router";
 import DashboardLayout from "@/shared/components/layout/DashboardLayout";
@@ -13,6 +14,7 @@ import {
   createBook,
   getMyBorrowed,
   getMyStats,
+  refreshBookCovers,
   searchBooks,
   type BookCategoryCode,
   type BookCreateRequest,
@@ -59,6 +61,9 @@ const CATEGORIES = [
 ];
 
 export default function Library() {
+  const { user } = useAuth(); // [woo]
+  const isTeacherOrAdmin = user?.role === "TEACHER" || user?.role === "ADMIN"; // [woo]
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [books, setBooks] = useState<Book[]>([]);
@@ -66,6 +71,7 @@ export default function Library() {
   const [stats, setStats] = useState<ReadingStats | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false); // [woo]
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -129,14 +135,14 @@ export default function Library() {
 
   const filteredBooks = books;
 
-  // [cheol] 테스트용 도서 20권 일괄 등록
+  // [woo] 테스트용 도서 20권 — Naver 책 API로 표지 자동 조회되도록 ISBN 정비
   const SEED_BOOKS: BookCreateRequest[] = [
     {
       title: "82년생 김지영",
       author: "조남주",
       category: "CATEGORY_800",
       totalCopies: 3,
-      isbn: "9788936434267",
+      isbn: "9788937473135",
       description: "한국 사회 여성의 삶을 섬세하게 그려낸 소설.",
       publisher: "민음사",
     },
@@ -145,16 +151,16 @@ export default function Library() {
       author: "무라카미 하루키",
       category: "CATEGORY_800",
       totalCopies: 2,
-      isbn: "9788937460449",
+      isbn: "9788937434488",
       description: "상실과 성장을 그린 하루키의 대표작.",
-      publisher: "문학동네",
+      publisher: "민음사",
     },
     {
       title: "1984",
       author: "조지 오웰",
       category: "CATEGORY_800",
       totalCopies: 3,
-      isbn: "9788937460197",
+      isbn: "9788937460777",
       description: "전체주의 디스토피아를 그린 20세기 고전.",
       publisher: "민음사",
     },
@@ -163,16 +169,16 @@ export default function Library() {
       author: "마키아벨리",
       category: "CATEGORY_300",
       totalCopies: 2,
-      isbn: "9788937460371",
+      isbn: "9791185480152",
       description: "정치 권력의 본질을 분석한 르네상스 시대의 고전.",
-      publisher: "까치",
+      publisher: "롱런",
     },
     {
       title: "국부론",
       author: "애덤 스미스",
       category: "CATEGORY_300",
       totalCopies: 2,
-      isbn: "9788960013513",
+      isbn: "9788937603600",
       description: "근대 경제학의 출발점이 된 고전 경제학 저서.",
       publisher: "비봉출판사",
     },
@@ -190,52 +196,52 @@ export default function Library() {
       author: "공자",
       category: "CATEGORY_100",
       totalCopies: 2,
-      isbn: "9788937460166",
+      isbn: "9791173578922",
       description: "공자와 제자들의 대화를 기록한 유교 경전.",
-      publisher: "을유문화사",
+      publisher: "아르테",
     },
     {
       title: "명상록",
       author: "마르쿠스 아우렐리우스",
       category: "CATEGORY_100",
       totalCopies: 2,
-      isbn: "9788937462818",
+      isbn: "9788982030680",
       description: "로마 황제가 쓴 스토아 철학의 정수.",
-      publisher: "동서문화사",
+      publisher: "육문사",
     },
     {
       title: "반지의 제왕",
       author: "J.R.R. 톨킨",
       category: "CATEGORY_800",
       totalCopies: 3,
-      isbn: "9788936434311",
+      isbn: "9788950922382",
       description: "중간계를 배경으로 한 판타지 대서사시.",
-      publisher: "씨앤톡",
+      publisher: "아르테",
     },
     {
       title: "설국",
       author: "가와바타 야스나리",
       category: "CATEGORY_800",
       totalCopies: 2,
-      isbn: "9788937460548",
+      isbn: "9788937460616",
       description: "일본 노벨문학상 수상 작가의 서정적 소설.",
       publisher: "민음사",
     },
     {
-      title: "조선왕조실록",
-      author: "조선시대 사관",
+      title: "설민석의 조선왕조실록",
+      author: "설민석",
       category: "CATEGORY_900",
-      totalCopies: 1,
-      isbn: "9788958620389",
-      description: "조선 태조부터 철종까지의 역사적 기록.",
-      publisher: "한국학중앙연구원",
+      totalCopies: 2,
+      isbn: "9788933870693",
+      description: "대한민국이 선택한 역사 이야기.",
+      publisher: "세계사",
     },
     {
       title: "세계사 편력",
       author: "자와할랄 네루",
       category: "CATEGORY_900",
       totalCopies: 2,
-      isbn: "9788960010604",
+      isbn: "9788956450490",
       description: "감옥에서 딸에게 쓴 편지로 이루어진 세계사.",
       publisher: "일빛",
     },
@@ -244,61 +250,61 @@ export default function Library() {
       author: "킵 손",
       category: "CATEGORY_400",
       totalCopies: 2,
-      isbn: "9788987090634",
+      isbn: "9791189653101",
       description: "상대성 이론과 블랙홀 물리학을 대중적으로 설명.",
-      publisher: "이지북",
+      publisher: "반니",
     },
     {
       title: "종의 기원",
       author: "찰스 다윈",
       category: "CATEGORY_400",
       totalCopies: 2,
-      isbn: "9788937462825",
+      isbn: "9791197534362",
       description: "자연선택에 의한 진화론을 체계화한 과학의 고전.",
-      publisher: "을유문화사",
+      publisher: "런치박스",
     },
     {
       title: "성경 (개역개정)",
       author: "대한성서공회",
       category: "CATEGORY_200",
       totalCopies: 3,
-      isbn: "9788941214298",
+      isbn: "9788953717343",
       description: "기독교 경전 개역개정판.",
-      publisher: "대한성서공회",
+      publisher: "아가페출판사",
     },
     {
       title: "법화경",
       author: "석가모니",
       category: "CATEGORY_200",
       totalCopies: 2,
-      isbn: "9788974798291",
+      isbn: "9788996899648",
       description: "대승불교의 핵심 경전.",
-      publisher: "동국역경원",
+      publisher: "불사리탑",
     },
     {
-      title: "한국어 문법론",
-      author: "이익섭",
-      category: "CATEGORY_700",
-      totalCopies: 2,
-      isbn: "9788971806579",
-      description: "한국어 문법의 체계를 종합적으로 다룬 표준 교재.",
-      publisher: "학연사",
+      title: "해리 포터와 마법사의 돌",
+      author: "조앤 K. 롤링",
+      category: "CATEGORY_800",
+      totalCopies: 3,
+      isbn: "9791193790403",
+      description: "마법사 해리 포터의 호그와트 입학과 첫 번째 모험.",
+      publisher: "문학수첩",
     },
     {
-      title: "현대음악의 이해",
-      author: "폴 그리피스",
-      category: "CATEGORY_600",
-      totalCopies: 1,
-      isbn: "9788991626232",
-      description: "20세기 현대음악의 흐름을 개관하는 입문서.",
-      publisher: "이화여대출판부",
+      title: "사피엔스",
+      author: "유발 하라리",
+      category: "CATEGORY_300",
+      totalCopies: 3,
+      isbn: "9788934972464",
+      description: "유인원에서 사이보그까지, 인간 역사의 대담하고 위대한 질문.",
+      publisher: "김영사",
     },
     {
-      title: "사회학의 이해",
+      title: "현대 사회학",
       author: "앤서니 기든스",
       category: "CATEGORY_300",
       totalCopies: 2,
-      isbn: "9788946049109",
+      isbn: "9788932471747",
       description: "현대 사회학 이론과 주요 개념을 체계적으로 정리.",
       publisher: "을유문화사",
     },
@@ -307,27 +313,56 @@ export default function Library() {
       author: "이민진",
       category: "CATEGORY_800",
       totalCopies: 3,
-      isbn: "9791165210113",
+      isbn: "9791168340510",
       description: "재일 한국인 가족의 4대에 걸친 서사를 담은 소설.",
       publisher: "인플루엔셜",
     },
   ];
 
+  // [woo] 순차 처리 — 동시 요청 시 Naver API rate limit(429) 발생하므로 1건씩 처리
   const handleSeedBooks = async () => {
     if (!confirm("테스트용 도서 20권을 DB에 추가하시겠습니까?")) return;
     setIsSeeding(true);
     try {
-      await Promise.all(SEED_BOOKS.map((book) => createBook(book)));
+      for (const book of SEED_BOOKS) {
+        try {
+          await createBook(book);
+        } catch {
+          // ISBN 중복 등 개별 오류는 건너뜀
+        }
+      }
       const page = await searchBooks({ page: 0, size: 60 });
       setBooks(page.content.map(mapToBook));
-      alert("도서 20권이 성공적으로 추가되었습니다.");
+      alert("도서 추가 완료!");
     } catch (err) {
       console.error("[library] 테스트 도서 추가 실패", err);
-      alert("일부 도서 추가에 실패했습니다. 콘솔을 확인하세요.");
+      alert("도서 추가에 실패했습니다.");
     } finally {
       setIsSeeding(false);
     }
   };
+
+  // [woo] 표지 이미지 일괄 업데이트
+  const handleRefreshCovers = useCallback(async () => {
+    if (!confirm("표지 이미지가 없는 책들을 네이버 책 API로 자동 업데이트합니다. 계속할까요?")) return;
+    setIsRefreshing(true);
+    try {
+      const { updatedCount } = await refreshBookCovers();
+      const page = await searchBooks({
+        keyword: searchQuery || undefined,
+        category: selectedCategory ? CATEGORY_LABEL_TO_CODE[selectedCategory] : undefined,
+        page: currentPage,
+        size: 10,
+      });
+      setBooks(page.content.map(mapToBook));
+      alert(`표지 이미지 업데이트 완료: ${updatedCount}권`);
+    } catch (err) {
+      console.error("[library] 표지 업데이트 실패", err);
+      alert("표지 이미지 업데이트에 실패했습니다.");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [searchQuery, selectedCategory, currentPage]);
 
   // [cheol] 대출하기 - 실제 API 호출 후 목록 재조회
   const handleBorrow = async (bookId: number) => {
@@ -430,13 +465,25 @@ export default function Library() {
             </div>
             <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>학교 도서를 검색하고 대출 현황을 확인합니다.</p>
           </div>
-          <Button
-            onClick={handleSeedBooks}
-            disabled={isSeeding}
-            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs px-3 py-1.5"
-          >
-            {isSeeding ? "추가 중..." : "[테스트] 도서 20권 DB 추가"}
-          </Button>
+          <div className="flex gap-2">
+            {/* [woo] 교사/관리자만 표지 자동 업데이트 버튼 표시 */}
+            {isTeacherOrAdmin && (
+              <Button
+                onClick={handleRefreshCovers}
+                disabled={isRefreshing}
+                className="bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-xs px-3 py-1.5"
+              >
+                {isRefreshing ? "업데이트 중..." : "표지 자동 업데이트"}
+              </Button>
+            )}
+            <Button
+              onClick={handleSeedBooks}
+              disabled={isSeeding}
+              className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs px-3 py-1.5"
+            >
+              {isSeeding ? "추가 중..." : "[테스트] 도서 20권 DB 추가"}
+            </Button>
+          </div>
         </div>
 
         {/* 메인 콘텐츠 */}
@@ -602,7 +649,7 @@ export default function Library() {
                         <Card className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full cursor-pointer">
                           <div className="aspect-[2/3] relative bg-gray-100">
                             <ImageWithFallback
-                              src={bookCoverUrl(book.id, book.coverImage)}
+                              src={bookCoverUrl(book.id, book.coverImage) ?? undefined}
                               alt={book.title}
                               className="w-full h-full object-cover"
                             />
@@ -662,7 +709,7 @@ export default function Library() {
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                                 <ImageWithFallback
-                                  src={bookCoverUrl(book.id, book.coverImage)}
+                                  src={bookCoverUrl(book.id, book.coverImage) ?? undefined}
                                   alt={book.title}
                                   className="w-full h-full object-cover"
                                 />
@@ -732,7 +779,7 @@ export default function Library() {
                               <td className="px-4 py-3">
                                 <div className="w-10 h-14 bg-gray-200 rounded overflow-hidden">
                                   <ImageWithFallback
-                                    src={bookCoverUrl(book.id, book.coverImage)}
+                                    src={bookCoverUrl(book.id, book.coverImage) ?? undefined}
                                     alt={book.title}
                                     className="w-full h-full object-cover"
                                   />
@@ -962,7 +1009,7 @@ export default function Library() {
                           </div>
                           <div className="w-16 h-20 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                             <ImageWithFallback
-                              src={bookCoverUrl(book.id, book.coverImage)}
+                              src={bookCoverUrl(book.id, book.coverImage) ?? undefined}
                               alt={book.title}
                               className="w-full h-full object-cover"
                             />

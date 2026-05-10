@@ -503,6 +503,11 @@ public class TeacherService {
      */
     public Optional<Classroom> getMyClassroom(Long teacherId, int schoolYear) {
         Long userUid = getUserUidFromTeacherId(teacherId);
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        // [woo] schoolId로 필터링해 다중학교 환경의 NonUniqueResultException 방지
+        if (schoolId != null) {
+            return classroomRepository.findBySchoolIdAndTeacherUidAndSchoolYear_Year(schoolId, userUid, schoolYear);
+        }
         return classroomRepository.findByTeacherUidAndSchoolYear_Year(userUid, schoolYear);
     }
 
@@ -511,8 +516,12 @@ public class TeacherService {
      */
     public Classroom getMyClassroomOrThrow(Long teacherId, int schoolYear) {
         Long userUid = getUserUidFromTeacherId(teacherId);
-        return classroomRepository.findByTeacherUidAndSchoolYear_Year(userUid, schoolYear)
-                .orElseThrow(() -> new IllegalArgumentException("담당 학급이 없습니다. 관리자에게 담임 배정을 요청하세요."));
+        Long schoolId = SchoolContextHolder.getSchoolId();
+        // [woo] schoolId로 필터링해 다중학교 환경의 NonUniqueResultException 방지
+        Optional<Classroom> result = (schoolId != null)
+                ? classroomRepository.findBySchoolIdAndTeacherUidAndSchoolYear_Year(schoolId, userUid, schoolYear)
+                : classroomRepository.findByTeacherUidAndSchoolYear_Year(userUid, schoolYear);
+        return result.orElseThrow(() -> new IllegalArgumentException("담당 학급이 없습니다. 관리자에게 담임 배정을 요청하세요."));
     }
 
     /**

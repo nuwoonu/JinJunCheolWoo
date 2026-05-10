@@ -112,7 +112,7 @@ export default function BorrowedBooks() {
             <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="h-44 relative bg-gray-100">
                 <ImageWithFallback
-                  src={bookCoverUrl(book.bookId, book.coverImage)}
+                  src={bookCoverUrl(book.bookId, book.coverImage) ?? undefined}
                   alt={book.title}
                   className="absolute inset-0 w-full h-full object-cover"
                 />

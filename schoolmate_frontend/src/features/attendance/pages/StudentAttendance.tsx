@@ -101,8 +101,8 @@ export default function StudentAttendance() {
     };
   }, [reasonModal.open]);
 
-  // [soojin] 월별 출석률 조회 - statsYear/statsMonth 변경 시 재조회
-  useEffect(() => {
+  // [woo] 월별 출석률 조회
+  const fetchMonthlyStats = useCallback(() => {
     api
       .get(`/attendance/student/monthly-stats?year=${statsYear}&month=${statsMonth}`)
       .then((res) =>
@@ -118,6 +118,11 @@ export default function StudentAttendance() {
       )
       .catch(() => {});
   }, [statsYear, statsMonth]);
+
+  // [woo] statsYear/statsMonth 변경 시 재조회
+  useEffect(() => {
+    fetchMonthlyStats();
+  }, [fetchMonthlyStats]);
 
   // [woo] 이번 달 출결 처리 일수 조회
   const fetchProcessedDays = useCallback(() => {
@@ -275,6 +280,7 @@ export default function StudentAttendance() {
       await api.put(`/attendance/student/update?studentInfoId=${studentInfoId}&date=${date}`, { status, reason });
       fetchRecords(date);
       fetchProcessedDays();
+      fetchMonthlyStats();
     } catch (err: any) {
       const msg = err.response?.data?.error || err.response?.data?.message || "알 수 없는 오류";
       alert(`출결 변경 실패: ${msg}`);
@@ -295,6 +301,7 @@ export default function StudentAttendance() {
       alert(res.data?.message || "전원 출석 처리 완료");
       fetchRecords(date);
       fetchProcessedDays();
+      fetchMonthlyStats();
     } catch (err: any) {
       const msg = err.response?.data?.error || "전원출석 처리에 실패했습니다.";
       alert(msg);

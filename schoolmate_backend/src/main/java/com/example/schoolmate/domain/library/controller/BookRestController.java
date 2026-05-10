@@ -1,6 +1,7 @@
 package com.example.schoolmate.domain.library.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -97,5 +98,12 @@ public class BookRestController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // [woo] 표지 이미지 일괄 업데이트 (교사/관리자 전용)
+    @PostMapping("/refresh-covers")
+    public ResponseEntity<Map<String, Integer>> refreshCovers() {
+        int updatedCount = bookService.refreshCovers();
+        return ResponseEntity.ok(Map.of("updatedCount", updatedCount));
     }
 }

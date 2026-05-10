@@ -79,15 +79,6 @@ export default function RoomView() {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "8px 12px",
-    border: "1px solid #e2e8f0",
-    borderRadius: "8px",
-    fontSize: "14px",
-    boxSizing: "border-box",
-    outline: "none",
-  };
 
   const formCardStyle: React.CSSProperties = {
     background: "#fff",
@@ -148,9 +139,9 @@ export default function RoomView() {
         {/* 학생 배정 폼 — 학생 제한 */}
         {!isStudent && showAssignForm && ( // cheol
           <div style={formCardStyle}>
-            <h2 style={{ fontSize: "17px", fontWeight: 600, margin: "0 0 4px", color: "#1e293b" }}>
+            <p style={{ fontSize: "13px", fontWeight: 600, margin: "0 0 4px", color: "#1e293b" }}>
               학생 배정 — {selectedBed?.bedNumber}번 침대
-            </h2>
+            </p>
 
             {/* 학생 검색 */}
             <div

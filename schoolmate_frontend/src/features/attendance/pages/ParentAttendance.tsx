@@ -124,11 +124,11 @@ export default function ParentAttendance() {
   }, [statsYear, statsMonth]);
 
   // [woo] 자녀 탭 전환
-  const handleTabChange = (idx: number) => {
+  const _handleTabChange = (idx: number) => {
     setActiveChildIdx(idx);
     setFilterStatus(null);
     if (summaries[idx]) fetchRecords(summaries[idx], startDate, endDate);
-  };
+  }; void _handleTabChange;
 
   // [soojin] 오른쪽 기록 월 네비게이션
   const shiftMonth = (delta: number) => {
